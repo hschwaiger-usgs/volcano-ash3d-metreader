@@ -170,12 +170,19 @@
       elseif(igrid.eq.1027)then
          ! Not an NCEP grid
          !  This grid is for the NOAA Reanalysis
-
-        IsLatLon_MetGrid  = .true.
-        IsGlobal_MetGrid  = .true.
-        IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
-
+        if(MR_iversion.eq.2)then
+          !v2
+          IsLatLon_MetGrid  = .true.
+          IsGlobal_MetGrid  = .true.
+          IsRegular_MetGrid = .true.
+          isGridRelative    = .true.
+        elseif(MR_iversion.eq.3)then
+          !v3
+          IsLatLon_MetGrid  = .true.
+          IsGlobal_MetGrid  = .true.
+          IsRegular_MetGrid = .false.
+          isGridRelative    = .true.
+        endif
       elseif(igrid.eq.2)then
        ! Used by NCEP DOE reanalysis, NCEP-1
        !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid002.gif
@@ -215,7 +222,7 @@
         isGridRelative    = .true.
 
       elseif(igrid.eq.91)then
-        ! NAM 3-km Polar Sterographic
+        ! NAM 3-km Polar Stereographic
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID91
         !   1822145-point (1649x1105) N. Hemisphere Polar Stereographic grid
         !   oriented 150W; 
@@ -272,7 +279,7 @@
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.104)then
-        ! NAM 90-km Polar Sterographic
+        ! NAM 90-km Polar Stereographic
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID104
         !   16170-point (147x110) N. Hemisphere Polar Stereographic grid oriented
         !   105W; pole at (75.5,109.5). (NGM Super C grid)
@@ -383,7 +390,7 @@
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.198)then
-        ! NAM 6-km Polar Sterographic
+        ! NAM 6-km Polar Stereographic
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID198
         !   456225-point (825x553) N. Hemisphere Polar Stereographic grid
         !   oriented 150W; 
@@ -512,7 +519,7 @@
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.216)then
-        ! NAM 45-km Polar Sterographic
+        ! NAM 45-km Polar Stereographic
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID216
         !        PolarStereographic_Projection:grid_mapping_name = "stereographic" ;
         !        PolarStereographic_Projection:longitude_of_projection_origin = 225. ;
@@ -651,7 +658,7 @@
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.242)then
-        ! NAM 11.25-km Polar Sterographic
+        ! NAM 11.25-km Polar Stereographic
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID242
         !        PolarStereographic_Projection:grid_mapping_name = "stereographic" ;
         !        PolarStereographic_Projection:longitude_of_projection_origin = 225. ;
@@ -758,7 +765,7 @@
 
       call MR_Set_Comp2Met_Map
 
-      ! Now calculate the indicies of the subgrid containing the
+      ! Now calculate the indices of the subgrid containing the
       ! computational grid.  Note, the subgrid of the wind file
       ! will be much coarser than the computational grid
       if(Map_Case.eq.1.or. & !  Both Comp Grid and Met grids are Lat/Lon
@@ -1466,7 +1473,7 @@
         else
           ! Projections are the same type, test individual parameters
           if(Comp_iprojflag.eq.0)then
-            ! Both Comp and Met are non-geographic, cartesian grids
+            ! Both Comp and Met are non-geographic, Cartesian grids
             Map_Case = 2
           elseif(Comp_iprojflag.eq.1)then
             ! Polar stereographic
@@ -1839,7 +1846,7 @@
 !
 !     MR_Read_Met_Template
 !
-!     This subroutine reads an auxillary file that specifies the custom windfile
+!     This subroutine reads an auxiliary file that specifies the custom windfile
 !     structure
 !
 !##############################################################################

@@ -52,7 +52,6 @@
       real(kind=dp), parameter :: tol = 1.0e-3_dp
       real(kind=dp) :: x_start,y_start
 
-      !integer :: NC_version
       integer,dimension(:),allocatable :: var_dimIDs
       logical :: FoundOldDim
       logical :: IsPressureDimension
@@ -218,70 +217,120 @@
           MR_dy_met(ny_fullmet)    = MR_dy_met(ny_fullmet-1)
 
         elseif(MR_iwindformat.eq.27)then
-          !  NOAA-CIRES reanalysis 2.0 degree files  :: ds131.2
-          maxdimlen            = 24
-          nlev_coords_detected = 2
-          allocate(nlevs_fullmet(nlev_coords_detected))
-          nlevs_fullmet(1) = 24
-          nlevs_fullmet(2) = 19
-          allocate(levs_code(nlev_coords_detected))
-          levs_code(1) = 1
-          levs_code(2) = 2
-          allocate(levs_fullmet_sp(nlev_coords_detected,maxdimlen))
-          np_fullmet = 24
-          allocate(p_fullmet_sp(np_fullmet))
-          levs_fullmet_sp(:,:) = 0.0_sp
-          p_fullmet_sp(1:np_fullmet) = &
-            (/1000.0_sp, 950.0_sp, 900.0_sp, 850.0_sp, 800.0_sp, &
-               750.0_sp, 700.0_sp, 650.0_sp, 600.0_sp, 550.0_sp, &
-               500.0_sp, 450.0_sp, 400.0_sp, 350.0_sp, 300.0_sp, &
-               250.0_sp, 200.0_sp, 150.0_sp, 100.0_sp,  70.0_sp, &
-                50.0_sp,  30.0_sp,  20.0_sp,  10.0_sp /)
-          if(MR_Use_RDA)then
-            ! Files from rda.ucar.edu/datasets/ds131.2/ converted from grib with ncl_convert2nc
-            ! are top down
-            z_inverted = .true.
-          else
-            ! Files from www.esrl.noaa.gov are bottom up
-            z_inverted = .false.
+          if(MR_iversion.eq.2)then
+            !  NOAA-CIRES reanalysis 2.0 degree files  :: ds131.2
+            !  Note that v.2 is an older version.
+            !  Since v.2 has a regular grid, we just specify it here
+            maxdimlen            = 24
+            nlev_coords_detected = 2
+            allocate(nlevs_fullmet(nlev_coords_detected))
+            nlevs_fullmet(1) = 24
+            nlevs_fullmet(2) = 19
+            allocate(levs_code(nlev_coords_detected))
+            levs_code(1) = 1
+            levs_code(2) = 2
+            allocate(levs_fullmet_sp(nlev_coords_detected,maxdimlen))
+            np_fullmet = 24
+            allocate(p_fullmet_sp(np_fullmet))
+            levs_fullmet_sp(:,:) = 0.0_sp
+            p_fullmet_sp(1:np_fullmet) = &
+              (/1000.0_sp, 950.0_sp, 900.0_sp, 850.0_sp, 800.0_sp, &
+                 750.0_sp, 700.0_sp, 650.0_sp, 600.0_sp, 550.0_sp, &
+                 500.0_sp, 450.0_sp, 400.0_sp, 350.0_sp, 300.0_sp, &
+                 250.0_sp, 200.0_sp, 150.0_sp, 100.0_sp,  70.0_sp, &
+                  50.0_sp,  30.0_sp,  20.0_sp,  10.0_sp /)
+            if(MR_Use_RDA)then
+              ! Files from rda.ucar.edu/datasets/ds131.2/ converted from grib with ncl_convert2nc
+              ! are top down
+              z_inverted = .true.
+            else
+              ! Files from www.esrl.noaa.gov are bottom up
+              z_inverted = .false.
+            endif
+            levs_fullmet_sp(1,1:24) = p_fullmet_sp(1:24)*Pressure_Conv_Fac
+            levs_fullmet_sp(2,1:19) = p_fullmet_sp(1:19)*Pressure_Conv_Fac
+            Met_var_zdim_idx( 1) = 1
+            Met_var_zdim_idx( 2) = 1
+            Met_var_zdim_idx( 3) = 1
+            Met_var_zdim_idx( 4) = 2
+            Met_var_zdim_idx( 5) = 1
+            Met_var_zdim_idx( 7) = 2
+  
+            IsLatLon_MetGrid  = .true.
+            IsGlobal_MetGrid  = .true.
+            IsRegular_MetGrid = .true.
+            nx_fullmet = 180
+            ny_fullmet = 91
+            allocate(x_fullmet_sp(0:nx_fullmet+1))
+            allocate(y_fullmet_sp(ny_fullmet))
+            allocate(MR_dx_met(nx_fullmet))
+            allocate(MR_dy_met(ny_fullmet))
+            dx_met_const = 2.0_sp
+            dy_met_const = 2.0_sp
+            x_start =   0.0_dp
+            y_start =  90.0_dp
+            do i = 0,nx_fullmet+1
+              x_fullmet_sp(i) = real(x_start + (i-1)*dx_met_const,kind=sp)
+            enddo
+            x_inverted = .false.
+            do i = 1,ny_fullmet
+              y_fullmet_sp(i) = real(y_start - (i-1)*dy_met_const,kind=sp)
+            enddo
+            y_inverted = .true.
+            do i = 1,nx_fullmet
+              MR_dx_met(i) = x_fullmet_sp(i+1)-x_fullmet_sp(i)
+            enddo
+            do i = 1,ny_fullmet-1
+              MR_dy_met(i) = y_fullmet_sp(i+1)-y_fullmet_sp(i)
+            enddo
+            MR_dy_met(ny_fullmet)    = MR_dy_met(ny_fullmet-1)
+          elseif(MR_iversion.eq.3)then
+            !  NOAA-CIRES reanalysis  :: ds131.3
+            !  In v.3, we have a Gaussian grid so we read in the values in
+            !  MR_Read_Met_Times_netcdf
+            maxdimlen            = 28
+            nlev_coords_detected = 2
+            allocate(nlevs_fullmet(nlev_coords_detected))
+            nlevs_fullmet(1) = 28
+            nlevs_fullmet(2) = 21
+            allocate(levs_code(nlev_coords_detected))
+            levs_code(1) = 1
+            levs_code(2) = 2
+            allocate(levs_fullmet_sp(nlev_coords_detected,maxdimlen))
+            np_fullmet = 28
+            allocate(p_fullmet_sp(np_fullmet))
+            levs_fullmet_sp(:,:) = 0.0_sp
+            p_fullmet_sp(1:np_fullmet) = &
+              (/1000.0_sp, 975.0_sp, 950.0_sp, 925.0_sp, 900.0_sp, &
+                 850.0_sp, 800.0_sp, 750.0_sp, 700.0_sp, 650.0_sp, &
+                 600.0_sp, 550.0_sp, 500.0_sp, 450.0_sp, 400.0_sp, &
+                 350.0_sp, 300.0_sp, 250.0_sp, 200.0_sp, 150.0_sp, &
+                 100.0_sp,  70.0_sp,  50.0_sp,  30.0_sp,  20.0_sp, &
+                  10.0_sp,   5.0_sp,   1.0_sp /)
+              ! Files from www.esrl.noaa.gov are bottom up
+              z_inverted = .false.
+            levs_fullmet_sp(1,1:28) = p_fullmet_sp(1:28)*Pressure_Conv_Fac
+            levs_fullmet_sp(2,1:21) = p_fullmet_sp(1:21)*Pressure_Conv_Fac
+            Met_var_zdim_idx( 1) = 1
+            Met_var_zdim_idx( 2) = 1
+            Met_var_zdim_idx( 3) = 1
+            Met_var_zdim_idx( 4) = 2
+            Met_var_zdim_idx( 5) = 1
+            Met_var_zdim_idx( 7) = 2
+  
+            IsLatLon_MetGrid  = .true.
+            IsGlobal_MetGrid  = .true.
+            IsRegular_MetGrid = .false.
+            allocate(MR_dx_met(nx_fullmet))
+            allocate(MR_dy_met(ny_fullmet))
+            do i = 1,nx_fullmet
+              MR_dx_met(i) = x_fullmet_sp(i+1)-x_fullmet_sp(i)
+            enddo
+            do i = 1,ny_fullmet-1
+              MR_dy_met(i) = y_fullmet_sp(i+1)-y_fullmet_sp(i)
+            enddo
+            MR_dy_met(ny_fullmet)    = MR_dy_met(ny_fullmet-1)
           endif
-          levs_fullmet_sp(1,1:24) = p_fullmet_sp(1:24)*Pressure_Conv_Fac
-          levs_fullmet_sp(2,1:19) = p_fullmet_sp(1:19)*Pressure_Conv_Fac
-          Met_var_zdim_idx( 1) = 1
-          Met_var_zdim_idx( 2) = 1
-          Met_var_zdim_idx( 3) = 1
-          Met_var_zdim_idx( 4) = 2
-          Met_var_zdim_idx( 5) = 1
-          Met_var_zdim_idx( 7) = 2
-
-          IsLatLon_MetGrid  = .true.
-          IsGlobal_MetGrid  = .true.
-          IsRegular_MetGrid = .true.
-          nx_fullmet = 180
-          ny_fullmet = 91
-          allocate(x_fullmet_sp(0:nx_fullmet+1))
-          allocate(y_fullmet_sp(ny_fullmet))
-          allocate(MR_dx_met(nx_fullmet))
-          allocate(MR_dy_met(ny_fullmet))
-          dx_met_const = 2.0_sp
-          dy_met_const = 2.0_sp
-          x_start =   0.0_dp
-          y_start =  90.0_dp
-          do i = 0,nx_fullmet+1
-            x_fullmet_sp(i) = real(x_start + (i-1)*dx_met_const,kind=sp)
-          enddo
-          x_inverted = .false.
-          do i = 1,ny_fullmet
-            y_fullmet_sp(i) = real(y_start - (i-1)*dy_met_const,kind=sp)
-          enddo
-          y_inverted = .true.
-          do i = 1,nx_fullmet
-            MR_dx_met(i) = x_fullmet_sp(i+1)-x_fullmet_sp(i)
-          enddo
-          do i = 1,ny_fullmet-1
-            MR_dy_met(i) = y_fullmet_sp(i+1)-y_fullmet_sp(i)
-          enddo
-          MR_dy_met(ny_fullmet)    = MR_dy_met(ny_fullmet-1)
 
         elseif(MR_iwindformat.eq.29)then
           ! ECMWF ERA5
@@ -387,7 +436,7 @@
         else  ! MR_iwindformat .ne. 50
           !---------------------------------------------------------------------------------
           ! Start of block for all non-iwind=5 and non-iwf=50
-          ! This is where the the Netcdf and Grib subroutines can be compared
+          ! This is where the Netcdf and Grib subroutines can be compared
           !
           ! Checking for dimension length and values for x,y,t,p
           !   Assume all files have the same format
@@ -621,6 +670,7 @@
             if(nSTAT.eq.NF90_NOERR.and. &   ! This first condition excludes dims with no vars
                (index(dimname,'lev').ne.0.or.&
                 index(dimname,'isobaric').ne.0.or.&
+                index(dimname,'isobaricInhPa').ne.0.or.&
                 index(dimname,'pressure').ne.0.or.&
                 index(dimname,'height').ne.0.or.&
                 index(dimname,'depth').ne.0.or.&
@@ -674,7 +724,7 @@
           do ivar = 1,MR_MAXVARS
             ! Check if this variable has a z-dimension (pressure, height, depth, etc.)
             if(Met_var_zdim_ncid(ivar).gt.0)then
-              ! log the length of the dimension for this level coordinat
+              ! log the length of the dimension for this level coordinate
               nSTAT = nf90_inquire_dimension(ncid,Met_var_zdim_ncid(ivar), &
                          name =  dimname, &
                          len = dimlen)
@@ -796,9 +846,9 @@
  
         ! The native vertical coordinate used in MetReader is that used for GPH.
         ! Here we check each of the vertical coordinates and note how they
-        ! compare with that of GPH, assigning the followin codes:
+        ! compare with that of GPH, assigning the following codes:
         !  1 = same dim length: assume one-to-one mapping
-        !  2 = fewer levels: truncated version of GPH (doesn't extend as hight)
+        !  2 = fewer levels: truncated version of GPH (doesn't extend as high)
         !  3 = fewer levels: missing levels requiring interpolation
         !  4 = more values than that of GPH
         levs_code(1:nlev_coords_detected) = 0
@@ -963,7 +1013,7 @@
 
         ! MAP_PROJ - Model projection  1 = Lambert
         !                              2 = polar stereographic
-        !                              3 = mercator
+        !                              3 = Mercator
         !                              6 = lat-lon
 
         ! First set spatial (x/y) grid
@@ -1098,7 +1148,7 @@
         ! Polar Stereographic
          !  Mandatory parameters are given in module_map_utils.F line 308:
          !      ' truelat1, lat1, lon1, knowni, knownj, stdlon, dx'
-         !      and in suroutine set_ps on line 661
+         !      and in subroutine set_ps on line 661
          !   TRUELAT1            = lat_1 # Cone intersects with the sphere
          !   STAND_LON           = lon_0 # Center Point
          !  Other global attributes:
@@ -1469,7 +1519,7 @@
         MR_Comp_StartMonth       = HS_MonthOfEvent(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
         MR_Comp_StartDay         = HS_DayOfEvent(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
 
-        ! Here the branch for when MR_iwindformat = 25 or 27
+        ! Here the branch for when MR_iwindformat = 25, 26, 27, 29, or 30
         ! First copy path read in to slot 2
         !MR_iw5_root = MR_windfiles(1)
  110    format(a50,a1,i4,a1)
@@ -1482,8 +1532,13 @@
           iwf_int = 6.0_dp
           iwf_tot = MR_iw5_hours_per_file
         elseif(MR_iwindformat.eq.27)then
-          iwf_int = 6.0_dp
-          iwf_tot = MR_iw5_hours_per_file
+          if(MR_iversion.eq.2)then
+            iwf_int = 6.0_dp
+            iwf_tot = MR_iw5_hours_per_file
+          elseif(MR_iversion.eq.3)then
+            iwf_int = 3.0_dp
+            iwf_tot = MR_iw5_hours_per_file
+          endif
         elseif(MR_iwindformat.eq.29)then
           iwf_int = 1.0_dp
           iwf_tot = MR_iw5_hours_per_file
@@ -1539,11 +1594,10 @@
           call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid time")
           nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_tst)
           call MR_NC_check_status(nSTAT,1,"nf90_Inquire_Dimension time")
-          if(iw.eq.1.and.(MR_iwindformat.eq.29.or.&
-                          MR_iwindformat.eq.30))then
+          if(iw.eq.1.and.(.not.IsRegular_MetGrid))then ! for iwf=5, this is 27,29, or 30
             ! Normally we would populate the x and y arrays in MR_Read_Met_DimVars_netcdf, but
-            ! for Gaussian grids, it is easier to just read the grids directly.  We will do
-            ! this now while we have the Geopotential Height file open.  
+            ! for Gaussian or otherwise irregular grids, it is easier to just read the grids
+            ! directly.  We will do this now while we have the Geopotential Height file open.  
             nSTAT = nf90_inq_dimid(ncid,Met_dim_names(3),y_dim_id)
             call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid Y (lat)")
             nSTAT = nf90_Inquire_Dimension(ncid,y_dim_id,len=ny_fullmet)
@@ -1577,7 +1631,7 @@
                                                 x_fullmet_sp(nx_fullmet-1)
             deallocate(dum1d_dp)
 
-          endif ! iwf = 29 or 30
+          endif ! .not.IsRegular_MetGrid
           nSTAT = nf90_close(ncid)
           call MR_NC_check_status(nSTAT,1,"nf90_close")
 
@@ -2031,47 +2085,73 @@
  326    format(i4,i0.2,i0.2,a3,i4,i0.2,i0.2,i0.2,a3)
  426    format(a50,a1,i4,a1,a,a24)
       elseif(MR_iwindformat.eq.27)then  ! Not needed for iwf=27
-        dum_i1 = 1                                 ! Start day in file
-        dum_i2 = DaysInMonth(thisMonth)   ! End day in file
-        dum_i3 = 18                                ! End hour in file
-        if(MR_Use_RDA)then
-          if(ivar.eq.1)then
-            write(MR_iw5_prefix ,271)'pgrbanl_mean_',thisYear,'_HGT'
-          elseif(ivar.eq.2)then
-            write(MR_iw5_prefix ,271)'pgrbanl_mean_',thisYear,'_UGRD'
-          elseif(ivar.eq.3)then
-            write(MR_iw5_prefix ,271)'pgrbanl_mean_',thisYear,'_VGRD'
-          elseif(ivar.eq.4)then
-            write(MR_iw5_prefix ,271)'pgrbanl_mean_',thisYear,'_VVEL'
-          elseif(ivar.eq.5)then
-            write(MR_iw5_prefix ,271)'pgrbanl_mean_',thisYear,'_TMP'
-          elseif(ivar.eq.7)then
-            write(MR_iw5_prefix ,271)'pgrbanl_mean_',thisYear,'_VVEL'
+        if(MR_iversion.eq.2)then
+          dum_i1 = 1                        ! Start day in file
+          dum_i2 = DaysInMonth(thisMonth)   ! End day in file
+          dum_i3 = 18                       ! End hour in file
+          if(MR_Use_RDA)then
+            if(ivar.eq.1)then
+              write(MR_iw5_prefix ,271)'pgrbanl_mean_',thisYear,'_HGT'
+            elseif(ivar.eq.2)then
+              write(MR_iw5_prefix ,271)'pgrbanl_mean_',thisYear,'_UGRD'
+            elseif(ivar.eq.3)then
+              write(MR_iw5_prefix ,271)'pgrbanl_mean_',thisYear,'_VGRD'
+            elseif(ivar.eq.4)then
+              write(MR_iw5_prefix ,271)'pgrbanl_mean_',thisYear,'_VVEL'
+            elseif(ivar.eq.5)then
+              write(MR_iw5_prefix ,271)'pgrbanl_mean_',thisYear,'_TMP'
+            elseif(ivar.eq.7)then
+              write(MR_iw5_prefix ,271)'pgrbanl_mean_',thisYear,'_VVEL'
+            endif
+            write(MR_iw5_suffix1,272)'_pres.nc'
+          else
+            if(ivar.eq.1)then  ! These are the same as for iwf=25 so just use the format
+                               ! statements above
+              write(MR_iw5_prefix ,251)'hgt.'
+            elseif(ivar.eq.2)then
+              write(MR_iw5_prefix ,252)'uwnd.'
+            elseif(ivar.eq.3)then
+              write(MR_iw5_prefix ,253)'vwnd.'
+            elseif(ivar.eq.4)then
+              write(MR_iw5_prefix ,254)'omega.'
+            elseif(ivar.eq.5)then
+              write(MR_iw5_prefix ,255)'air.'
+            elseif(ivar.eq.7)then
+              write(MR_iw5_prefix ,254)'omega.'
+            endif
+            write(MR_iw5_suffix1,327)thisYear,'.nc'
           endif
-          write(MR_iw5_suffix1,272)'_pres.nc'
-        else
-          if(ivar.eq.1)then  ! These are the same as for iwf=25 so just use the format
-                             ! statements above
-            write(MR_iw5_prefix ,251)'hgt.'
-          elseif(ivar.eq.2)then
-            write(MR_iw5_prefix ,252)'uwnd.'
-          elseif(ivar.eq.3)then
-            write(MR_iw5_prefix ,253)'vwnd.'
-          elseif(ivar.eq.4)then
-            write(MR_iw5_prefix ,254)'omega.'
-          elseif(ivar.eq.5)then
-            write(MR_iw5_prefix ,255)'air.'
-          elseif(ivar.eq.7)then
-            write(MR_iw5_prefix ,254)'omega.'
-          endif
-          write(MR_iw5_suffix1,327)thisYear,'.nc'
-        endif
 
-        write(infile,427)trim(ADJUSTL(MR_iw5_root)),'/',MR_Comp_StartYear,'/', &
+          write(infile,427)trim(ADJUSTL(MR_iw5_root)),'/',thisYear,'/', &
+                           trim(adjustl(MR_iw5_prefix)),   &
+                           trim(adjustl(MR_iw5_suffix1))
+        elseif(MR_iversion.eq.3)then
+          dum_i1 = 1                        ! Start day in file
+          dum_i2 = DaysInMonth(thisMonth)   ! End day in file
+          dum_i3 = 18                       ! End hour in file
+          if(ivar.eq.1)then
+            write(MR_iw5_prefix ,273)'anl_mean_',thisYear,'_HGT'
+          elseif(ivar.eq.2)then
+            write(MR_iw5_prefix ,273)'anl_mean_',thisYear,'_UGRD'
+          elseif(ivar.eq.3)then
+            write(MR_iw5_prefix ,273)'anl_mean_',thisYear,'_VGRD'
+          elseif(ivar.eq.4)then
+            write(MR_iw5_prefix ,273)'anl_mean_',thisYear,'_VVEL'
+          elseif(ivar.eq.5)then
+            write(MR_iw5_prefix ,273)'anl_mean_',thisYear,'_TMP'
+          elseif(ivar.eq.7)then
+            write(MR_iw5_prefix ,273)'anl_mean_',thisYear,'_VVEL'
+          endif
+        write(MR_iw5_suffix1,272)'_pres.nc'
+
+        write(infile,427)trim(ADJUSTL(MR_iw5_root)),'/',thisYear,'/', &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
+        endif
+
  271    format(a13,i4,a)
  272    format(a8)
+ 273    format(a9,i4,a)
  327    format(i4,a3)
  427    format(a50,a1,i4,a1,a,a)
       elseif(MR_iwindformat.eq.29)then
@@ -2223,7 +2303,7 @@
       !  3 = y or lat
       !  4 = x or lon
       !  5 = pressure used for Vz
-      !  6 = pressure uesed for RH or SH
+      !  6 = pressure used for RH or SH
       !  7 = height above ground
       !  8 = depth below surface
       !  9 = extra pressure dimension
@@ -2385,7 +2465,7 @@
         if(ivar.eq.44) Dimension_of_Variable = 3 ! Precipitation rate large-scale (liquid)
         if(ivar.eq.45) Dimension_of_Variable = 3 ! Precipitation rate convective (liquid)
       else
-          ! All other met files use surface precip
+          ! All other met files use surface precipitation
         if(ivar.eq.44) Dimension_of_Variable = 2 ! Precipitation rate large-scale (liquid)
         if(ivar.eq.45) Dimension_of_Variable = 2 ! Precipitation rate convective (liquid)
       endif
@@ -2436,7 +2516,7 @@
           ! index on the sub-met
         ileft(1)   = 1;         ileft(2)   = ilhalf_nx+1
         iright(1)  = ilhalf_nx; iright(2)  = nx_submet
-          ! indes on the full-met
+          ! index on the full-met
         iistart(1) = ilhalf_fm_l; iistart(2) = irhalf_fm_l
         iicount(1) = ilhalf_nx  ; iicount(2) = irhalf_nx
       else
@@ -2466,7 +2546,7 @@
           allocate(temp3d_sp(nx_submet,ny_submet,np_met_loc,1))
         else
             ! For MR_iwindformat = 50 (WRF), we need an extra point in p
-            ! Allocate auxillary array
+            ! Allocate auxiliary array
           if(ivar.eq.1)then
                 ! Geopotential lives on z-staggered grid
             allocate(temp3d_sp(nx_submet,ny_submet,np_met_loc+1,1))

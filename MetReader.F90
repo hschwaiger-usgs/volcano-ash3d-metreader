@@ -20,7 +20,7 @@
 
       real(kind=sp), parameter :: RAD_EARTH_MET = 6371.229_sp ! Radius of Earth in km
       real(kind=sp), parameter :: DEG2RAD_MET   = 1.7453292519943295e-2_sp
-      real(kind=sp), parameter :: MR_MIN_DZ     = 1.0e-4_sp   ! used in reassiging z for low-level negative GPH
+      real(kind=sp), parameter :: MR_MIN_DZ     = 1.0e-4_sp   ! used in reassigning z for low-level negative GPH
 
       integer,public :: MR_global_essential    = 6
       integer,public :: MR_global_production   = 6
@@ -40,7 +40,7 @@
                              !           =3 if a single, multistep 3-D file is used
                              !           =4 if multiple 3-D NetCDF files are used
                              !           =5 if multiple file with multiple steps are used
-      integer,public :: MR_iwindformat !      MR_iwindformat specifies the format of the met data
+      integer,public :: MR_iwindformat !      MR_iwindformat specifies the NWP product
                                        !  0 Custom format based on template
                                        !  1 ASCII profile
                                        !  2 Radiosonde data
@@ -63,7 +63,7 @@
                                        ! 24 NASA-MERRA-2 reanalysis 0.625/0.5 degree files
                                        ! 25 NCEP/NCAR reanalysis 2.5 degree files   :: ds090.0  iwind=4 or 5
                                        ! 26 JRA-55                                  :: ds628.0  iwind=5
-                                       ! 27 NOAA-CIRES reanalysis 2.0 degree files  :: ds131.2  iwind=5
+                                       ! 27 NOAA-CIRES reanalysis 2.0 degree files  :: ds131.2,3  iwind=5
                                        ! 28 ECMWF Interim Reanalysis (ERA-Interim)  :: ds627.0  requires catted grib files
                                        ! 29 ECMWF ERA5                              :: ds633.0  iwind=5
                                        ! 30 ECMWF 20-Century (ERA-20C)              :: ds626.0  iwind=5
@@ -73,6 +73,8 @@
                                        ! 41 NASA-GEOS Np
                                        ! 50 WRF - output
       logical,public :: MR_Use_RDA     = .true.
+      integer,public :: MR_iversion    = -1 ! version of the product; sometimes the grid used changes with newer
+                                            ! versions. -1 indicates latest version, but can be overridden here
       integer,public :: MR_iGridCode   !   MR_iGridCode specifies the NCEP grid described in:
                                     !   http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html
       integer,public :: MR_idataFormat !   Specifies the data model used
@@ -100,7 +102,7 @@
 #else
       real(kind=dp)     , allocatable,dimension(:)  ,public :: MR_windfile_starthour   ! start hour of the file
       real(kind=dp)     , allocatable,dimension(:,:),public :: MR_windfile_stephour    ! offset hours of step
-#endif      
+#endif
 
       integer           , allocatable,dimension(:)  ,public :: MR_windfiles_nt_fullmet ! number of steps in files
       character(len=80)                             ,public :: MR_iwf_template         ! name of the template file
@@ -266,11 +268,11 @@
 #ifdef USEPOINTERS
       real(kind=sp),dimension(:), pointer:: x_submet_sp => null() ! x-coordinates of met sub-grid
       real(kind=sp),dimension(:), pointer:: y_submet_sp => null() ! y-coordinates of met sub-grid
-      real(kind=sp),dimension(:), pointer:: z_approx    => null() ! zpproximate altidue from STD Atmos and press (in km)
+      real(kind=sp),dimension(:), pointer:: z_approx    => null() ! approximate altidue from STD Atmos and press (in km)
 #else
       real(kind=sp),dimension(:), allocatable :: x_submet_sp ! x-coordinates of met sub-grid
       real(kind=sp),dimension(:), allocatable :: y_submet_sp ! y-coordinates of met sub-grid
-      real(kind=sp),dimension(:), allocatable :: z_approx ! zpproximate altidue from STD Atmos and press (in km)
+      real(kind=sp),dimension(:), allocatable :: z_approx ! approximate altitude from STD Atmos and press (in km)
 #endif
 
       logical :: x_inverted     = .false.
@@ -372,7 +374,7 @@
       logical          ,dimension(9) :: Met_dim_IsAvailable
       real(kind=sp)    ,dimension(9) :: Met_dim_fac  = 1.0_sp
       ! Here is the list of variables that can be read.  Each iwindformat will
-      ! have just a sub-set availible with specific names.  For now, allocate
+      ! have just a sub-set available with specific names.  For now, allocate
       ! space for 50 variable names
         ! Mechanical / State variables
         !   1 = Geopotential Height
@@ -438,7 +440,7 @@
       real(kind=sp) :: iwf25_offsets(MR_MAXVARS)
       real(kind=sp) :: x_in_iwf25_sp(192)
       real(kind=sp) :: y_in_iwf25_sp(94)
-        ! Here is the mapping for bilinear weighting coeffiecients (amap) and
+        ! Here is the mapping for bilinear weighting coefficients (amap) and
         ! indices (imap) from the 1.875-deg 2d grid to the 2.5-deg 
 #ifdef USEPOINTERS
       real(kind=sp),dimension(:,:,:)   ,pointer :: amap_iwf25 => null()
@@ -1001,6 +1003,7 @@
           ! Note that winds are "earth-relative" and must be rotated!
           !   See  http://www.emc.ncep.noaa.gov/mmb/rreanl/faq.html#eta-winds
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! the lastest version of NARR data is v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NARR3D NAM221 32 km North America files with Re=6367.47"
 
@@ -1046,6 +1049,7 @@
           ! http://motherlode.ucar.edu/native/conduit/data/nccf/com/nam/prod/
           !   nam.t00z.awip3200.tm00.grib2
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NAM221 32 km North America files with Re=6371.229"
 
@@ -1091,6 +1095,7 @@
           ! http://motherlode.ucar.edu/native/conduit/data/nccf/com/nam/prod/
           !  nam.t00z.awipak00.tm00
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NAM216 AK 45km"
 
@@ -1137,6 +1142,7 @@
         !  ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/nam/prod
         !    nam.t00z.grbgrd00.tm00
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NAM Regional 90 km grid 104"
 
@@ -1183,6 +1189,7 @@
           !  ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/nam/prod/
           !    nam.t00z.awp21100.tm00
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "CONUS 212 40km"
 
@@ -1230,6 +1237,7 @@
           ! ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/nam/prod/
           !   nam.t00z.awphys00.grb2.tm00
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "CONUS 218 (12km)"
 
@@ -1266,6 +1274,7 @@
           !  http://motherlode.ucar.edu/native/conduit/data/nccf/com/nam/prod/
           !    nam.t00z.conusnest.hiresf00.tm00
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "CONUS 227 (5.1 km)"
 
@@ -1317,6 +1326,7 @@
           !  http://motherlode.ucar.edu/native/conduit/data/nccf/com/nam/prod/
           !    nam.t00z.awipak00.tm00
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NAM 242 11.25 km AK"
 
@@ -1359,6 +1369,7 @@
           !  ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/nam/prod/
           !    nam.t00z.hawaiinest.hiresf00.tm0
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   " NAM 196 2.5 km HI"
 
@@ -1409,6 +1420,7 @@
           !  ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/nam/prod/ (this is actually now 91)
           !    nam.t00z.alaskanest.hiresf00.tm00
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NAM 198 5.953 km AK"
 
@@ -1468,6 +1480,7 @@
           !       This is relavent because the numbering of the isobaric dimensions
           !       appears to be in the order they are processed in the grib file
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NAM 91 2.976 km AK"
 
@@ -1519,6 +1532,7 @@
           !  
           !  nam.t00z.conusnest.hiresf00.tm00.grib2.nc
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "CONUS no grid ID (3.0 km)"
 
@@ -1571,6 +1585,7 @@
           !  http://motherlode.ucar.edu/native/conduit/data/nccf/com/gfs/prod/
           !    
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "GFS 0.5"
 
@@ -1613,6 +1628,7 @@
         ! GFS 1.0 deg
           ! http://www.nco.ncep.noaa.gov/pmb/products/gfs/
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "GFS 0.5-degree"
 
@@ -1646,6 +1662,7 @@
           ! http://motherlode.ucar.edu/native/conduit/data/nccf/com/gfs/prod/
           !  
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "GFS 0.25"
 
@@ -1686,6 +1703,7 @@
          ! NCEP / DOE reanalysis 2.5 degree files 
          ! https://rda.ucar.edu/datasets/ds091.0
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! latest is 0, but deprecated
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NCEP / DOE reanalysis 2.5 degree files"
 
@@ -1715,8 +1733,9 @@
         fill_value_sp = -9999.0_sp
 
       elseif (MR_iwindformat.eq.24)then
-         ! NASA-MERRA-2 reanalysis 0.625 x 0.5 degree files 
+         ! NASA-MERRA reanalysis 0.625 x 0.5 degree files 
 
+        if(MR_iversion.eq.-1)MR_iversion = 2 ! v1 finished in 2016
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NASA-MERRA-2 reanalysis 0.625/0.5 degree files"
 
@@ -1753,6 +1772,7 @@
       elseif (MR_iwindformat.eq.25)then
          ! NCEP/NCAR reanalysis 2.5 degree files 
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 !
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NCEP/NCAR reanalysis 2.5 degree files"
 
@@ -1817,6 +1837,7 @@
          ! JRA-55 reanalysis 1.25 degree files 
          ! https://rda.ucar.edu/datasets/ds628.0/
 
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! 
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "JRA-55 reanalysis 1.25 degree files"
 
@@ -1849,51 +1870,86 @@
          ! https://rda.ucar.edu/datasets/ds131.2/
          ! https://www.esrl.noaa.gov/psd/data/gridded/data.20thC_ReanV2c.pressure.html
 
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NOAA-CIRES reanalysis 2.0 degree files"
-
-        MR_iGridCode = 1027
-        call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
-        MR_Reannalysis = .true.
-        MR_iw5_hours_per_file = 8760.0_dp
-
-        Met_var_GRIB1_Table(1:MR_MAXVARS) = 2
-
-        if(MR_Use_RDA)then
-          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          ! Version 2c (https://rda.ucar.edu/datasets/ds131.2/)
-          ! Note: these must be converted from grib using
-          !   ncl_convert2nc pgrbanl_mean_1912_VVEL_pres.grib -L
-          ! netcdf-java does not seem to work on these
-          Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
-          Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
-          Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g0_lat_2"
-          Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g0_lon_3"
-  
-          ! Momentum / State variables
-          Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="HGT_GDS0_ISBL"
-          Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_GRD_GDS0_ISBL"
-          Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_GRD_GDS0_ISBL"
-          Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="V_VEL_GDS0_ISBL"
-          Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="TMP_GDS0_ISBL"
-          Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="V_VEL_GDS0_ISBL"
-        else 
-          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          ! Version 2c (https://www.esrl.noaa.gov/psd/data/gridded/data.20thC_ReanV2c.pressure.html)
-          Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-          Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "level"
-          Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-          Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-  
-          ! Momentum / State variables
-          Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="hgt"
-          Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="uwnd"
-          Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="vwnd"
-          Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="omega"
-          Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="air"
-          Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="omega"
+        if(MR_iversion.eq.-1)then
+          MR_iversion = 3 ! This is the latest
         endif
-        fill_value_sp = 1.0e+20_sp
+        if(MR_iversion.eq.2)then
+
+          write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NOAA-CIRES reanalysis 2.0 degree files"
+  
+          MR_iGridCode = 1027
+          call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
+          MR_Reannalysis = .true.
+          MR_iw5_hours_per_file = 8760.0_dp
+  
+          Met_var_GRIB1_Table(1:MR_MAXVARS) = 2
+  
+          if(MR_Use_RDA)then
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            ! Version 2c (https://rda.ucar.edu/datasets/ds131.2/)
+            ! Note: these must be converted from grib using
+            !   ncl_convert2nc pgrbanl_mean_1912_VVEL_pres.grib -L
+            ! netcdf-java does not seem to work on these
+            Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
+            Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
+            Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g0_lat_2"
+            Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g0_lon_3"
+    
+            ! Momentum / State variables
+            Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="HGT_GDS0_ISBL"
+            Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_GRD_GDS0_ISBL"
+            Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_GRD_GDS0_ISBL"
+            Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="V_VEL_GDS0_ISBL"
+            Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="TMP_GDS0_ISBL"
+            Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="V_VEL_GDS0_ISBL"
+          else 
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            ! Version 2c (https://www.esrl.noaa.gov/psd/data/gridded/data.20thC_ReanV2c.pressure.html)
+            Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
+            Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "level"
+            Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
+            Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
+    
+            ! Momentum / State variables
+            Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="hgt"
+            Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="uwnd"
+            Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="vwnd"
+            Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="omega"
+            Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="air"
+            Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="omega"
+          endif
+          fill_value_sp = 1.0e+20_sp
+        elseif(MR_iversion.eq.3)then
+          ! NOAA-CIRES-DOE Twentieth Century Reanalysis Version 3 
+          ! https://rda.ucar.edu/datasets/ds131.3/
+          ! Note: this is also avalable from
+          ! https://psl.noaa.gov/data/gridded/data.20thC_ReanV3.html, but might
+          ! need format verification
+          write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NOAA-CIRES-DOE reanalysis v3"
+
+          MR_iGridCode = 1027
+          call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
+          MR_Reannalysis = .true.
+          MR_iw5_hours_per_file = 8760.0_dp
+  
+          Met_var_GRIB1_Table(1:MR_MAXVARS) = 2
+  
+          Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
+          Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaricInhPa"
+          Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "latitude"
+          Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "longitude"
+  
+          ! Momentum / State variables
+          Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="gh"
+          Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="u"
+          Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="v"
+          Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="w"
+          Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="t"
+          Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="w"
+          fill_value_sp = 9999.0_dp
+        endif
 
       elseif (MR_iwindformat.eq.28)then
          ! ECMWF Interim Reanalysis (ERA-Interim)
@@ -2304,7 +2360,7 @@
 !     MR_Read_Met_DimVars
 !
 !     This subroutine expects that MR_windfiles has been filled by the calling
-!     program, and checks for their existance.
+!     program, and checks for their existence.
 !
 !     Depending on the NWP data format, a subroutine is called to read the spatial
 !     structure of the NWP files, followed by one for the temporal span
@@ -2397,7 +2453,7 @@
 
       endif
 
-      ! Verify that the first windfile has been changed from its initiallized value
+      ! Verify that the first windfile has been changed from its initialized value
       tmp_str = MR_windfiles(1)
       if(tmp_str(1:15).eq.'              ')then
         write(MR_global_error,*)"MR ERROR: The array MR_windfiles appears to not be set."
@@ -2408,7 +2464,7 @@
         stop 1
       endif
 
-      ! Check the existance of the wind files
+      ! Check the existence of the wind files
       write(MR_global_info,*)"  Verifying existance of windfiles:"
       ! Note iwf=5 cases have the number of windfiles (MR_iwindfiles)
       ! modified in MR_Allocate_FullMetFileList to be the number of
@@ -3024,7 +3080,7 @@
             Found_First_Step = .false.
             istep = 1
             if(MR_windfiles_nt_fullmet(iw).lt.NT_MAXOUT)then
-              ! This suppresses outputing the windfile step info for the files that contain a year's
+              ! This suppresses outputting the windfile step info for the files that contain a year's
               ! worth of data (NCEP 2.5, etc)
               write(MR_global_info,150)                    &
                 iw,iwstep,stephour,MR_Comp_StartHour,istep,&
@@ -3049,7 +3105,7 @@
             Found_Last_Step = .true.
           endif
           if(Found_Last_Step &
-             .and.MR_windfiles_nt_fullmet(iw).lt.NT_MAXOUT)then ! This condition suppressess output for NCEP 2.5
+             .and.MR_windfiles_nt_fullmet(iw).lt.NT_MAXOUT)then ! This condition suppresses output for NCEP 2.5
               write(MR_global_info,150)                    &
                 iw,iwstep,stephour,MR_Comp_StartHour,istep,&
                 "At or after END OF SIM  "
@@ -3191,7 +3247,7 @@
         stephour = MR_MetStep_Hour_since_baseyear(istep)
       enddo
 
-!     MAKE SURE THE WIND MODEL TIME WINDOW COVERS THE ENTIRE SUMULATION TIME
+!     MAKE SURE THE WIND MODEL TIME WINDOW COVERS THE ENTIRE SIMULATION TIME
       write(MR_global_info,99)
 99    format(/,4x,'Making sure the mesoscale model time covers the simulation time . . . ')
       if (MR_MetStep_Hour_since_baseyear(1).gt.MR_Comp_StartHour) then
@@ -3236,7 +3292,7 @@
 !     MR_Read_HGT_arrays
 !
 !     This subroutine basically does the same thing as Read_3d_MetP_Variable
-!     but specificly for the variable HGT (ivar=1).  This is needed because the
+!     but specifically for the variable HGT (ivar=1).  This is needed because the
 !     more general Read_3d_MetP_Variable just returns data in dum3d_metP and
 !     expects the calling program to save the results.  The HGT variables,
 !     geoH_metP_last and geoH_metP_next need to persist locally, however,  since they are
@@ -3319,7 +3375,7 @@
       Max_geoH_metP_next = maxval(MR_geoH_metP_next(:,:,np_fullmet))
         ! Now determine the maximum value provided between last and next steps
       Max_geoH_metP = max(Max_geoH_metP_last,Max_geoH_metP_next)
-        ! and compare with the maximun value needed by the computational grid
+        ! and compare with the maximum value needed by the computational grid
       if(Max_geoH_metP.lt.z_comp_sp(nz_comp))then
         ! use highest needed point (rounded up to 5-km increment) for the
         ! padding height
@@ -3476,9 +3532,9 @@
           else
             z_col_metP(2:np_fullmet+1)  = MR_geoH_metP_next(i,j,1:np_fullmet)
           endif
-          ! Loop through the nodes and reset any that are negative or non-assending in p
+          ! Loop through the nodes and reset any that are negative or non-ascending in p
           ! This is usually never invoked, but would only affect potentially the bottom few nodes
-          ! The intent is to maintain a monotonic GPH, while getting irrelavent nodes out of the
+          ! The intent is to maintain a monotonic GPH, while getting irrelevant nodes out of the
           ! way.
           do k=1,np_fullmet
             if(z_col_metP(k).le.real(k-1,kind=sp)*MR_MIN_DZ) z_col_metP(k)=real(k-1,kind=sp)*MR_MIN_DZ
@@ -4039,7 +4095,7 @@
 !     natively or through MR_Rotate_UV_GR2ER_Met) and need to rotate that into a
 !     projected Comp grid.  This corresponds to:
 !       Map_Case = 3 : Met=LL,   Comp=proj
-!       Map_Case = 5 : Met=proj, Comp=proj (differentn)
+!       Map_Case = 5 : Met=proj, Comp=proj (different)
 !     This subroutine reads U and V on the metP projected grid,
 !     then resamples onto the projected compH grid, rotates to grid relative and
 !     returns to calling program
@@ -4281,9 +4337,9 @@
           else
             z_col_metP(2:np_fullmet+1)  = MR_geoH_metP_next(i,j,1:np_fullmet)
           endif
-          ! Loop through the nodes and reset any that are negative or non-assending in p
+          ! Loop through the nodes and reset any that are negative or non-acsending in p
           ! This is usually never invoked, but would only affect potentially the bottom few nodes
-          ! The intent is to maintain a monotonic GPH, while getting irrelavent nodes out of the
+          ! The intent is to maintain a monotonic GPH, while getting irrelevant nodes out of the
           ! way. 
           do k=1,np_fullmet
             if(z_col_metP(k).le.real(k,kind=sp)*MR_MIN_DZ) z_col_metP(k)=real(k,kind=sp)*MR_MIN_DZ
@@ -4397,7 +4453,7 @@
 !
 !     MR_DelMetP_Dx
 !
-!     Calculated the x derivitive of the variable in MR_dum3d_MetP.
+!     Calculated the x derivative of the variable in MR_dum3d_MetP.
 !     This subroutine expects the calling program to populate MR_dum3d2_metP.
 !
 !     Sets  : MR_dum3d_metH
@@ -4420,30 +4476,30 @@
       do i=1,nx_submet
         if(i.eq.1)then
           if(IsPeriodic_CompGrid)then
-            ! Two-sided derivitive wrapping around
+            ! Two-sided derivative wrapping around
             lside  = nx_submet
             rside  = i+1
             dx_fac = 2.0_sp
           else
-            ! One-sided derivitive on left
+            ! One-sided derivative on left
             lside  = i+0
             rside  = i+1
             dx_fac = 1.0_sp
           endif
         elseif(i.eq.nx_submet)then
           if(IsPeriodic_CompGrid)then
-            ! Two-sided derivitive wrapping around
+            ! Two-sided derivative wrapping around
             lside  = i-1
             rside  = 1
             dx_fac = 2.0_sp
           else
-            ! One-sided derivitive on right
+            ! One-sided derivative on right
             lside  = i-1
             rside  = i+0
             dx_fac = 1.0_sp
           endif
         else
-          ! Two-sided derivitive
+          ! Two-sided derivative
           lside  = i-1
           rside  = i+1
           dx_fac = 2.0_sp
@@ -4480,7 +4536,7 @@
 !
 !     MR_DelMetP_Dy
 !
-!     Calculated the y derivitive of the variable in MR_dum3d_MetP.
+!     Calculated the y derivative of the variable in MR_dum3d_MetP.
 !     This subroutine expects the calling program to populate MR_dum3d2_metP.
 !
 !     Sets  : MR_dum3d_metH
@@ -4502,17 +4558,17 @@
 
       do j=1,ny_submet
         if(j.eq.1)then
-          ! One-sided derivitive on left
+          ! One-sided derivative on left
           lside=j+0
           rside=j+1
           dy_fac = 1.0_sp
         elseif(j.eq.ny_submet)then
-          ! One-sided derivitive on right
+          ! One-sided derivative on right
           lside=j-1
           rside=j+0
           dy_fac = 1.0_sp
         else
-          ! Two-sided derivitive
+          ! Two-sided derivative
           lside=j-1
           rside=j+1
           dy_fac = 2.0_sp
@@ -4818,7 +4874,7 @@
         enddo
       else
         ! Should not be here!
-        ! We assume that the varaible lives on the GPH grid or a subset
+        ! We assume that the variable lives on the GPH grid or a subset
         write(MR_global_error,*)'MR ERROR: Variable has more levels than GPH'
         write(MR_global_log  ,*)'MR ERROR: Variable has more levels than GPH'
         stop 1

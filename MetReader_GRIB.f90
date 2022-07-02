@@ -42,7 +42,6 @@
       real(kind=sp) :: yUR_fullmet
 
       integer            :: ifile
-!      integer            :: iret
       integer            :: igrib
       integer            :: iw
       integer,dimension(MAXGRIBREC) :: igribv
@@ -112,7 +111,7 @@
       else
           !---------------------------------------------------------------------------------
           ! Start of block for all non-iwind=5 and non-iwf=50
-          ! This is where the the Netcdf and Grib subroutines can be compared
+          ! This is where the Netcdf and Grib subroutines can be compared
           !
           ! Checking for dimension length and values for x,y,t,p
           !   Assume all files have the same format
@@ -1343,7 +1342,7 @@
           call codes_index_get(idx,'level',level_idx,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get ")
 
-          ! Start marching throught the index file and look for the match with the 
+          ! Start marching through the index file and look for the match with the 
           ! keys
           count1=0
           do l=1,parameterNumberSize
@@ -1556,7 +1555,7 @@
           call codes_index_get(idx,'forecastTime',forecastTime_idx,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get ")
 
-          ! Start marching throught the index file and look for the match with the 
+          ! Start marching through the index file and look for the match with the 
           ! keys
           count1=0
           do l=1,disciplineSize
@@ -1988,7 +1987,6 @@
       if (nSTAT == CODES_SUCCESS) return
       !write(MR_global_essential
       call codes_get_error_string(nSTAT,err_message)
-      !,*)severity,errcode,operation,nf90_strerror(nSTAT)
       write(MR_global_log ,*)severity,errcode,operation,err_message
       write(MR_global_error ,*)severity,errcode,operation,err_message
 
