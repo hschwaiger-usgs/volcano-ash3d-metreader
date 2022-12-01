@@ -111,6 +111,7 @@
       real(kind=sp) :: rvalue1,rvalue2,rvalue3
       real(kind=sp),dimension(10) :: rvalues
       integer       :: ivalue1,ivalue2,ivalue3,ivalue4,ivalue5
+      integer       :: ilatlonflag
 
       character(len=80)  :: linebuffer,linebuffer2,linebuffer3,linebuffer4
       character(len=6),dimension(53) :: GTSstr
@@ -281,8 +282,12 @@
       MR_SndVarsName( 3) = "V  "
       MR_SndVarsName( 4) = "W  "
       MR_SndVarsName( 5) = "T  "
+       ! Note that there is a deviation here from the master list: Met_var_NC_names
+       !  Met_var:: 6 is for 3d pressure
+       !  Met_var:: 7 is for pressure vert. velocity
       MR_SndVarsName( 6) = "Wsp"
       MR_SndVarsName( 7) = "Wdr"
+
       MR_SndVarsName(30) = "RH "
       MR_SndVarsName(31) = "SH "
       MR_SndVarsName(32) = "QL "
@@ -300,6 +305,7 @@
         !  If five values per line:
         !    Elevation(m) , Velocity(m/s) , Direction(degree E of N) , Pressure(hPa) ,
         !     Temperature(C)
+        !  Or a custom list of variables if specified on line 2
 
         ! x and y fullmet array will just be the coordinates in the order listed
         allocate(x_fullmet_sp(MR_nSnd_Locs))
@@ -352,7 +358,13 @@
                 allocate(SndColReadOrder(MR_Snd_nvars)) ! This is the read oder
               endif
               read(linebuffer,*,iostat=ioerr) rvalue1,ivalue1, ivalue2, SndColReadOrder(1:MR_Snd_nvars)
-              write(MR_global_info,*)"1-d ASCII file contains ",ivalue2," columns"
+              write(MR_global_info,*)" Parsing sonde info line as:"
+              write(MR_global_info,*)"  wind time: ",rvalue1
+              write(MR_global_info,*)"  nlevels  : ",ivalue1
+              write(MR_global_info,*)"  nvars    : ",ivalue2
+              write(MR_global_info,*)"  ivars(1:nvar) : ",SndColReadOrder(1:MR_Snd_nvars)
+
+              write(MR_global_info,*)"1-d ASCII file should contain ",ivalue2," columns"
               do iv = 1,MR_Snd_nvars
                 write(MR_global_info,*)" Column ",iv,MR_SndVarsName(SndColReadOrder(iv))
                 if (SndColReadOrder(iv).eq.0)then
@@ -368,12 +380,16 @@
                   Met_var_IsAvailable(7) = .true.  ! VVP
                 elseif (SndColReadOrder(iv).eq.5)then
                   Met_var_IsAvailable(5) = .true.  ! T
-                elseif (SndColReadOrder(iv).eq.8)then
+                elseif (SndColReadOrder(iv).eq.6)then
                   Met_var_IsAvailable(8) = .true.  ! Wsp
-                elseif (SndColReadOrder(iv).eq.9)then
+                elseif (SndColReadOrder(iv).eq.7)then
                   Met_var_IsAvailable(9) = .true.  ! Wdr
                 endif
               enddo
+              ! This prints out the master list with those available flagged.
+              !do iv = 1,MR_MAXVARS
+              !  write(MR_global_info,*)iv,Met_var_IsAvailable(iv),Met_var_NC_names(iv)
+              !enddo
               ! Now checking how velocities are provided.  If coordinates are given, they take
               ! precedence and are used, with direction and speed ignored.  Otherwise, use
               ! direction and speed.
@@ -428,11 +444,15 @@
             read(linebuffer,*,iostat=ioerr) rvalue1,rvalue2, ivalue1
             if(ioerr.eq.0)then
               ! A third parameter is present: first value of projection line
+              write(*,*)rvalue1,rvalue2, ivalue1
               Snd_Have_Coord = .true.
-              Met_iprojflag = ivalue1
+              ilatlonflag = ivalue1
+            else
+              Snd_Have_Coord = .false.
+              IsLatLon_MetGrid = .true.
             endif
             if(Snd_Have_Coord)then
-              if(Met_iprojflag.eq.1)then
+              if(ilatlonflag.eq.1)then
                 ! We are using a Lon/Lat grid.  No need to read anything
                 ! else on this line.
                 IsLatLon_MetGrid  = .true.
@@ -487,6 +507,9 @@
                   Met_iprojflag=0
                 endif
               endif
+            else
+              ! No projection info given, assume Lon/Lat
+              IsLatLon_MetGrid = .true.
             endif
             ! Finished projection parameters,
 
@@ -655,11 +678,21 @@
               Met_var_IsAvailable(2) = .true.  ! U
               Met_var_IsAvailable(3) = .true.  ! V
               Met_var_IsAvailable(5) = .true.  ! T
-
-              write(MR_global_info,*)il,real(MR_SndVars_metP(iloc,itime,1:5,il),kind=4),&
+              if(il.eq.1)then
+                write(MR_global_info,*)"Sonde values loaded."
+                write(MR_global_info,203)MR_SndVarsName(1:7)
+              endif
+              write(MR_global_info,204)il,real(MR_SndVars_metP(iloc,itime,1:5,il),kind=4),&
                                         WindVelocity(il),WindDirection(il)
+ 203          format(3x'Level',6x,a3,'(Pa)', &
+                               7x,a3,'(km)', &
+                               3x,a3,'(m/s)', &
+                               2x,a3,'(m/s)', &
+                               1x,a3,'(K)', &
+                               3x,a3,'(m/s)', &
+                               2x,a3,'(degree E of N)')
+ 204          format(6x,i2,5x,7f10.3)
             enddo ! il=1,nlev
-
             close(fid)
             ! Finished reading all the data for this file
 
