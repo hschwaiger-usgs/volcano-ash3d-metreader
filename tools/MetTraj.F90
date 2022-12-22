@@ -67,6 +67,7 @@
       integer             :: autoflag
       integer             :: FC_freq = 12 ! This is the frequency the GFS packages are downloaded
       integer             :: GFS_Archive_Days = 14
+      integer             :: GFS_FC_TotHours = 198  ! This is the max anticipated
 
       integer             :: TrajFlag  ! .ge. 0 for forward, .lt.0 for backward
 
@@ -83,7 +84,7 @@
       logical      :: IsGlobal
 
       INTERFACE
-        subroutine Read_ComdLine_InpFile(inlon,inlat, &
+      subroutine Read_ComdLine_InpFile(inlon,inlat, &
                       inyear,inmonth,inday,inhour,Simtime_in_hours,&
                       StreamFlag,OutStepInc_Minutes,ntraj,OutputLevels,&
                       iw,iwf,igrid,idf,iwfiles,&
@@ -110,7 +111,7 @@
         subroutine GetWindFile(inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,&
                                 iw,iwf,igrid,idf,iwfiles,&
-                                autoflag,FC_freq,GFS_Archive_Days)
+                                autoflag,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
           integer,parameter   :: dp        = 8 ! double precision
           integer             :: inyear,inmonth,inday
           real(kind=dp)       :: inhour
@@ -124,6 +125,7 @@
           integer             :: autoflag
           integer             :: FC_freq
           integer             :: GFS_Archive_Days
+          integer             :: GFS_FC_TotHours
         end subroutine
         subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj)
@@ -239,7 +241,7 @@
       call GetWindFile(inyear,inmonth,inday,inhour, &
                           Simtime_in_hours,TrajFlag,&
                           iw,iwf,igrid,idf,iwfiles,&
-                          autoflag,FC_freq,GFS_Archive_Days)
+                          autoflag,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
 
       write(MR_global_info,*)"Setting up wind grids"
       ! Again, since we only need the metH grid, lon_grid and lat_grid are dummy
@@ -364,7 +366,7 @@
         ! OutputLevels : this is allocated once ntraj is locked in
         IsLatLon           = .true. ! Assume LonLat output coordinates
         autoflag           = 1      ! This command-line branch necesarily means auto windfile selection
-                                    !  with all the hardwired paths to GFS and NCEP
+                                    !  with all the hard-wired paths to GFS and NCEP
         FC_freq            = 12     ! Number of hours between GFS package downloads
         GFS_Archive_Days   = 14     ! Number of days GFS data are archived on local machine
 
@@ -375,7 +377,8 @@
         iwfiles = 0 
 
         ! Make user MetReader is using the same calendar
-        MR_BaseYear = BaseYear  ! This defaults to 1900 for autoruns, but can be something else for command-file runs
+        MR_BaseYear = BaseYear  ! This defaults to 1900 for autoruns, but can be something else
+                                ! for command-file runs
         MR_useLeap  = useLeap
         MR_useCompH = .false.
 
@@ -628,7 +631,7 @@
       subroutine GetWindFile(inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,&
                                 iw,iwf,igrid,idf,iwfiles,&
-                                autoflag,FC_freq,GFS_Archive_Days)
+                                autoflag,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
 
       use MetReader
 
@@ -648,6 +651,7 @@
       integer        ,intent(in) :: autoflag
       integer        ,intent(in) :: FC_freq
       integer        ,intent(in) :: GFS_Archive_Days
+      integer        ,intent(in) :: GFS_FC_TotHours
 
       real(kind=8)       :: HS_hours_since_baseyear
       character(len=13)  :: HS_yyyymmddhhmm_since   ! function that calculates date
@@ -779,7 +783,7 @@
             ! GFS case for future run
             write(MR_global_info,*)"Requested start time is later than current time,"
             write(MR_global_info,*)"but it might fit in the current forecast package."
-            if (Met_needed_EndHour-RunStartHour.ge.198.0_8)then
+            if (Met_needed_EndHour-RunStartHour.ge.real(GFS_FC_TotHours,kind=8))then
               write(MR_global_info,*)" Run cannot complete with the current FC package."
               stop 1
             endif
@@ -790,7 +794,7 @@
           NumFCpackages = GFS_Archive_Days * (24/FC_freq)
           allocate(GFS_candidate(NumFCpackages))
           allocate(GFS_FC_step_avail(NumFCpackages))
-          GFS_candidate = .false.
+          GFS_candidate(:) = .true. ! every package is a candidate until proven otherwise
           write(MR_global_info,*)"Approximate Number of FC packages on system:",NumFCpackages
           write(MR_global_info,*)"Checking to see which packages might work for the"
           write(MR_global_info,*)"requested start-time"
@@ -810,8 +814,10 @@
           ! estimate the start time of the oldest forecast package on the system
           FC_Archive_StartHour = FC_Package_StartHour - GFS_Archive_Days*24.0_8
 
+          ! Loop through all the packages and check which ones might span the needed
+          ! time range
           do i = 1,NumFCpackages
-            ! increment the forcast package
+            ! Get the start hour of this forecast package
             FCStartHour = FC_Archive_StartHour + real((i-1)*FC_freq,kind=8)
             if (FCStartHour.gt.Met_needed_StartHour)then
               ! This package starts after the requested time so dismiss it
@@ -820,6 +826,20 @@
               cycle
             endif
 
+            FCStartHour = FC_Archive_StartHour + real((i-1)*FC_freq,kind=8)
+            FCEndHour = FCStartHour + real(GFS_FC_TotHours,kind=8)
+            if (FCEndHour.lt.Met_needed_EndHour)then
+              ! This package ends before the needed time so dismiss it
+              GFS_candidate(i)     = .false.
+              GFS_FC_step_avail(i) = 0
+              cycle
+            endif
+          enddo
+
+          ! Loop through all the packages starting with the most recent and decrement
+          do i = NumFCpackages,1,-1
+            if (GFS_candidate(i)) cycle  ! if we have already determined the package won't work
+
             FC_year = HS_YearOfEvent(FCStartHour,MR_BaseYear,MR_useLeap)
             FC_mon  = HS_MonthOfEvent(FCStartHour,MR_BaseYear,MR_useLeap)
             FC_day  = HS_DayOfEvent(FCStartHour,MR_BaseYear,MR_useLeap)
@@ -827,35 +847,47 @@
             FC_Package_hour = floor(FC_hour/FC_freq) * FC_freq
 
             FC_hour_int = 0
-            write(string1,'(a9,I4.4,I2.2,I2.2,I2.2,a1)')'/gfs/gfs.', &
-                          FC_year,FC_mon,FC_day,FC_Package_hour,'/'
-            write(string2,'(I4.4,I2.2,I2.2,I2.2,a2,I3.3,a3)')&
-                          FC_year,FC_mon,FC_day,FC_Package_hour, &
-                          '.f',FC_hour_int,'.nc'
-
-            write(testfile,*)trim(ADJUSTL(WINDROOT)), &
-                                 trim(ADJUSTL(string1)), &
-                                 trim(ADJUSTL(string2))
-            inquire( file=trim(adjustl(testfile)), exist=IsThere )
-            if (IsThere)then
-              ! This package starts before requested time, so we will mark it as
-              ! a candidate package for now
-              GFS_candidate(i) = .true.
-            else
-              ! The YYYYMMDDHH.f000.nc file does not exist.  Maybe there was a
-              ! problem either downloading or converting.  Mark this package as
-              ! unavailable.
-              GFS_candidate(i) = .false.
-            endif
-            write(MR_global_info,*)"Testing for package: ",i,trim(adjustl(testfile)),IsThere
-
-            if (GFS_candidate(i)) then
+!            write(string1,'(a9,I4.4,I2.2,I2.2,I2.2,a1)')'/gfs/gfs.', &
+!                          FC_year,FC_mon,FC_day,FC_Package_hour,'/'
+!            write(string2,'(I4.4,I2.2,I2.2,I2.2,a2,I3.3,a3)')&
+!                          FC_year,FC_mon,FC_day,FC_Package_hour, &
+!                          '.f',FC_hour_int,'.nc'
+!
+!            write(testfile,*)trim(ADJUSTL(WINDROOT)), &
+!                                 trim(ADJUSTL(string1)), &
+!                                 trim(ADJUSTL(string2))
+!            inquire( file=trim(adjustl(testfile)), exist=IsThere )
+!            if (IsThere)then
+!              ! This package starts before requested time, so we will mark it as
+!              ! a candidate package for now
+!              GFS_candidate(i) = .true.
+!            else
+!              ! The YYYYMMDDHH.f000.nc file does not exist.  Maybe there was a
+!              ! problem either downloading or converting.  Mark this package as
+!              ! unavailable.
+!              GFS_candidate(i) = .false.
+!            endif
+!            write(MR_global_info,*)"Testing for package: ",i,trim(adjustl(testfile)),IsThere
+!
+!            if (GFS_candidate(i)) then
               ! Whenever we find a package that exists and encompasses the
-              ! earliest time needed, then we need to get the determine the end
+              ! earliest time needed, then we need to determine the end
               ! of the forecast package (should be either 099 or 198) and make
               ! sure the full package can span the needed time
+
+
+
+              ! Now we loop through all the files in this package assuming 198 hours
+              ! of forecast data and 3 hour steps (67 files overall)
               do ii = 1,67
                 FC_hour_int = nint((ii-1)*FC_intvl)
+                ! skip all the files that are not needed to braket the simulation
+                if (FCStartHour+FC_hour_int-FC_intvl.lt.Met_needed_StartHour) cycle ! to early
+                if (FCStartHour+FC_hour_int+FC_intvl.gt.Met_needed_EndHour)   cycle ! to late
+
+                ! if we are here, then we are inspecting a file that would be needed for
+                ! the requested time span, starting with the most recent forecast package
+                ! See if the file actually exists
                 write(string1,'(a9,I4.4,I2.2,I2.2,I2.2,a1)')'/gfs/gfs.', &
                               FC_year,FC_mon,FC_day,FC_Package_hour,'/'
                 write(string2,'(I4.4,I2.2,I2.2,I2.2,a2,I3.3,a3)')&
@@ -871,30 +903,41 @@
                   FCEndHour = FCStartHour + real(FC_hour_int,kind=8)
                   write(MR_global_info,*)"     Found: ",trim(adjustl(testfile))
                 else
+                  ! If a needed file is not available, mark the whole package as not a
+                  ! candidate
+                  GFS_candidate(i) = .false.
                   cycle
                 endif
               enddo
+
+              ! If after all that testing, we still have a valid candidate forecast package,
+              ! set this package as the one we will use and exit the do loop
+              if (GFS_candidate(i)) then
+                OptimalPackageNum = i
+                exit
+              endif
+
               ! If the number of files that exist are less than expected, we
               ! might be dealing with a partially completed forecast package.
               ! Decrement the count by one since the last one may be incomplete.
-              if (GFS_FC_step_avail(i).lt.67)then
-                GFS_FC_step_avail(i) = GFS_FC_step_avail(i) -1
-              endif
-              FCEndHour = FCStartHour + real(nint((GFS_FC_step_avail(i)-1)*FC_intvl),kind=8)
-              if (FCEndHour.lt.Met_needed_EndHour)then
-                ! If the last hour of this package is not late enough, dismiss
-                ! the package
-                GFS_candidate(i) = .false.
-              endif
-            endif ! GFS_candidate(i)
+!              if (GFS_FC_step_avail(i).lt.67)then
+!                GFS_FC_step_avail(i) = GFS_FC_step_avail(i) -1
+!              endif
+!              FCEndHour = FCStartHour + real(nint((GFS_FC_step_avail(i)-1)*FC_intvl),kind=8)
+!              if (FCEndHour.lt.Met_needed_EndHour)then
+!                ! If the last hour of this package is not late enough, dismiss
+!                ! the package
+!                GFS_candidate(i) = .false.
+!              endif
+!            endif ! GFS_candidate(i)
           enddo ! 1,NumFCpackages
 
           ! Now loop back over the available packages and select the latest one that
           ! encompasses the full simulation time
-          OptimalPackageNum = 0
-          do i = 1,NumFCpackages
-            if (GFS_candidate(i)) OptimalPackageNum = i
-          enddo ! 1,NumFCpackages
+!          OptimalPackageNum = 0
+!          do i = 1,NumFCpackages
+!            if (GFS_candidate(i)) OptimalPackageNum = i
+!          enddo ! 1,NumFCpackages
           if (OptimalPackageNum.eq.0)then
             write(MR_global_info,*)"No GFS package available on this system will span the"
             write(MR_global_info,*)"requested simulation time.  Exiting"

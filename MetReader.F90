@@ -2510,6 +2510,7 @@
           write(MR_global_info,*)"            If there is an inconsistancy, the program will stop."
           write(MR_global_info,*)"            If MR_Comp_StartYear is changed to a leap year outside"
           write(MR_global_info,*)"            of MetReader, then the results will be incorrect."
+          ! HFS KLUDG: change to year of program execution
           MR_Comp_StartYear = 2018
         endif
 

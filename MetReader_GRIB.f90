@@ -121,7 +121,7 @@
           "Opening grib file to find version number"
         iw = 1
 
-        call codes_open_file(ifile,trim(ADJUSTL(MR_windfiles(iw))),'R',nSTAT)
+        call codes_open_file(ifile,trim(adjustl(MR_windfiles(iw))),'R',nSTAT)
         if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
         call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
         if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
@@ -822,9 +822,9 @@
         !endif
         dumstr = MR_windfiles(1)
  110    format(a50,a1,i4,a1)
-        write(MR_windfiles(1),110)trim(ADJUSTL(dumstr)),'/', &
+        write(MR_windfiles(1),110)trim(adjustl(dumstr)),'/', &
                                    MR_Comp_StartYear,'/'
-        write(MR_windfiles(2),110)trim(ADJUSTL(dumstr)),'/', &
+        write(MR_windfiles(2),110)trim(adjustl(dumstr)),'/', &
                                    MR_Comp_StartYear+1,'/'
         MR_windfile_starthour(1) = real(HS_hours_since_baseyear( &
                                     MR_Comp_StartYear,1,1,0.0_8,MR_BaseYear,MR_useLeap),kind=sp)
@@ -856,7 +856,7 @@
 
           ! Each wind file needs a ref-time which in almost all cases is given
           ! in the 'units' attribute of the time variable
-          write(MR_global_info,*)iw,trim(ADJUSTL(MR_windfiles(iw)))
+          write(MR_global_info,*)iw,trim(adjustl(MR_windfiles(iw)))
 
           if(iw.eq.1)then
             ! For now, assume one time step per file
@@ -868,7 +868,7 @@
             allocate(MR_windfile_stephour(MR_iwindfiles,nt_fullmet))
           endif
 
-          call codes_open_file(ifile,trim(ADJUSTL(MR_windfiles(iw))),'R',nSTAT)
+          call codes_open_file(ifile,trim(adjustl(MR_windfiles(iw))),'R',nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
           call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
