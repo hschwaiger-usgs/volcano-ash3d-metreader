@@ -855,8 +855,8 @@
                                                ! needed file is missing
               FC_hour_int = nint((ii-1)*FC_intvl)
               ! skip all the files that are not needed to bracket the simulation
-              if (FCStartHour+FC_hour_int-FC_intvl.lt.Met_needed_StartHour) cycle ! to early
-              if (FCStartHour+FC_hour_int+FC_intvl.gt.Met_needed_EndHour)   cycle ! to late
+              if (FCStartHour+FC_hour_int.lt.Met_needed_StartHour-FC_intvl) cycle ! to early
+              if (FCStartHour+FC_hour_int.gt.Met_needed_EndHour+FC_intvl)   cycle ! to late
 
               ! if we are here, then we are inspecting a file that would be needed for
               ! the requested time span, starting with the most recent forecast package

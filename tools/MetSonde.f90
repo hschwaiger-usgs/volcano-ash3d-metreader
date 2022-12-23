@@ -434,8 +434,8 @@
               if(.not.GFS_candidate(i)) cycle  ! This will be true until a
                                                ! needed file is missing
               FC_hour_int = nint((ii-1)*FC_intvl)
-              if (FCStartHour+FC_hour_int-FC_intvl.lt.Probe_StartHour) cycle ! to early
-              if (FCStartHour+FC_hour_int+FC_intvl.gt.Probe_StartHour) cycle ! to late
+              if (FCStartHour+FC_hour_int.lt.Probe_StartHour-FC_intvl) cycle ! to early
+              if (FCStartHour+FC_hour_int.gt.Probe_StartHour+FC_intvl)   cycle ! to late
 
               ! if we are here, then we are inspecting a file that would be needed for
               ! the requested time span, starting with the most recent forecast package
