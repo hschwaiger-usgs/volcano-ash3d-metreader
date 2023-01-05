@@ -63,13 +63,13 @@
 
       implicit none
 
-      ! This file (version.h) is the output of the simple script
+      ! This file (MR_version.h) is the output of the simple script
 !get_version.sh 
-!  echo -n "      character(len=40),parameter,public :: MR_GitComID ='" > version.h
-!  git log -n 1 | grep commit | cut -f 2 -d' ' | tr -d $'\n' >> version.h
-!  echo -n "'" >> version.h
+!  echo -n "      character(len=40),parameter,public :: MR_GitComID ='" > MR_version.h
+!  git log -n 1 | grep commit | cut -f 2 -d' ' | tr -d $'\n' >> MR_version.h
+!  echo -n "'" >> MR_version.h
 !    which sets the variable containing the git commit ID : MR_GitComID
-#include "version.h"
+#include "MR_version.h"
 
       integer, parameter,private :: sp = selected_real_kind( 6,   37) ! single precision
       integer, parameter,private :: dp = selected_real_kind(15,  307) ! double precision
@@ -537,6 +537,12 @@
       logical :: CALLED_MR_Set_CompProjection       = .false.
       logical :: CALLED_MR_Initialize_Met_Grids     = .false.
       logical :: CALLED_MR_Set_Met_Times            = .false.
+
+      ! Info on how to build file paths
+      ! Defaults to linux-style, but this can be changed in the calling program
+      integer              :: MR_OS_TYPE    = 1       ! 1=linux, 2=apple, 3=windows
+      character (len=2)    :: MR_DirPrefix  = ''
+      character (len=1)    :: MR_DirDelim   = '/'
 
       contains
 
@@ -2511,7 +2517,7 @@
           write(MR_global_info,*)"            If MR_Comp_StartYear is changed to a leap year outside"
           write(MR_global_info,*)"            of MetReader, then the results will be incorrect."
           ! HFS KLUDG: change to year of program execution
-          MR_Comp_StartYear = 2018
+          MR_Comp_StartYear = 2023
         endif
 
       endif

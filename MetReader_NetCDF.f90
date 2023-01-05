@@ -1523,8 +1523,8 @@
         ! First copy path read in to slot 2
         !MR_iw5_root = MR_windfiles(1)
  110    format(a50,a1,i4,a1)
-        write(MR_windfiles(1),110)trim(adjustl(MR_iw5_root)),'/', &
-                                   MR_Comp_StartYear,'/'
+        write(MR_windfiles(1),110)trim(adjustl(MR_iw5_root)),MR_DirDelim, &
+                                   MR_Comp_StartYear,MR_DirDelim
         MR_windfiles(1) = trim(adjustl(MR_windfiles(1)))
         if(MR_iwindformat.eq.25)then
           iwf_int = 6.0_dp
@@ -2042,7 +2042,7 @@
         endif
         write(MR_iw5_suffix1,325)thisYear,'.nc'
         write(MR_iw5_suffix2,325)thisYear+1,'.nc'   ! Next file for iwf=25 is next year
-        write(infile,425)trim(adjustl(MR_iw5_root)),'/',thisYear,'/', &
+        write(infile,425)trim(adjustl(MR_iw5_root)),MR_DirDelim,thisYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
  251    format(a4)
@@ -2075,7 +2075,7 @@
         write(MR_iw5_suffix2,326)thisYear,thisMonth,dum_i1,'00_',&
                                  thisYear,thisMonth,dum_i2,dum_i3,'.nc'
 
-        write(infile,426)trim(adjustl(MR_iw5_root)),'/',MR_Comp_StartYear,'/', &
+        write(infile,426)trim(adjustl(MR_iw5_root)),MR_DirDelim,MR_Comp_StartYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
  261    format(a17)
@@ -2123,7 +2123,7 @@
             write(MR_iw5_suffix1,327)thisYear,'.nc'
           endif
 
-          write(infile,427)trim(adjustl(MR_iw5_root)),'/',thisYear,'/', &
+          write(infile,427)trim(adjustl(MR_iw5_root)),MR_DirDelim,thisYear,MR_DirDelim, &
                            trim(adjustl(MR_iw5_prefix)),   &
                            trim(adjustl(MR_iw5_suffix1))
         elseif(MR_iversion.eq.3)then
@@ -2145,7 +2145,7 @@
           endif
         write(MR_iw5_suffix1,272)'_pres.nc'
 
-        write(infile,427)trim(adjustl(MR_iw5_root)),'/',thisYear,'/', &
+        write(infile,427)trim(adjustl(MR_iw5_root)),MR_DirDelim,thisYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
         endif
@@ -2196,7 +2196,7 @@
         endif
         write(MR_iw5_suffix1,329)thisYear,thisMonth,dum_i1,'00_',&
                                  thisYear,thisMonth,dum_i2,dum_i3,'.nc'
-        write(infile,429)trim(adjustl(MR_iw5_root)),'/',MR_Comp_StartYear,'/', &
+        write(infile,429)trim(adjustl(MR_iw5_root)),MR_DirDelim,MR_Comp_StartYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
  291    format(a34)
@@ -2223,7 +2223,7 @@
         endif
         write(MR_iw5_suffix1,330)thisYear,thisMonth,dum_i1,'00_',&
                                  thisYear,thisMonth,dum_i2,dum_i3,'.nc'
-        write(infile,430)trim(adjustl(MR_iw5_root)),'/',MR_Comp_StartYear,'/', &
+        write(infile,430)trim(adjustl(MR_iw5_root)),MR_DirDelim,MR_Comp_StartYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
  230    format(a39)
