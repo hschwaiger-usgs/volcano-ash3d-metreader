@@ -69,11 +69,38 @@
       integer,dimension(8) :: values
       integer :: Current_Year
       real(kind=8) :: hsince
-      real(kind=8) :: HS_hours_since_baseyear  ! function that calculates hours
-      integer      :: HS_YearOfEvent
-      integer      :: HS_DayOfYear
-      real(kind=8) :: HS_HourOfDay
       integer      :: idx
+
+      INTERFACE
+        real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
+          integer     ,intent(in) :: iyear
+          integer     ,intent(in) :: imonth
+          integer     ,intent(in) :: iday
+          real(kind=8),intent(in) :: hours
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
+        end function HS_hours_since_baseyear
+        integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_YearOfEvent
+        integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_DayOfEvent
+        integer function HS_DayOfYear(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_DayOfYear
+        real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_HourOfDay
+      END INTERFACE
 
       Met_var_MinMax(1,1:2) = (/ H_MIN , H_MAX  /)  ! GPH
       Met_var_MinMax(2,1:2) = (/ U_MIN , U_MAX  /)  ! U

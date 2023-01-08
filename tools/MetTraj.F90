@@ -347,6 +347,11 @@
       character(len=80) :: linebuffer080
       character(len=80) :: Comp_projection_line
 
+      INTERFACE
+        subroutine write_usage
+        end subroutine write_usage
+      END INTERFACE
+
       ! Test read command line arguments
       nargs = command_argument_count()
       if (nargs.gt.1.and.nargs.lt.6) then
@@ -653,13 +658,12 @@
       integer        ,intent(in) :: GFS_Archive_Days
       integer        ,intent(in) :: GFS_FC_TotHours
 
-      real(kind=8)       :: HS_hours_since_baseyear
-      character(len=13)  :: HS_yyyymmddhhmm_since   ! function that calculates date
+!      character(len=13)  :: HS_yyyymmddhhmm_since   ! function that calculates date
                                                     !  string given hours since MR_BaseYear
-      integer            :: HS_YearOfEvent
-      integer            :: HS_MonthOfEvent
-      integer            :: HS_DayOfEvent
-      real(kind=8)       :: HS_HourOfDay
+!      integer            :: HS_YearOfEvent
+!      integer            :: HS_MonthOfEvent
+!      integer            :: HS_DayOfEvent
+!      real(kind=8)       :: HS_HourOfDay
 
       character(len=8)   :: date
       character(LEN=10)  :: time2       ! time argument used to get current
@@ -710,6 +714,42 @@
       character (len=100):: infile
       character(len=80 ) :: linebuffer080
       character(len=130) :: linebuffer130
+
+      INTERFACE
+        character (len=13) function HS_yyyymmddhhmm_since(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_yyyymmddhhmm_since
+        integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_YearOfEvent
+        integer function HS_MonthOfEvent(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_MonthOfEvent
+        integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_DayOfEvent
+        real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_HourOfDay
+        real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
+          integer     ,intent(in) :: iyear
+          integer     ,intent(in) :: imonth
+          integer     ,intent(in) :: iday
+          real(kind=8),intent(in) :: hours
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
+        end function HS_hours_since_baseyear
+      END INTERFACE
 
        ! Get the UTC time for program execution
        !   This will be used to determine if gfs or NCEP winds are to be used
@@ -1049,8 +1089,6 @@
       real(kind=8), parameter :: KM_2_M       = 1.0e3
       real(kind=8), parameter :: RAD_EARTH   = 6371.229 ! Radius of Earth in km
 
-
-      real(kind=8)       :: HS_hours_since_baseyear
       real(kind=8)       :: Probe_StartHour
       integer            :: ivar
       integer            :: kk
@@ -1084,6 +1122,17 @@
       real(kind=8) :: x_fin,y_fin
       real(kind=8) :: xstep,ystep
       real(kind=8) :: lonmin,lonmax,latmin,latmax
+
+      INTERFACE
+        real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
+          integer     ,intent(in) :: iyear
+          integer     ,intent(in) :: imonth
+          integer     ,intent(in) :: iday
+          real(kind=8),intent(in) :: hours
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
+        end function HS_hours_since_baseyear
+      END INTERFACE
 
       allocate(Vx_meso_last_step_MetH_sp(nx_submet,ny_submet,ntraj))
       allocate(Vx_meso_next_step_MetH_sp(nx_submet,ny_submet,ntraj))

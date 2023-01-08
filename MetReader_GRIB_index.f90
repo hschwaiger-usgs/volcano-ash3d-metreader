@@ -4,10 +4,10 @@
 
       implicit none
 
+      character(len=130),intent(in)  :: grib_file
+
       integer            :: MR_global_info   = 6
       integer            :: MR_global_error  = 0
-
-      character(len=130)  :: grib_file
 
       character(len=130)  :: index_file
 

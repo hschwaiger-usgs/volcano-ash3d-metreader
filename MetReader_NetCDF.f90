@@ -61,6 +61,18 @@
       logical :: IsTruncatedDim
       character(len=130)   :: infile
 
+      INTERFACE
+        subroutine MR_NC_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_NC_check_status
+        subroutine MR_Get_WRF_grid
+        end subroutine MR_Get_WRF_grid
+        subroutine MR_Set_Met_Dims_Template_netcdf
+        end subroutine MR_Set_Met_Dims_Template_netcdf
+      END INTERFACE
+
       if(MR_VERB.ge.1)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
         write(MR_global_production,*)"----------                MR_Read_Met_DimVars_netcdf                  ----------"
@@ -1011,6 +1023,14 @@
 
       real(kind=dp) :: lat_in,lon_in
 
+      INTERFACE
+        subroutine MR_NC_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_NC_check_status
+      END INTERFACE
+
         ! MAP_PROJ - Model projection  1 = Lambert
         !                              2 = polar stereographic
         !                              3 = Mercator
@@ -1253,7 +1273,6 @@
          !   POLE_LAT
          !   POLE_LON
          !   TRUELAT2 (optional) = lat_2 # Cone intersects with the sphere
-
 
          !proj +proj=merc 
 
@@ -1498,6 +1517,16 @@
           integer               :: byear
           logical               :: useLeaps
         end function HS_DayOfEvent
+        subroutine MR_NC_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_NC_check_status
+        subroutine MR_Set_iwind5_filenames(inhour,ivar,infile)
+          real(kind=8)      ,intent(in)  :: inhour
+          integer           ,intent(in)  :: ivar
+          character(len=130),intent(out) :: infile
+        end subroutine MR_Set_iwind5_filenames
       END INTERFACE
 
       if(MR_VERB.ge.1)then
@@ -1960,17 +1989,10 @@
 
       implicit none
 
-      integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
-
       real(kind=8)      ,intent(in)  :: inhour
       integer           ,intent(in)  :: ivar
       character(len=130),intent(out) :: infile
 
-      !integer               :: HS_YearOfEvent
-      !integer               :: HS_MonthOfEvent
-      !integer               :: HS_DayOfEvent
-      !logical               :: HS_IsLeapYear
       integer,dimension(12) :: DaysInMonth
       integer               :: dum_i1,dum_i2,dum_i3
 
@@ -2257,8 +2279,8 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
-      real(kind=sp), parameter :: tol = 1.0e-7_sp
+      !integer, parameter :: dp        = 8 ! double precision
+      !real(kind=sp), parameter :: tol = 1.0e-7_sp
 
       integer :: iw,i
 
@@ -2273,6 +2295,14 @@
       integer :: var_id
       real(kind=sp):: dum_sp
       integer :: ivar
+
+      INTERFACE
+        subroutine MR_NC_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_NC_check_status
+      END INTERFACE
 
       if(MR_VERB.ge.1)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
@@ -2365,7 +2395,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       integer,intent(in) :: ivar
       integer,intent(in) :: istep
@@ -2400,6 +2430,27 @@
       real(kind=sp) :: Z_top, T_top
       real(kind=sp) :: pp
       integer       :: idx
+
+      INTERFACE
+        subroutine MR_NC_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_NC_check_status
+        subroutine MR_Set_iwind5_filenames(inhour,ivar,infile)
+          real(kind=8)      ,intent(in)  :: inhour
+          integer           ,intent(in)  :: ivar
+          character(len=130),intent(out) :: infile
+        end subroutine MR_Set_iwind5_filenames
+        subroutine MR_interp_iwf25_grid(imax,jmax,invar,outvar,scale_fac,offset)
+          integer, parameter :: sp        = 4 ! single precision
+          integer         ,intent(in)  :: imax,jmax
+          integer(kind=sp),intent(in)  :: invar(192,94,1)
+          real(kind=sp)   ,intent(out) :: outvar(imax,jmax)
+          real(kind=sp)   ,intent(in)  :: scale_fac
+          real(kind=sp)   ,intent(in)  :: offset
+        end subroutine MR_interp_iwf25_grid
+      END INTERFACE
 
       if(MR_VERB.ge.2)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
@@ -3026,7 +3077,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       integer         ,intent(in)  :: imax,jmax
       integer(kind=sp),intent(in)  :: invar(192,94,1)

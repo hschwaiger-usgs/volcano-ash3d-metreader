@@ -95,6 +95,14 @@
       logical :: IsNewLevel
       integer :: iz
 
+      INTERFACE
+        subroutine MR_GRIB_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_GRIB_check_status
+      END INTERFACE
+
       if(MR_VERB.ge.1)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
         write(MR_global_production,*)"----------                MR_Read_Met_DimVars_GRIB                    ----------"
@@ -763,7 +771,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       integer :: iw,iws
       integer :: itstart_year,itstart_month
@@ -793,6 +801,11 @@
           integer            :: byear
           logical            :: useLeaps
         end function HS_hours_since_baseyear
+        subroutine MR_GRIB_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_GRIB_check_status
       END INTERFACE
 
       if(MR_VERB.ge.1)then
@@ -955,7 +968,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       integer,intent(in) :: ivar
       integer,intent(in) :: istep
@@ -1032,6 +1045,14 @@
       logical :: Use_GRIB_Index = .false.
       integer :: fn_idx
       character(len=40)  :: fileposstr
+
+      INTERFACE
+        subroutine MR_GRIB_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_GRIB_check_status
+      END INTERFACE
 
       if(.not.Met_var_IsAvailable(ivar))then
         write(MR_global_error,*)&

@@ -259,13 +259,10 @@
       integer            ,intent(in) :: GFS_Archive_Days
       integer            ,intent(in) :: GFS_FC_TotHours
 
-      real(kind=8)       :: HS_hours_since_baseyear
-      character(len=13)  :: HS_yyyymmddhhmm_since   ! function that calculates date
-                                                    !  string given hours since MR_BaseYear
-      integer            :: HS_YearOfEvent
-      integer            :: HS_MonthOfEvent
-      integer            :: HS_DayOfEvent
-      real(kind=8)       :: HS_HourOfDay
+      !integer            :: HS_YearOfEvent
+      !integer            :: HS_MonthOfEvent
+      !integer            :: HS_DayOfEvent
+      !real(kind=8)       :: HS_HourOfDay
 
       character(len=8)   :: date
       character(LEN=10)  :: time2         ! time argument used to get current
@@ -309,6 +306,42 @@
       logical,dimension(:),allocatable :: GFS_candidate
       integer,dimension(:),allocatable :: GFS_FC_step_avail
       integer :: OptimalPackageNum
+
+      INTERFACE
+        character (len=13) function HS_yyyymmddhhmm_since(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_yyyymmddhhmm_since
+        integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_YearOfEvent
+        integer function HS_MonthOfEvent(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_MonthOfEvent
+        integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_DayOfEvent
+        real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_HourOfDay
+        real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
+          integer     ,intent(in) :: iyear
+          integer     ,intent(in) :: imonth
+          integer     ,intent(in) :: iday
+          real(kind=8),intent(in) :: hours
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
+        end function HS_hours_since_baseyear
+      END INTERFACE
 
        ! Get the UTC time that the program is called
        !   This will be used to determine if gfs or NCEP winds are to be used
@@ -550,7 +583,6 @@
       integer            :: inyear,inmonth,inday
       real(kind=8)       :: inhour
 
-      real(kind=8)       :: HS_hours_since_baseyear
       real(kind=8)       :: Probe_StartHour
       integer            :: ivar,i
       real(kind=4),dimension(:,:,:),allocatable :: AirTemp_meso_last_step_MetP_sp
@@ -563,7 +595,16 @@
       real(kind=4) :: TropoH,TropoP,TropoT
       real(kind=4) :: lapse_1,lapse_2,lapse_3
 
-
+      INTERFACE
+        real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
+          integer     ,intent(in) :: iyear
+          integer     ,intent(in) :: imonth
+          integer     ,intent(in) :: iday
+          real(kind=8),intent(in) :: hours
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
+        end function HS_hours_since_baseyear
+      END INTERFACE
       allocate(AirTemp_meso_last_step_MetP_sp(nx_submet,ny_submet,np_fullmet))
       allocate(AirTemp_meso_next_step_MetP_sp(nx_submet,ny_submet,np_fullmet))
       allocate(GPHprof(np_fullmet))

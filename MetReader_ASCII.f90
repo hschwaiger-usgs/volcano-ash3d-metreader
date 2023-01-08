@@ -684,13 +684,13 @@
               endif
               write(MR_global_info,204)il,real(MR_SndVars_metP(iloc,itime,1:5,il),kind=4),&
                                         WindVelocity(il),WindDirection(il)
- 203          format(3x'Level',6x,a3,'(Pa)', &
-                               7x,a3,'(km)', &
-                               3x,a3,'(m/s)', &
-                               2x,a3,'(m/s)', &
-                               1x,a3,'(K)', &
-                               3x,a3,'(m/s)', &
-                               2x,a3,'(degree E of N)')
+ 203          format(3x,'Level',6x,a3,'(Pa)', &
+                                7x,a3,'(km)', &
+                                3x,a3,'(m/s)', &
+                                2x,a3,'(m/s)', &
+                                1x,a3,'(K)', &
+                                3x,a3,'(m/s)', &
+                                2x,a3,'(degree E of N)')
  204          format(6x,i2,5x,7f10.3)
             enddo ! il=1,nlev
             close(fid)
@@ -1343,7 +1343,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       if(MR_VERB.ge.1)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
@@ -1469,7 +1469,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       integer,intent(in) :: ivar
       integer,intent(in) :: istep
