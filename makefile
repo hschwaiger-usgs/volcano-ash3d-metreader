@@ -178,8 +178,8 @@ MetReader_ASCII.o: MetReader_ASCII.f90 MetReader.o makefile
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(USGSLIB) -c MetReader_ASCII.f90
 
 ifeq ($(USENETCDF), T)
-MetReader_NetCDF.o: MetReader_NetCDF.f90 MetReader.o makefile
-	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) $(nclib) $(USGSLIB) -c MetReader_NetCDF.f90
+MetReader_NetCDF.o: MetReader_NetCDF.F90 MetReader.o makefile
+	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) $(nclib) $(USGSLIB) -c MetReader_NetCDF.F90
 endif
 ifeq ($(USEGRIB), T)
 MetReader_GRIB_index.o: MetReader_GRIB_index.f90 makefile

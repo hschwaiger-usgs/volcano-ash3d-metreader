@@ -58,30 +58,34 @@
                       WINDROOT)
           integer,parameter   :: sp        = 4 ! single precision
           integer,parameter   :: dp        = 8 ! double precision
-          real(kind=sp)       :: inlon
-          real(kind=sp)       :: inlat
-          integer             :: inyear
-          integer             :: inmonth
-          integer             :: inday
-          real(kind=dp)       :: inhour
-          character(len=100)  :: WINDROOT
+          real(kind=sp)      ,intent(out) :: inlon
+          real(kind=sp)      ,intent(out) :: inlat
+          integer            ,intent(out) :: inyear
+          integer            ,intent(out) :: inmonth
+          integer            ,intent(out) :: inday
+          real(kind=dp)      ,intent(out) :: inhour
+          character(len=100) ,intent(out) :: WINDROOT
         end subroutine
         subroutine GetWindFile(inyear,inmonth,inday,inhour,WINDROOT,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
           integer,parameter   :: dp        = 8 ! double precision
-          integer             :: inyear,inmonth,inday
-          real(kind=dp)       :: inhour
-          character(len=100)  :: WINDROOT
-          integer             :: FC_freq
-          integer             :: GFS_Archive_Days
-          integer             :: GFS_FC_TotHours
+          integer            ,intent(in) :: inyear
+          integer            ,intent(in) :: inmonth
+          integer            ,intent(in) :: inday
+          real(kind=dp)      ,intent(in) :: inhour
+          character(len=100) ,intent(in) :: WINDROOT
+          integer            ,intent(in) :: FC_freq
+          integer            ,intent(in) :: GFS_Archive_Days
+          integer            ,intent(in) :: GFS_FC_TotHours
         end subroutine
         subroutine GetMetProfile(inlon,inlat,inyear,inmonth,inday,inhour)
           integer,parameter   :: sp        = 4 ! single precision
           integer,parameter   :: dp        = 8 ! double precision
-          real(kind=sp)       :: inlon
-          real(kind=sp)       :: inlat
-          integer             :: inyear,inmonth,inday
-          real(kind=dp)       :: inhour
+          real(kind=sp), intent(in)  :: inlon
+          real(kind=sp), intent(in)  :: inlat
+          integer      , intent(in)  :: inyear
+          integer      , intent(in)  :: inmonth
+          integer      , intent(in)  :: inday
+          real(kind=dp), intent(in)  :: inhour
         end subroutine
       END INTERFACE
 
@@ -578,10 +582,12 @@
 
       implicit none
 
-      real(kind=4)       :: inlon
-      real(kind=4)       :: inlat
-      integer            :: inyear,inmonth,inday
-      real(kind=8)       :: inhour
+      real(kind=4), intent(in)  :: inlon
+      real(kind=4), intent(in)  :: inlat
+      integer     , intent(in)  :: inyear
+      integer     , intent(in)  :: inmonth
+      integer     , intent(in)  :: inday
+      real(kind=8), intent(in)  :: inhour
 
       real(kind=8)       :: Probe_StartHour
       integer            :: ivar,i

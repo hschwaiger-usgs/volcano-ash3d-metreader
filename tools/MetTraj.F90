@@ -90,54 +90,58 @@
                       iw,iwf,igrid,idf,iwfiles,&
                       autoflag,FC_freq,GFS_Archive_Days)
           integer,parameter   :: dp        = 8 ! double precision
-          real(kind=dp)       :: inlon
-          real(kind=dp)       :: inlat
-          integer             :: inyear,inmonth,inday
-          real(kind=dp)       :: inhour
-          real(kind=dp)       :: Simtime_in_hours
-          integer             :: StreamFlag
-          integer             :: OutStepInc_Minutes
-          integer             :: ntraj
-          real(kind=dp), dimension(9) :: OutputLevels
-          integer             :: iw
-          integer             :: iwf
-          integer             :: igrid
-          integer             :: idf
-          integer             :: iwfiles
-          integer             :: autoflag
-          integer             :: FC_freq
-          integer             :: GFS_Archive_Days
+          real(kind=dp)              ,intent(out) :: inlon
+          real(kind=dp)              ,intent(out) :: inlat
+          integer                    ,intent(out) :: inyear,inmonth,inday
+          real(kind=dp)              ,intent(out) :: inhour
+          real(kind=dp)              ,intent(out) :: Simtime_in_hours
+          integer                    ,intent(out) :: StreamFlag
+          integer                    ,intent(out) :: OutStepInc_Minutes
+          integer                    ,intent(out) :: ntraj
+          real(kind=dp), dimension(9),intent(out) :: OutputLevels
+          integer                    ,intent(out) :: iw
+          integer                    ,intent(out) :: iwf
+          integer                    ,intent(out) :: igrid
+          integer                    ,intent(out) :: idf
+          integer                    ,intent(out) :: iwfiles
+          integer                    ,intent(out) :: autoflag
+          integer                    ,intent(out) :: FC_freq
+          integer                    ,intent(out) :: GFS_Archive_Days
         end subroutine
         subroutine GetWindFile(inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,&
                                 iw,iwf,igrid,idf,iwfiles,&
                                 autoflag,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
           integer,parameter   :: dp        = 8 ! double precision
-          integer             :: inyear,inmonth,inday
-          real(kind=dp)       :: inhour
-          real(kind=dp)       :: Simtime_in_hours
-          integer             :: TrajFlag
-          integer             :: iw
-          integer             :: iwf
-          integer             :: igrid
-          integer             :: idf
-          integer             :: iwfiles
-          integer             :: autoflag
-          integer             :: FC_freq
-          integer             :: GFS_Archive_Days
-          integer             :: GFS_FC_TotHours
+          integer         ,intent(in) :: inyear
+          integer         ,intent(in) :: inmonth
+          integer         ,intent(in) :: inday
+          real(kind=dp)   ,intent(in) :: inhour
+          real(kind=dp)   ,intent(in) :: Simtime_in_hours
+          integer         ,intent(in) :: TrajFlag
+          integer         ,intent(inout) :: iw
+          integer         ,intent(inout) :: iwf
+          integer         ,intent(inout) :: igrid
+          integer         ,intent(inout) :: idf
+          integer         ,intent(inout) :: iwfiles
+          integer         ,intent(in) :: autoflag
+          integer         ,intent(in) :: FC_freq
+          integer         ,intent(in) :: GFS_Archive_Days
+          integer         ,intent(in) :: GFS_FC_TotHours
         end subroutine
         subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj)
           integer,parameter   :: dp        = 8 ! double precision
-          logical             :: IsGlobal
-          real(kind=dp)       :: inlon
-          real(kind=dp)       :: inlat
-          integer             :: inyear,inmonth,inday
-          real(kind=dp)       :: inhour
-          real(kind=dp)       :: Simtime_in_hours
-          integer             :: TrajFlag
-          integer             :: ntraj
+          logical      , intent(in)      :: IsGlobal
+          real(kind=dp), intent(in)      :: inlon
+          real(kind=dp), intent(in)      :: inlat
+          integer      , intent(in)      :: inyear
+          integer      , intent(in)      :: inmonth
+          integer      , intent(in)      :: inday
+          real(kind=dp), intent(in)      :: inhour
+          real(kind=dp), intent(in)      :: Simtime_in_hours
+          integer      , intent(in)      :: TrajFlag
+          integer      , intent(in)      :: ntraj
         end subroutine
       END INTERFACE
 
@@ -1075,14 +1079,16 @@
 
       implicit none
 
-      logical            :: IsGlobal
-      real(kind=8)       :: inlon
-      real(kind=8)       :: inlat
-      integer            :: inyear,inmonth,inday
-      real(kind=8)       :: inhour
-      real(kind=8)       :: Simtime_in_hours
-      integer            :: TrajFlag
-      integer            :: ntraj
+      logical     , intent(in)      :: IsGlobal
+      real(kind=8), intent(in)      :: inlon
+      real(kind=8), intent(in)      :: inlat
+      integer     , intent(in)      :: inyear
+      integer     , intent(in)      :: inmonth
+      integer     , intent(in)      :: inday
+      real(kind=8), intent(in)      :: inhour
+      real(kind=8), intent(in)      :: Simtime_in_hours
+      integer     , intent(in)      :: TrajFlag
+      integer     , intent(in)      :: ntraj
 
       real(kind=8), parameter :: PI        = 3.141592653589793
       real(kind=8), parameter :: DEG2RAD   = 1.7453292519943295e-2
