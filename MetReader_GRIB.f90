@@ -95,6 +95,14 @@
       logical :: IsNewLevel
       integer :: iz
 
+      INTERFACE
+        subroutine MR_GRIB_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_GRIB_check_status
+      END INTERFACE
+
       if(MR_VERB.ge.1)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
         write(MR_global_production,*)"----------                MR_Read_Met_DimVars_GRIB                    ----------"
@@ -121,7 +129,7 @@
           "Opening grib file to find version number"
         iw = 1
 
-        call codes_open_file(ifile,trim(ADJUSTL(MR_windfiles(iw))),'R',nSTAT)
+        call codes_open_file(ifile,trim(adjustl(MR_windfiles(iw))),'R',nSTAT)
         if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
         call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
         if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
@@ -418,7 +426,6 @@
             call PJ_proj_for(Lon_start,Lat_start, Met_iprojflag, &
                      Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
                      x_start,y_start)
-            write(*,*)Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re
             write(MR_global_production,*)"Getting start coordinate for ",Lon_start,Lat_start
             write(MR_global_production,*)" Projected coordinate = ",x_start,y_start
           endif
@@ -764,7 +771,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       integer :: iw,iws
       integer :: itstart_year,itstart_month
@@ -794,6 +801,11 @@
           integer            :: byear
           logical            :: useLeaps
         end function HS_hours_since_baseyear
+        subroutine MR_GRIB_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_GRIB_check_status
       END INTERFACE
 
       if(MR_VERB.ge.1)then
@@ -823,9 +835,9 @@
         !endif
         dumstr = MR_windfiles(1)
  110    format(a50,a1,i4,a1)
-        write(MR_windfiles(1),110)trim(ADJUSTL(dumstr)),'/', &
+        write(MR_windfiles(1),110)trim(adjustl(dumstr)),'/', &
                                    MR_Comp_StartYear,'/'
-        write(MR_windfiles(2),110)trim(ADJUSTL(dumstr)),'/', &
+        write(MR_windfiles(2),110)trim(adjustl(dumstr)),'/', &
                                    MR_Comp_StartYear+1,'/'
         MR_windfile_starthour(1) = real(HS_hours_since_baseyear( &
                                     MR_Comp_StartYear,1,1,0.0_8,MR_BaseYear,MR_useLeap),kind=sp)
@@ -857,7 +869,7 @@
 
           ! Each wind file needs a ref-time which in almost all cases is given
           ! in the 'units' attribute of the time variable
-          write(MR_global_info,*)iw,trim(ADJUSTL(MR_windfiles(iw)))
+          write(MR_global_info,*)iw,trim(adjustl(MR_windfiles(iw)))
 
           if(iw.eq.1)then
             ! For now, assume one time step per file
@@ -869,7 +881,7 @@
             allocate(MR_windfile_stephour(MR_iwindfiles,nt_fullmet))
           endif
 
-          call codes_open_file(ifile,trim(ADJUSTL(MR_windfiles(iw))),'R',nSTAT)
+          call codes_open_file(ifile,trim(adjustl(MR_windfiles(iw))),'R',nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
           call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
@@ -956,7 +968,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       integer,intent(in) :: ivar
       integer,intent(in) :: istep
@@ -1033,6 +1045,14 @@
       logical :: Use_GRIB_Index = .false.
       integer :: fn_idx
       character(len=40)  :: fileposstr
+
+      INTERFACE
+        subroutine MR_GRIB_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_GRIB_check_status
+      END INTERFACE
 
       if(.not.Met_var_IsAvailable(ivar))then
         write(MR_global_error,*)&

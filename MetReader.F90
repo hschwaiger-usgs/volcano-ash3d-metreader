@@ -1,19 +1,82 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!      This file is a component of the volcanic ash transport and dispersion model Ash3d,
+!      written at the U.S. Geological Survey by Hans F. Schwaiger (hschwaiger@usgs.gov),
+!      Larry G. Mastin (lgmastin@usgs.gov), and Roger P. Denlinger (roger@usgs.gov).
+!
+!      The model and its source code are products of the U.S. Federal Government and therefore
+!      bear no copyright.  They may be copied, redistributed and freely incorporated 
+!      into derivative products.  However as a matter of scientific courtesy we ask that
+!      you credit the authors and cite published documentation of this model (below) when
+!      publishing or distributing derivative products.
+!
+!      Schwaiger, H.F., Denlinger, R.P., and Mastin, L.G., 2012, Ash3d, a
+!      finite-
+!         volume, conservative numerical model for ash transport and tephra deposition,
+!         Journal of Geophysical Research, 117, B04204, doi:10.1029/2011JB008968. 
+!
+!      Although this program has been used by the USGS, no warranty, expressed or
+!      implied, is made by the USGS or the United States Government as to the accuracy
+!      and functioning  of the program and related program material nor shall the fact of
+!      distribution constitute  any such warranty, and no responsibility is assumed by
+!      the USGS in connection therewith.
+!
+!      We make no guarantees, expressed or implied, as to the usefulness of the software
+!      and its documentation for any purpose.  We assume no responsibility to provide
+!      technical support to users of this software.
+!
+!      
+!
+!      contains:
+!        subroutine MR_Reset_Memory
+!        subroutine MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)
+!        subroutine MR_Read_Met_DimVars(iy)
+!        subroutine MR_Set_CompProjection(LL_flag,ipf,lam0,phi0,phi1,phi2,ko,Re)
+!        subroutine MR_Initialize_Met_Gridsnx,ny,nz,dumx_sp,dumy_sp,dumz_sp,periodic)
+!        subroutine MR_Set_SigmaAlt_Scaling(nx,ny,nz,dum_sp,dumz_sp,dumxy1_sp,dum_int)
+!        subroutine MR_Set_Met_Times(eStartHour,Duration)
+!        subroutine MR_Read_HGT_arrays(istep,reset_first_time)
+!        subroutine MR_Read_3d_MetP_Variable(ivar,istep)
+!        subroutine MR_Read_3d_MetH_Variable(ivar,istep)
+!        subroutine MR_Read_3d_Met_Variable_to_CompGrid(ivar,istep,IsNext)
+!        subroutine MR_Read_3d_Met_Variable_to_CompP(ivar,istep,IsNext)
+!        subroutine MR_Read_2d_Met_Variable(ivar,istep)
+!        subroutine MR_Read_2d_Met_Variable_to_CompGrid(ivar,istep)
+!        subroutine MR_Rotate_UV_GR2ER_Met(istep,SetComp)
+!        subroutine MR_Rotate_UV_ER2GR_Comp(istep)
+!        subroutine MR_Regrid_MetP_to_CompGrid(istep)
+!        subroutine MR_Regrid_MetP_to_MetH(istep)
+!        subroutine MR_Regrid_Met2d_to_Comp2d()
+!        subroutine MR_DelMetP_Dx()
+!        subroutine MR_DelMetP_Dy()
+!        subroutine MR_QC_3dvar(ivar,nx_max,ny_max,nz1_max,z_array_sp,nz2_max,&
+!                               dum_array_sp,fill_val_sp,bc_low_sp, bc_high_sp)
+!        subroutine MR_Check_Prerequsites(test_allocate,test_dimvars,test_compproj,&
+!                                         test_initmetgrid,test_setmettimes)
+!        function MR_Temp_US_StdAtm(zin)
+!        function MR_Z_US_StdAtm(pin)
+!        function MR_Pres_US_StdAtm(zin)
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
       module MetReader
 
-      ! This file is the output of the simple script
+      implicit none
+
+      ! This file (MR_version.h) is the output of the simple script
 !get_version.sh 
-!  echo -n "      character(len=40),parameter,public :: MR_GitComID ='" > version.h
-!  git log -n 1 | grep commit | cut -f 2 -d' ' | tr -d $'\n' >> version.h
-!  echo -n "'" >> version.h
-!    which set the variable containing the git commit ID : MR_GitComID
-#include "version.h"
+!  echo -n "      character(len=40),parameter,public :: MR_GitComID ='" > MR_version.h
+!  git log -n 1 | grep commit | cut -f 2 -d' ' | tr -d $'\n' >> MR_version.h
+!  echo -n "'" >> MR_version.h
+!    which sets the variable containing the git commit ID : MR_GitComID
+#include "MR_version.h"
 
-      integer, parameter,private :: sp        = 4 ! single precision
-      integer, parameter,private :: dp        = 8 ! double precision
+      integer, parameter,private :: sp = selected_real_kind( 6,   37) ! single precision
+      integer, parameter,private :: dp = selected_real_kind(15,  307) ! double precision
+      integer, parameter,private :: qp = selected_real_kind(33, 4931) ! quad precision
 
-      integer, parameter         :: MR_VERB = 1
-
-      integer, parameter :: MR_MAXVARS        = 50 ! Maximum number of variables in fixed arrays
+      integer, parameter       :: MR_VERB = 1
+      integer, parameter       :: MR_MAXVARS    = 50 ! Maximum number of variables in fixed arrays
 
       real(kind=dp), parameter :: MR_EPS_SMALL  = 1.0e-7_dp  ! Small number
       real(kind=dp), parameter :: MR_EPS_TINY   = 1.0e-12_dp ! Very small number
@@ -26,8 +89,8 @@
       integer,public :: MR_global_production   = 6
       integer,public :: MR_global_debug        = 6
       integer,public :: MR_global_info         = 6
-      integer,public :: MR_global_log          = 9
-      integer,public :: MR_global_error        = 0
+      integer,public :: MR_global_log          = 6
+      integer,public :: MR_global_error        = 6
 
       logical        :: MR_useCompGrid         = .true. ! Reset this to .false. if you only need the Met grid
       logical        :: MR_useCompTime         = .true. ! Reset this to .false. if you only need the time of the file
@@ -76,7 +139,7 @@
       integer,public :: MR_iversion    = -1 ! version of the product; sometimes the grid used changes with newer
                                             ! versions. -1 indicates latest version, but can be overridden here
       integer,public :: MR_iGridCode   !   MR_iGridCode specifies the NCEP grid described in:
-                                    !   http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html
+                                       !   http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html
       integer,public :: MR_idataFormat !   Specifies the data model used
                                     !    =1 ASCII
                                     !    =2 netcdf
@@ -430,7 +493,6 @@
       character(len=3) ,dimension(MR_MAXVARS)   :: Met_var_GRIB1_St         ! level type (pl, src, 116 etc)
       integer                                   :: MR_GRIB_Version  = 0
 
-      !logical          ,dimension(MR_MAXVARS)   :: Met_var_IsFloat  ! true if kind=4 otherwise false
       real(kind=sp)    ,dimension(MR_MAXVARS)   :: Met_var_conversion_factor
 
       integer          ,dimension(MR_MAXVARS)   :: Met_var_nlevs
@@ -475,6 +537,12 @@
       logical :: CALLED_MR_Set_CompProjection       = .false.
       logical :: CALLED_MR_Initialize_Met_Grids     = .false.
       logical :: CALLED_MR_Set_Met_Times            = .false.
+
+      ! Info on how to build file paths
+      ! Defaults to linux-style, but this can be changed in the calling program
+      integer              :: MR_OS_TYPE    = 1       ! 1=linux, 2=apple, 3=windows
+      character (len=2)    :: MR_DirPrefix  = ''
+      character (len=1)    :: MR_DirDelim   = '/'
 
       contains
 
@@ -2448,7 +2516,8 @@
           write(MR_global_info,*)"            If there is an inconsistancy, the program will stop."
           write(MR_global_info,*)"            If MR_Comp_StartYear is changed to a leap year outside"
           write(MR_global_info,*)"            of MetReader, then the results will be incorrect."
-          MR_Comp_StartYear = 2018
+          ! HFS KLUDG: change to year of program execution
+          MR_Comp_StartYear = 2023
         endif
 
       endif
@@ -2482,7 +2551,6 @@
         enddo
       else
         MR_iw5_root = MR_windfiles(1)
-        write(*,*)MR_iw5_root,MR_iwindfiles
         do i = 1,MR_iwindfiles-1
           inhour = MR_Comp_StartHour + (i-1)*MR_iw5_hours_per_file
           do ivar = 1,5
@@ -2867,11 +2935,6 @@
 
       integer :: i
       integer :: iw
-      !real(kind=8)       :: HS_HourOfDay
-      !integer            :: HS_YearOfEvent
-      !integer            :: HS_MonthOfEvent
-      !integer            :: HS_DayOfEvent
-      !integer            :: HS_DayOfYear
       integer            :: iwstep
       integer            :: istep
       real(kind=8)       :: stephour

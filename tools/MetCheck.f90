@@ -1,12 +1,44 @@
 !##############################################################################
 !##############################################################################
+!
+! MetCheck
+!
+! This stand-alone program tests windfiles for corrupt values.  The program
+! loops through all points and checks the five variables (GPH, U, V, W, T)
+! and verifies that there are no values outside of expected limits.  If any
+! are outside the limits, the windfile is assumed to be corrupt and the program
+! exits.  If all points are successfully read and 'valid', then a one-line
+! file is written (MetCheck_log.txt) containing:
+!   filename : step_in_file : year : days_in_year
+! e.g.
+! 2022092800.f099.nc  :            1  :         2022  :    275.125000
+!
+! There are 3 required and one optional command-line arguments:
+!       iwf        : integer : product identifier
+!       idf        : integer : data format (ASCII,netcdf,grib)
+!       filename   : char    : name of file to test
+!       [year]     : integer : year, needed to specify past NCEP data
+!
+!##############################################################################
+!##############################################################################
+
       program MetCheck
 
       use MetReader
 
       implicit none
 
-      !integer             :: iargc
+      real(kind=4), parameter  :: H_MIN = -1000.0_4
+      real(kind=4), parameter  :: H_MAX = 80000.0_4
+      real(kind=4), parameter  :: U_MIN = -200.0_4
+      real(kind=4), parameter  :: U_MAX =  200.0_4
+      real(kind=4), parameter  :: V_MIN = -200.0_4
+      real(kind=4), parameter  :: V_MAX =  200.0_4
+      real(kind=4), parameter  :: W_MIN = -40.0_4
+      real(kind=4), parameter  :: W_MAX =  40.0_4
+      real(kind=4), parameter  :: T_MIN = 130.0_4
+      real(kind=4), parameter  :: T_MAX = 350.0_4
+
       integer             :: nargs
       integer             :: status,stat
       character (len=100) :: arg
@@ -14,7 +46,7 @@
       real(kind=4)        :: inlon,inlat
 
       character(len=100)  :: infile1
-      integer             :: nxmax,nymax,nzmax !,nsize
+      integer             :: nxmax,nymax,nzmax
       real(kind=4),dimension(:)    ,allocatable :: lon_grid
       real(kind=4),dimension(:)    ,allocatable :: lat_grid
       real(kind=4),dimension(:)    ,allocatable :: z_cc
@@ -37,24 +69,50 @@
       integer,dimension(8) :: values
       integer :: Current_Year
       real(kind=8) :: hsince
-      real(kind=8) :: HS_hours_since_baseyear  ! function that calculates hours
-      integer      :: HS_YearOfEvent
-      integer      :: HS_DayOfYear
-      real(kind=8) :: HS_HourOfDay
       integer      :: idx
 
-      Met_var_MinMax(1,1:2) = (/ -1000.0_4, 80000.0_4 /)  ! GPH
-      Met_var_MinMax(2,1:2) = (/  -200.0_4,   200.0_4 /)  ! U
-      Met_var_MinMax(3,1:2) = (/  -200.0_4,   200.0_4 /)  ! V
-      Met_var_MinMax(4,1:2) = (/   -40.0_4,    40.0_4 /)  ! W
-      Met_var_MinMax(5,1:2) = (/   130.0_4,   350.0_4 /)  ! T
+      INTERFACE
+        real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
+          integer     ,intent(in) :: iyear
+          integer     ,intent(in) :: imonth
+          integer     ,intent(in) :: iday
+          real(kind=8),intent(in) :: hours
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
+        end function HS_hours_since_baseyear
+        integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_YearOfEvent
+        integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_DayOfEvent
+        integer function HS_DayOfYear(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_DayOfYear
+        real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
+          real(kind=8)   ,intent(in) ::  HoursSince
+          integer        ,intent(in) ::  byear
+          logical        ,intent(in) ::  useLeaps
+        end function HS_HourOfDay
+      END INTERFACE
+
+      Met_var_MinMax(1,1:2) = (/ H_MIN , H_MAX  /)  ! GPH
+      Met_var_MinMax(2,1:2) = (/ U_MIN , U_MAX  /)  ! U
+      Met_var_MinMax(3,1:2) = (/ V_MIN , V_MAX  /)  ! V
+      Met_var_MinMax(4,1:2) = (/ W_MIN , W_MAX  /)  ! W
+      Met_var_MinMax(5,1:2) = (/ T_MIN , T_MAX  /)  ! T
 
       ! Make user MetReader is using the same calendar
       MR_BaseYear = BaseYear
       MR_useLeap  = useLeap
 
 !     TEST READ COMMAND LINE ARGUMENTS
-      !nargs = iargc()
       nargs = command_argument_count()
       if (nargs.lt.3) then
         write(MR_global_info,*)"ERROR: not enough command-line arguments."
@@ -169,16 +227,12 @@
       call MR_Set_Met_Times(0.0_8,0.0_8)
 
       ! These are dummy values.
-      !nxmax = 3 !
-      !nymax = 3 !
       nxmax = 2 !
       nymax = 2 !
 
       nzmax = 2 ! This is not really used in this utility
       inlon = 0.0_4
       inlat = 0.0_4
-      !allocate(lon_grid(nxmax)); lon_grid(1:3) = (/inlon-0.5_4,inlon,inlon+0.5_4/)
-      !allocate(lat_grid(nymax)); lat_grid(1:3) = (/inlat-0.5_4,inlat,inlat+0.5_4/)
       allocate(lon_grid(nxmax)); lon_grid(1:nxmax) = (/inlon-0.5_4,inlon+0.5_4/)
       allocate(lat_grid(nymax)); lat_grid(1:nymax) = (/inlat-0.5_4,inlat+0.5_4/)
 
@@ -207,7 +261,7 @@
                               lat_grid(1:nymax), &
                               z_cc(1:nzmax)    , &
                               IsPeriodic)
-      ! We need to populate the HGT arrays or the vertical velocity read with fail
+      ! We need to populate the HGT arrays or the vertical velocity read will fail
       ! since the conversion relies on dp/dz
       call MR_Read_HGT_arrays(1)  ! Just fill with the geopotential height at step 1
 
@@ -233,6 +287,7 @@
                     write(MR_global_info,*)"      at i,j,p = ",i,j,p
                     write(MR_global_info,*)"      Value read = ",tmp
                     write(MR_global_info,*)"      Min / Max = ",v1,v2
+                    close(19)
                     stop 1
                   endif
                 enddo

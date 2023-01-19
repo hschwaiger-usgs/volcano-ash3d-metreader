@@ -61,6 +61,18 @@
       logical :: IsTruncatedDim
       character(len=130)   :: infile
 
+      INTERFACE
+        subroutine MR_NC_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_NC_check_status
+        subroutine MR_Get_WRF_grid
+        end subroutine MR_Get_WRF_grid
+        subroutine MR_Set_Met_Dims_Template_netcdf
+        end subroutine MR_Set_Met_Dims_Template_netcdf
+      END INTERFACE
+
       if(MR_VERB.ge.1)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
         write(MR_global_production,*)"----------                MR_Read_Met_DimVars_netcdf                  ----------"
@@ -998,18 +1010,26 @@
 
       integer :: Map_Proj
       real(kind=sp) :: WRF_dx,WRF_dy
-      real(kind=sp) :: Cen_Lat,Cen_Lon
+      real(kind=sp) :: Cen_Lat
       real(kind=sp) :: Moad_Cen_Lat
       real(kind=sp) :: Stand_Lon
       real(kind=sp) :: Truelat1,Truelat2
       real(kind=sp) :: Pole_Lat, Pole_Lon
       real(kind=sp),dimension(:,:,:)  ,allocatable :: dum3d_sp
       real(kind=sp),dimension(:,:,:,:),allocatable :: dum4d_sp
-      integer :: i,j
+      integer :: i
 
       real(kind=dp) :: x_start,y_start
 
       real(kind=dp) :: lat_in,lon_in
+
+      INTERFACE
+        subroutine MR_NC_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_NC_check_status
+      END INTERFACE
 
         ! MAP_PROJ - Model projection  1 = Lambert
         !                              2 = polar stereographic
@@ -1254,7 +1274,6 @@
          !   POLE_LON
          !   TRUELAT2 (optional) = lat_2 # Cone intersects with the sphere
 
-
          !proj +proj=merc 
 
         write(MR_global_info,*)"  WRF projection detected: Mercator"
@@ -1498,6 +1517,16 @@
           integer               :: byear
           logical               :: useLeaps
         end function HS_DayOfEvent
+        subroutine MR_NC_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_NC_check_status
+        subroutine MR_Set_iwind5_filenames(inhour,ivar,infile)
+          real(kind=8)      ,intent(in)  :: inhour
+          integer           ,intent(in)  :: ivar
+          character(len=130),intent(out) :: infile
+        end subroutine MR_Set_iwind5_filenames
       END INTERFACE
 
       if(MR_VERB.ge.1)then
@@ -1523,8 +1552,9 @@
         ! First copy path read in to slot 2
         !MR_iw5_root = MR_windfiles(1)
  110    format(a50,a1,i4,a1)
-        write(MR_windfiles(1),110)trim(ADJUSTL(MR_iw5_root)),'/', &
-                                   MR_Comp_StartYear,'/'
+        write(MR_windfiles(1),110)trim(adjustl(MR_iw5_root)),MR_DirDelim, &
+                                   MR_Comp_StartYear,MR_DirDelim
+        MR_windfiles(1) = trim(adjustl(MR_windfiles(1)))
         if(MR_iwindformat.eq.25)then
           iwf_int = 6.0_dp
           iwf_tot = MR_iw5_hours_per_file
@@ -1572,20 +1602,20 @@
 
           ! Building the name of the first windfile (for hgt) to inspect for nt
           call MR_Set_iwind5_filenames(MR_Comp_StartHour+(iw-1)*iwf_tot,1,Z_infile)
-          nSTAT = nf90_open(trim(ADJUSTL(Z_infile)),NF90_NOWRITE,ncid)
+          nSTAT = nf90_open(trim(adjustl(Z_infile)),NF90_NOWRITE,ncid)
           if(nSTAT.ne.NF90_NOERR)then
             call MR_NC_check_status(nSTAT,0,"nf90_open")
             if(iw.eq.1)then
               ! Do a hard stop if we can't even read the first file
               write(MR_global_error,*)'MR ERROR: nf90_open: ',nf90_strerror(nSTAT)
-              write(MR_global_error,*)"    Could not open file: ",trim(ADJUSTL(Z_infile))
+              write(MR_global_error,*)"    Could not open file: ",trim(adjustl(Z_infile))
               write(MR_global_log  ,*)'MR ERROR: nf90_open: ',nf90_strerror(nSTAT)
               write(MR_global_error,*)'Exiting'
               stop 1
             else
               ! This is probably OK as long as the sim time is within the first file
               write(MR_global_error,*)'MR WARNING: nf90_open: ',nf90_strerror(nSTAT)
-              write(MR_global_error,*)"    Could not open file: ",trim(ADJUSTL(Z_infile))
+              write(MR_global_error,*)"    Could not open file: ",trim(adjustl(Z_infile))
               write(MR_global_error,*)"    This should be OK if the previous file exits."
               exit
             endif
@@ -1663,18 +1693,18 @@
           ! Branch for WRF files
           ! Loop through all the windfiles
           do iw = 1,MR_iwindfiles
-            nSTAT = nf90_open(trim(ADJUSTL(MR_windfiles(iw))),NF90_NOWRITE,ncid)
+            nSTAT = nf90_open(adjustl(trim(MR_windfiles(iw))),NF90_NOWRITE,ncid)
             call MR_NC_check_status(nSTAT,0,"nf90_open WRF")
             if(nSTAT.ne.NF90_NOERR)then
               write(MR_global_error,*)'MR ERROR: nf90_open to read header:', &
                              nf90_strerror(nSTAT)
-              write(MR_global_error,*)'Could not open ',trim(ADJUSTL(MR_windfiles(iw)))
+              write(MR_global_error,*)'Could not open ',adjustl(trim(MR_windfiles(iw)))
               write(MR_global_error,*)'Exiting'
               stop 1
             endif
             if(iw.eq.1)then
               ! Find the id of the time dimension
-              nSTAT = nf90_inq_dimid(ncid,trim(ADJUSTL(Met_dim_names(1))),t_dim_id)
+              nSTAT = nf90_inq_dimid(ncid,adjustl(trim(Met_dim_names(1))),t_dim_id)
               call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid time")
               ! Get length of time dimension and allocate MR_windfile_stephour
               nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_fullmet)
@@ -1725,13 +1755,13 @@
 
             ! Each wind file needs a ref-time which in almost all cases is given
             ! in the 'units' attribute of the time variable
-            write(MR_global_info,*)iw,trim(ADJUSTL(MR_windfiles(iw)))
-            nSTAT = nf90_open(trim(ADJUSTL(MR_windfiles(iw))),NF90_NOWRITE,ncid)
+            write(MR_global_info,*)iw,adjustl(trim(MR_windfiles(iw)))
+            nSTAT = nf90_open(adjustl(trim(MR_windfiles(iw))),NF90_NOWRITE,ncid)
             call MR_NC_check_status(nSTAT,0,"nf90_open")
             if(nSTAT.ne.NF90_NOERR)then
               write(MR_global_error,*)'MR ERROR: nf90_open to read header:', &
                              nf90_strerror(nSTAT)
-              write(MR_global_error,*)'Could not open ',trim(ADJUSTL(MR_windfiles(iw)))
+              write(MR_global_error,*)'Could not open ',adjustl(trim(MR_windfiles(iw)))
               write(MR_global_error,*)'Exiting'
               stop 1
             endif
@@ -1766,7 +1796,7 @@
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Time")
             Met_dim_names(1)= trim(adjustl(indim))
 
-            nSTAT = nf90_inq_dimid(ncid,trim(ADJUSTL(Met_dim_names(1))),t_dim_id)
+            nSTAT = nf90_inq_dimid(ncid,trim(adjustl(Met_dim_names(1))),t_dim_id)
             call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid Time")
             if(iw.eq.1)then
               ! Get length of time dimension and allocate MR_windfile_stephour
@@ -1779,7 +1809,7 @@
             endif
 
             ! get variable id for time
-            nSTAT = nf90_inq_varid(ncid,trim(ADJUSTL(Met_dim_names(1))),time_var_id)
+            nSTAT = nf90_inq_varid(ncid,trim(adjustl(Met_dim_names(1))),time_var_id)
             call MR_NC_check_status(nSTAT,1,"nf90_inq_varid Time")
             ! We need the reftime for this file, check time variable for 'units'
             nSTAT = nf90_Inquire_Attribute(ncid, time_var_id,&
@@ -1959,17 +1989,10 @@
 
       implicit none
 
-      integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
-
       real(kind=8)      ,intent(in)  :: inhour
       integer           ,intent(in)  :: ivar
       character(len=130),intent(out) :: infile
 
-      !integer               :: HS_YearOfEvent
-      !integer               :: HS_MonthOfEvent
-      !integer               :: HS_DayOfEvent
-      !logical               :: HS_IsLeapYear
       integer,dimension(12) :: DaysInMonth
       integer               :: dum_i1,dum_i2,dum_i3
 
@@ -2041,7 +2064,7 @@
         endif
         write(MR_iw5_suffix1,325)thisYear,'.nc'
         write(MR_iw5_suffix2,325)thisYear+1,'.nc'   ! Next file for iwf=25 is next year
-        write(infile,425)trim(ADJUSTL(MR_iw5_root)),'/',thisYear,'/', &
+        write(infile,425)trim(adjustl(MR_iw5_root)),MR_DirDelim,thisYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
  251    format(a4)
@@ -2074,7 +2097,7 @@
         write(MR_iw5_suffix2,326)thisYear,thisMonth,dum_i1,'00_',&
                                  thisYear,thisMonth,dum_i2,dum_i3,'.nc'
 
-        write(infile,426)trim(ADJUSTL(MR_iw5_root)),'/',MR_Comp_StartYear,'/', &
+        write(infile,426)trim(adjustl(MR_iw5_root)),MR_DirDelim,MR_Comp_StartYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
  261    format(a17)
@@ -2122,7 +2145,7 @@
             write(MR_iw5_suffix1,327)thisYear,'.nc'
           endif
 
-          write(infile,427)trim(ADJUSTL(MR_iw5_root)),'/',thisYear,'/', &
+          write(infile,427)trim(adjustl(MR_iw5_root)),MR_DirDelim,thisYear,MR_DirDelim, &
                            trim(adjustl(MR_iw5_prefix)),   &
                            trim(adjustl(MR_iw5_suffix1))
         elseif(MR_iversion.eq.3)then
@@ -2144,7 +2167,7 @@
           endif
         write(MR_iw5_suffix1,272)'_pres.nc'
 
-        write(infile,427)trim(ADJUSTL(MR_iw5_root)),'/',thisYear,'/', &
+        write(infile,427)trim(adjustl(MR_iw5_root)),MR_DirDelim,thisYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
         endif
@@ -2195,7 +2218,7 @@
         endif
         write(MR_iw5_suffix1,329)thisYear,thisMonth,dum_i1,'00_',&
                                  thisYear,thisMonth,dum_i2,dum_i3,'.nc'
-        write(infile,429)trim(ADJUSTL(MR_iw5_root)),'/',MR_Comp_StartYear,'/', &
+        write(infile,429)trim(adjustl(MR_iw5_root)),MR_DirDelim,MR_Comp_StartYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
  291    format(a34)
@@ -2222,7 +2245,7 @@
         endif
         write(MR_iw5_suffix1,330)thisYear,thisMonth,dum_i1,'00_',&
                                  thisYear,thisMonth,dum_i2,dum_i3,'.nc'
-        write(infile,430)trim(ADJUSTL(MR_iw5_root)),'/',MR_Comp_StartYear,'/', &
+        write(infile,430)trim(adjustl(MR_iw5_root)),MR_DirDelim,MR_Comp_StartYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
  230    format(a39)
@@ -2256,24 +2279,30 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
-      real(kind=sp), parameter :: tol = 1.0e-7_sp
+      !integer, parameter :: dp        = 8 ! double precision
+      !real(kind=sp), parameter :: tol = 1.0e-7_sp
 
       integer :: iw,i
 
       integer :: nSTAT
       integer :: ncid
 
-      !integer            :: var_xtype
       integer            :: xtype
       integer            :: length
       integer            :: attnum
-      character(len=40)  :: invar
       character(len=nf90_max_name) :: name_dum
       integer :: t_dim_id
       integer :: var_id
       real(kind=sp):: dum_sp
       integer :: ivar
+
+      INTERFACE
+        subroutine MR_NC_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_NC_check_status
+      END INTERFACE
 
       if(MR_VERB.ge.1)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
@@ -2285,16 +2314,16 @@
       ! windfiles.  There is no checking if this is actually the case.
       ! Just read the first windfile.
       iw = 1
-      write(MR_global_info,*)"Opening ",iw,trim(ADJUSTL(MR_windfiles(iw)))
-      nSTAT = nf90_open(trim(ADJUSTL(MR_windfiles(iw))),NF90_NOWRITE,ncid)
+      write(MR_global_info,*)"Opening ",iw,trim(adjustl(MR_windfiles(iw)))
+      nSTAT = nf90_open(trim(adjustl(MR_windfiles(iw))),NF90_NOWRITE,ncid)
       call MR_NC_check_status(nSTAT,0,"nf90_open")
       if(nSTAT.ne.NF90_NOERR)then
         write(MR_global_error,*)'MR ERROR: nf90_open to read header:', nf90_strerror(nSTAT)
-        write(MR_global_error,*)'Could not open ',trim(ADJUSTL(MR_windfiles(iw)))
+        write(MR_global_error,*)'Could not open ',trim(adjustl(MR_windfiles(iw)))
         write(MR_global_error,*)'Exiting'
         stop 1
       else
-        write(MR_global_info,*)"Opened ",trim(ADJUSTL(MR_windfiles(iw)))
+        write(MR_global_info,*)"Opened ",trim(adjustl(MR_windfiles(iw)))
       endif
 
       ! Get dim ids, sizes, and associated dimension variable for dims:
@@ -2366,7 +2395,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       integer,intent(in) :: ivar
       integer,intent(in) :: istep
@@ -2401,6 +2430,27 @@
       real(kind=sp) :: Z_top, T_top
       real(kind=sp) :: pp
       integer       :: idx
+
+      INTERFACE
+        subroutine MR_NC_check_status(nSTAT, errcode, operation)
+          integer, intent(in) :: nSTAT
+          integer, intent(in) :: errcode
+          character(len=*), intent(in) :: operation
+        end subroutine MR_NC_check_status
+        subroutine MR_Set_iwind5_filenames(inhour,ivar,infile)
+          real(kind=8)      ,intent(in)  :: inhour
+          integer           ,intent(in)  :: ivar
+          character(len=130),intent(out) :: infile
+        end subroutine MR_Set_iwind5_filenames
+        subroutine MR_interp_iwf25_grid(imax,jmax,invar,outvar,scale_fac,offset)
+          integer, parameter :: sp        = 4 ! single precision
+          integer         ,intent(in)  :: imax,jmax
+          integer(kind=sp),intent(in)  :: invar(192,94,1)
+          real(kind=sp)   ,intent(out) :: outvar(imax,jmax)
+          real(kind=sp)   ,intent(in)  :: scale_fac
+          real(kind=sp)   ,intent(in)  :: offset
+        end subroutine MR_interp_iwf25_grid
+      END INTERFACE
 
       if(MR_VERB.ge.2)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
@@ -3027,7 +3077,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       integer         ,intent(in)  :: imax,jmax
       integer(kind=sp),intent(in)  :: invar(192,94,1)

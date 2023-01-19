@@ -1,0 +1,12 @@
+-169.9468 52.8217                     ! lon lat
+1875 6 20 5.5                         ! YYYY MM DD HH.H
+24.0                                  ! simtime
+1                                     ! streamflag (0 for streak lines (static windfield), 1 for streamlines)
+60                                    ! output time step (minutes)
+6                                     ! ntraj (<10)
+1.524 3.048 6.096 9.144 12.192 15.240 ! level values in km
+1 4 -107.0 50.0 50.0 50.0 6367.470    ! Output projection
+5 27 2                                ! iwind iwindformat iformat
+0 12 14                               ! autoflag (0 for auto, 1 for specified) FC_freq GFS_Archive_Days
+1                                     ! number of windfiles
+NOAA20CRv3

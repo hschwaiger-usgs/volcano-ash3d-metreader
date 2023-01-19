@@ -24,9 +24,6 @@
 
       implicit none
 
-      integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
-
       integer,intent(in) :: igrid
 
       write(MR_global_production,*)"--------------------------------------------------------------------------------"
@@ -1680,7 +1677,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       integer                         ,intent(in)  :: nx1,ny1
       real(kind=sp),dimension(nx1,ny1),intent(in)  :: wrk_met
@@ -1783,7 +1780,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       integer                     ,intent(in)  :: nzm
       real(kind=sp),dimension(nzm),intent(in)  :: z_met
@@ -1860,7 +1857,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       logical      :: IsThere
       character(len=130) :: lllinebuffer

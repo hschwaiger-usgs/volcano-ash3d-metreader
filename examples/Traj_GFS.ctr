@@ -1,0 +1,45 @@
+-169.9468 52.8217                     ! lon lat
+2022 9 29 5.5                         ! YYYY MM DD HH.H
+24.0                                  ! simtime
+1                                     ! streamflag (0 for streak lines (static windfield), 1 for streamlines)
+60                                    ! output time step (minutes)
+6                                     ! ntraj (<10)
+1.524 3.048 6.096 9.144 12.192 15.240 ! level values in km
+1 4 -107.0 50.0 50.0 50.0 6367.470    ! Output projection
+4 20 2                                ! iwind iwindformat iformat
+0 12 14                               ! autoflag (0 for auto, 1 for specified) FC_freq GFS_Archive_Days
+34                                     ! number of windfiles
+gfs/2022092800.f000.nc
+gfs/2022092800.f003.nc
+gfs/2022092800.f006.nc
+gfs/2022092800.f009.nc
+gfs/2022092800.f012.nc
+gfs/2022092800.f015.nc
+gfs/2022092800.f018.nc
+gfs/2022092800.f021.nc
+gfs/2022092800.f024.nc
+gfs/2022092800.f027.nc
+gfs/2022092800.f030.nc
+gfs/2022092800.f033.nc
+gfs/2022092800.f036.nc
+gfs/2022092800.f039.nc
+gfs/2022092800.f042.nc
+gfs/2022092800.f045.nc
+gfs/2022092800.f048.nc
+gfs/2022092800.f051.nc
+gfs/2022092800.f054.nc
+gfs/2022092800.f057.nc
+gfs/2022092800.f060.nc
+gfs/2022092800.f063.nc
+gfs/2022092800.f066.nc
+gfs/2022092800.f069.nc
+gfs/2022092800.f072.nc
+gfs/2022092800.f075.nc
+gfs/2022092800.f078.nc
+gfs/2022092800.f081.nc
+gfs/2022092800.f084.nc
+gfs/2022092800.f087.nc
+gfs/2022092800.f090.nc
+gfs/2022092800.f093.nc
+gfs/2022092800.f096.nc
+gfs/2022092800.f099.nc
