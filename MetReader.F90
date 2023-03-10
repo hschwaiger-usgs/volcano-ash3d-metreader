@@ -10,8 +10,7 @@
 !      you credit the authors and cite published documentation of this model (below) when
 !      publishing or distributing derivative products.
 !
-!      Schwaiger, H.F., Denlinger, R.P., and Mastin, L.G., 2012, Ash3d, a
-!      finite-
+!      Schwaiger, H.F., Denlinger, R.P., and Mastin, L.G., 2012, Ash3d, a finite-
 !         volume, conservative numerical model for ash transport and tephra deposition,
 !         Journal of Geophysical Research, 117, B04204, doi:10.1029/2011JB008968. 
 !
@@ -38,13 +37,13 @@
 !        subroutine MR_Read_HGT_arrays(istep,reset_first_time)
 !        subroutine MR_Read_3d_MetP_Variable(ivar,istep)
 !        subroutine MR_Read_3d_MetH_Variable(ivar,istep)
-!        subroutine MR_Read_3d_Met_Variable_to_CompGrid(ivar,istep,IsNext)
+!        subroutine MR_Read_3d_Met_Variable_to_CompH(ivar,istep,IsNext)
 !        subroutine MR_Read_3d_Met_Variable_to_CompP(ivar,istep,IsNext)
 !        subroutine MR_Read_2d_Met_Variable(ivar,istep)
 !        subroutine MR_Read_2d_Met_Variable_to_CompGrid(ivar,istep)
 !        subroutine MR_Rotate_UV_GR2ER_Met(istep,SetComp)
 !        subroutine MR_Rotate_UV_ER2GR_Comp(istep)
-!        subroutine MR_Regrid_MetP_to_CompGrid(istep)
+!        subroutine MR_Regrid_MetP_to_CompH(istep)
 !        subroutine MR_Regrid_MetP_to_MetH(istep)
 !        subroutine MR_Regrid_Met2d_to_Comp2d()
 !        subroutine MR_DelMetP_Dx()
@@ -234,18 +233,31 @@
       integer       :: MR_iHeightHandler = 2
 
         ! The following are used for sonde data
-      integer :: MR_nSnd_Locs      = 1  ! Number of Sonde locations
-      integer :: MR_Snd_nt_fullmet = 1  ! Number of times at the Sonde locations
-      integer :: MR_Snd_nvars      = 5  ! Number of Sonde variables (P,H,U,V,T,+user-specified)
-      logical :: Snd_Have_PT    = .false.
+      integer                                           :: num_RadSnd_Stat
+      character(len=4 ),dimension(:),allocatable,public :: MR_Snd_cd   ! Station code
+      integer          ,dimension(:),allocatable,public :: MR_Snd_id   ! WMO station ID
+      real(kind=dp)    ,dimension(:),allocatable,public :: MR_Snd_lt   ! Station latitude
+      real(kind=dp)    ,dimension(:),allocatable,public :: MR_Snd_ln   ! Station longitude
+      real(kind=dp)    ,dimension(:),allocatable,public :: MR_Snd_el   ! Station elevation
+      character(len=25),dimension(:),allocatable,public :: MR_Snd_lnm  ! Station long name
+      character(len=2 ),dimension(:),allocatable,public :: MR_Snd_st   ! Station state
+      character(len=2 ),dimension(:),allocatable,public :: MR_Snd_ct   ! Station country
+
+      integer :: MR_nSnd_Locs      = 1     ! Number of Sonde locations
+      integer :: MR_Snd_nt_fullmet = 1     ! Number of times at the Sonde locations
+      integer :: MR_Snd_nvars      = 5     ! Number of Sonde variables (P,H,U,V,T,+user-specified)
+      logical :: Snd_Have_PT    = .false.  ! 3-col ASCII input do not have pres and temp
       logical :: Snd_Have_Coord = .false.  ! If the 1-d data have the optional projection params
                                            ! then it will be used, otherwise vel will be relative
                                            ! to comp grid.
+      integer      ,dimension(:)      ,allocatable, public :: Snd_idx           ! Index of radiosonde in master list
       real(kind=sp),dimension(:,:,:,:),allocatable, public :: MR_SndVars_metP   ! (MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,300)
       integer      ,dimension(:,:)    ,allocatable, public :: MR_Snd_np_fullmet ! Number of pressure values for each location/time
-      integer      ,dimension(:)      ,allocatable, public :: MR_SndVarsID      ! Lists which vars are in which columns of  MR_SndVars_metP
-      real(kind=sp),dimension(:,:,:)  ,allocatable, public :: MR_Snd2Comp_tri_map_wgt ! weights of nearby sondes for every comp point
-      integer      ,dimension(:,:,:)  ,allocatable, public :: MR_Snd2Comp_tri_map_idx ! sonde index of weights
+      integer      ,dimension(:)      ,allocatable, public :: MR_SndVarsID      ! Lists which vars are in which columns of MR_SndVars_metP
+      real(kind=sp),dimension(:,:,:)  ,allocatable, public :: MR_Snd2Comp_map_wgt ! weights of nearby sondes for every comp point
+      integer      ,dimension(:,:,:)  ,allocatable, public :: MR_Snd2Comp_map_idx ! sonde index of weights
+      integer                                     , public :: MR_nstat = 4      ! number of stations to consider (0 for all)
+      real(kind=dp)                               , public :: MR_pexp  = 4.0_dp ! exponent for inverse distance calculation
 
       !    Native grid of Met file using Height as vertical coordinate
       !    (resampled onto z-gridpoints of computational grid)
@@ -694,8 +706,8 @@
        if(allocated(MR_SndVars_metP               ))deallocate(MR_SndVars_metP)
        if(allocated(MR_SndVarsID                  ))deallocate(MR_SndVarsID)
        if(allocated(MR_Snd_np_fullmet             ))deallocate(MR_Snd_np_fullmet)
-       if(allocated(MR_Snd2Comp_tri_map_wgt       ))deallocate(MR_Snd2Comp_tri_map_wgt)
-       if(allocated(MR_Snd2Comp_tri_map_idx       ))deallocate(MR_Snd2Comp_tri_map_idx)
+       if(allocated(MR_Snd2Comp_map_wgt           ))deallocate(MR_Snd2Comp_map_wgt)
+       if(allocated(MR_Snd2Comp_map_idx           ))deallocate(MR_Snd2Comp_map_idx)
 
        nlev_coords_detected = 0
 
@@ -1064,6 +1076,7 @@
         MR_Reannalysis = .false.
         write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "Radiosonde data"
+        write(MR_global_info,*)"  Number of radiosonde stations = ",MR_iGridCode
       elseif (MR_iwindformat.eq.3) then 
         ! NARR3D NAM221 32 km North America files
           ! https://rda.ucar.edu/datasets/ds608.0/
@@ -2467,6 +2480,14 @@
       integer            :: ivar
       real(kind=8)       :: inhour
 
+      INTERFACE
+        subroutine MR_Set_iwind5_filenames(inhour,ivar,infile)
+          real(kind=8)      ,intent(in)  :: inhour
+          integer           ,intent(in)  :: ivar
+          character(len=130),intent(out) :: infile
+        end subroutine MR_Set_iwind5_filenames
+      END INTERFACE
+
       if(MR_VERB.ge.1)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
         write(MR_global_production,*)"----------      MR_Read_Met_DimVars                                   ----------"
@@ -2554,7 +2575,13 @@
         do i = 1,MR_iwindfiles-1
           inhour = MR_Comp_StartHour + (i-1)*MR_iw5_hours_per_file
           do ivar = 1,5
+#ifdef USENETCDF
             call MR_Set_iwind5_filenames(inhour,ivar,infile)
+#else
+            write(MR_global_error,*)"MR ERROR: Currently, iw=5 required netcdf."
+            write(MR_global_error,*)"          Recompile MetReader with netcdf enabled"
+            stop 1
+#endif
             inquire( file=adjustl(trim(infile)), exist=IsThere )
             write(MR_global_info,*)" ",i,trim(adjustl(trim(infile))),IsThere
             if(.not.IsThere)then
@@ -2944,6 +2971,7 @@
       real(kind=8) :: StepInterval
       real(kind=8) :: met_t1,met_t2,met_dt1
       logical      :: prestep, poststep
+      integer :: files_per_tstep
 
       INTERFACE
         real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
@@ -3048,7 +3076,7 @@
         StepInterval = met_t2 - met_t1
       endif
 
-      !   Checking if a prestep is needed
+      !   Checking if a pre-step is needed
       if(MR_iwind.eq.1.and.MR_iwindformat.eq.1)then
         ! For the ASCII profile cases (not the radiosonde), hours are given as offset
         ! from the start time.  So reset all hours to relative to eStartHour
@@ -3084,7 +3112,7 @@
         write(MR_global_info,*)"Start hour of simulation is in range of NWP data"
         prestep  = .false.
       endif
-      !   Checking if a poststep is needed
+      !   Checking if a post-step is needed
       met_t1  = MR_windfile_starthour(MR_iwindfiles)+MR_windfile_stephour(MR_iwindfiles,nt_fullmet)
       met_dt1 = StepInterval
       if(MR_Comp_StartHour+MR_Comp_Time_in_hours.ge.met_t1)then
@@ -3119,10 +3147,10 @@
       endif
 
       ! Loop through all the files and steps and count how many are needed to bracket the time
-      ! needed (MR_Comp_StartHour -> MR_Comp_StartHour+MR_Comp_Time_in_hours)
-      ! Note: If prestep or poststep is needed, istep will be incremented accordingly
+      ! needed (MR_Comp_StartHour -> MR_Comp_StartHour+MR_Comp_Time_in_hours).
+      ! Note: If pre-step or post-step is needed, istep will be incremented accordingly.
       ! Once we know the number of steps needed, we will allocate space, then fill the variables
-      ! with just the step info needed
+      ! with just the step info needed.
       write(MR_global_info,*)'    File num  | Step in file  |  stephour   |   SimStartHour   | nMetStep | Note'
       if(prestep)then
         Found_First_Step = .true.
@@ -3134,7 +3162,13 @@
         istep = 0
       endif
       Found_Last_Step  = .false.
-      do iw = 1,MR_iwindfiles
+      if(MR_iwind.eq.1.and.MR_iwindformat.eq.2)then
+        ! Radiosonde files might have more than one file per time step
+        files_per_tstep = MR_nSnd_Locs
+      else
+        files_per_tstep = 1
+      endif
+      do iw = 1,MR_iwindfiles,files_per_tstep
         do iwstep = 1,MR_windfiles_nt_fullmet(iw)
           stephour = MR_windfile_starthour(iw) + MR_windfile_stephour(iw,iwstep)
           ! Unless the start time is before this step hour, reset the index istep to 1
@@ -3238,7 +3272,7 @@
         istep = 0
       endif
       Found_Last_Step  = .false.
-      do iw = 1,MR_iwindfiles
+      do iw = 1,MR_iwindfiles,files_per_tstep
         do iwstep = 1,MR_windfiles_nt_fullmet(iw)
           stephour = MR_windfile_starthour(iw) + MR_windfile_stephour(iw,iwstep)
           ! Unless the start time is before this step hour, reset the index istep to 1
@@ -3654,6 +3688,7 @@
                                     nz_comp,      dumVertCoord_sp,  var_col_metH)
 
           MR_dum3d_metH(i,j,:) = var_col_metH
+          !write(*,*)i,j,MR_dum3d_metP(i,j,:)
 
         enddo ! j
       enddo  ! i
@@ -3669,6 +3704,7 @@
 !##############################################################################
 !
 !     MR_Read_3d_Met_Variable_to_CompGrid
+!     MR_Read_3d_Met_Variable_to_CompH
 !      Note: this should be named MR_Read_3d_Met_Variable_to_CompH since
 !            these is now an analogous subroutine mapping MetP to CompP
 !
@@ -3689,7 +3725,7 @@
 !
 !##############################################################################
 
-      subroutine MR_Read_3d_Met_Variable_to_CompGrid(ivar,istep,IsNext)
+      subroutine MR_Read_3d_Met_Variable_to_CompH(ivar,istep,IsNext)
 
       implicit none
 
@@ -3702,7 +3738,7 @@
 
       if(MR_VERB.ge.2)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Read_3d_Met_Variable_to_CompGrid                   ----------"
+        write(MR_global_production,*)"----------      MR_Read_3d_Met_Variable_to_CompH                      ----------"
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
       endif
 
@@ -3747,15 +3783,19 @@
       allocate(tmp_regrid2d_sp(nx_comp,ny_comp)); tmp_regrid2d_sp(:,:)=0.0_sp
 
       do k=1,nz_comp
-        if(MR_iwindformat.eq.1.or.MR_iwindformat.eq.2)then
-          !NOTE: This will not work for multi-site sonde data
+        if(MR_iwindformat.eq.1.or.(MR_iwindformat.eq.2.and.MR_nSnd_Locs.eq.1))then
+          ! ASCII profile data with one location
           MR_dum3d_compH(:,:,k) = MR_dum3d_metH(1,1,k)
           cycle
+        elseif(MR_iwind.eq.1.and.MR_iwindformat.eq.2.and.MR_nSnd_Locs.gt.1)then
+          ! ASCII profile data with multiple locations
+          call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metH(1:nx_submet,1:ny_submet,k),       &
+                                       nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+        else
+          ! All other cases
+          call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metH(1:nx_submet,1:ny_submet,k),       &
+                                  nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
         endif
-  
-        call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metH(1:nx_submet,1:ny_submet,k),       &
-                                nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
-  
         do i = 1,nx_comp
           do j = 1,ny_comp
             if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
@@ -3785,7 +3825,7 @@
 
       return
 
-      end subroutine MR_Read_3d_Met_Variable_to_CompGrid
+      end subroutine MR_Read_3d_Met_Variable_to_CompH
 
 !##############################################################################
 !
@@ -3875,15 +3915,19 @@
       allocate(tmp_regrid2d_sp(nx_comp,ny_comp));tmp_regrid2d_sp(:,:)=0.0_sp
 
       do k=1,np_fullmet
-        if(MR_iwindformat.eq.1.or.MR_iwindformat.eq.2)then
-          !NOTE: This will not work for multi-site sonde data
+        if(MR_iwindformat.eq.1.or.(MR_iwindformat.eq.2.and.MR_nSnd_Locs.eq.1))then
+          ! ASCII profile data with one location
           MR_dum3d_compP(:,:,k) = MR_dum3d_metP(1,1,k)
           cycle
+        elseif(MR_iwind.eq.1.and.MR_iwindformat.eq.2.and.MR_nSnd_Locs.gt.1)then
+          ! ASCII profile data with multiple locations
+          call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
+                                       nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+        else
+          ! All other cases
+          call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
+                                  nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
         endif
-
-        call MR_Regrid_Met2Comp(nx_submet,ny_submet,MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
-                                nx_comp,  ny_comp,tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
-
         do i = 1,nx_comp
           do j = 1,ny_comp
             if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
@@ -4013,9 +4057,18 @@
 
       allocate(tmp_regrid2d_sp(nx_comp,ny_comp)); tmp_regrid2d_sp(:,:)=0.0_sp
 
+      if(MR_iwindformat.eq.1.or.(MR_iwindformat.eq.2.and.MR_nSnd_Locs.eq.1))then
+        ! ASCII profile data with one location
+        tmp_regrid2d_sp(:,:) = MR_dum2d_met(1,1)
+      elseif(MR_iwind.eq.1.and.MR_iwindformat.eq.2.and.MR_nSnd_Locs.gt.1)then
+        ! ASCII profile data with multiple locations
+        call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum2d_met(1:nx_submet,1:ny_submet),       &
+                                     nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+      else
+        ! All other cases
         call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum2d_met(1:nx_submet,1:ny_submet),       &
                                 nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
-
+      endif
       do i = 1,nx_comp
         do j = 1,ny_comp
           if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
@@ -4115,14 +4168,14 @@
             ! copy v to main workspace and regrid
             MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_fullmet) = &
               MR_v_ER_metP(1:nx_submet,1:ny_submet,1:np_fullmet)
-            call MR_Regrid_MetP_to_CompGrid(istep)
+            call MR_Regrid_MetP_to_CompH(istep)
             MR_dum3d_compH_2(1:nx_comp,1:ny_comp,1:nz_comp) = &
               MR_dum3d_compH(1:nx_comp,1:ny_comp,1:nz_comp)
   
             ! copy u to main workspace and regrid
             MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_fullmet) = &
               MR_u_ER_metP(1:nx_submet,1:ny_submet,1:np_fullmet)
-            call MR_Regrid_MetP_to_CompGrid(istep)
+            call MR_Regrid_MetP_to_CompH(istep)
             !MR_dum3d_compH is set by this regrid call
           endif
 
@@ -4130,13 +4183,13 @@
             ! copy v to main workspace and regrid
             MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_fullmet) = &
               MR_v_ER_metP(1:nx_submet,1:ny_submet,1:np_fullmet)
-            call MR_Regrid_MetP_to_CompGrid(istep)
+            call MR_Regrid_MetP_to_CompH(istep)
             MR_dum3d_compP_2(1:nx_comp,1:ny_comp,1:np_fullmet) = &
               MR_dum3d_compP(1:nx_comp,1:ny_comp,1:np_fullmet)
             ! copy u to main workspace and regrid
             MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_fullmet) = &
               MR_u_ER_metP(1:nx_submet,1:ny_submet,1:np_fullmet)
-            call MR_Regrid_MetP_to_CompGrid(istep)
+            call MR_Regrid_MetP_to_CompH(istep)
             !MR_dum3d_compP is set by this regrid call
           endif
 
@@ -4202,21 +4255,21 @@
         ! Met grid is projected and comp grid is LL
         ! Fill the y velocities to spare array (comp_2)
         call MR_Read_3d_MetP_Variable(3,istep) ! This fills MR_dum3d_metP
-        call MR_Regrid_MetP_to_CompGrid(istep) ! Takes MR_dum3d_metP and fills MR_dum3d_compH
+        call MR_Regrid_MetP_to_CompH(istep) ! Takes MR_dum3d_metP and fills MR_dum3d_compH
           MR_dum3d_compH_2 = MR_dum3d_compH
 
         call MR_Read_3d_MetP_Variable(2,istep) 
-        call MR_Regrid_MetP_to_CompGrid(istep)
+        call MR_Regrid_MetP_to_CompH(istep)
         ! Now compH and compH_2 have vx and vy
       elseif(Map_Case.eq.5)then
         ! If the velocity components are grid relative, then
         ! assume MR_u_ER_metP and MR_v_ER_metP have already been set by
         ! MR_Rotate_UV_GR2ER_Met
         MR_dum3d_metP = MR_v_ER_metP
-        call MR_Regrid_MetP_to_CompGrid(istep)
+        call MR_Regrid_MetP_to_CompH(istep)
           MR_dum3d_compH_2 = MR_dum3d_compH
         MR_dum3d_metP = MR_u_ER_metP
-        call MR_Regrid_MetP_to_CompGrid(istep)
+        call MR_Regrid_MetP_to_CompH(istep)
         ! Now compH and compH_2 have vx and vy
       else
         write(MR_global_error,*)"Should not be calling this subroutine unless Map_Case=3 or 5"
@@ -4251,7 +4304,7 @@
 
 !##############################################################################
 !
-!     MR_Regrid_MetP_to_CompGrid
+!     MR_Regrid_MetP_to_CompH
 !
 !     This subroutine expects the calling program to populate MR_dum3d_metP.
 !     This is regridded onto MR_dum3d_metH by the subroutine Regrid_MetP_to_MetH.
@@ -4262,7 +4315,7 @@
 !
 !##############################################################################
 
-      subroutine MR_Regrid_MetP_to_CompGrid(istep)
+      subroutine MR_Regrid_MetP_to_CompH(istep)
 
       implicit none
 
@@ -4273,7 +4326,7 @@
 
       if(MR_VERB.ge.2)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Regrid_MetP_to_CompGrid                            ----------"
+        write(MR_global_production,*)"----------      MR_Regrid_MetP_to_CompH                               ----------"
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
       endif
       ! Check prerequisites
@@ -4296,13 +4349,20 @@
       if(MR_useCompH)then
         ! Regridding to CompH
         do k=1,nz_comp
-          if(MR_iwindformat.eq.1.or.MR_iwindformat.eq.2)then
-            !NOTE: This will not work for multi-site sonde data
+          !if(MR_iwindformat.eq.1)then
+          if(MR_iwindformat.eq.1.or.(MR_iwindformat.eq.2.and.MR_nSnd_Locs.eq.1))then
+            ! ASCII profile data with one location
             MR_dum3d_compH(1:nx_comp,1:ny_comp,k) = MR_dum3d_metH(1,1,k)
             cycle
+          elseif(MR_iwind.eq.1.and.MR_iwindformat.eq.2.and.MR_nSnd_Locs.gt.1)then
+            ! ASCII profile data with multiple locations
+            call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metH(1:nx_submet,1:ny_submet,k),       &
+                                         nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+          else
+            ! All other cases
+            call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metH(1:nx_submet,1:ny_submet,k),       &
+                                    nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
           endif
-          call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metH(1:nx_submet,1:ny_submet,k),       &
-                                  nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
           do i = 1,nx_comp
             do j = 1,ny_comp
               if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
@@ -4315,13 +4375,19 @@
       if(MR_useCompP)then
         ! Regridding to CompP
         do k=1,np_fullmet
-          if(MR_iwindformat.eq.1.or.MR_iwindformat.eq.2)then
-            !NOTE: This will not work for multi-site sonde data
+          if(MR_iwindformat.eq.1.or.(MR_iwindformat.eq.2.and.MR_nSnd_Locs.eq.1))then
+            ! ASCII profile data with one location
             MR_dum3d_compP(:,:,k) = MR_dum3d_metP(1,1,k)
             cycle
+          elseif(MR_iwind.eq.1.and.MR_iwindformat.eq.2.and.MR_nSnd_Locs.gt.1)then
+            ! ASCII profile data with multiple locations
+            call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
+                                         nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+          else
+            ! All other cases
+            call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
+                                    nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
           endif
-          call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
-                                  nx_comp,  ny_comp, tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
           do i = 1,nx_comp
             do j = 1,ny_comp
               if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
@@ -4339,7 +4405,7 @@
 
       return
 
-      end subroutine MR_Regrid_MetP_to_CompGrid
+      end subroutine MR_Regrid_MetP_to_CompH
 
 !##############################################################################
 !
@@ -4490,16 +4556,14 @@
         !  Since MR_dum3d_metH and MR_dum3d_compH have the same z-coordinate, we only
         !  need to do 2d regridding on each k-slice
       allocate(tmp_regrid2d_sp(nx_comp,ny_comp));tmp_regrid2d_sp(:,:)=0.0_sp
-
-        call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum2d_met(1:nx_submet,1:ny_submet),       &
-                                nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
-
-        do i = 1,nx_comp
-          do j = 1,ny_comp
-            if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
-          enddo
+      call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum2d_met(1:nx_submet,1:ny_submet),       &
+                              nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+      do i = 1,nx_comp
+        do j = 1,ny_comp
+          if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
         enddo
-        MR_dum2d_comp(:,:) = tmp_regrid2d_sp(:,:)
+      enddo
+      MR_dum2d_comp(:,:) = tmp_regrid2d_sp(:,:)
 
       deallocate(tmp_regrid2d_sp)
 

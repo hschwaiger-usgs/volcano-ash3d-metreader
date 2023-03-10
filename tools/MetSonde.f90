@@ -65,7 +65,7 @@
           integer            ,intent(out) :: inday
           real(kind=dp)      ,intent(out) :: inhour
           character(len=100) ,intent(out) :: WINDROOT
-        end subroutine
+        end subroutine Read_ComdLine
         subroutine GetWindFile(inyear,inmonth,inday,inhour,WINDROOT,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
           integer,parameter   :: dp        = 8 ! double precision
           integer            ,intent(in) :: inyear
@@ -76,7 +76,7 @@
           integer            ,intent(in) :: FC_freq
           integer            ,intent(in) :: GFS_Archive_Days
           integer            ,intent(in) :: GFS_FC_TotHours
-        end subroutine
+        end subroutine GetWindFile
         subroutine GetMetProfile(inlon,inlat,inyear,inmonth,inday,inhour)
           integer,parameter   :: sp        = 4 ! single precision
           integer,parameter   :: dp        = 8 ! double precision
@@ -86,7 +86,7 @@
           integer      , intent(in)  :: inmonth
           integer      , intent(in)  :: inday
           real(kind=dp), intent(in)  :: inhour
-        end subroutine
+        end subroutine GetMetProfile
       END INTERFACE
 
       call Read_ComdLine(inlon,inlat, &
@@ -207,12 +207,12 @@
       IsLatLon = .true.
         ! These are all dummy values since the comp grid is lon/lat
       iprojflag = 1
-      lambda0      = -105.0
-      phi0         = 90.0
-      phi1         = 90.0
-      phi2         = 90.0
-      k0           = 0.933
-      radius_earth = 6371.229
+      lambda0      = -105.0_8
+      phi0         = 90.0_8
+      phi1         = 90.0_8
+      phi2         = 90.0_8
+      k0           = 0.933_8
+      radius_earth = 6371.229_8
       call MR_Set_CompProjection(IsLatLon,iprojflag,lambda0,phi0,phi1,phi2,&
                                  k0,radius_earth)
 
@@ -233,7 +233,7 @@
       !write(MR_global_info,*)"iwfiles            = ",iwfiles
       write(MR_global_info,*)"--------------------------------------------------------------"
 
-      end subroutine
+      end subroutine Read_ComdLine
 
 !##############################################################################
 !##############################################################################
@@ -294,7 +294,7 @@
       real(kind=8) :: FC_Archive_StartHour
 
       integer      :: iw,iwf,igrid,iwfiles
-      real(kind=8)      :: Simtime_in_hours = 0.0
+      real(kind=8)      :: Simtime_in_hours = 0.0_8
       character(len=47) :: string1,string2
 
       integer :: i,ii
@@ -353,7 +353,7 @@
       read(zone,'(i3)') timezone
         ! FIND TIME IN UTC
       StartHour = real(values(5)-timezone,kind=8) + &
-                  real(values(6)/60.0,kind=8)
+                  real(values(6)/60.0_8,kind=8)
         ! find time in hours since BaseYear
       RunStartHour = HS_hours_since_baseyear(values(1),values(2),values(3),&
                                              StartHour,MR_BaseYear,MR_useLeap)
@@ -669,7 +669,7 @@
       do i = 1,np_fullmet
         GPHprof(i) = tc*GPHprof1(i) + tfrac*GPHprof2(i)
         tempprof(i) = tc*tempprof1(i) + tfrac*tempprof2(i)
-        write(20,*)GPHprof(i),p_fullmet_sp(i),tempprof(i)-273.0
+        write(20,*)GPHprof(i),p_fullmet_sp(i),tempprof(i)-273.0_4
       enddo
       close(20)
 
@@ -678,9 +678,9 @@
         lapse_1 = (tempprof(i-1)-tempprof(i  ))/(GPHprof(i  )-GPHprof(i-1))
         lapse_2 = (tempprof(i  )-tempprof(i+1))/(GPHprof(i+1)-GPHprof(i  ))
         lapse_3 = (tempprof(i+1)-tempprof(i+2))/(GPHprof(i+2)-GPHprof(i+1))
-        if(lapse_1.gt.0.002.and.&
-           lapse_2.lt.0.002.and.&
-           lapse_3.lt.0.002)then
+        if(lapse_1.gt.0.002_4.and.&
+           lapse_2.lt.0.002_4.and.&
+           lapse_3.lt.0.002_4)then
           TropoH = GPHprof(i)
           TropoT = tempprof(i)
           TropoP = p_fullmet_sp(i)
@@ -689,7 +689,6 @@
       enddo
       write(MR_global_production,*)"Tropopause Height, Temp, Pressure"
       write(MR_global_production,*)TropoH,TropoT,TropoP
-
 
       end subroutine GetMetProfile
 

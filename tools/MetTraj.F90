@@ -1,7 +1,7 @@
 !##############################################################################
 !##############################################################################
 !
-! ncMetTraj_[FB]
+! MetTraj_[FB]
 !
 ! This is a stand-alone program that uses the MetReader interface to calculate
 ! trajectories from a point (at various altitudes) using any of the NWP products
@@ -43,7 +43,7 @@
 !
 !##############################################################################
 
-      program ncMetTraj
+      program MetTraj
 
       use MetReader
 
@@ -107,7 +107,7 @@
           integer                    ,intent(out) :: autoflag
           integer                    ,intent(out) :: FC_freq
           integer                    ,intent(out) :: GFS_Archive_Days
-        end subroutine
+        end subroutine Read_ComdLine_InpFile
         subroutine GetWindFile(inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,&
                                 iw,iwf,igrid,idf,iwfiles,&
@@ -128,7 +128,7 @@
           integer         ,intent(in) :: FC_freq
           integer         ,intent(in) :: GFS_Archive_Days
           integer         ,intent(in) :: GFS_FC_TotHours
-        end subroutine
+        end subroutine GetWindFile
         subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj)
           integer,parameter   :: dp        = 8 ! double precision
@@ -142,7 +142,7 @@
           real(kind=dp), intent(in)      :: Simtime_in_hours
           integer      , intent(in)      :: TrajFlag
           integer      , intent(in)      :: ntraj
-        end subroutine
+        end subroutine Integrate_ConstH_Traj
       END INTERFACE
 
       call Read_ComdLine_InpFile(inlon,inlat, &
@@ -267,7 +267,7 @@
 
       write(MR_global_info,*)"Program ended normally."
 
-      end program ncMetTraj
+      end program MetTraj
 
 !##############################################################################
 !

@@ -2,6 +2,10 @@
 !##############################################################################
 !##############################################################################
 
+!     MR_Read_Met_DimVars_GRIB
+!     MR_Read_Met_Times_GRIB
+!     MR_Read_MetP_Variable_GRIB
+!     MR_GRIB_check_status
 
 !##############################################################################
 !
@@ -1972,15 +1976,15 @@
 
 !##############################################################################
 !
-!    MR_GRIB_check_status
+!     MR_GRIB_check_status
 !
-!    iSTAT   = error code returned from eccodes call
-!    errcode = user-supplied return value on stopping of code
-!    operation = string descriptor of function call causing error
+!     iSTAT   = error code returned from eccodes call
+!     errcode = user-supplied return value on stopping of code
+!     operation = string descriptor of function call causing error
 !
-!    Error-checking routine for eccodes function calls.
-!    Modeled after a subroutine posted at:
-!    https://climate-cms.org/2018/10/12/create-netcdf.html
+!     Error-checking routine for eccodes function calls.
+!     Modeled after a subroutine posted at:
+!     https://climate-cms.org/2018/10/12/create-netcdf.html
 !
 !##############################################################################
 

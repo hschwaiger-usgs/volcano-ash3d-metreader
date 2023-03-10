@@ -723,6 +723,7 @@
       subroutine MR_Set_MetComp_Grids
 
       use MetReader
+
       use projection
 
       implicit none
@@ -751,7 +752,7 @@
 
       INTERFACE
         subroutine MR_Set_Comp2Met_Map
-        end subroutine
+        end subroutine MR_Set_Comp2Met_Map
       END INTERFACE
 
       if(MR_VERB.ge.1)then

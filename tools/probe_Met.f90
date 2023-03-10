@@ -55,7 +55,6 @@
 
 !##############################################################################
 
-
       program probe_Met
 
       use MetReader
@@ -123,7 +122,7 @@
           integer,parameter   :: dp        = 8 ! double precision
           integer             :: invars
           integer,dimension(invars) :: invarlist
-        end subroutine
+        end subroutine GetMetProfile
       END INTERFACE
 
       ! Make sure user MetReader is using the same calendar

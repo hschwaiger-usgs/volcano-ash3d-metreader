@@ -108,9 +108,11 @@
       real(kind=sp),dimension(16) :: pres_Snd_tmp
       real(kind=sp) :: WindTime
       integer :: iw,iws
-      real(kind=sp) :: rvalue1,rvalue2,rvalue3
+      real(kind=sp) :: rvalue1,rvalue2,rvalue3 
       real(kind=sp),dimension(10) :: rvalues
       integer       :: ivalue1,ivalue2,ivalue3,ivalue4,ivalue5
+      real(kind=sp) :: rvalue1_o,rvalue3_o
+      integer       :: ivalue2_o,ivalue4_o,ivalue5_o
       integer       :: ilatlonflag
 
       character(len=80)  :: linebuffer,linebuffer2,linebuffer3,linebuffer4
@@ -136,8 +138,11 @@
       !real(kind=dp)      :: HS_hours_since_baseyear  ! function that calculates hours
                                                      !  since base year
       integer           :: Stat_ID
+      integer           :: Stat_idx
       real(kind=sp)     :: Stat_elev
       integer           :: idx,idx2
+      real(kind=sp)     :: fac
+      integer           :: substr_pos1
       character(len=8)  :: date
       character(len=10) :: time2
       character(len=5)  :: zone
@@ -148,11 +153,14 @@
       integer           :: DayOfMonth, SndHour
 
       INTERFACE
-        subroutine MR_Get_Radiosonde_Station_Coord(StatID,Stat_lon,Stat_lat,Stat_elv)
+        subroutine MR_Load_Radiosonde_Station_Data
+        end subroutine MR_Load_Radiosonde_Station_Data
+        subroutine MR_Get_Radiosonde_Station_Coord(StatID,StatIdx,Stat_lon,Stat_lat,Stat_elv)
           integer,      parameter   :: sp        = 4 ! single precision
           integer,      intent(in)  :: StatID
+          integer,      intent(out) :: StatIdx
           real(kind=sp),intent(out) :: Stat_lon,Stat_lat,Stat_elv
-        end subroutine
+        end subroutine MR_Get_Radiosonde_Station_Coord
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
           integer            :: iyear
           integer            :: imonth
@@ -298,6 +306,12 @@
 
       Met_dim_IsAvailable = .false.
       Met_var_IsAvailable = .false.
+      ! This is the start of a huge if statement that determines the type of ASCII input
+      ! and loads the data.  All data for all time steps are loaded here into the
+      ! variable MR_SndVars_metP(MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,nrows)
+      ! The if statement sorts into the following cases:
+      !   1 : ascii sonde file with either 3, 5, or a custom number of columns of data
+      !   2 : radio sonde data either the clear text variety or the WMO/GTS encoded
       if(MR_iwind.eq.1.and.MR_iwindformat.eq.1)then
         ! We are reading just one windfile with the following format
         !  If three values per line:
@@ -310,6 +324,7 @@
         ! x and y fullmet array will just be the coordinates in the order listed
         allocate(x_fullmet_sp(MR_nSnd_Locs))
         allocate(y_fullmet_sp(MR_nSnd_Locs))
+        allocate(Snd_idx(MR_nSnd_Locs))
         ! The number of time steps/file is fixed to 1
         nt_fullmet = 1
         ! There may be more windfiles than time steps if there are multiple sonde locations,
@@ -751,11 +766,15 @@
         Met_k0            =  0.933_8
         Met_Re            =  6371.229_8
 
+        ! Load the internal database of radiosonde stations
+        call MR_Load_Radiosonde_Station_Data
+
         ! Allocate arrays for iGridCode points at iwindfiles times, and MAX_ROWS levels
 
         ! x and y fullmet array will just be the coordinates in the order listed
         allocate(x_fullmet_sp(MR_nSnd_Locs))
         allocate(y_fullmet_sp(MR_nSnd_Locs))
+        allocate(Snd_idx(MR_nSnd_Locs))
         ! The number of time steps/file is fixed to 1
         nt_fullmet = 1
         ! There may be more windfiles than time steps if there are multiple sonde locations,
@@ -783,8 +802,9 @@
               MR_SndVarsID(3) = 2 ! U
               MR_SndVarsID(4) = 3 ! V
               MR_SndVarsID(5) = 5 ! T
-              ! We only allocate 15 rows here because we will only read the TTAA and TTCC mandatory levels
+              ! We only allocate 16 rows here because we will only read the TTAA and TTCC mandatory levels
               ! If you want to use the other information in the radiosonde, shape the data into iwindformat=1
+              ! Note that this might be reduced from 16 if any of the data files does not extend up to 10 mb.
               nlev = 16
               allocate(MR_SndVars_metP(MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,nlev))
               allocate(MR_Snd_np_fullmet(MR_nSnd_Locs,MR_Snd_nt_fullmet))
@@ -904,14 +924,17 @@
               read(GTSstr(1)(1:2),*)DayOfMonth
               DayOfMonth = DayOfMonth-50
               read(GTSstr(1)(3:4),*)SndHour
-              MR_windfile_starthour(iw_idx) = HS_hours_since_baseyear(2018,6,DayOfMonth,&
+              ! HFS Fix this
+              MR_windfile_starthour(iw_idx) = HS_hours_since_baseyear(2023,2,DayOfMonth,&
                                               real(SndHour,kind=dp),MR_BaseYear,MR_useLeap)
 
               ! Block A: station identifier
               read(GTSstr(2),*)Stat_ID
-              call MR_Get_Radiosonde_Station_Coord(Stat_ID, &
+              !call MR_Load_Radiosonde_Station_Data
+              call MR_Get_Radiosonde_Station_Coord(Stat_ID, Stat_idx,&
                                        y_fullmet_sp(iloc),x_fullmet_sp(iloc),&
                                        Stat_elev)
+              Snd_idx(iloc) = Stat_idx
               ! Block C: surface pressure
               if(GTSstr(3)(1:1).ne.'/')then
                 read(GTSstr(3)(1:2),*)dum_int ! should be 99 indicating surface
@@ -1155,16 +1178,41 @@
                 read(fid,'(a80)')linebuffer
                 read(linebuffer,150,iostat=ioerr)rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
               enddo
-              ! the line buffer contains numeric values.  Assume the first value is pressure and
+              ! Initialize old values to the values we just read
+              rvalue1_o = rvalue1
+              ivalue2_o = ivalue2
+              rvalue3_o = rvalue3
+              ivalue4_o = ivalue4
+              ivalue5_o = ivalue5
+
+              ! The line buffer contains numeric values.  Assume the first value is pressure and
               ! compare with the mandatory levels
+              ! Turns out some 'mandatory' levels might be absent, so we track the last level read
+              ! and interpolater if needed. 
               il = 0  ! counter for the number of data lines read
               iil = 1 ! index for which mandatory pressure level we are currently at
               ! Plan to read up to MAX_ROWS
               write(MR_global_production,*)"==================================================================="
               do while (il.ne.MAX_ROWS.and. &  ! Assume there are no more than MAX_ROWS of data
-                        iil.le.16)             ! Do not bother reading past 10 hPa
-                if (abs(pres_Snd_tmp(iil)-rvalue1).lt.0.1_sp) then
+                        iil.le.nlev)             ! Do not bother reading past 10 hPa
+                ! HFS Check if we've skipped the mandatory pressure level.  If so, interpolate
+                ! Check if the pressure level we are looking for is greater than what we just read
+                if(il.gt.1.and.pres_Snd_tmp(iil)-rvalue1.gt.0.0_dp)then
+                  ! The level we need is missing. Find the pressure step and interpolate
+                  ! Note: we are doing a linear interpolation in pressure where it should be logarithmic
+                  !       HFS Fix this
+                  ! Should be log interpolation in pressure to get the best altitude, then linear
+                  ! interpolation between altitude levels
+                  fac = (rvalue1_o-pres_Snd_tmp(iil))/(rvalue1_o-rvalue1)
+                  rvalue1 = pres_Snd_tmp(iil)
+                  ivalue2 = ivalue2_o - int(fac*(ivalue2_o - ivalue2))
+                  rvalue3 = rvalue3_o -     fac*(rvalue3_o - rvalue3)
+                  ivalue4 = ivalue4_o - int(fac*(ivalue4_o - ivalue4))
+                  ivalue5 = ivalue5_o - int(fac*(ivalue5_o - ivalue5))
+                endif
+                if (abs(pres_Snd_tmp(iil)-rvalue1).lt.1.0_sp) then ! Sometimes the last level is 10.5
                   ! found the next mandatory level
+                  !write(*,*)"Found pressure level ",iil, pres_Snd_tmp(iil)
                   MR_SndVars_metP(iloc,itime,1,iil) = rvalue1 * 100.0_sp
                   MR_SndVars_metP(iloc,itime,2,iil) = real(ivalue2,kind=4)*1.0e-3_sp  ! convert to km
                   MR_SndVars_metP(iloc,itime,5,iil) = rvalue3 + 273.0_sp   ! convert to K
@@ -1186,12 +1234,26 @@
                   iil = iil + 1
                 else
                   ! this is not a mandatory level; read the next line
+                  rvalue1_o = rvalue1
+                  ivalue2_o = ivalue2
+                  rvalue3_o = rvalue3
+                  ivalue4_o = ivalue4
+                  ivalue5_o = ivalue5
                   read(fid,'(a80)')linebuffer
+                  il = il + 1
+                  ! Check if we've read past the data and are in the Station footer
+                  substr_pos1 = index(linebuffer,'Station')
+                  if(substr_pos1.ne.0)then
+                    write(*,*)"MR ERROR: Read past the end of data without finding the last"
+                    write(*,*)"          mandatory pressure level"
+                    nlev = iil-1
+                    write(*,*)"          Resetting nlev to : ",nlev
+                  endif
+                  ! First try to read the five expected values: pres, height, temp, direc, speed
                   read(linebuffer,150,iostat=ioerr)rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
                 endif
               enddo
               write(MR_global_production,*)"==================================================================="
-
    150  format(1x,f7.1,i7,f7.1,21x,i7,i7)
    151  format(45x,i2,i2,i2,1x,i2)
    153  format(45x,i5)
@@ -1206,9 +1268,10 @@
                 read(fid,'(a80)')linebuffer
               enddo
               read(linebuffer,153,iostat=ioerr)Stat_ID
-              call MR_Get_Radiosonde_Station_Coord(Stat_ID, &
+              call MR_Get_Radiosonde_Station_Coord(Stat_ID, Stat_idx, &
                                        y_fullmet_sp(iloc),x_fullmet_sp(iloc),&
                                        Stat_elev)
+              Snd_idx(iloc) = Stat_idx
               ! Now look for the observation time from the beginning of the file
               rewind(fid)
               read(fid,'(a80)')linebuffer
@@ -1345,6 +1408,18 @@
       integer, parameter :: sp        = 4 ! single precision
       !integer, parameter :: dp        = 8 ! double precision
 
+      INTERFACE
+        subroutine MR_Get_Radiosonde_Stations_InDomain
+        end subroutine MR_Get_Radiosonde_Stations_InDomain
+        subroutine MR_Calc_Snd_Weights_NearNeigh
+        end subroutine MR_Calc_Snd_Weights_NearNeigh
+        subroutine MR_Calc_Snd_Weights_InvDistWeight(pexp,nstat)
+          integer,      parameter   :: dp        = 8 ! double precision
+          real(kind=dp), intent(in) :: pexp
+          integer,       intent(in), optional :: nstat
+        end subroutine MR_Calc_Snd_Weights_InvDistWeight
+      END INTERFACE
+
       if(MR_VERB.ge.1)then
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
         write(MR_global_production,*)"----------                          MR_Set_MetComp_Grids_ASCII_1d     ----------"
@@ -1354,7 +1429,7 @@
       if(MR_iwind.eq.1.and.MR_iwindformat.eq.1.or.&
          MR_iwind.eq.1.and.MR_iwindformat.eq.2)then
           ! 1d ascii file or Radiosonde case
-        nx_submet     = 1
+        nx_submet     = MR_nSnd_Locs ! put all sonde data in x-dimension
         ny_submet     = 1
         allocate(x_submet_sp(1:nx_submet));  x_submet_sp(:)  = 0.0_sp
         allocate(y_submet_sp(1:ny_submet));  y_submet_sp(:)  = 0.0_sp
@@ -1368,24 +1443,27 @@
         allocate(MR_dum3d_compP(nx_comp,ny_comp,np_fullmet))
         allocate(MR_geoH_metP_last(nx_submet,ny_submet,np_fullmet)) ! This will hold elevation
         allocate(MR_geoH_metP_next(nx_submet,ny_submet,np_fullmet)) ! Copy of geoH_metP_last
-        allocate(MR_Snd2Comp_tri_map_wgt(nx_comp,ny_comp,3))
-        allocate(MR_Snd2Comp_tri_map_idx(nx_comp,ny_comp,3))
+        allocate(MR_Snd2Comp_map_wgt(nx_comp,ny_comp,MR_nSnd_Locs))
+        allocate(MR_Snd2Comp_map_idx(nx_comp,ny_comp,MR_nSnd_Locs)) ! contains the indeces of the
+                                                                    ! MR_nstat stations used in weighting
+        ! For the radiosonde case, compare computational grid with internal station list and 
+        ! list available stations in the domain.
+        if(MR_iwindformat.eq.2)then
+          call MR_Get_Radiosonde_Stations_InDomain
+        endif
+
         if(MR_nSnd_Locs.eq.1)then
           ! Easy case: all weights are on the one sonde point
-          MR_Snd2Comp_tri_map_wgt = 0.0_sp
-          MR_Snd2Comp_tri_map_wgt(1:nx_comp,1:ny_comp,1)   = 1.0_sp
-          MR_Snd2Comp_tri_map_idx(1:nx_comp,1:ny_comp,1:3) = 1
-        elseif(MR_nSnd_Locs.eq.2)then
-          ! Also somewhat easy, but not yet implemented
-          ! Find each comp point wrt the the two sonde locations.
-          !  Use bilinear for points between and sonde points for points beyond
-          write(MR_global_error,*)"MR ERROR:  Multiple sonde locations not yet implemented"
-          stop 1
+          MR_Snd2Comp_map_wgt = 0.0_sp
+          MR_Snd2Comp_map_wgt(1:nx_comp,1:ny_comp,1:MR_nSnd_Locs) = 1.0_sp
+          MR_Snd2Comp_map_idx(1:nx_comp,1:ny_comp,1:MR_nSnd_Locs) = 1
         else
-          ! Difficult case:  Here we need to triangulate each comp point with
-          ! nearby sonde locations.
-          write(MR_global_error,*)"MR ERROR:  Multiple sonde locations not yet implemented"
-          stop 1
+          ! Lots of algorithms to consider: 
+          !  Triangulation would be a good one if we had heaps of stations; assume we don't
+          !  Nearest Neighbor is easiest.
+          !call MR_Calc_Snd_Weights_NearNeigh
+          !  Inverse Distance is more flexible and can duplicate NN if MR_nstat=1
+          call MR_Calc_Snd_Weights_InvDistWeight(MR_pexp,MR_nstat)
         endif
 
       else
@@ -1476,9 +1554,9 @@
 
       integer :: icol, i, j
       integer :: itime
-      integer :: iloc1, iloc2, iloc3
 
-      itime = MR_MetStep_findex(istep)
+      ! itime is not just the file index since we might have multiple stations per tstep
+      itime = (MR_MetStep_findex(istep)-1)/MR_nSnd_Locs + 1
             ! these variables are set in MR_Read_Met_DimVars_ASCII_1d
       !  P,H,U,V,T
       if(Met_var_IsAvailable(ivar))then
@@ -1491,17 +1569,16 @@
 
         ! Now loop over all the submet points and build the value needed by multiplying by the
         ! weights determined in MR_Set_MetComp_Grids_ASCII_1d
-        ! Note: This is a placeholder for multi-sonde triangulation, but only 1 sonde location is
-        !       currently supported.
+        ! Recall that in contrast to the other data types, ASCII files are fully loaded into memory
+        ! in var (MR_SndVars_metP) in the initial reading of the files above in MR_Read_Met_DimVars_ASCII_1d.
+        MR_dum3d_metP(:,:,:) = 0.0_sp
         do i = 1,nx_submet
           do j = 1,ny_submet
-            iloc1 = MR_Snd2Comp_tri_map_idx(i,j,1)  ! Right now, these should all be 1, with weights of (1,0,0)
-            iloc2 = MR_Snd2Comp_tri_map_idx(i,j,2)
-            iloc3 = MR_Snd2Comp_tri_map_idx(i,j,3)
-            MR_dum3d_metP(i,j,1:np_fullmet) = &
-              MR_SndVars_metP(iloc1,itime,icol,1:np_fullmet) * MR_Snd2Comp_tri_map_wgt(i,j,1) + &
-              MR_SndVars_metP(iloc2,itime,icol,1:np_fullmet) * MR_Snd2Comp_tri_map_wgt(i,j,2) + &
-              MR_SndVars_metP(iloc3,itime,icol,1:np_fullmet) * MR_Snd2Comp_tri_map_wgt(i,j,3)
+            ! This just copies all the current met data to MR_dum3d_metP.
+            ! Interpolation will be elsewhere
+            ! First index of MR_SndVars_metP is iloc, but for ASCII, we have ny_submet=1
+            ! and 1:nx_submet = 1:MR_nSnd_Locs
+            MR_dum3d_metP(i,j,1:np_fullmet) = MR_SndVars_metP(i,itime,icol,1:np_fullmet)
           enddo
         enddo
       else
@@ -1514,27 +1591,58 @@
 
       end subroutine MR_Read_MetP_Variable_ASCII_1d
 
-
 !##############################################################################
 !
-!     MR_Get_Radiosonde_Station_Coord
+!     MR_Regrid_MetSonde2Comp
 !
-!     This subroutine take a station code and returns the coordinates (lon,lat,elv)
+!     This subroutine interpolates the sonde data onto the computational grid
+!     using the weights calculated
 !
 !##############################################################################
 
-      subroutine MR_Get_Radiosonde_Station_Coord(StatID,Stat_lon,Stat_lat,Stat_elv)
+      subroutine MR_Regrid_MetSonde2Comp(nx1,ny1,wrk_met,nx2,ny2,wrk_comp)
 
       use MetReader
 
       implicit none
 
-      integer, parameter :: MAX_STAT_NUM   = 1143
-      integer, parameter :: sp             = 4
+      integer, parameter :: sp        = 4 ! single precision
+
+      integer                         ,intent(in)  :: nx1,ny1
+      real(kind=sp),dimension(nx1,ny1),intent(in)  :: wrk_met
+      integer                         ,intent(in)  :: nx2,ny2
+      real(kind=sp),dimension(nx2,ny2),intent(out) :: wrk_comp
+
+      integer :: i,j,iloc
+
+      wrk_comp = 0.0_sp
+      do i = 1,nx2
+        do j = 1,ny2
+          do iloc = 1,MR_nSnd_Locs
+            wrk_comp(i,j) = wrk_comp(i,j) + wrk_met(iloc,1) * MR_Snd2Comp_map_wgt(i,j,iloc)
+          enddo
+        enddo
+      enddo
+
+      end subroutine MR_Regrid_MetSonde2Comp
+
+!##############################################################################
+!
+!     MR_Load_Radiosonde_Station_Data
+!
+!     This subroutine simply loads the radiosonde data
+!
+!##############################################################################
+
+      subroutine MR_Load_Radiosonde_Station_Data()
+
+      use MetReader
+
+      implicit none
+
       integer, parameter :: dp             = 8
 
-      integer,      intent(in)  :: StatID
-      real(kind=sp),intent(out) :: Stat_lon,Stat_lat,Stat_elv
+      integer, parameter :: MAX_STAT_NUM   = 1200
 
       character(len=4 ),dimension(MAX_STAT_NUM) :: cd   ! Station code
       integer          ,dimension(MAX_STAT_NUM) :: id   ! WMO station ID
@@ -1545,183 +1653,190 @@
       character(len=2 ),dimension(MAX_STAT_NUM) :: st   ! Station state
       character(len=2 ),dimension(MAX_STAT_NUM) :: ct   ! Station country
       integer :: i
-      logical :: FoundStation
-      integer :: ioerr
-      character(len=80) :: linebuffer
-      real(kind=sp)     :: tmp_sp
 
       ! Load the station data.  This is from two files available on 
       ! https://ruc.noaa.gov/raobs/General_Information.html
       ! stat2000.txt (for US sites) and international_sites.txt for the rest of the world
       ! These files are modified to only contain stations currently active
+      ! Here we just load the local variables with short names (so we can fit each station on one line)
+      ! and will copy to the MR global variables at the end of the subroutine.
       i = 0
-i=i+1;cd(i)=" NPC";id(i)=78730;lt(i)= 14.05;ln(i)=  83.57;el(i)=  20;lnm(i)="PUERTO CABEZAS(MIL)      ";st(i)="99";ct(i)="NI"
-i=i+1;cd(i)=" EPZ";id(i)=72364;lt(i)= 31.90;ln(i)= 106.70;el(i)=1257;lnm(i)="SANTA TERESA             ";st(i)="NM";ct(i)="US"
-i=i+1;cd(i)=" VEF";id(i)=72388;lt(i)= 36.05;ln(i)= 115.18;el(i)= 693;lnm(i)="LAS VEGAS                ";st(i)="NV";ct(i)="US"
-i=i+1;cd(i)=" YUM";id(i)=72280;lt(i)= 32.87;ln(i)= 114.33;el(i)= 131;lnm(i)="YUMA/US ARMY MET TEAM    ";st(i)="AZ";ct(i)="US"
-i=i+1;cd(i)=" DRA";id(i)=72387;lt(i)= 36.62;ln(i)= 116.02;el(i)=1007;lnm(i)="DESERT ROCK/MERCURY      ";st(i)="NV";ct(i)="US"
-i=i+1;cd(i)=" NKX";id(i)=72293;lt(i)= 32.87;ln(i)= 117.15;el(i)= 134;lnm(i)="MIRAMAR NAS              ";st(i)="CA";ct(i)="US"
-i=i+1;cd(i)=" EDW";id(i)=72381;lt(i)= 34.90;ln(i)= 117.92;el(i)= 724;lnm(i)="EDWARDS/AFB - UPPER AIR  ";st(i)="CA";ct(i)="US"
-i=i+1;cd(i)=" REV";id(i)=72489;lt(i)= 39.57;ln(i)= 119.80;el(i)=1516;lnm(i)="RENO                     ";st(i)="NV";ct(i)="US"
-i=i+1;cd(i)=" LCH";id(i)=72240;lt(i)= 30.12;ln(i)=  93.22;el(i)=   5;lnm(i)="LAKE CHARLES             ";st(i)="LA";ct(i)="US"
-i=i+1;cd(i)=" JAN";id(i)=72235;lt(i)= 32.32;ln(i)=  90.07;el(i)=  91;lnm(i)="JACKSON/THOMPSON FLD     ";st(i)="MS";ct(i)="US"
-i=i+1;cd(i)=" OUN";id(i)=72357;lt(i)= 35.23;ln(i)=  97.47;el(i)= 362;lnm(i)="NORMAN                   ";st(i)="OK";ct(i)="US"
-i=i+1;cd(i)=" LZK";id(i)=72340;lt(i)= 34.83;ln(i)=  92.27;el(i)= 172;lnm(i)="N LITTLE ROCK            ";st(i)="AR";ct(i)="US"
-i=i+1;cd(i)=" FWD";id(i)=72249;lt(i)= 32.80;ln(i)=  97.30;el(i)= 196;lnm(i)="FT WORTH                 ";st(i)="TX";ct(i)="US"
-i=i+1;cd(i)=" TFX";id(i)=72776;lt(i)= 47.45;ln(i)= 111.38;el(i)=1130;lnm(i)="GREAT FALLS              ";st(i)="MT";ct(i)="US"
-i=i+1;cd(i)=" LKN";id(i)=72582;lt(i)= 40.87;ln(i)= 115.73;el(i)=1608;lnm(i)="ELKO                     ";st(i)="NV";ct(i)="US"
-i=i+1;cd(i)=" OTX";id(i)=72786;lt(i)= 47.68;ln(i)= 117.63;el(i)= 728;lnm(i)="SPOKANE INTNL APT        ";st(i)="WA";ct(i)="US"
-i=i+1;cd(i)=" YMW";id(i)=71722;lt(i)= 46.38;ln(i)=  75.97;el(i)= 170;lnm(i)="MANIWAKI                 ";st(i)="PQ";ct(i)="CA"
-i=i+1;cd(i)=" DTX";id(i)=72632;lt(i)= 42.70;ln(i)=  83.47;el(i)= 329;lnm(i)="DETROIT/PONTIAC          ";st(i)="MI";ct(i)="US"
-i=i+1;cd(i)=" ILX";id(i)=74560;lt(i)= 40.15;ln(i)=  89.33;el(i)= 178;lnm(i)="LINCOLN-LOGAN COUNTY AP  ";st(i)="IL";ct(i)="US"
-i=i+1;cd(i)=" APX";id(i)=72634;lt(i)= 44.91;ln(i)=  84.72;el(i)= 448;lnm(i)="GAYLORD / ALPENA         ";st(i)="MI";ct(i)="US"
-i=i+1;cd(i)=" ROL";id(i)=78762;lt(i)=  9.98;ln(i)=  84.22;el(i)= 920;lnm(i)="SAN JOSE/JUAN SANTA MARIA";st(i)="99";ct(i)="CR"
-i=i+1;cd(i)=" BDI";id(i)=78954;lt(i)= 13.07;ln(i)=  59.50;el(i)=  47;lnm(i)="SEAWELL APT              ";st(i)="99";ct(i)="BB"
-i=i+1;cd(i)=" SDQ";id(i)=78486;lt(i)= 18.47;ln(i)=  69.88;el(i)=  14;lnm(i)="SANTO DOMINGO            ";st(i)="99";ct(i)="DO"
-i=i+1;cd(i)=" KPP";id(i)=78970;lt(i)= 10.58;ln(i)=  61.35;el(i)=  12;lnm(i)="TRINIDAD/PIARCO IAP      ";st(i)="99";ct(i)="TT"
-i=i+1;cd(i)=" JSJ";id(i)=78526;lt(i)= 18.43;ln(i)=  66.00;el(i)=   3;lnm(i)="SAN JUAN/ISLA VERDE      ";st(i)="PR";ct(i)="US"
-i=i+1;cd(i)=" FFR";id(i)=78897;lt(i)= 16.27;ln(i)=  61.52;el(i)=   8;lnm(i)="POINT A PITRE/RAIZET     ";st(i)="99";ct(i)="GP"
-i=i+1;cd(i)=" ACC";id(i)=78988;lt(i)= 12.20;ln(i)=  68.97;el(i)=  54;lnm(i)="CURACAO/WILLEMSTAD       ";st(i)="99";ct(i)="AN"
-i=i+1;cd(i)=" ACM";id(i)=78866;lt(i)= 18.05;ln(i)=  63.12;el(i)=   3;lnm(i)="SINT MARTIN/JULIANA      ";st(i)="99";ct(i)="AN"
-i=i+1;cd(i)=" KJP";id(i)=78397;lt(i)= 17.93;ln(i)=  76.78;el(i)=   1;lnm(i)="KINGSTON/PALISADOES      ";st(i)="99";ct(i)="JM"
-i=i+1;cd(i)=" KCR";id(i)=78384;lt(i)= 19.30;ln(i)=  81.37;el(i)=   3;lnm(i)="GRAND CAYMAN             ";st(i)="99";ct(i)="KY"
-i=i+1;cd(i)=" ZBZ";id(i)=78583;lt(i)= 17.53;ln(i)=  88.30;el(i)=   5;lnm(i)="BELIZE                   ";st(i)="99";ct(i)="BZ"
-i=i+1;cd(i)=" MEX";id(i)=76679;lt(i)= 19.43;ln(i)=  99.07;el(i)=2309;lnm(i)="MEXICO CITY/INT APT      ";st(i)="99";ct(i)="MX"
-i=i+1;cd(i)=" VER";id(i)=76692;lt(i)= 19.17;ln(i)=  96.12;el(i)=  13;lnm(i)="VERACRUZ                 ";st(i)="99";ct(i)="MX"
-i=i+1;cd(i)=" 999";id(i)=76805;lt(i)= 16.76;ln(i)=  99.93;el(i)=   3;lnm(i)="ACCAPULCO                ";st(i)="99";ct(i)="MX"
-i=i+1;cd(i)=" YNN";id(i)=78073;lt(i)= 25.05;ln(i)=  77.47;el(i)=   2;lnm(i)="NASSAU APT               ";st(i)="99";ct(i)="BS"
-i=i+1;cd(i)=" EYW";id(i)=72201;lt(i)= 24.55;ln(i)=  81.75;el(i)=   1;lnm(i)="KEY WEST INT AP          ";st(i)="FL";ct(i)="US"
-i=i+1;cd(i)=" TBW";id(i)=72210;lt(i)= 27.70;ln(i)=  82.40;el(i)=  13;lnm(i)="TAMPA BAY/RUSKIN         ";st(i)="FL";ct(i)="US"
-i=i+1;cd(i)=" XMR";id(i)=74794;lt(i)= 28.48;ln(i)=  80.55;el(i)=   5;lnm(i)="CAPE KENNEDY             ";st(i)="FL";ct(i)="US"
-i=i+1;cd(i)=" MID";id(i)=76644;lt(i)= 20.95;ln(i)=  89.65;el(i)=  11;lnm(i)="MERIDA IAP               ";st(i)="99";ct(i)="MX"
-i=i+1;cd(i)=" BRO";id(i)=72250;lt(i)= 25.90;ln(i)=  97.43;el(i)=   7;lnm(i)="BROWNSVILLE              ";st(i)="TX";ct(i)="US"
-i=i+1;cd(i)=" CRP";id(i)=72251;lt(i)= 27.77;ln(i)=  97.50;el(i)=  14;lnm(i)="CORPUS CHRISTI           ";st(i)="TX";ct(i)="US"
-i=i+1;cd(i)=" XKF";id(i)=78016;lt(i)= 32.37;ln(i)=  64.68;el(i)=  37;lnm(i)="BERMUDA/(MCKINDLY AFB)   ";st(i)="99";ct(i)="BS"
-i=i+1;cd(i)=" APG";id(i)=74002;lt(i)= 39.47;ln(i)=  76.07;el(i)=   5;lnm(i)="PHILLIPS AFB, ABERDEEN   ";st(i)="MD";ct(i)="US"
-i=i+1;cd(i)=" GSO";id(i)=72317;lt(i)= 36.08;ln(i)=  79.95;el(i)= 277;lnm(i)="GREENSBORO               ";st(i)="NC";ct(i)="US"
-i=i+1;cd(i)=" ILN";id(i)=72426;lt(i)= 39.42;ln(i)=  83.82;el(i)= 317;lnm(i)="WILMINGTON               ";st(i)="OH";ct(i)="US"
-i=i+1;cd(i)=" VPS";id(i)=72221;lt(i)= 30.52;ln(i)=  86.58;el(i)=  20;lnm(i)="VALPARAISO/ELGIN AFB     ";st(i)="FL";ct(i)="US"
-i=i+1;cd(i)=" CHS";id(i)=72208;lt(i)= 32.90;ln(i)=  80.03;el(i)=  15;lnm(i)="CHARLESTON               ";st(i)="SC";ct(i)="US"
-i=i+1;cd(i)=" JAX";id(i)=72206;lt(i)= 30.43;ln(i)=  81.70;el(i)=  10;lnm(i)="JACKSONVILLE             ";st(i)="FL";ct(i)="US"
-i=i+1;cd(i)=" BNA";id(i)=72327;lt(i)= 36.25;ln(i)=  86.57;el(i)= 180;lnm(i)="NASHVILLE                ";st(i)="TN";ct(i)="US"
-i=i+1;cd(i)=" FSI";id(i)=72355;lt(i)= 34.65;ln(i)=  98.40;el(i)= 362;lnm(i)="FORT SILL                ";st(i)="OK";ct(i)="US"
-i=i+1;cd(i)=" SHV";id(i)=72248;lt(i)= 32.45;ln(i)=  93.83;el(i)=  84;lnm(i)="SHREVEPORT REGIONAL AP   ";st(i)="LA";ct(i)="US"
-i=i+1;cd(i)=" DDC";id(i)=72451;lt(i)= 37.77;ln(i)=  99.97;el(i)= 791;lnm(i)="DODGE CITY               ";st(i)="KS";ct(i)="US"
-i=i+1;cd(i)=" SGF";id(i)=72440;lt(i)= 37.23;ln(i)=  93.40;el(i)= 394;lnm(i)="SPRINGFIELD REGIONAL AP  ";st(i)="MO";ct(i)="US"
-i=i+1;cd(i)=" TOP";id(i)=72456;lt(i)= 39.07;ln(i)=  95.62;el(i)= 268;lnm(i)="TOPEKA                   ";st(i)="KS";ct(i)="US"
-i=i+1;cd(i)=" YJT";id(i)=71815;lt(i)= 48.53;ln(i)=  58.55;el(i)=  60;lnm(i)="STEPHENVILLE/HARMON AFB  ";st(i)="NF";ct(i)="CA"
-i=i+1;cd(i)=" YYT";id(i)=71801;lt(i)= 47.67;ln(i)=  52.75;el(i)= 140;lnm(i)="TORBAY/ST JOHNS          ";st(i)="NF";ct(i)="CA"
-i=i+1;cd(i)=" CAR";id(i)=72712;lt(i)= 46.87;ln(i)=  68.02;el(i)= 191;lnm(i)="CARIBOU                  ";st(i)="ME";ct(i)="US"
-i=i+1;cd(i)=" YSA";id(i)=71600;lt(i)= 43.93;ln(i)=  60.02;el(i)=   4;lnm(i)="SABLE ISLAND             ";st(i)="NS";ct(i)="CA"
-i=i+1;cd(i)=" CHH";id(i)=74494;lt(i)= 41.67;ln(i)=  69.97;el(i)=  16;lnm(i)="CHATHAM                  ";st(i)="MA";ct(i)="US"
-i=i+1;cd(i)=" YCX";id(i)=71701;lt(i)= 45.83;ln(i)=  66.43;el(i)=  52;lnm(i)="GAGETOWN                 ";st(i)="NB";ct(i)="CA"
-i=i+1;cd(i)=" BUF";id(i)=72528;lt(i)= 42.93;ln(i)=  78.73;el(i)= 218;lnm(i)="BUFFALO/GRTR ARPT        ";st(i)="NY";ct(i)="US"
-i=i+1;cd(i)=" GRB";id(i)=72645;lt(i)= 44.48;ln(i)=  88.13;el(i)= 210;lnm(i)="GREEN BAY                ";st(i)="WI";ct(i)="US"
-i=i+1;cd(i)=" INL";id(i)=72747;lt(i)= 48.57;ln(i)=  93.38;el(i)= 359;lnm(i)="INTERNATIONAL FALLS      ";st(i)="MN";ct(i)="US"
-i=i+1;cd(i)=" ABR";id(i)=72659;lt(i)= 45.45;ln(i)=  98.42;el(i)= 397;lnm(i)="ABERDEEN                 ";st(i)="SD";ct(i)="US"
-i=i+1;cd(i)=" YYR";id(i)=71816;lt(i)= 53.30;ln(i)=  60.37;el(i)=  36;lnm(i)="GOOSE/GOOSE BAY          ";st(i)="NF";ct(i)="CA"
-i=i+1;cd(i)=" YZV";id(i)=71811;lt(i)= 50.22;ln(i)=  66.27;el(i)=  52;lnm(i)="SEPT ILES (UA)           ";st(i)="PQ";ct(i)="CA"
-i=i+1;cd(i)=" YVP";id(i)=71906;lt(i)= 58.10;ln(i)=  68.42;el(i)=  60;lnm(i)="KUUJJUAQ (UA)            ";st(i)="PQ";ct(i)="CA"
-i=i+1;cd(i)=" YPH";id(i)=71907;lt(i)= 58.45;ln(i)=  78.12;el(i)=  26;lnm(i)="INUKJUAK                 ";st(i)="PQ";ct(i)="CA"
-i=i+1;cd(i)=" YAH";id(i)=71823;lt(i)= 53.75;ln(i)=  73.67;el(i)= 307;lnm(i)="LA GRANDE IV             ";st(i)="PQ";ct(i)="CA"
-i=i+1;cd(i)=" YMO";id(i)=71836;lt(i)= 51.27;ln(i)=  80.65;el(i)=  10;lnm(i)="MOOSONEE                 ";st(i)="PQ";ct(i)="CA"
-i=i+1;cd(i)=" YYQ";id(i)=71913;lt(i)= 58.75;ln(i)=  94.07;el(i)=  29;lnm(i)="CHURCHILL                ";st(i)="MB";ct(i)="CA"
-i=i+1;cd(i)=" WPL";id(i)=71845;lt(i)= 51.47;ln(i)=  90.20;el(i)= 386;lnm(i)="PICKLE LAKE              ";st(i)="ON";ct(i)="CA"
-i=i+1;cd(i)=" YVN";id(i)=71909;lt(i)= 63.75;ln(i)=  68.55;el(i)=  35;lnm(i)="IQALUIT (UA)             ";st(i)="NW";ct(i)="CA"
-i=i+1;cd(i)=" YZS";id(i)=71915;lt(i)= 64.20;ln(i)=  83.37;el(i)=  57;lnm(i)="CORAL HARBOUR            ";st(i)="NW";ct(i)="CA"
-i=i+1;cd(i)=" YUX";id(i)=71081;lt(i)= 68.78;ln(i)=  81.25;el(i)=   7;lnm(i)="HALL BEACH/HALL LK       ";st(i)="NW";ct(i)="CA"
-i=i+1;cd(i)=" YBK";id(i)=71926;lt(i)= 64.30;ln(i)=  96.00;el(i)=  49;lnm(i)="BAKER LAKE (UA)          ";st(i)="NW";ct(i)="CA"
-i=i+1;cd(i)=" YRB";id(i)=71924;lt(i)= 74.72;ln(i)=  94.98;el(i)=  40;lnm(i)="RESOLUTE                 ";st(i)="NW";ct(i)="CA"
-i=i+1;cd(i)=" YLT";id(i)=71082;lt(i)= 82.50;ln(i)=  62.33;el(i)=  66;lnm(i)="ALERT                    ";st(i)="NW";ct(i)="CA"
-i=i+1;cd(i)=" YEU";id(i)=71917;lt(i)= 79.98;ln(i)=  85.93;el(i)=  10;lnm(i)="EUREKA                   ";st(i)="NW";ct(i)="CA"
-i=i+1;cd(i)=" 999";id(i)=76654;lt(i)= 19.07;ln(i)= 104.33;el(i)=   3;lnm(i)="MANZANILLO               ";st(i)="99";ct(i)="MX"
-i=i+1;cd(i)=" ITO";id(i)=91285;lt(i)= 19.72;ln(i)= 155.07;el(i)=  10;lnm(i)="HILO                     ";st(i)="HI";ct(i)="US"
-i=i+1;cd(i)=" MCV";id(i)=76225;lt(i)= 28.70;ln(i)= 106.07;el(i)=1428;lnm(i)="CHIHUAHUA                ";st(i)="99";ct(i)="MX"
-i=i+1;cd(i)=" MZT";id(i)=76458;lt(i)= 23.18;ln(i)= 106.42;el(i)=   4;lnm(i)="MAZATLAN SINALOA         ";st(i)="99";ct(i)="MX"
-i=i+1;cd(i)=" DRT";id(i)=72261;lt(i)= 29.37;ln(i)= 100.92;el(i)= 313;lnm(i)="DEL RIO                  ";st(i)="TX";ct(i)="US"
-i=i+1;cd(i)=" MTY";id(i)=76394;lt(i)= 25.87;ln(i)= 100.20;el(i)= 450;lnm(i)="MONTERREY                ";st(i)="99";ct(i)="MX"
-i=i+1;cd(i)=" 999";id(i)=76612;lt(i)= 20.68;ln(i)= 103.33;el(i)=1551;lnm(i)="GUADALAJARA              ";st(i)="99";ct(i)="MX"
-i=i+1;cd(i)=" LAP";id(i)=76405;lt(i)= 24.07;ln(i)= 110.33;el(i)=  14;lnm(i)="LA PAZ/DE LEON           ";st(i)="99";ct(i)="MX"
-i=i+1;cd(i)=" GYM";id(i)=76256;lt(i)= 27.95;ln(i)= 110.80;el(i)=  12;lnm(i)="EMPALME SONORA           ";st(i)="99";ct(i)="MX"
-i=i+1;cd(i)=" YEV";id(i)=71957;lt(i)= 68.32;ln(i)= 133.53;el(i)= 103;lnm(i)="INUVIK (UA)              ";st(i)="NW";ct(i)="CA"
-i=i+1;cd(i)=" LIH";id(i)=91165;lt(i)= 21.98;ln(i)= 159.35;el(i)=  36;lnm(i)="LIHUE/KAUAI              ";st(i)="HI";ct(i)="US"
-i=i+1;cd(i)=" MAF";id(i)=72265;lt(i)= 31.93;ln(i)= 102.20;el(i)= 873;lnm(i)="MIDLAND                  ";st(i)="TX";ct(i)="US"
-i=i+1;cd(i)=" AMA";id(i)=72363;lt(i)= 35.23;ln(i)= 101.70;el(i)=1095;lnm(i)="AMARILLO                 ";st(i)="TX";ct(i)="US"
-i=i+1;cd(i)=" ABQ";id(i)=72365;lt(i)= 35.05;ln(i)= 106.62;el(i)=1619;lnm(i)="ALBUQUERQUE              ";st(i)="NM";ct(i)="US"
-i=i+1;cd(i)=" DNR";id(i)=72469;lt(i)= 39.77;ln(i)= 104.88;el(i)=1611;lnm(i)="DENVER/STAPLETON ARPT    ";st(i)="CO";ct(i)="US"
-i=i+1;cd(i)=" GJT";id(i)=72476;lt(i)= 39.12;ln(i)= 108.53;el(i)=1472;lnm(i)="GRAND JUNCTION           ";st(i)="CO";ct(i)="US"
-i=i+1;cd(i)=" TWC";id(i)=72274;lt(i)= 32.23;ln(i)= 110.96;el(i)= 753;lnm(i)="TUCSON                   ";st(i)="AZ";ct(i)="US"
-i=i+1;cd(i)=" OAK";id(i)=72493;lt(i)= 37.75;ln(i)= 122.22;el(i)=   6;lnm(i)="OAKLAND  INT AP          ";st(i)="CA";ct(i)="US"
-i=i+1;cd(i)=" BIS";id(i)=72764;lt(i)= 46.77;ln(i)= 100.75;el(i)= 503;lnm(i)="BISMARCK                 ";st(i)="ND";ct(i)="US"
-i=i+1;cd(i)=" LBF";id(i)=72562;lt(i)= 41.13;ln(i)= 100.68;el(i)= 847;lnm(i)="NORTH PLATTE             ";st(i)="NE";ct(i)="US"
-i=i+1;cd(i)=" RIW";id(i)=72672;lt(i)= 43.06;ln(i)= 108.47;el(i)=1688;lnm(i)="RIVERTON                 ";st(i)="WY";ct(i)="US"
-i=i+1;cd(i)=" SLC";id(i)=72572;lt(i)= 40.77;ln(i)= 111.97;el(i)=1288;lnm(i)="SALT LAKE CITY           ";st(i)="UT";ct(i)="US"
-i=i+1;cd(i)=" BOI";id(i)=72681;lt(i)= 43.57;ln(i)= 116.22;el(i)= 871;lnm(i)="BOISE                    ";st(i)="ID";ct(i)="US"
-i=i+1;cd(i)=" MFR";id(i)=72597;lt(i)= 42.37;ln(i)= 122.87;el(i)= 397;lnm(i)="MEDFORD                  ";st(i)="OR";ct(i)="US"
-i=i+1;cd(i)=" SLE";id(i)=72694;lt(i)= 44.92;ln(i)= 123.02;el(i)=  61;lnm(i)="SALEM                    ";st(i)="OR";ct(i)="US"
-i=i+1;cd(i)=" YQD";id(i)=71867;lt(i)= 53.97;ln(i)= 101.10;el(i)= 273;lnm(i)="THE PAS                  ";st(i)="MB";ct(i)="CA"
-i=i+1;cd(i)=" WSE";id(i)=71119;lt(i)= 53.55;ln(i)= 114.10;el(i)= 766;lnm(i)="EDMONTON/STONY PLAIN     ";st(i)="AB";ct(i)="CA"
-i=i+1;cd(i)=" YBP";id(i)=71126;lt(i)= 50.63;ln(i)= 111.90;el(i)= 759;lnm(i)="BROOKS                   ";st(i)="AB";ct(i)="CA"
-i=i+1;cd(i)=" WIQ";id(i)=71124;lt(i)= 54.80;ln(i)= 110.08;el(i)= 703;lnm(i)="PRIMROSE LAKE            ";st(i)="AB";ct(i)="CA"
-i=i+1;cd(i)=" ZXS";id(i)=71908;lt(i)= 53.90;ln(i)= 122.80;el(i)= 601;lnm(i)="PRINCE GEORGE            ";st(i)="BC";ct(i)="CA"
-i=i+1;cd(i)=" YZT";id(i)=71109;lt(i)= 50.68;ln(i)= 127.37;el(i)=  17;lnm(i)="PORT HARDY               ";st(i)="BC";ct(i)="CA"
-i=i+1;cd(i)=" YYE";id(i)=71945;lt(i)= 58.83;ln(i)= 122.60;el(i)= 377;lnm(i)="FORT NELSON UA           ";st(i)="BC";ct(i)="CA"
-i=i+1;cd(i)=" ANN";id(i)=70398;lt(i)= 55.03;ln(i)= 131.57;el(i)=  37;lnm(i)="ANNETTE ISLAND           ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" YAK";id(i)=70361;lt(i)= 59.52;ln(i)= 139.67;el(i)=  10;lnm(i)="YAKUTAT                  ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" ADQ";id(i)=70350;lt(i)= 57.75;ln(i)= 152.48;el(i)=   4;lnm(i)="KODIAK                   ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" AKN";id(i)=70326;lt(i)= 58.68;ln(i)= 156.65;el(i)=  15;lnm(i)="KING SALMON              ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" CDB";id(i)=70316;lt(i)= 55.20;ln(i)= 162.72;el(i)=  30;lnm(i)="COLD BAY                 ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" SNP";id(i)=70308;lt(i)= 57.15;ln(i)= 170.22;el(i)=  10;lnm(i)="ST PAUL ISLAND           ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" YCB";id(i)=71925;lt(i)= 69.10;ln(i)= 105.12;el(i)=  25;lnm(i)="CAMBRIDGE BAY            ";st(i)="NW";ct(i)="CA"
-i=i+1;cd(i)=" YSM";id(i)=71934;lt(i)= 60.03;ln(i)= 111.95;el(i)= 203;lnm(i)="FT SMITH (UA)            ";st(i)="NW";ct(i)="CA"
-i=i+1;cd(i)=" YVQ";id(i)=71043;lt(i)= 65.28;ln(i)= 126.75;el(i)=  95;lnm(i)="NORMAN WELLS (UA)        ";st(i)="NW";ct(i)="CA"
-i=i+1;cd(i)=" YXY";id(i)=71964;lt(i)= 60.72;ln(i)= 135.07;el(i)= 704;lnm(i)="WHITEHORSE               ";st(i)="YK";ct(i)="CA"
-i=i+1;cd(i)=" ANC";id(i)=70273;lt(i)= 61.17;ln(i)= 150.02;el(i)=  45;lnm(i)="ANCHORAGE IAP/PT. CAMPBE ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" FAI";id(i)=70261;lt(i)= 64.82;ln(i)= 147.87;el(i)= 135;lnm(i)="FAIRBANKS                ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" MCG";id(i)=70231;lt(i)= 62.97;ln(i)= 155.62;el(i)= 103;lnm(i)="MCGRATH                  ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" BET";id(i)=70219;lt(i)= 60.78;ln(i)= 161.80;el(i)=  36;lnm(i)="BETHEL                   ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" OTZ";id(i)=70133;lt(i)= 66.87;ln(i)= 162.63;el(i)=   5;lnm(i)="KOTZEBUE                 ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" OME";id(i)=70200;lt(i)= 64.50;ln(i)= 165.43;el(i)=   5;lnm(i)="NOME AP                  ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" BRW";id(i)=70026;lt(i)= 71.30;ln(i)= 156.78;el(i)=  12;lnm(i)="POINT BARROW             ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" BRW";id(i)=70027;lt(i)= 71.32;ln(i)= 156.65;el(i)=   3;lnm(i)="BARROW/POINT BARROW      ";st(i)="AK";ct(i)="US"
-i=i+1;cd(i)=" FGZ";id(i)=72376;lt(i)= 35.23;ln(i)= 111.82;el(i)=2179;lnm(i)="FLAGSTAFF/BELLEMT (ARMY) ";st(i)="AZ";ct(i)="US"
-i=i+1;cd(i)=" SIL";id(i)=72233;lt(i)= 30.33;ln(i)=  89.82;el(i)=   8;lnm(i)="SLIDELL                  ";st(i)="LA";ct(i)="US"
-i=i+1;cd(i)=" FFC";id(i)=72215;lt(i)= 33.35;ln(i)=  84.56;el(i)= 246;lnm(i)="PEACHTREE CITY           ";st(i)="GA";ct(i)="US"
-i=i+1;cd(i)=" BMX";id(i)=72230;lt(i)= 33.10;ln(i)=  86.70;el(i)= 178;lnm(i)="BIRMINGHAM (SHELBY APT)  ";st(i)="AL";ct(i)="US"
-i=i+1;cd(i)=" RNK";id(i)=72318;lt(i)= 37.20;ln(i)=  80.41;el(i)= 648;lnm(i)="ROANOKE/BLACKSBURG       ";st(i)="VA";ct(i)="US"
-i=i+1;cd(i)=" GYX";id(i)=74389;lt(i)= 43.89;ln(i)=  70.25;el(i)= 125;lnm(i)="GRAY                     ";st(i)="ME";ct(i)="US"
-i=i+1;cd(i)=" ALY";id(i)=72518;lt(i)= 42.69;ln(i)=  73.83;el(i)=  94;lnm(i)="ALBANY                   ";st(i)="NY";ct(i)="US"
-i=i+1;cd(i)=" MFL";id(i)=72202;lt(i)= 25.75;ln(i)=  80.38;el(i)=   4;lnm(i)="MIAMI/FL INTL UNIV       ";st(i)="FL";ct(i)="US"
-i=i+1;cd(i)=" NTD";id(i)=72391;lt(i)= 34.10;ln(i)= 119.12;el(i)=   2;lnm(i)="POINT MUGU               ";st(i)="CA";ct(i)="US"
-i=i+1;cd(i)=" NSI";id(i)=72291;lt(i)= 33.25;ln(i)= 119.45;el(i)=  14;lnm(i)="SAN NICOLAS ISLAND/SITE1 ";st(i)="CA";ct(i)="US"
-i=i+1;cd(i)=" VBG";id(i)=72393;lt(i)= 34.75;ln(i)= 120.57;el(i)= 100;lnm(i)="VANDENBERG               ";st(i)="CA";ct(i)="US"
-i=i+1;cd(i)=" IAD";id(i)=72403;lt(i)= 38.98;ln(i)=  77.47;el(i)=  85;lnm(i)="STERLING(WASH DULLES)    ";st(i)="VA";ct(i)="US"
-i=i+1;cd(i)=" WAL";id(i)=72402;lt(i)= 37.93;ln(i)=  75.48;el(i)=  13;lnm(i)="WALLOPS ISLAND           ";st(i)="VA";ct(i)="US"
-i=i+1;cd(i)=" MHX";id(i)=72305;lt(i)= 34.70;ln(i)=  76.80;el(i)=  11;lnm(i)="MOREHEAD CITY/NEWPORT    ";st(i)="NC";ct(i)="US"
-i=i+1;cd(i)=" TLH";id(i)=72214;lt(i)= 30.45;ln(i)=  84.30;el(i)=  52;lnm(i)="TALLAHASEE               ";st(i)="FL";ct(i)="US"
-i=i+1;cd(i)=" GGW";id(i)=72768;lt(i)= 48.20;ln(i)= 106.62;el(i)= 693;lnm(i)="GLASGOW                  ";st(i)="MT";ct(i)="US"
-i=i+1;cd(i)=" UNR";id(i)=72662;lt(i)= 44.07;ln(i)= 103.21;el(i)=1037;lnm(i)="RAPID CITY               ";st(i)="SD";ct(i)="US"
-i=i+1;cd(i)=" YLW";id(i)=71203;lt(i)= 49.97;ln(i)= 119.38;el(i)= 454;lnm(i)="KELOWNA APT              ";st(i)="BC";ct(i)="CA"
-i=i+1;cd(i)=" UIL";id(i)=72797;lt(i)= 47.95;ln(i)= 124.55;el(i)=  56;lnm(i)="QUILLAYUTE               ";st(i)="WA";ct(i)="US"
-i=i+1;cd(i)=" WQI";id(i)=71603;lt(i)= 43.87;ln(i)=  66.05;el(i)=   9;lnm(i)="YARMOUTH                 ";st(i)="NS";ct(i)="CA"
-i=i+1;cd(i)=" OKX";id(i)=72501;lt(i)= 40.87;ln(i)=  72.87;el(i)=  20;lnm(i)="BROOKHAVEN               ";st(i)="NY";ct(i)="US"
-i=i+1;cd(i)=" PIT";id(i)=72520;lt(i)= 40.53;ln(i)=  80.23;el(i)= 360;lnm(i)="PITTSBURGH/MOON TOWNSHIP ";st(i)="PA";ct(i)="US"
-i=i+1;cd(i)=" OAX";id(i)=72558;lt(i)= 41.32;ln(i)=  96.37;el(i)= 350;lnm(i)="OMAHA/VALLEY             ";st(i)="NE";ct(i)="US"
-i=i+1;cd(i)=" DVN";id(i)=74455;lt(i)= 41.60;ln(i)=  90.57;el(i)= 229;lnm(i)="DAVENPORT MUNICIPAL AP   ";st(i)="IA";ct(i)="US"
-i=i+1;cd(i)=" MPX";id(i)=72649;lt(i)= 44.83;ln(i)=  93.55;el(i)= 287;lnm(i)="MINNEAPOLIS              ";st(i)="MN";ct(i)="US"
-i=i+1;cd(i)=" WEP";id(i)=71230;lt(i)= 55.13;ln(i)= 122.96;el(i)= 659;lnm(i)="WHISTLER OLYMPIC SITE    ";st(i)="BC";ct(i)="CA"
-i=i+1;cd(i)=" XBK";id(i)=71569;lt(i)= 50.20;ln(i)= 104.70;el(i)= 580;lnm(i)="BRATTS LAKE              ";st(i)="SA";ct(i)="CA"
-i=i+1;cd(i)=" 999";id(i)=71802;lt(i)= 47.52;ln(i)=  52.78;el(i)=  49;lnm(i)="SAINT LAWRENCE           ";st(i)="NF";ct(i)="CA"
-i=i+1;cd(i)=" CXW";id(i)=71843;lt(i)= 49.88;ln(i)=  97.13;el(i)= 263;lnm(i)="WINNIPEG                 ";st(i)="99";ct(i)="CA"
-i=i+1;cd(i)=" YQW";id(i)=71876;lt(i)= 52.77;ln(i)= 108.25;el(i)= 548;lnm(i)="NORTH BATTLEFORD         ";st(i)="99";ct(i)="CA"
-i=i+1;cd(i)=" YQQ";id(i)=71893;lt(i)= 49.72;ln(i)= 124.90;el(i)=  24;lnm(i)="COMOX                    ";st(i)="BC";ct(i)="CA"
-i=i+1;cd(i)=" 999";id(i)=74001;lt(i)= 34.60;ln(i)=  86.62;el(i)= 174;lnm(i)="REDSTONE ARSENAL         ";st(i)="AL";ct(i)="US"
-i=i+1;cd(i)=" 999";id(i)=74005;lt(i)= 33.53;ln(i)= 114.03;el(i)= 331;lnm(i)="LUKE AIR FORCE BASE      ";st(i)="AZ";ct(i)="US"
-i=i+1;cd(i)=" 999";id(i)=74006;lt(i)= 32.86;ln(i)= 114.03;el(i)= 331;lnm(i)="YUMA PROVING GROUND      ";st(i)="AZ";ct(i)="US"
-i=i+1;cd(i)=" 999";id(i)=74626;lt(i)= 33.45;ln(i)= 111.95;el(i)= 384;lnm(i)="PHOENIX                  ";st(i)="AZ";ct(i)="US"
-i=i+1;cd(i)=" LMN";id(i)=74646;lt(i)= 36.68;ln(i)=  97.47;el(i)= 306;lnm(i)="LAMONT                   ";st(i)="OK";ct(i)="US"
-i=i+1;cd(i)=" 999";id(i)=76526;lt(i)= 22.75;ln(i)= 102.51;el(i)=2265;lnm(i)="GUADALUPE, ZACHATECAS    ";st(i)="99";ct(i)="MX"
-i=i+1;cd(i)=" CUN";id(i)=76595;lt(i)= 21.03;ln(i)=  86.85;el(i)=   5;lnm(i)="CANCUN                   ";st(i)="99";ct(i)="MX"
+      ! https://ruc.noaa.gov/raobs/stat2000.txt
+i=i+1;cd(i)=" NPC";id(i)=78730;lt(i)= 14.05;ln(i)=  -83.57;el(i)=  20;lnm(i)="PUERTO CABEZAS(MIL)      ";st(i)="99";ct(i)="NI"
+i=i+1;cd(i)=" EPZ";id(i)=72364;lt(i)= 31.90;ln(i)= -106.70;el(i)=1257;lnm(i)="SANTA TERESA             ";st(i)="NM";ct(i)="US"
+i=i+1;cd(i)=" VEF";id(i)=72388;lt(i)= 36.05;ln(i)= -115.18;el(i)= 693;lnm(i)="LAS VEGAS                ";st(i)="NV";ct(i)="US"
+i=i+1;cd(i)=" YUM";id(i)=72280;lt(i)= 32.87;ln(i)= -114.33;el(i)= 131;lnm(i)="YUMA/US ARMY MET TEAM    ";st(i)="AZ";ct(i)="US"
+i=i+1;cd(i)=" DRA";id(i)=72387;lt(i)= 36.62;ln(i)= -116.02;el(i)=1007;lnm(i)="DESERT ROCK/MERCURY      ";st(i)="NV";ct(i)="US"
+i=i+1;cd(i)=" NKX";id(i)=72293;lt(i)= 32.87;ln(i)= -117.15;el(i)= 134;lnm(i)="MIRAMAR NAS              ";st(i)="CA";ct(i)="US"
+i=i+1;cd(i)=" EDW";id(i)=72381;lt(i)= 34.90;ln(i)= -117.92;el(i)= 724;lnm(i)="EDWARDS/AFB - UPPER AIR  ";st(i)="CA";ct(i)="US"
+i=i+1;cd(i)=" REV";id(i)=72489;lt(i)= 39.57;ln(i)= -119.80;el(i)=1516;lnm(i)="RENO                     ";st(i)="NV";ct(i)="US"
+i=i+1;cd(i)=" LCH";id(i)=72240;lt(i)= 30.12;ln(i)=  -93.22;el(i)=   5;lnm(i)="LAKE CHARLES             ";st(i)="LA";ct(i)="US"
+i=i+1;cd(i)=" JAN";id(i)=72235;lt(i)= 32.32;ln(i)=  -90.07;el(i)=  91;lnm(i)="JACKSON/THOMPSON FLD     ";st(i)="MS";ct(i)="US"
+i=i+1;cd(i)=" OUN";id(i)=72357;lt(i)= 35.23;ln(i)=  -97.47;el(i)= 362;lnm(i)="NORMAN                   ";st(i)="OK";ct(i)="US"
+i=i+1;cd(i)=" LZK";id(i)=72340;lt(i)= 34.83;ln(i)=  -92.27;el(i)= 172;lnm(i)="N LITTLE ROCK            ";st(i)="AR";ct(i)="US"
+i=i+1;cd(i)=" FWD";id(i)=72249;lt(i)= 32.80;ln(i)=  -97.30;el(i)= 196;lnm(i)="FT WORTH                 ";st(i)="TX";ct(i)="US"
+i=i+1;cd(i)=" TFX";id(i)=72776;lt(i)= 47.45;ln(i)= -111.38;el(i)=1130;lnm(i)="GREAT FALLS              ";st(i)="MT";ct(i)="US"
+i=i+1;cd(i)=" LKN";id(i)=72582;lt(i)= 40.87;ln(i)= -115.73;el(i)=1608;lnm(i)="ELKO                     ";st(i)="NV";ct(i)="US"
+i=i+1;cd(i)=" OTX";id(i)=72786;lt(i)= 47.68;ln(i)= -117.63;el(i)= 728;lnm(i)="SPOKANE INTNL APT        ";st(i)="WA";ct(i)="US"
+i=i+1;cd(i)=" YMW";id(i)=71722;lt(i)= 46.38;ln(i)=  -75.97;el(i)= 170;lnm(i)="MANIWAKI                 ";st(i)="PQ";ct(i)="CA"
+i=i+1;cd(i)=" DTX";id(i)=72632;lt(i)= 42.70;ln(i)=  -83.47;el(i)= 329;lnm(i)="DETROIT/PONTIAC          ";st(i)="MI";ct(i)="US"
+i=i+1;cd(i)=" ILX";id(i)=74560;lt(i)= 40.15;ln(i)=  -89.33;el(i)= 178;lnm(i)="LINCOLN-LOGAN COUNTY AP  ";st(i)="IL";ct(i)="US"
+i=i+1;cd(i)=" APX";id(i)=72634;lt(i)= 44.91;ln(i)=  -84.72;el(i)= 448;lnm(i)="GAYLORD / ALPENA         ";st(i)="MI";ct(i)="US"
+i=i+1;cd(i)=" ROL";id(i)=78762;lt(i)=  9.98;ln(i)=  -84.22;el(i)= 920;lnm(i)="SAN JOSE/JUAN SANTA MARIA";st(i)="99";ct(i)="CR"
+i=i+1;cd(i)=" BDI";id(i)=78954;lt(i)= 13.07;ln(i)=  -59.50;el(i)=  47;lnm(i)="SEAWELL APT              ";st(i)="99";ct(i)="BB"
+i=i+1;cd(i)=" SDQ";id(i)=78486;lt(i)= 18.47;ln(i)=  -69.88;el(i)=  14;lnm(i)="SANTO DOMINGO            ";st(i)="99";ct(i)="DO"
+i=i+1;cd(i)=" KPP";id(i)=78970;lt(i)= 10.58;ln(i)=  -61.35;el(i)=  12;lnm(i)="TRINIDAD/PIARCO IAP      ";st(i)="99";ct(i)="TT"
+i=i+1;cd(i)=" JSJ";id(i)=78526;lt(i)= 18.43;ln(i)=  -66.00;el(i)=   3;lnm(i)="SAN JUAN/ISLA VERDE      ";st(i)="PR";ct(i)="US"
+i=i+1;cd(i)=" FFR";id(i)=78897;lt(i)= 16.27;ln(i)=  -61.52;el(i)=   8;lnm(i)="POINT A PITRE/RAIZET     ";st(i)="99";ct(i)="GP"
+i=i+1;cd(i)=" ACC";id(i)=78988;lt(i)= 12.20;ln(i)=  -68.97;el(i)=  54;lnm(i)="CURACAO/WILLEMSTAD       ";st(i)="99";ct(i)="AN"
+i=i+1;cd(i)=" ACM";id(i)=78866;lt(i)= 18.05;ln(i)=  -63.12;el(i)=   3;lnm(i)="SINT MARTIN/JULIANA      ";st(i)="99";ct(i)="AN"
+i=i+1;cd(i)=" KJP";id(i)=78397;lt(i)= 17.93;ln(i)=  -76.78;el(i)=   1;lnm(i)="KINGSTON/PALISADOES      ";st(i)="99";ct(i)="JM"
+i=i+1;cd(i)=" KCR";id(i)=78384;lt(i)= 19.30;ln(i)=  -81.37;el(i)=   3;lnm(i)="GRAND CAYMAN             ";st(i)="99";ct(i)="KY"
+i=i+1;cd(i)=" ZBZ";id(i)=78583;lt(i)= 17.53;ln(i)=  -88.30;el(i)=   5;lnm(i)="BELIZE                   ";st(i)="99";ct(i)="BZ"
+i=i+1;cd(i)=" MEX";id(i)=76679;lt(i)= 19.43;ln(i)=  -99.07;el(i)=2309;lnm(i)="MEXICO CITY/INT APT      ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" VER";id(i)=76692;lt(i)= 19.17;ln(i)=  -96.12;el(i)=  13;lnm(i)="VERACRUZ                 ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" 999";id(i)=76805;lt(i)= 16.76;ln(i)=  -99.93;el(i)=   3;lnm(i)="ACCAPULCO                ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" YNN";id(i)=78073;lt(i)= 25.05;ln(i)=  -77.47;el(i)=   2;lnm(i)="NASSAU APT               ";st(i)="99";ct(i)="BS"
+i=i+1;cd(i)=" EYW";id(i)=72201;lt(i)= 24.55;ln(i)=  -81.75;el(i)=   1;lnm(i)="KEY WEST INT AP          ";st(i)="FL";ct(i)="US"
+i=i+1;cd(i)=" TBW";id(i)=72210;lt(i)= 27.70;ln(i)=  -82.40;el(i)=  13;lnm(i)="TAMPA BAY/RUSKIN         ";st(i)="FL";ct(i)="US"
+i=i+1;cd(i)=" XMR";id(i)=74794;lt(i)= 28.48;ln(i)=  -80.55;el(i)=   5;lnm(i)="CAPE KENNEDY             ";st(i)="FL";ct(i)="US"
+i=i+1;cd(i)=" MID";id(i)=76644;lt(i)= 20.95;ln(i)=  -89.65;el(i)=  11;lnm(i)="MERIDA IAP               ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" BRO";id(i)=72250;lt(i)= 25.90;ln(i)=  -97.43;el(i)=   7;lnm(i)="BROWNSVILLE              ";st(i)="TX";ct(i)="US"
+i=i+1;cd(i)=" CRP";id(i)=72251;lt(i)= 27.77;ln(i)=  -97.50;el(i)=  14;lnm(i)="CORPUS CHRISTI           ";st(i)="TX";ct(i)="US"
+i=i+1;cd(i)=" XKF";id(i)=78016;lt(i)= 32.37;ln(i)=  -64.68;el(i)=  37;lnm(i)="BERMUDA/(MCKINDLY AFB)   ";st(i)="99";ct(i)="BS"
+i=i+1;cd(i)=" APG";id(i)=74002;lt(i)= 39.47;ln(i)=  -76.07;el(i)=   5;lnm(i)="PHILLIPS AFB, ABERDEEN   ";st(i)="MD";ct(i)="US"
+i=i+1;cd(i)=" GSO";id(i)=72317;lt(i)= 36.08;ln(i)=  -79.95;el(i)= 277;lnm(i)="GREENSBORO               ";st(i)="NC";ct(i)="US"
+i=i+1;cd(i)=" ILN";id(i)=72426;lt(i)= 39.42;ln(i)=  -83.82;el(i)= 317;lnm(i)="WILMINGTON               ";st(i)="OH";ct(i)="US"
+i=i+1;cd(i)=" VPS";id(i)=72221;lt(i)= 30.52;ln(i)=  -86.58;el(i)=  20;lnm(i)="VALPARAISO/ELGIN AFB     ";st(i)="FL";ct(i)="US"
+i=i+1;cd(i)=" CHS";id(i)=72208;lt(i)= 32.90;ln(i)=  -80.03;el(i)=  15;lnm(i)="CHARLESTON               ";st(i)="SC";ct(i)="US"
+i=i+1;cd(i)=" JAX";id(i)=72206;lt(i)= 30.43;ln(i)=  -81.70;el(i)=  10;lnm(i)="JACKSONVILLE             ";st(i)="FL";ct(i)="US"
+i=i+1;cd(i)=" BNA";id(i)=72327;lt(i)= 36.25;ln(i)=  -86.57;el(i)= 180;lnm(i)="NASHVILLE                ";st(i)="TN";ct(i)="US"
+i=i+1;cd(i)=" FSI";id(i)=72355;lt(i)= 34.65;ln(i)=  -98.40;el(i)= 362;lnm(i)="FORT SILL                ";st(i)="OK";ct(i)="US"
+i=i+1;cd(i)=" SHV";id(i)=72248;lt(i)= 32.45;ln(i)=  -93.83;el(i)=  84;lnm(i)="SHREVEPORT REGIONAL AP   ";st(i)="LA";ct(i)="US"
+i=i+1;cd(i)=" DDC";id(i)=72451;lt(i)= 37.77;ln(i)=  -99.97;el(i)= 791;lnm(i)="DODGE CITY               ";st(i)="KS";ct(i)="US"
+i=i+1;cd(i)=" SGF";id(i)=72440;lt(i)= 37.23;ln(i)=  -93.40;el(i)= 394;lnm(i)="SPRINGFIELD REGIONAL AP  ";st(i)="MO";ct(i)="US"
+i=i+1;cd(i)=" TOP";id(i)=72456;lt(i)= 39.07;ln(i)=  -95.62;el(i)= 268;lnm(i)="TOPEKA                   ";st(i)="KS";ct(i)="US"
+i=i+1;cd(i)=" YJT";id(i)=71815;lt(i)= 48.53;ln(i)=  -58.55;el(i)=  60;lnm(i)="STEPHENVILLE/HARMON AFB  ";st(i)="NF";ct(i)="CA"
+i=i+1;cd(i)=" YYT";id(i)=71801;lt(i)= 47.67;ln(i)=  -52.75;el(i)= 140;lnm(i)="TORBAY/ST JOHNS          ";st(i)="NF";ct(i)="CA"
+i=i+1;cd(i)=" CAR";id(i)=72712;lt(i)= 46.87;ln(i)=  -68.02;el(i)= 191;lnm(i)="CARIBOU                  ";st(i)="ME";ct(i)="US"
+i=i+1;cd(i)=" YSA";id(i)=71600;lt(i)= 43.93;ln(i)=  -60.02;el(i)=   4;lnm(i)="SABLE ISLAND             ";st(i)="NS";ct(i)="CA"
+i=i+1;cd(i)=" CHH";id(i)=74494;lt(i)= 41.67;ln(i)=  -69.97;el(i)=  16;lnm(i)="CHATHAM                  ";st(i)="MA";ct(i)="US"
+i=i+1;cd(i)=" YCX";id(i)=71701;lt(i)= 45.83;ln(i)=  -66.43;el(i)=  52;lnm(i)="GAGETOWN                 ";st(i)="NB";ct(i)="CA"
+i=i+1;cd(i)=" BUF";id(i)=72528;lt(i)= 42.93;ln(i)=  -78.73;el(i)= 218;lnm(i)="BUFFALO/GRTR ARPT        ";st(i)="NY";ct(i)="US"
+i=i+1;cd(i)=" GRB";id(i)=72645;lt(i)= 44.48;ln(i)=  -88.13;el(i)= 210;lnm(i)="GREEN BAY                ";st(i)="WI";ct(i)="US"
+i=i+1;cd(i)=" INL";id(i)=72747;lt(i)= 48.57;ln(i)=  -93.38;el(i)= 359;lnm(i)="INTERNATIONAL FALLS      ";st(i)="MN";ct(i)="US"
+i=i+1;cd(i)=" ABR";id(i)=72659;lt(i)= 45.45;ln(i)=  -98.42;el(i)= 397;lnm(i)="ABERDEEN                 ";st(i)="SD";ct(i)="US"
+i=i+1;cd(i)=" YYR";id(i)=71816;lt(i)= 53.30;ln(i)=  -60.37;el(i)=  36;lnm(i)="GOOSE/GOOSE BAY          ";st(i)="NF";ct(i)="CA"
+i=i+1;cd(i)=" YZV";id(i)=71811;lt(i)= 50.22;ln(i)=  -66.27;el(i)=  52;lnm(i)="SEPT ILES (UA)           ";st(i)="PQ";ct(i)="CA"
+i=i+1;cd(i)=" YVP";id(i)=71906;lt(i)= 58.10;ln(i)=  -68.42;el(i)=  60;lnm(i)="KUUJJUAQ (UA)            ";st(i)="PQ";ct(i)="CA"
+i=i+1;cd(i)=" YPH";id(i)=71907;lt(i)= 58.45;ln(i)=  -78.12;el(i)=  26;lnm(i)="INUKJUAK                 ";st(i)="PQ";ct(i)="CA"
+i=i+1;cd(i)=" YAH";id(i)=71823;lt(i)= 53.75;ln(i)=  -73.67;el(i)= 307;lnm(i)="LA GRANDE IV             ";st(i)="PQ";ct(i)="CA"
+i=i+1;cd(i)=" YMO";id(i)=71836;lt(i)= 51.27;ln(i)=  -80.65;el(i)=  10;lnm(i)="MOOSONEE                 ";st(i)="PQ";ct(i)="CA"
+i=i+1;cd(i)=" YYQ";id(i)=71913;lt(i)= 58.75;ln(i)=  -94.07;el(i)=  29;lnm(i)="CHURCHILL                ";st(i)="MB";ct(i)="CA"
+i=i+1;cd(i)=" WPL";id(i)=71845;lt(i)= 51.47;ln(i)=  -90.20;el(i)= 386;lnm(i)="PICKLE LAKE              ";st(i)="ON";ct(i)="CA"
+i=i+1;cd(i)=" YVN";id(i)=71909;lt(i)= 63.75;ln(i)=  -68.55;el(i)=  35;lnm(i)="IQALUIT (UA)             ";st(i)="NW";ct(i)="CA"
+i=i+1;cd(i)=" YZS";id(i)=71915;lt(i)= 64.20;ln(i)=  -83.37;el(i)=  57;lnm(i)="CORAL HARBOUR            ";st(i)="NW";ct(i)="CA"
+i=i+1;cd(i)=" YUX";id(i)=71081;lt(i)= 68.78;ln(i)=  -81.25;el(i)=   7;lnm(i)="HALL BEACH/HALL LK       ";st(i)="NW";ct(i)="CA"
+i=i+1;cd(i)=" YBK";id(i)=71926;lt(i)= 64.30;ln(i)=  -96.00;el(i)=  49;lnm(i)="BAKER LAKE (UA)          ";st(i)="NW";ct(i)="CA"
+i=i+1;cd(i)=" YRB";id(i)=71924;lt(i)= 74.72;ln(i)=  -94.98;el(i)=  40;lnm(i)="RESOLUTE                 ";st(i)="NW";ct(i)="CA"
+i=i+1;cd(i)=" YLT";id(i)=71082;lt(i)= 82.50;ln(i)=  -62.33;el(i)=  66;lnm(i)="ALERT                    ";st(i)="NW";ct(i)="CA"
+i=i+1;cd(i)=" YEU";id(i)=71917;lt(i)= 79.98;ln(i)=  -85.93;el(i)=  10;lnm(i)="EUREKA                   ";st(i)="NW";ct(i)="CA"
+i=i+1;cd(i)=" 999";id(i)=76654;lt(i)= 19.07;ln(i)= -104.33;el(i)=   3;lnm(i)="MANZANILLO               ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" ITO";id(i)=91285;lt(i)= 19.72;ln(i)= -155.07;el(i)=  10;lnm(i)="HILO                     ";st(i)="HI";ct(i)="US"
+i=i+1;cd(i)=" MCV";id(i)=76225;lt(i)= 28.70;ln(i)= -106.07;el(i)=1428;lnm(i)="CHIHUAHUA                ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" MZT";id(i)=76458;lt(i)= 23.18;ln(i)= -106.42;el(i)=   4;lnm(i)="MAZATLAN SINALOA         ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" DRT";id(i)=72261;lt(i)= 29.37;ln(i)= -100.92;el(i)= 313;lnm(i)="DEL RIO                  ";st(i)="TX";ct(i)="US"
+i=i+1;cd(i)=" MTY";id(i)=76394;lt(i)= 25.87;ln(i)= -100.20;el(i)= 450;lnm(i)="MONTERREY                ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" 999";id(i)=76612;lt(i)= 20.68;ln(i)= -103.33;el(i)=1551;lnm(i)="GUADALAJARA              ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" LAP";id(i)=76405;lt(i)= 24.07;ln(i)= -110.33;el(i)=  14;lnm(i)="LA PAZ/DE LEON           ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" GYM";id(i)=76256;lt(i)= 27.95;ln(i)= -110.80;el(i)=  12;lnm(i)="EMPALME SONORA           ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" YEV";id(i)=71957;lt(i)= 68.32;ln(i)= -133.53;el(i)= 103;lnm(i)="INUVIK (UA)              ";st(i)="NW";ct(i)="CA"
+i=i+1;cd(i)=" LIH";id(i)=91165;lt(i)= 21.98;ln(i)= -159.35;el(i)=  36;lnm(i)="LIHUE/KAUAI              ";st(i)="HI";ct(i)="US"
+i=i+1;cd(i)=" MAF";id(i)=72265;lt(i)= 31.93;ln(i)= -102.20;el(i)= 873;lnm(i)="MIDLAND                  ";st(i)="TX";ct(i)="US"
+i=i+1;cd(i)=" AMA";id(i)=72363;lt(i)= 35.23;ln(i)= -101.70;el(i)=1095;lnm(i)="AMARILLO                 ";st(i)="TX";ct(i)="US"
+i=i+1;cd(i)=" ABQ";id(i)=72365;lt(i)= 35.05;ln(i)= -106.62;el(i)=1619;lnm(i)="ALBUQUERQUE              ";st(i)="NM";ct(i)="US"
+i=i+1;cd(i)=" DNR";id(i)=72469;lt(i)= 39.77;ln(i)= -104.88;el(i)=1611;lnm(i)="DENVER/STAPLETON ARPT    ";st(i)="CO";ct(i)="US"
+i=i+1;cd(i)=" GJT";id(i)=72476;lt(i)= 39.12;ln(i)= -108.53;el(i)=1472;lnm(i)="GRAND JUNCTION           ";st(i)="CO";ct(i)="US"
+i=i+1;cd(i)=" TWC";id(i)=72274;lt(i)= 32.23;ln(i)= -110.96;el(i)= 753;lnm(i)="TUCSON                   ";st(i)="AZ";ct(i)="US"
+i=i+1;cd(i)=" OAK";id(i)=72493;lt(i)= 37.75;ln(i)= -122.22;el(i)=   6;lnm(i)="OAKLAND  INT AP          ";st(i)="CA";ct(i)="US"
+i=i+1;cd(i)=" BIS";id(i)=72764;lt(i)= 46.77;ln(i)= -100.75;el(i)= 503;lnm(i)="BISMARCK                 ";st(i)="ND";ct(i)="US"
+i=i+1;cd(i)=" LBF";id(i)=72562;lt(i)= 41.13;ln(i)= -100.68;el(i)= 847;lnm(i)="NORTH PLATTE             ";st(i)="NE";ct(i)="US"
+i=i+1;cd(i)=" RIW";id(i)=72672;lt(i)= 43.06;ln(i)= -108.47;el(i)=1688;lnm(i)="RIVERTON                 ";st(i)="WY";ct(i)="US"
+i=i+1;cd(i)=" SLC";id(i)=72572;lt(i)= 40.77;ln(i)= -111.97;el(i)=1288;lnm(i)="SALT LAKE CITY           ";st(i)="UT";ct(i)="US"
+i=i+1;cd(i)=" BOI";id(i)=72681;lt(i)= 43.57;ln(i)= -116.22;el(i)= 871;lnm(i)="BOISE                    ";st(i)="ID";ct(i)="US"
+i=i+1;cd(i)=" MFR";id(i)=72597;lt(i)= 42.37;ln(i)= -122.87;el(i)= 397;lnm(i)="MEDFORD                  ";st(i)="OR";ct(i)="US"
+i=i+1;cd(i)=" SLE";id(i)=72694;lt(i)= 44.92;ln(i)= -123.02;el(i)=  61;lnm(i)="SALEM                    ";st(i)="OR";ct(i)="US"
+i=i+1;cd(i)=" YQD";id(i)=71867;lt(i)= 53.97;ln(i)= -101.10;el(i)= 273;lnm(i)="THE PAS                  ";st(i)="MB";ct(i)="CA"
+i=i+1;cd(i)=" WSE";id(i)=71119;lt(i)= 53.55;ln(i)= -114.10;el(i)= 766;lnm(i)="EDMONTON/STONY PLAIN     ";st(i)="AB";ct(i)="CA"
+i=i+1;cd(i)=" YBP";id(i)=71126;lt(i)= 50.63;ln(i)= -111.90;el(i)= 759;lnm(i)="BROOKS                   ";st(i)="AB";ct(i)="CA"
+i=i+1;cd(i)=" WIQ";id(i)=71124;lt(i)= 54.80;ln(i)= -110.08;el(i)= 703;lnm(i)="PRIMROSE LAKE            ";st(i)="AB";ct(i)="CA"
+i=i+1;cd(i)=" ZXS";id(i)=71908;lt(i)= 53.90;ln(i)= -122.80;el(i)= 601;lnm(i)="PRINCE GEORGE            ";st(i)="BC";ct(i)="CA"
+i=i+1;cd(i)=" YZT";id(i)=71109;lt(i)= 50.68;ln(i)= -127.37;el(i)=  17;lnm(i)="PORT HARDY               ";st(i)="BC";ct(i)="CA"
+i=i+1;cd(i)=" YYE";id(i)=71945;lt(i)= 58.83;ln(i)= -122.60;el(i)= 377;lnm(i)="FORT NELSON UA           ";st(i)="BC";ct(i)="CA"
+i=i+1;cd(i)=" ANN";id(i)=70398;lt(i)= 55.03;ln(i)= -131.57;el(i)=  37;lnm(i)="ANNETTE ISLAND           ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" YAK";id(i)=70361;lt(i)= 59.52;ln(i)= -139.67;el(i)=  10;lnm(i)="YAKUTAT                  ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" ADQ";id(i)=70350;lt(i)= 57.75;ln(i)= -152.48;el(i)=   4;lnm(i)="KODIAK                   ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" AKN";id(i)=70326;lt(i)= 58.68;ln(i)= -156.65;el(i)=  15;lnm(i)="KING SALMON              ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" CDB";id(i)=70316;lt(i)= 55.20;ln(i)= -162.72;el(i)=  30;lnm(i)="COLD BAY                 ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" SNP";id(i)=70308;lt(i)= 57.15;ln(i)= -170.22;el(i)=  10;lnm(i)="ST PAUL ISLAND           ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" YCB";id(i)=71925;lt(i)= 69.10;ln(i)= -105.12;el(i)=  25;lnm(i)="CAMBRIDGE BAY            ";st(i)="NW";ct(i)="CA"
+i=i+1;cd(i)=" YSM";id(i)=71934;lt(i)= 60.03;ln(i)= -111.95;el(i)= 203;lnm(i)="FT SMITH (UA)            ";st(i)="NW";ct(i)="CA"
+i=i+1;cd(i)=" YVQ";id(i)=71043;lt(i)= 65.28;ln(i)= -126.75;el(i)=  95;lnm(i)="NORMAN WELLS (UA)        ";st(i)="NW";ct(i)="CA"
+i=i+1;cd(i)=" YXY";id(i)=71964;lt(i)= 60.72;ln(i)= -135.07;el(i)= 704;lnm(i)="WHITEHORSE               ";st(i)="YK";ct(i)="CA"
+i=i+1;cd(i)=" ANC";id(i)=70273;lt(i)= 61.17;ln(i)= -150.02;el(i)=  45;lnm(i)="ANCHORAGE IAP/PT. CAMPBE ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" FAI";id(i)=70261;lt(i)= 64.82;ln(i)= -147.87;el(i)= 135;lnm(i)="FAIRBANKS                ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" MCG";id(i)=70231;lt(i)= 62.97;ln(i)= -155.62;el(i)= 103;lnm(i)="MCGRATH                  ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" BET";id(i)=70219;lt(i)= 60.78;ln(i)= -161.80;el(i)=  36;lnm(i)="BETHEL                   ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" OTZ";id(i)=70133;lt(i)= 66.87;ln(i)= -162.63;el(i)=   5;lnm(i)="KOTZEBUE                 ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" OME";id(i)=70200;lt(i)= 64.50;ln(i)= -165.43;el(i)=   5;lnm(i)="NOME AP                  ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" BRW";id(i)=70026;lt(i)= 71.30;ln(i)= -156.78;el(i)=  12;lnm(i)="POINT BARROW             ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" BRW";id(i)=70027;lt(i)= 71.32;ln(i)= -156.65;el(i)=   3;lnm(i)="BARROW/POINT BARROW      ";st(i)="AK";ct(i)="US"
+i=i+1;cd(i)=" FGZ";id(i)=72376;lt(i)= 35.23;ln(i)= -111.82;el(i)=2179;lnm(i)="FLAGSTAFF/BELLEMT (ARMY) ";st(i)="AZ";ct(i)="US"
+i=i+1;cd(i)=" SIL";id(i)=72233;lt(i)= 30.33;ln(i)=  -89.82;el(i)=   8;lnm(i)="SLIDELL                  ";st(i)="LA";ct(i)="US"
+i=i+1;cd(i)=" FFC";id(i)=72215;lt(i)= 33.35;ln(i)=  -84.56;el(i)= 246;lnm(i)="PEACHTREE CITY           ";st(i)="GA";ct(i)="US"
+i=i+1;cd(i)=" BMX";id(i)=72230;lt(i)= 33.10;ln(i)=  -86.70;el(i)= 178;lnm(i)="BIRMINGHAM (SHELBY APT)  ";st(i)="AL";ct(i)="US"
+i=i+1;cd(i)=" RNK";id(i)=72318;lt(i)= 37.20;ln(i)=  -80.41;el(i)= 648;lnm(i)="ROANOKE/BLACKSBURG       ";st(i)="VA";ct(i)="US"
+i=i+1;cd(i)=" GYX";id(i)=74389;lt(i)= 43.89;ln(i)=  -70.25;el(i)= 125;lnm(i)="GRAY                     ";st(i)="ME";ct(i)="US"
+i=i+1;cd(i)=" ALY";id(i)=72518;lt(i)= 42.69;ln(i)=  -73.83;el(i)=  94;lnm(i)="ALBANY                   ";st(i)="NY";ct(i)="US"
+i=i+1;cd(i)=" MFL";id(i)=72202;lt(i)= 25.75;ln(i)=  -80.38;el(i)=   4;lnm(i)="MIAMI/FL INTL UNIV       ";st(i)="FL";ct(i)="US"
+i=i+1;cd(i)=" NTD";id(i)=72391;lt(i)= 34.10;ln(i)= -119.12;el(i)=   2;lnm(i)="POINT MUGU               ";st(i)="CA";ct(i)="US"
+i=i+1;cd(i)=" NSI";id(i)=72291;lt(i)= 33.25;ln(i)= -119.45;el(i)=  14;lnm(i)="SAN NICOLAS ISLAND/SITE1 ";st(i)="CA";ct(i)="US"
+i=i+1;cd(i)=" VBG";id(i)=72393;lt(i)= 34.75;ln(i)= -120.57;el(i)= 100;lnm(i)="VANDENBERG               ";st(i)="CA";ct(i)="US"
+i=i+1;cd(i)=" IAD";id(i)=72403;lt(i)= 38.98;ln(i)=  -77.47;el(i)=  85;lnm(i)="STERLING(WASH DULLES)    ";st(i)="VA";ct(i)="US"
+i=i+1;cd(i)=" WAL";id(i)=72402;lt(i)= 37.93;ln(i)=  -75.48;el(i)=  13;lnm(i)="WALLOPS ISLAND           ";st(i)="VA";ct(i)="US"
+i=i+1;cd(i)=" MHX";id(i)=72305;lt(i)= 34.70;ln(i)=  -76.80;el(i)=  11;lnm(i)="MOREHEAD CITY/NEWPORT    ";st(i)="NC";ct(i)="US"
+i=i+1;cd(i)=" TLH";id(i)=72214;lt(i)= 30.45;ln(i)=  -84.30;el(i)=  52;lnm(i)="TALLAHASEE               ";st(i)="FL";ct(i)="US"
+i=i+1;cd(i)=" GGW";id(i)=72768;lt(i)= 48.20;ln(i)= -106.62;el(i)= 693;lnm(i)="GLASGOW                  ";st(i)="MT";ct(i)="US"
+i=i+1;cd(i)=" UNR";id(i)=72662;lt(i)= 44.07;ln(i)= -103.21;el(i)=1037;lnm(i)="RAPID CITY               ";st(i)="SD";ct(i)="US"
+i=i+1;cd(i)=" YLW";id(i)=71203;lt(i)= 49.97;ln(i)= -119.38;el(i)= 454;lnm(i)="KELOWNA APT              ";st(i)="BC";ct(i)="CA"
+i=i+1;cd(i)=" UIL";id(i)=72797;lt(i)= 47.95;ln(i)= -124.55;el(i)=  56;lnm(i)="QUILLAYUTE               ";st(i)="WA";ct(i)="US"
+i=i+1;cd(i)=" WQI";id(i)=71603;lt(i)= 43.87;ln(i)=  -66.05;el(i)=   9;lnm(i)="YARMOUTH                 ";st(i)="NS";ct(i)="CA"
+i=i+1;cd(i)=" OKX";id(i)=72501;lt(i)= 40.87;ln(i)=  -72.87;el(i)=  20;lnm(i)="BROOKHAVEN               ";st(i)="NY";ct(i)="US"
+i=i+1;cd(i)=" PIT";id(i)=72520;lt(i)= 40.53;ln(i)=  -80.23;el(i)= 360;lnm(i)="PITTSBURGH/MOON TOWNSHIP ";st(i)="PA";ct(i)="US"
+i=i+1;cd(i)=" OAX";id(i)=72558;lt(i)= 41.32;ln(i)=  -96.37;el(i)= 350;lnm(i)="OMAHA/VALLEY             ";st(i)="NE";ct(i)="US"
+i=i+1;cd(i)=" DVN";id(i)=74455;lt(i)= 41.60;ln(i)=  -90.57;el(i)= 229;lnm(i)="DAVENPORT MUNICIPAL AP   ";st(i)="IA";ct(i)="US"
+i=i+1;cd(i)=" MPX";id(i)=72649;lt(i)= 44.83;ln(i)=  -93.55;el(i)= 287;lnm(i)="MINNEAPOLIS              ";st(i)="MN";ct(i)="US"
+i=i+1;cd(i)=" WEP";id(i)=71230;lt(i)= 55.13;ln(i)= -122.96;el(i)= 659;lnm(i)="WHISTLER OLYMPIC SITE    ";st(i)="BC";ct(i)="CA"
+i=i+1;cd(i)=" XBK";id(i)=71569;lt(i)= 50.20;ln(i)= -104.70;el(i)= 580;lnm(i)="BRATTS LAKE              ";st(i)="SA";ct(i)="CA"
+i=i+1;cd(i)=" 999";id(i)=71802;lt(i)= 47.52;ln(i)=  -52.78;el(i)=  49;lnm(i)="SAINT LAWRENCE           ";st(i)="NF";ct(i)="CA"
+i=i+1;cd(i)=" CXW";id(i)=71843;lt(i)= 49.88;ln(i)=  -97.13;el(i)= 263;lnm(i)="WINNIPEG                 ";st(i)="99";ct(i)="CA"
+i=i+1;cd(i)=" YQW";id(i)=71876;lt(i)= 52.77;ln(i)= -108.25;el(i)= 548;lnm(i)="NORTH BATTLEFORD         ";st(i)="99";ct(i)="CA"
+i=i+1;cd(i)=" YQQ";id(i)=71893;lt(i)= 49.72;ln(i)= -124.90;el(i)=  24;lnm(i)="COMOX                    ";st(i)="BC";ct(i)="CA"
+i=i+1;cd(i)=" 999";id(i)=74001;lt(i)= 34.60;ln(i)=  -86.62;el(i)= 174;lnm(i)="REDSTONE ARSENAL         ";st(i)="AL";ct(i)="US"
+i=i+1;cd(i)=" 999";id(i)=74005;lt(i)= 33.53;ln(i)= -114.03;el(i)= 331;lnm(i)="LUKE AIR FORCE BASE      ";st(i)="AZ";ct(i)="US"
+i=i+1;cd(i)=" 999";id(i)=74006;lt(i)= 32.86;ln(i)= -114.03;el(i)= 331;lnm(i)="YUMA PROVING GROUND      ";st(i)="AZ";ct(i)="US"
+i=i+1;cd(i)=" 999";id(i)=74626;lt(i)= 33.45;ln(i)= -111.95;el(i)= 384;lnm(i)="PHOENIX                  ";st(i)="AZ";ct(i)="US"
+i=i+1;cd(i)=" LMN";id(i)=74646;lt(i)= 36.68;ln(i)=  -97.47;el(i)= 306;lnm(i)="LAMONT                   ";st(i)="OK";ct(i)="US"
+i=i+1;cd(i)=" 999";id(i)=76526;lt(i)= 22.75;ln(i)= -102.51;el(i)=2265;lnm(i)="GUADALUPE, ZACHATECAS    ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" CUN";id(i)=76595;lt(i)= 21.03;ln(i)=  -86.85;el(i)=   5;lnm(i)="CANCUN                   ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" 999";id(i)=76743;lt(i)= 17.98;ln(i)=  -92.92;el(i)=   6;lnm(i)="VILLAHERMOSA             ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" 999";id(i)=76856;lt(i)= 15.65;ln(i)=  -96.50;el(i)=  43;lnm(i)="PUERTO ANGEL             ";st(i)="99";ct(i)="MX"
+i=i+1;cd(i)=" 999";id(i)=78083;lt(i)= 24.70;ln(i)=  -77.77;el(i)=   3;lnm(i)="ANDROS TOWN              ";st(i)="99";ct(i)="BA"
+i=i+1;cd(i)=" 999";id(i)=78387;lt(i)= 18.25;ln(i)=  -78.37;el(i)=  10;lnm(i)="NEGRIL POINT (LH)        ";st(i)="99";ct(i)="JM"
+i=i+1;cd(i)=" 999";id(i)=78485;lt(i)= 18.42;ln(i)=  -69.66;el(i)=  18;lnm(i)="CAUCEDO/DE LAS           ";st(i)="99";ct(i)="DO"
+i=i+1;cd(i)=" 999";id(i)=78588;lt(i)= 17.18;ln(i)=  -87.50;el(i)=   1;lnm(i)="HALF MOON CAYE           ";st(i)="99";ct(i)="BZ"
+i=i+1;cd(i)=" 999";id(i)=78808;lt(i)=  8.98;ln(i)=  -79.55;el(i)=  66;lnm(i)="ALBROOK                  ";st(i)="99";ct(i)="PM"
+      ! https://ruc.noaa.gov/raobs/international_sites.txt
 i=i+1;cd(i)="ENJA";id(i)=01001;lt(i)= 70.93;ln(i)=  -8.67;el(i)=   9;lnm(i)="JAN MAYEN(NOR-NAVY)      ";st(i)="  ";ct(i)="NO"
 i=i+1;cd(i)="ENAS";id(i)=01004;lt(i)= 78.92;ln(i)=  11.93;el(i)=   8;lnm(i)="NY-ALESUND II            ";st(i)="  ";ct(i)="NO"
 i=i+1;cd(i)="ENAN";id(i)=01010;lt(i)= 69.30;ln(i)=  16.15;el(i)=  14;lnm(i)="ANDOYA/ANDENES(AFB)      ";st(i)="  ";ct(i)="NO"
@@ -2699,14 +2814,65 @@ i=i+1;cd(i)="RPMT";id(i)=98646;lt(i)= 10.30;ln(i)= 123.97;el(i)=  24;lnm(i)="MAC
 i=i+1;cd(i)="9999";id(i)=98747;lt(i)=  8.41;ln(i)= 124.61;el(i)= 188;lnm(i)="LUMBIA AIRPORT           ";st(i)="  ";ct(i)="PH"
 i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAVAO/FRANCISCO BAN      ";st(i)="  ";ct(i)="PH"
 
+      num_RadSnd_Stat = i
+      allocate(MR_Snd_cd(num_RadSnd_Stat))   ! Station code
+      allocate(MR_Snd_id(num_RadSnd_Stat))   ! WMO station ID
+      allocate(MR_Snd_lt(num_RadSnd_Stat))   ! Station latitude
+      allocate(MR_Snd_ln(num_RadSnd_Stat))   ! Station longitude
+      allocate(MR_Snd_el(num_RadSnd_Stat))   ! Station elevation
+      allocate(MR_Snd_lnm(num_RadSnd_Stat))  ! Station long name
+      allocate(MR_Snd_st(num_RadSnd_Stat))   ! Station state
+      allocate(MR_Snd_ct(num_RadSnd_Stat))   ! Station country
+
+      ! Now copy to MR module arrays
+      MR_Snd_cd(1:num_RadSnd_Stat) = cd(1:num_RadSnd_Stat)
+      MR_Snd_id(1:num_RadSnd_Stat) = id(1:num_RadSnd_Stat)
+      MR_Snd_lt(1:num_RadSnd_Stat) = lt(1:num_RadSnd_Stat)
+      MR_Snd_ln(1:num_RadSnd_Stat) = ln(1:num_RadSnd_Stat)
+      MR_Snd_el(1:num_RadSnd_Stat) = el(1:num_RadSnd_Stat)
+      MR_Snd_lnm(1:num_RadSnd_Stat)= lnm(1:num_RadSnd_Stat)
+      MR_Snd_st(1:num_RadSnd_Stat) = st(1:num_RadSnd_Stat)
+      MR_Snd_ct(1:num_RadSnd_Stat) = ct(1:num_RadSnd_Stat)
+
+      end subroutine MR_Load_Radiosonde_Station_Data
+
+
+!##############################################################################
+!
+!     MR_Get_Radiosonde_Station_Coord
+!
+!     This subroutine take a station code and returns the coordinates (lon,lat,elv)
+!
+!##############################################################################
+
+      subroutine MR_Get_Radiosonde_Station_Coord(StatID,StatIdx,Stat_lon,Stat_lat,Stat_elv)
+
+      use MetReader
+
+      implicit none
+
+      integer, parameter :: sp             = 4
+
+      integer,      intent(in)  :: StatID
+      integer,      intent(out) :: StatIdx
+      real(kind=sp),intent(out) :: Stat_lon,Stat_lat,Stat_elv
+
+      integer :: i
+      logical :: FoundStation
+      integer :: ioerr
+      character(len=80) :: linebuffer
+      real(kind=sp)     :: tmp_sp
+
+      StatIdx = -1
       FoundStation = .false.
-      do i=1,MAX_STAT_NUM
-        if(StatID.eq.id(i))then
-          Stat_lon = real(ln(i),kind=sp)
-          Stat_lat = real(lt(i),kind=sp)
-          Stat_elv = real(el(i),kind=sp)
+      do i=1,num_RadSnd_Stat
+        if(StatID.eq.MR_Snd_id(i))then
+          Stat_lon = real(MR_Snd_ln(i),kind=sp)
+          Stat_lat = real(MR_Snd_lt(i),kind=sp)
+          Stat_elv = real(MR_Snd_el(i),kind=sp)
           FoundStation = .true.
-          write(MR_global_info,*)" Radiosonde station: ",cd(i),StatID,lnm(i)
+          StatIdx = i
+          write(MR_global_info,*)" Radiosonde station: ",MR_Snd_cd(i),StatID,MR_Snd_lnm(i)
           write(MR_global_info,*)"  longitude = ",Stat_lon
           write(MR_global_info,*)"  latitude  = ",Stat_lat
           write(MR_global_info,*)"  elevation = ",Stat_elv
@@ -2724,7 +2890,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           write(MR_global_error,*)"          You entered :",linebuffer
           stop 1
         endif
-        if(tmp_sp.lt.180.0_sp.or.tmp_sp.gt.360.0)then
+        if(tmp_sp.lt.180.0_sp.or.tmp_sp.gt.360.0_sp)then
           write(MR_global_error,*)"MR ERROR: longitude must be between -180 and 360."
           write(MR_global_error,*)"          You entered :",tmp_sp
           stop 1
@@ -2739,7 +2905,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           write(MR_global_error,*)"          You entered :",linebuffer
           stop 1
         endif
-        if(tmp_sp.lt.-90.0_sp.or.tmp_sp.gt.90.0)then
+        if(tmp_sp.lt.-90.0_sp.or.tmp_sp.gt.90.0_sp)then
           write(MR_global_error,*)"MR ERROR: latitude must be between -90 and 90."
           write(MR_global_error,*)"          You entered :",tmp_sp
           stop 1
@@ -2754,7 +2920,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           write(MR_global_error,*)"          You entered :",linebuffer
           stop 1
         endif
-        if(tmp_sp.lt.0.0_sp.or.tmp_sp.gt.8000.0)then
+        if(tmp_sp.lt.0.0_sp.or.tmp_sp.gt.8000.0_sp)then
           write(MR_global_error,*)"MR ERROR: elevation must be between 0 and 8000."
           write(MR_global_error,*)"          You entered :",tmp_sp
           stop 1
@@ -2764,4 +2930,269 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       endif
 
       end subroutine MR_Get_Radiosonde_Station_Coord
+
+
+!##############################################################################
+!
+!     MR_Get_Radiosonde_Stations_InDomain
+!
+!     This subroutine compares the radiosonde station list with the computational
+!     domain and lists the potentially available stations.
+!
+!##############################################################################
+
+      subroutine MR_Get_Radiosonde_Stations_InDomain
+
+      use MetReader
+
+      implicit none
+
+      integer, parameter :: sp             = 4
+
+      integer :: nSnd_InDomain
+      integer :: i,ii
+      real(kind=sp)     :: de,dn
+      real(kind=sp)     :: latLL,lonLL
+      real(kind=sp)     :: latUR,lonUR
+
+      write(*,*)"Radiosonde stations currently loaded:"
+      do i=1,MR_nSnd_Locs
+        ii = Snd_idx(i)
+        write(*,*)MR_Snd_id(ii),adjustl(trim(MR_Snd_lnm(ii))),',',MR_Snd_st(ii),',',MR_Snd_ct(ii)
+      enddo
+
+      de = x_comp_sp(2)-x_comp_sp(1)
+      dn = y_comp_sp(2)-y_comp_sp(1)
+      lonLL = x_comp_sp(1)      -de
+      lonUR = x_comp_sp(nx_comp)+de
+      latLL = y_comp_sp(1)      -dn
+      latUR = y_comp_sp(ny_comp)+dn
+      if(lonLL.gt.180.0_sp)then
+        lonLL = lonLL - 360.0_sp
+        lonUR = lonUR - 360.0_sp
+      endif
+
+      nSnd_InDomain = 0
+      do i=1,num_RadSnd_Stat
+        if(latLL.lt.MR_Snd_lt(i).and.&
+           latUR.gt.MR_Snd_lt(i).and.&
+           lonLL.lt.MR_Snd_ln(i).and.&
+           lonUR.gt.MR_Snd_ln(i))then
+          if(nSnd_InDomain.eq.0) &
+            write(*,*)" Stations found in domain:"
+          nSnd_InDomain = nSnd_InDomain + 1
+          write(*,*)MR_Snd_id(i),adjustl(trim(MR_Snd_lnm(i))),',',MR_Snd_st(i),',',MR_Snd_ct(i)
+        endif
+      enddo
+
+      end subroutine MR_Get_Radiosonde_Stations_InDomain
+
+
+!##############################################################################
+!
+!     MR_Calc_Snd_Weights_NearNeigh
+!
+!     This subroutine calculates the interpolation weights on the computational
+!     grid from a sparse set of radiosonde staions using nearest neighbor.
+!     First, the distance from each comp point to each station must be
+!     calculated.
+!     This subroutine is obsolete since the same effect can be achieved using
+!     MR_Calc_Snd_Weights_InvDistWeight with a max station of 1 or appoximated
+!     by using a high exponent.
+!
+!##############################################################################
+
+      subroutine MR_Calc_Snd_Weights_NearNeigh
+
+      use MetReader
+
+      implicit none
+
+      integer, parameter :: sp             = 4
+      integer, parameter :: dp             = 8
+
+      integer :: i,j,k,idx
+      real(kind=dp)     :: lat1,lon1
+      real(kind=dp)     :: lat2,lon2
+
+      real(kind=dp),dimension(:,:,:),allocatable :: MR_Snd2Comp_dist
+
+      INTERFACE
+        real(kind=8) function MR_Haversine(lon1,lat1,lon2,lat2)
+          real(kind=8)  :: lon1
+          real(kind=8)  :: lat1
+          real(kind=8)  :: lon2
+          real(kind=8)  :: lat2
+        end function MR_Haversine
+      END INTERFACE
+
+      allocate(MR_Snd2Comp_dist(nx_comp,ny_comp,MR_nSnd_Locs))
+
+      MR_Snd2Comp_map_wgt = 0.0_sp
+
+      do i=1,nx_comp
+        lon1 = real(x_comp_sp(i),kind=dp)
+        do j=1,ny_comp
+          lat1 = real(y_comp_sp(j),kind=dp)
+          do k=1,MR_nSnd_Locs
+            lon2 = real(MR_Snd_ln(Snd_idx(k)),kind=8)+360.0_dp
+            lat2 = real(MR_Snd_lt(Snd_idx(k)),kind=8)
+            MR_Snd2Comp_dist(i,j,k) = MR_Haversine(lon1,lat1,lon2,lat2)
+            MR_Snd2Comp_map_idx(i,j,k) = k
+          enddo
+          idx = minloc(MR_Snd2Comp_dist(i,j,:),1)
+          MR_Snd2Comp_map_wgt(i,j,idx) = 1.0_sp
+        enddo
+      enddo
+
+      end subroutine MR_Calc_Snd_Weights_NearNeigh
+
+!##############################################################################
+!
+!     MR_Calc_Snd_Weights_InvDistWeight
+!
+!     This subroutine calculates the interpolation weights on the computational
+!     grid from a sparse set of radiosonde staions using an inverse distance.
+!     First, the distance from each comp point to each station must be
+!     calculated.
+!
+!##############################################################################
+
+      subroutine MR_Calc_Snd_Weights_InvDistWeight(pexp,nstat)
+
+      use MetReader
+
+      implicit none
+
+      integer, parameter :: sp               = 4
+      integer, parameter :: dp               = 8
+
+      real(kind=dp), intent(in)           :: pexp  ! positive expo of inv dist func
+      integer,       intent(in), optional :: nstat ! num of stations to consider
+
+      integer       :: i,j,k,l,idx
+      real(kind=dp) :: lat1,lon1
+      real(kind=dp) :: lat2,lon2
+      real(kind=dp) :: norm
+      real(kind=dp) :: dist
+      integer :: maxstations
+      logical,dimension(:),allocatable :: StatInStencil
+
+      real(kind=dp),dimension(:,:,:),allocatable :: MR_Snd2Comp_dist
+
+      INTERFACE
+        real(kind=8) function MR_Haversine(lon1,lat1,lon2,lat2)
+          real(kind=8)  :: lon1
+          real(kind=8)  :: lat1
+          real(kind=8)  :: lon2
+          real(kind=8)  :: lat2
+        end function MR_Haversine
+      END INTERFACE
+
+      ! Figure out how many stations to use in the inv.dist. weighting
+      if(present(nstat))then
+        if(nstat.eq.0)then
+          maxstations = MR_nSnd_Locs
+        else
+          maxstations = nstat
+        endif
+      else
+        maxstations = MR_nSnd_Locs
+      endif
+      allocate(StatInStencil(MR_nSnd_Locs))
+
+      allocate(MR_Snd2Comp_dist(nx_comp,ny_comp,MR_nSnd_Locs))
+      MR_Snd2Comp_map_wgt = 0.0_sp
+      MR_Snd2Comp_map_idx = 0
+
+      ! Loop over all nodes on the computational grid
+      do i=1,nx_comp
+        lon1 = real(x_comp_sp(i),kind=8)
+        do j=1,ny_comp
+          lat1 = real(y_comp_sp(j),kind=8)
+          ! Loop over all the sonde locations and get distances to the comp node
+          do k=1,MR_nSnd_Locs
+            lon2 = real(MR_Snd_ln(Snd_idx(k)),kind=8)+360.0_dp
+            lat2 = real(MR_Snd_lt(Snd_idx(k)),kind=8)
+            MR_Snd2Comp_dist(i,j,k) = MR_Haversine(lon1,lat1,lon2,lat2)
+            MR_Snd2Comp_map_wgt(i,j,k) = real(1.0_dp/(MR_Snd2Comp_dist(i,j,k)**pexp),kind=sp)
+            !norm = norm + MR_Snd2Comp_map_wgt(i,j,k)
+            !MR_Snd2Comp_map_idx(i,j,k) = k
+          enddo
+          ! For this comp node, only use the maxstations closest sonde sites
+          StatInStencil(1:MR_nSnd_Locs) = .false.
+          idx = 0
+          do l=1,maxstations
+            ! Looking for the next closest station
+            dist = maxval(MR_Snd2Comp_dist(i,j,1:MR_nSnd_Locs))
+            do k=1,MR_nSnd_Locs
+              if(StatInStencil(k)) cycle ! skip to next k if this is already in stencil
+              if(MR_Snd2Comp_dist(i,j,k).le.dist)then
+                dist = MR_Snd2Comp_dist(i,j,k)
+                idx = k
+              endif
+            enddo
+            MR_Snd2Comp_map_idx(i,j,l) = idx
+            StatInStencil(idx) = .true.
+          enddo
+          ! Now find the normalization factor
+          norm = 0.0_dp
+          do l=1,maxstations
+            idx = MR_Snd2Comp_map_idx(i,j,l)
+            norm = norm + MR_Snd2Comp_map_wgt(i,j,idx)
+          enddo
+          ! Finally, normalize the requested weights and zero the others
+          do k=1,MR_nSnd_Locs
+            if(StatInStencil(k))then
+              MR_Snd2Comp_map_wgt(i,j,k) = real(MR_Snd2Comp_map_wgt(i,j,k)/norm,kind=sp)
+            else
+              MR_Snd2Comp_map_wgt(i,j,k) = 0.0_sp
+            endif
+          enddo
+        enddo
+      enddo
+
+      end subroutine MR_Calc_Snd_Weights_InvDistWeight
+
+!##############################################################################
+!
+!    MR_Haversine
+!
+!    Calculates the distance in km given to lat/lon points.  Assumes a spherical
+!    Earth and uses the Haversine function.
+!
+!##############################################################################
+
+      function MR_Haversine(lon1,lat1,lon2,lat2)
+
+      use MetReader
+
+      implicit none
+
+      real(kind=8)  :: MR_Haversine
+      real(kind=8)  :: lon1,lat1,lon2,lat2
+      real(kind=8)  :: lam1,psi1,lam2,psi2
+      real(kind=8)  :: dpsi,dlam
+      real(kind=8)  :: a,c
+      real(kind=8)  :: fac1,fac2
+
+      ! From https://www.movable-type.co.uk/scripts/latlong.html
+      lam1 = lon1*DEG2RAD_MET
+      psi1 = lat1*DEG2RAD_MET
+      lam2 = lon2*DEG2RAD_MET
+      psi2 = lat2*DEG2RAD_MET
+      dpsi = psi2-psi1
+      dlam = lam2-lam1
+
+      a = sin(0.5_8*dpsi)*sin(0.5_8*dpsi) + &
+          sin(0.5_8*dlam)*sin(0.5_8*dlam) * cos(psi1)*cos(psi2)
+      fac1 = sqrt(      a)
+      fac2 = sqrt(1.0_8-a)
+      c = 2.0_8*atan2( fac1, fac2 )
+
+      MR_Haversine = RAD_EARTH_MET * c
+
+      end function MR_Haversine
+
+
 

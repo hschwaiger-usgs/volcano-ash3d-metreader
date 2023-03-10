@@ -29,6 +29,7 @@
 #    This variable cannot be left blank
 #      
 SYSTEM = gfortran
+#SYSTEM = ifort
 #
 #  RUN specifies which collection of compilation flags that should be run
 #    Current available options are:
@@ -41,6 +42,7 @@ SYSTEM = gfortran
 RUN=OPT
 #
 INSTALLDIR=/opt/USGS
+#INSTALLDIR=$(HOME)/intel
 #
 # DATA FORMATS
 #  For each data format you want to include in the library, set the corresponding
@@ -69,9 +71,6 @@ endif
 ifeq ($(USEGRIB), T)
  grbFPPFLAG = -DUSEGRIB
  grbOBJS = MetReader_GRIB.o MetReader_GRIB_index.o
- # These are the libraries for grib_api
- #grblib = -lgrib_api_f90 -lgrib_api
- # These are the libraries for ecCodes
  grblib = -leccodes -leccodes_f90
 else
  grbFPPFLAG =
@@ -88,7 +87,7 @@ endif
 # location of HoursSince and projection
 USGSLIBDIR = -L$(INSTALLDIR)/lib
 USGSINC = -I$(INSTALLDIR)/include
-USGSLIB = $(USGSLIBDIR) $(USGSINC) -lhourssince -lprojection
+USGSLIB = $(USGSINC) $(USGSLIBDIR) -lhourssince -lprojection
 
 ###############################################################################
 ###############################################################################
@@ -98,10 +97,8 @@ USGSLIB = $(USGSLIBDIR) $(USGSINC) -lhourssince -lprojection
 ifeq ($(SYSTEM), gfortran)
     FCHOME=/usr
     FC = /usr/bin/gfortran
-
     #COMPINC = -I$(FCHOME)/local/include -I$(FCHOME)/include -I$(FCHOME)/lib64/gfortran/modules -I$(INSTALLDIR)/include
     #COMPLIBS = -L$(FCHOME)/local/lib -L$(FCHOME)/lib64 -L${INSTALLDIR}/lib 
-
     COMPINC = -I./ -I$(FCHOME)/include -I$(FCHOME)/lib64/gfortran/modules -I$(INSTALLDIR)/include
     COMPLIBS = -L./ -L$(FCHOME)/lib64 -L${INSTALLDIR}/lib
 
@@ -121,11 +118,38 @@ ifeq ($(RUN), OPT)
     FFLAGS = -O3 -w -fno-math-errno -funsafe-math-optimizations -fno-trapping-math -fno-signaling-nans -fcx-limited-range -fno-rounding-math -fdefault-real-8
 endif
       # Preprocessing flags
-    FPPFLAGS = -x f95-cpp-input $(ncFPPFLAG) $(grbFPPFLAG) $(grbFPPFLAG) $(memFPPFLAG)
+    FPPFLAGS = -x f95-cpp-input $(ncFPPFLAG) $(grbFPPFLAG) $(memFPPFLAG)
       # Extra flags
     EXFLAGS =
 endif
 ###############################################################################
+##########  Intel Fortran Compiler  #############################################
+ifeq ($(SYSTEM), ifort)
+    FCHOME = /opt/intel/oneapi/compiler/latest/linux/
+    FC = $(FCHOME)/bin/intel64/ifort
+    COMPINC = -I./ -I$(FCHOME)/include
+    COMPLIBS = -L./ -L$(FCHOME)/lib
+    LIBS = $(COMPLIBS) $(COMPINC)
+
+# Debugging flags
+ifeq ($(RUN), DEBUG)
+    FFLAGS = -g2 -pg -warn all -check all -real-size 32 -check uninit -traceback -ftrapuv -debug all
+endif
+# Profiling flags
+ifeq ($(RUN), PROF)
+    FFLAGS = -g2 -pg
+endif
+# Production run flags
+ifeq ($(RUN), OPT)
+    FFLAGS = -O3 -ftz -w -ipo
+endif
+      # Preprocessing flags
+    FPPFLAGS =  -fpp $(ncFPPFLAG) $(grbFPPFLAG) $(memFPPFLAG)
+      # Extra flags
+    EXFLAGS =
+endif
+###############################################################################
+
 
 LIB = libMetReader.a
 
@@ -194,7 +218,7 @@ endif
 
 bin/MetSonde: tools/MetSonde.f90 makefile libMetReader.a
 	mkdir -p bin
-	$(FC) $(FFLAGS) $(EXFLAGS) -L./ -lMetReader $(LIBS) $(nclib) $(grblib) -c tools/MetSonde.f90
+	$(FC) $(FFLAGS) $(EXFLAGS) -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB) -c tools/MetSonde.f90
 	$(FC) $(FFLAGS) $(EXFLAGS) MetSonde.o  -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB) -o bin/MetSonde
 bin/MetTraj_F: tools/MetTraj.F90 makefile libMetReader.a
 	mkdir -p bin
