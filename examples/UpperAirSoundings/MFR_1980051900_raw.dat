@@ -1,0 +1,123 @@
+<HTML>
+<TITLE>University of Wyoming - Radiosonde Data</TITLE>
+<BODY BGCOLOR="white">
+<H2>72597 MFR Medford Observations at 00Z 19 May 1980</H2>
+<PRE>
+-----------------------------------------------------------------------------
+   PRES   HGHT   TEMP   DWPT   RELH   MIXR   DRCT   SKNT   THTA   THTE   THTV
+    hPa     m      C      C      %    g/kg    deg   knot     K      K      K 
+-----------------------------------------------------------------------------
+ 1000.0    118                                                               
+  968.0    405   27.8    5.8     25   6.01    340      9  303.8  322.2  304.9
+  945.4    609   25.3    4.2     26   5.52    325     11  303.3  320.3  304.3
+  912.5    914   21.6    1.9     27   4.85    325     10  302.6  317.5  303.4
+  880.8   1219   17.9   -0.4     29   4.25    325      9  301.8  314.9  302.6
+  875.0   1276   17.2   -0.8     29   4.14    322      9  301.6  314.5  302.4
+  850.0   1520   15.2   -1.8     31   3.96    310      7  302.1  314.4  302.8
+  819.0   1828   12.9   -2.9     33   3.79    280      7  302.9  314.7  303.6
+  789.5   2133   10.7   -4.0     35   3.62    225     12  303.7  315.1  304.4
+  761.0   2438    8.5   -5.1     38   3.45    210     13  304.5  315.4  305.1
+  733.5   2743    6.2   -6.2     41   3.29    200     15  305.3  315.7  305.9
+  707.0   3048    4.0   -7.3     44   3.14    195     15  306.0  316.0  306.6
+  700.0   3131    3.4   -7.6     44   3.10    200     14  306.2  316.1  306.8
+  668.0   3509    1.2  -28.8      9   0.53    218     14  307.9  309.8  308.0
+  655.7   3657    0.2  -29.8      8   0.50    225     14  308.4  310.2  308.5
+  607.3   4267   -3.9  -33.9      8   0.36    225     15  310.5  311.8  310.6
+  587.0   4537   -5.7  -35.7      7   0.31    232     16  311.4  312.6  311.5
+  562.0   4876   -7.6  -25.8     22   0.83    240     18  313.1  316.1  313.3
+  540.4   5181   -9.3  -17.0     54   1.88    245     16  314.6  321.0  315.0
+  535.0   5259   -9.7  -14.7     67   2.30    244     17  315.0  322.7  315.4
+  519.0   5494  -10.5  -21.5     40   1.33    240     20  316.8  321.4  317.0
+  500.0   5780  -12.9  -20.9     51   1.45    235     24  317.2  322.3  317.5
+  499.3   5791  -12.9  -20.4     54   1.52    235     24  317.3  322.6  317.6
+  494.0   5872  -13.3  -16.9     74   2.07    235     25  317.9  324.9  318.2
+  485.0   6012  -14.3  -21.3     55   1.45    235     27  318.3  323.4  318.6
+  479.6   6096  -15.0  -21.3     59   1.46    235     28  318.4  323.5  318.7
+  439.0   6758  -20.7  -21.6     92   1.56    240     32  319.4  324.8  319.7
+  417.0   7136  -22.9  -30.9     48   0.70    243     34  321.3  323.9  321.4
+  400.0   7440  -25.3  -33.3     47   0.58    245     36  322.0  324.2  322.1
+  392.0   7587  -26.3  -30.3     69   0.79    245     38  322.6  325.5  322.7
+  390.1   7620  -26.6  -30.6     69   0.77    245     38  322.6  325.5  322.8
+  314.2   9144  -39.5  -44.5     59   0.23    250     38  325.3  326.2  325.3
+  313.0   9171  -39.7  -44.7     59   0.23    250     38  325.3  326.2  325.4
+  300.5   9448  -42.4                         255     39  325.4         325.4
+  300.0   9460  -42.5                         255     43  325.4         325.4
+  287.0   9753  -44.4                         250     52  326.7         326.7
+  261.8  10363  -48.5                         250     33  329.5         329.5
+  250.1  10668  -50.5                         255     45  330.9         330.9
+  250.0  10670  -50.5                         255     45  330.9         330.9
+  219.0  11520  -57.5                         255     49  332.8         332.8
+  200.0  12090  -60.3                         255     51  337.1         337.1
+  186.0  12541  -62.1                         255     54  341.3         341.3
+  178.4  12801  -60.5                         255     55  347.9         347.9
+  167.0  13213  -58.1                         265     39  358.6         358.6
+  161.8  13411  -58.1                         270     32  361.8         361.8
+  150.0  13890  -58.1                         270     32  369.8         369.8
+  121.0  15240  -58.1                         275     24  393.2         393.2
+  100.0  16440  -58.1                         265     18  415.2         415.2
+   99.7  16459  -58.1                         265     19  415.6         415.6
+   89.0  17179  -56.9                         271     16  431.6         431.6
+   70.0  18700  -58.3                         285      9  459.3         459.3
+   50.0  20830  -55.7                         325      4  511.8         511.8
+   30.0  24110  -52.1                         305      6  602.0         602.0
+   20.0  26770  -46.1                         100      3  694.3         694.3
+   16.0  28251  -46.7                                     738.0         738.0
+   14.0  29149  -39.9                                     789.8         789.8
+</PRE><H3>Station information and sounding indices</H3><PRE>
+                         Station identifier: MFR
+                             Station number: 72597
+                           Observation time: 800519/0000
+                           Station latitude: 42.36
+                          Station longitude: -122.86
+                          Station elevation: 405.0
+                            Showalter index: 6.80
+                               Lifted index: 3.66
+    LIFT computed using virtual temperature: 3.56
+                                SWEAT index: 38.00
+                                    K index: 15.30
+                         Cross totals index: 11.10
+                      Vertical totals index: 28.10
+                        Totals totals index: 39.20
+      Convective Available Potential Energy: 0.00
+             CAPE using virtual temperature: 0.00
+                      Convective Inhibition: 0.00
+             CINS using virtual temperature: 0.00
+                     Bulk Richardson Number: 0.00
+          Bulk Richardson Number using CAPV: 0.00
+  Temp [K] of the Lifted Condensation Level: 272.72
+Pres [hPa] of the Lifted Condensation Level: 690.38
+   Equivalent potential temp [K] of the LCL: 319.74
+     Mean mixed layer potential temperature: 303.19
+              Mean mixed layer mixing ratio: 5.43
+              1000 hPa to 500 hPa thickness: 5662.00
+Precipitable water [mm] for entire sounding: 15.09
+</PRE>
+<P>Description of the 
+<A HREF="/upperair/columns.html">data columns</A>
+or <A HREF="/upperair/indices.html">sounding indices</A>.
+
+<P>
+<FORM>
+<INPUT CLASS="button" TYPE="button" VALUE=" Close this window " 
+ onClick="window.close();">
+<INPUT CLASS="button" TYPE="button" VALUE=" Select another map " 
+ onClick="window.blur();">
+</FORM>
+<HR SIZE="1">
+<I>Interested in graduate studies in atmospheric science?
+Check out our program at the
+<a href="http://www.uwyo.edu/atsc/howtoapply/"
+target=_top>University of Wyoming
+</a></I>
+<HR SIZE="1"><FONT SIZE="-1">
+Questions about the weather data provided by this site can be
+addressed to <A HREF="mailto:ldoolman@uwyo.edu">
+Larry Oolman (ldoolman@uwyo.edu)</A></FONT>
+<HR SIZE="1">
+<SCRIPT TYPE="text/javascript">
+<!--
+window.focus();
+// -->
+</SCRIPT>
+</BODY>
+</HTML>

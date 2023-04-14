@@ -1,0 +1,116 @@
+<HTML>
+<TITLE>University of Wyoming - Radiosonde Data</TITLE>
+<BODY BGCOLOR="white">
+<H2>72597 MFR Medford Observations at 12Z 20 May 1980</H2>
+<PRE>
+-----------------------------------------------------------------------------
+   PRES   HGHT   TEMP   DWPT   RELH   MIXR   DRCT   SKNT   THTA   THTE   THTV
+    hPa     m      C      C      %    g/kg    deg   knot     K      K      K 
+-----------------------------------------------------------------------------
+ 1000.0    116                                                               
+  968.0    405   10.6    7.8     83   6.90    320      3  286.4  305.9  287.6
+  953.0    535   13.2    8.2     72   7.21    330      2  290.3  311.0  291.6
+  944.6    609   13.6    7.9     69   7.12    335      2  291.4  312.0  292.6
+  915.0    877   14.8    6.8     59   6.82    322      1  295.4  315.4  296.6
+  910.9    914   14.7    6.7     59   6.78    320      1  295.6  315.6  296.8
+  878.4   1219   13.6    5.6     58   6.52      0      0  297.6  317.0  298.7
+  850.0   1494   12.6    4.6     58   6.29    115      3  299.3  318.2  300.5
+  828.0   1715   13.6   -6.4     24   2.87    168      7  302.6  311.7  303.2
+  816.8   1828   12.9   -6.1     26   2.99    195      9  303.1  312.5  303.6
+  787.5   2133   11.0   -5.2     32   3.32    220     17  304.3  314.8  304.9
+  759.3   2438    9.2   -4.3     38   3.69    220     20  305.4  317.1  306.1
+  745.0   2596    8.2   -3.8     42   3.89    223     20  306.0  318.3  306.8
+  731.9   2743    7.6  -13.4     21   1.87    225     20  306.9  313.1  307.3
+  719.0   2889    7.0  -23.0     10   0.84    225     19  307.8  310.8  308.0
+  700.0   3109    5.8  -24.2      9   0.78    225     17  308.9  311.6  309.0
+  653.7   3657    2.2  -27.8      9   0.60    225     20  310.9  313.1  311.1
+  605.7   4267   -1.8  -31.8      8   0.44    225     19  313.2  314.8  313.3
+  566.0   4810   -5.3  -35.3      7   0.34    229     20  315.1  316.4  315.2
+  561.2   4876   -5.8  -35.8      7   0.32    230     20  315.4  316.6  315.4
+  539.5   5181   -7.8  -37.9      7   0.27    240     20  316.4  317.5  316.5
+  500.0   5770  -11.9  -41.9      6   0.19    225     24  318.5  319.2  318.5
+  478.8   6096  -14.4  -44.4      6   0.15    225     26  319.3  320.0  319.4
+  423.9   7010  -21.5  -51.5      5   0.08    215     22  321.6  322.0  321.7
+  412.0   7223  -23.1  -53.1      5   0.07    203     21  322.1  322.4  322.2
+  400.0   7440  -22.7  -52.7      5   0.07    190     20  325.4  325.7  325.4
+  390.0   7620  -24.1  -54.1      4   0.06    185     20  325.9  326.2  325.9
+  358.1   8229  -28.8  -58.8      4   0.04    165     18  327.7  327.9  327.7
+  314.9   9144  -35.8  -65.8      3   0.02    175     23  330.1  330.2  330.1
+  300.0   9490  -38.5  -68.5      3   0.01    170     23  331.0  331.1  331.0
+  251.6  10668  -48.4                         175     17  333.4         333.4
+  250.0  10710  -48.7                         175     17  333.5         333.5
+  240.0  10972  -50.7                         180     14  334.4         334.4
+  218.4  11582  -55.4                         170     10  336.3         336.3
+  212.0  11773  -56.9                         187      8  336.9         336.9
+  200.0  12140  -58.7                         220      4  339.6         339.6
+  182.0  12728  -61.5                         220     11  344.4         344.4
+  179.9  12801  -61.4                         230     12  345.6         345.6
+  150.0  13930  -60.3                          10      5  366.0         366.0
+  144.0  14185  -59.3                          38      6  372.0         372.0
+  121.4  15240  -63.0                         155      8  383.9         383.9
+  112.0  15737  -64.7                         182      8  389.6         389.6
+  104.6  16154  -64.0                         205      8  398.7         398.7
+  100.0  16430  -63.5                         220      8  404.8         404.8
+   70.0  18640  -61.3                         220     10  452.9         452.9
+   50.0  20740  -58.5                         195      4  505.2         505.2
+   30.0  23980  -55.1                         330      6  593.8         593.8
+   20.0  26590  -51.3                          15      2  678.4         678.4
+   12.0  29954  -45.1                                     806.9         806.9
+</PRE><H3>Station information and sounding indices</H3><PRE>
+                         Station identifier: MFR
+                             Station number: 72597
+                           Observation time: 800520/1200
+                           Station latitude: 42.36
+                          Station longitude: -122.86
+                          Station elevation: 405.0
+                            Showalter index: 5.56
+                               Lifted index: 9.20
+    LIFT computed using virtual temperature: 9.02
+                                SWEAT index: 85.19
+                                    K index: -0.90
+                         Cross totals index: 16.50
+                      Vertical totals index: 24.50
+                        Totals totals index: 41.00
+      Convective Available Potential Energy: 0.00
+             CAPE using virtual temperature: 0.00
+                      Convective Inhibition: 0.00
+             CINS using virtual temperature: 0.00
+                     Bulk Richardson Number: 0.00
+          Bulk Richardson Number using CAPV: 0.00
+  Temp [K] of the Lifted Condensation Level: 279.44
+Pres [hPa] of the Lifted Condensation Level: 860.02
+   Equivalent potential temp [K] of the LCL: 312.00
+     Mean mixed layer potential temperature: 291.77
+              Mean mixed layer mixing ratio: 7.01
+              1000 hPa to 500 hPa thickness: 5654.00
+Precipitable water [mm] for entire sounding: 13.80
+</PRE>
+<P>Description of the 
+<A HREF="/upperair/columns.html">data columns</A>
+or <A HREF="/upperair/indices.html">sounding indices</A>.
+
+<P>
+<FORM>
+<INPUT CLASS="button" TYPE="button" VALUE=" Close this window " 
+ onClick="window.close();">
+<INPUT CLASS="button" TYPE="button" VALUE=" Select another map " 
+ onClick="window.blur();">
+</FORM>
+<HR SIZE="1">
+<I>Interested in graduate studies in atmospheric science?
+Check out our program at the
+<a href="http://www.uwyo.edu/atsc/howtoapply/"
+target=_top>University of Wyoming
+</a></I>
+<HR SIZE="1"><FONT SIZE="-1">
+Questions about the weather data provided by this site can be
+addressed to <A HREF="mailto:ldoolman@uwyo.edu">
+Larry Oolman (ldoolman@uwyo.edu)</A></FONT>
+<HR SIZE="1">
+<SCRIPT TYPE="text/javascript">
+<!--
+window.focus();
+// -->
+</SCRIPT>
+</BODY>
+</HTML>

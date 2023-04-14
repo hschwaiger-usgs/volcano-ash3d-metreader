@@ -3154,8 +3154,8 @@
 
       if (nSTAT == nf90_noerr) return
       !write(MR_global_essential ,*)severity,errcode,operation,nf90_strerror(nSTAT)
-      write(MR_global_log ,*)severity,errcode,operation,nf90_strerror(nSTAT)
-      write(MR_global_error ,*)severity,errcode,operation,nf90_strerror(nSTAT)
+      write(MR_global_log ,*)severity,errcode,operation,' ',adjustl(trim(nf90_strerror(nSTAT)))
+      write(MR_global_error ,*)severity,errcode,operation,' ',adjustl(trim(nf90_strerror(nSTAT)))
 
       ! If user-supplied error code is 0, then consider this a warning,
       ! otherwise do a hard stop

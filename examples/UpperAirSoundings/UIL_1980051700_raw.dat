@@ -1,0 +1,123 @@
+<HTML>
+<TITLE>University of Wyoming - Radiosonde Data</TITLE>
+<BODY BGCOLOR="white">
+<H2>72797 UIL Quillayute Observations at 00Z 17 May 1980</H2>
+<PRE>
+-----------------------------------------------------------------------------
+   PRES   HGHT   TEMP   DWPT   RELH   MIXR   DRCT   SKNT   THTA   THTE   THTV
+    hPa     m      C      C      %    g/kg    deg   knot     K      K      K 
+-----------------------------------------------------------------------------
+ 1016.0     62   14.6    6.6     59   6.05    250      8  286.4  303.7  287.5
+ 1000.0    190   11.4    6.4     71   6.06    255      9  284.6  301.7  285.6
+  986.4    304   10.4    6.2     75   6.06    260      9  284.6  301.7  285.7
+  950.8    609    7.6    5.7     88   6.05    255      4  284.8  301.9  285.9
+  941.0    695    6.8    5.5     91   6.05    238      4  284.9  301.9  285.9
+  919.0    890    7.0   -2.0     53   3.61    200      3  287.0  297.6  287.6
+  916.3    914    6.9   -1.9     53   3.64    195      3  287.1  297.8  287.7
+  882.8   1219    5.2   -1.0     64   4.04    175      6  288.4  300.3  289.1
+  867.0   1367    4.4   -0.6     70   4.24    187      6  289.1  301.5  289.8
+  850.0   1528    4.0   -2.0     65   3.90    200      6  290.3  301.9  291.0
+  819.1   1828    2.6   -7.2     48   2.73    255      5  292.0  300.3  292.5
+  788.8   2133    1.3  -12.5     35   1.87    275      8  293.7  299.5  294.0
+  787.0   2151    1.2  -12.8     34   1.82    274      8  293.8  299.5  294.1
+  759.3   2438   -0.4   -6.5     64   3.12    260      9  295.1  304.6  295.6
+  748.0   2559   -1.1   -3.8     82   3.88    260      9  295.6  307.3  296.3
+  730.9   2743   -1.5   -5.7     73   3.43    260      9  297.1  307.6  297.7
+  700.0   3087   -2.3   -9.3     59   2.71    270      9  299.9  308.4  300.4
+  655.0   3613   -4.7  -34.7      8   0.31    261     11  302.9  304.1  303.0
+  651.4   3657   -4.9  -34.9      7   0.30    260     11  303.2  304.3  303.2
+  602.3   4267   -7.8  -37.8      7   0.25    185     14  306.7  307.6  306.7
+  558.0   4863  -10.7  -40.7      7   0.20    185     19  310.1  310.8  310.1
+  557.0   4876  -10.8  -37.6      9   0.27    185     19  310.1  311.1  310.2
+  550.0   4974  -11.3  -14.8     75   2.22    186     20  310.6  318.0  311.0
+  500.0   5700  -16.5  -17.1     95   2.01    190     28  312.9  319.6  313.2
+  485.0   5928  -17.1  -17.1    100   2.08    193     27  314.9  321.9  315.2
+  474.0   6096  -18.4  -18.5     99   1.89    195     27  315.3  321.8  315.7
+  454.8   6400  -20.7  -21.0     97   1.58    200     25  316.2  321.6  316.5
+  400.0   7340  -27.9  -28.8     92   0.89    190     25  318.6  321.9  318.8
+  384.4   7620  -29.9  -31.1     90   0.75    195     29  319.6  322.3  319.8
+  323.2   8839  -38.8  -41.0     80   0.33    185     29  323.6  324.9  323.6
+  319.0   8931  -39.5  -41.7     79   0.31    186     28  323.9  325.1  323.9
+  309.2   9144  -40.6                         190     27  325.2         325.2
+  300.0   9350  -41.7                         195     28  326.5         326.5
+  282.3   9753  -44.7                         205     33  327.9         327.9
+  250.0  10560  -50.7                         205     34  330.6         330.6
+  245.8  10668  -51.4                         205     34  331.1         331.1
+  207.0  11773  -58.5                         210     35  336.6         336.6
+  200.0  11990  -57.9                         215     34  340.9         340.9
+  184.5  12496  -58.9                         215     41  347.2         347.2
+  179.0  12685  -59.3                         220     40  349.6         349.6
+  168.0  13086  -53.7                         232     38  365.3         365.3
+  152.2  13716  -54.6                         250     34  374.3         374.3
+  150.0  13810  -54.7                         250     34  375.6         375.6
+  119.8  15240  -55.8                         240     25  398.5         398.5
+  103.8  16154  -56.5                         235     20  413.8         413.8
+  100.0  16390  -56.7                         235     19  417.9         417.9
+   93.0  16849  -57.9                         235     17  424.3         424.3
+   77.0  18050  -54.5                         235     12  454.9         454.9
+   70.0  18660  -55.5                         235      9  465.3         465.3
+   50.0  20810  -53.9                         235      5  516.0         516.0
+   30.0  24120  -49.9                         170      5  608.0         608.0
+   20.0  26780  -48.5                          60      4  687.0         687.0
+   11.5  30468  -42.5                         200      2  826.1         826.1
+   10.0  31420  -38.7                         235      2  873.9         873.9
+    7.0  33910  -32.1                                     994.9         994.9
+    6.7  34220  -30.7                                    1013.3        1013.3
+</PRE><H3>Station information and sounding indices</H3><PRE>
+                         Station identifier: UIL
+                             Station number: 72797
+                           Observation time: 800517/0000
+                           Station latitude: 47.95
+                          Station longitude: -124.55
+                          Station elevation: 62.0
+                            Showalter index: 11.20
+                               Lifted index: 11.10
+    LIFT computed using virtual temperature: 11.30
+                                SWEAT index: 40.00
+                                    K index: 11.50
+                         Cross totals index: 14.50
+                      Vertical totals index: 20.50
+                        Totals totals index: 35.00
+      Convective Available Potential Energy: 0.00
+             CAPE using virtual temperature: 0.00
+                      Convective Inhibition: 0.00
+             CINS using virtual temperature: 0.00
+                     Bulk Richardson Number: 0.00
+          Bulk Richardson Number using CAPV: 0.00
+  Temp [K] of the Lifted Condensation Level: 278.36
+Pres [hPa] of the Lifted Condensation Level: 922.20
+   Equivalent potential temp [K] of the LCL: 301.98
+     Mean mixed layer potential temperature: 284.89
+              Mean mixed layer mixing ratio: 6.06
+              1000 hPa to 500 hPa thickness: 5510.00
+Precipitable water [mm] for entire sounding: 17.16
+</PRE>
+<P>Description of the 
+<A HREF="/upperair/columns.html">data columns</A>
+or <A HREF="/upperair/indices.html">sounding indices</A>.
+
+<P>
+<FORM>
+<INPUT CLASS="button" TYPE="button" VALUE=" Close this window " 
+ onClick="window.close();">
+<INPUT CLASS="button" TYPE="button" VALUE=" Select another map " 
+ onClick="window.blur();">
+</FORM>
+<HR SIZE="1">
+<I>Interested in graduate studies in atmospheric science?
+Check out our program at the
+<a href="http://www.uwyo.edu/atsc/howtoapply/"
+target=_top>University of Wyoming
+</a></I>
+<HR SIZE="1"><FONT SIZE="-1">
+Questions about the weather data provided by this site can be
+addressed to <A HREF="mailto:ldoolman@uwyo.edu">
+Larry Oolman (ldoolman@uwyo.edu)</A></FONT>
+<HR SIZE="1">
+<SCRIPT TYPE="text/javascript">
+<!--
+window.focus();
+// -->
+</SCRIPT>
+</BODY>
+</HTML>

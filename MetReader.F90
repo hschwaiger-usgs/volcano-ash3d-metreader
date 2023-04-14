@@ -3659,7 +3659,7 @@
             ! Assign top node
             if(MR_iHeightHandler.eq.1)then
               z_col_metP(np_fullmet+2) = z_col_metP(np_fullmet+1) + 10.0_sp
-              write(MR_global_info,*)z_col_metP(np_fullmet+1:np_fullmet+2)
+              !write(MR_global_info,*)z_col_metP(np_fullmet+1:np_fullmet+2)
             elseif(MR_iHeightHandler.eq.2)then
               z_col_metP(np_fullmet+2) = Suppl_H
               if(ivar.ne.5)then
@@ -3688,7 +3688,6 @@
                                     nz_comp,      dumVertCoord_sp,  var_col_metH)
 
           MR_dum3d_metH(i,j,:) = var_col_metH
-          !write(*,*)i,j,MR_dum3d_metP(i,j,:)
 
         enddo ! j
       enddo  ! i
@@ -3703,7 +3702,6 @@
 
 !##############################################################################
 !
-!     MR_Read_3d_Met_Variable_to_CompGrid
 !     MR_Read_3d_Met_Variable_to_CompH
 !      Note: this should be named MR_Read_3d_Met_Variable_to_CompH since
 !            these is now an analogous subroutine mapping MetP to CompP

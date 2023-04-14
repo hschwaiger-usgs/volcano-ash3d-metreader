@@ -1,0 +1,109 @@
+<HTML>
+<TITLE>University of Wyoming - Radiosonde Data</TITLE>
+<BODY BGCOLOR="white">
+<H2>72572 SLC Salt Lake City Observations at 00Z 19 May 1980</H2>
+<PRE>
+-----------------------------------------------------------------------------
+   PRES   HGHT   TEMP   DWPT   RELH   MIXR   DRCT   SKNT   THTA   THTE   THTV
+    hPa     m      C      C      %    g/kg    deg   knot     K      K      K 
+-----------------------------------------------------------------------------
+ 1000.0    134                                                               
+  874.0   1288   20.6    4.6     35   6.12    340      8  305.3  324.1  306.4
+  861.0   1415   16.4    2.4     39   5.31    340      7  302.2  318.5  303.2
+  850.0   1523   15.4    6.4     55   7.14    340      7  302.3  323.9  303.6
+  819.7   1828   12.5    1.7     48   5.32    305      6  302.4  318.7  303.4
+  800.0   2033   10.6   -1.4     43   4.34    295      7  302.4  315.9  303.2
+  790.3   2133    9.9   -1.9     44   4.24    290      7  302.7  315.9  303.5
+  761.5   2438    7.7   -3.2     46   3.97    275      7  303.5  315.9  304.3
+  733.8   2743    5.4   -4.6     48   3.71    265      8  304.3  316.0  305.0
+  700.0   3130    2.6   -6.4     52   3.40    260      8  305.3  316.1  306.0
+  667.0   3518   -0.5   -7.5     59   3.28    264      9  306.1  316.5  306.7
+  655.3   3657   -1.3  -10.5     50   2.63    265      9  306.7  315.2  307.2
+  606.4   4267   -4.9  -23.7     21   0.94    295      7  309.4  312.7  309.6
+  561.2   4876   -8.5  -36.9      8   0.29    295      5  312.1  313.2  312.2
+  554.0   4977   -9.1  -39.1      7   0.23    297      6  312.6  313.5  312.6
+  518.3   5486  -13.3  -43.3      6   0.16    310     10  313.6  314.2  313.6
+  500.0   5760  -15.5  -45.5      6   0.13    315     12  314.1  314.6  314.1
+  477.8   6096  -17.7  -47.7      5   0.11    315     14  315.5  315.9  315.5
+  405.2   7315  -25.5  -55.5      4   0.05    340     32  320.6  320.8  320.6
+  400.0   7410  -26.1  -56.1      4   0.05    340     35  321.0  321.2  321.0
+  388.3   7620  -27.6  -55.5      5   0.05    340     38  321.7  321.9  321.7
+  326.8   8839  -36.6  -52.4     18   0.09    340     48  325.6  325.9  325.6
+  319.0   9010  -37.9  -51.9     22   0.10    339     48  326.1  326.5  326.1
+  300.0   9430  -41.9                         335     49  326.2         326.2
+  250.0  10640  -51.3                         335     58  329.7         329.7
+  237.0  10980  -53.7                         335     62  331.2         331.2
+  204.0  11936  -60.3                         335     53  335.2         335.2
+  200.0  12060  -60.3                         330     52  337.1         337.1
+  150.0  13890  -56.7                         305     27  372.2         372.2
+  100.0  16450  -59.1                         280     16  413.3         413.3
+   70.0  18700  -56.9                         290     12  462.3         462.3
+   57.0  19994  -57.9                         351      8  488.0         488.0
+   50.0  20820  -56.7                          30      6  509.4         509.4
+   42.0  21928  -56.3                          40      4  536.4         536.4
+   30.0  24090  -51.7                          60      1  603.1         603.1
+   20.0  26760  -45.1                         295      4  697.4         697.4
+   10.0  31420  -42.1                         280     11  861.3         861.3
+    8.4  32619  -34.7                         292     12  934.2         934.2
+    7.0  33890  -35.5                         305     13  980.9         980.9
+    6.5  34407  -34.1                                    1007.8        1007.8
+</PRE><H3>Station information and sounding indices</H3><PRE>
+                         Station identifier: SLC
+                             Station number: 72572
+                           Observation time: 800519/0000
+                           Station latitude: 40.77
+                          Station longitude: -111.95
+                          Station elevation: 1288.0
+                            Showalter index: -1.10
+                               Lifted index: 0.27
+    LIFT computed using virtual temperature: -0.06
+                                SWEAT index: 178.79
+                                    K index: 28.30
+                         Cross totals index: 21.90
+                      Vertical totals index: 30.90
+                        Totals totals index: 52.80
+      Convective Available Potential Energy: 0.00
+             CAPE using virtual temperature: 5.51
+                      Convective Inhibition: 0.00
+             CINS using virtual temperature: -85.28
+ Equilibrum Level using virtual temperature: 498.27
+             LFCT using virtual temperature: 501.71
+                     Bulk Richardson Number: 0.00
+          Bulk Richardson Number using CAPV: 2.32
+  Temp [K] of the Lifted Condensation Level: 274.84
+Pres [hPa] of the Lifted Condensation Level: 713.66
+   Equivalent potential temp [K] of the LCL: 321.22
+     Mean mixed layer potential temperature: 302.66
+              Mean mixed layer mixing ratio: 6.15
+              1000 hPa to 500 hPa thickness: 5626.00
+Precipitable water [mm] for entire sounding: 11.21
+</PRE>
+<P>Description of the 
+<A HREF="/upperair/columns.html">data columns</A>
+or <A HREF="/upperair/indices.html">sounding indices</A>.
+
+<P>
+<FORM>
+<INPUT CLASS="button" TYPE="button" VALUE=" Close this window " 
+ onClick="window.close();">
+<INPUT CLASS="button" TYPE="button" VALUE=" Select another map " 
+ onClick="window.blur();">
+</FORM>
+<HR SIZE="1">
+<I>Interested in graduate studies in atmospheric science?
+Check out our program at the
+<a href="http://www.uwyo.edu/atsc/howtoapply/"
+target=_top>University of Wyoming
+</a></I>
+<HR SIZE="1"><FONT SIZE="-1">
+Questions about the weather data provided by this site can be
+addressed to <A HREF="mailto:ldoolman@uwyo.edu">
+Larry Oolman (ldoolman@uwyo.edu)</A></FONT>
+<HR SIZE="1">
+<SCRIPT TYPE="text/javascript">
+<!--
+window.focus();
+// -->
+</SCRIPT>
+</BODY>
+</HTML>

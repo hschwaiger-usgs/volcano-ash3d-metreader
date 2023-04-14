@@ -160,6 +160,7 @@ else
 endif
 
 EXEC = \
+ bin/MetRegrid \
  bin/MetSonde  \
  bin/MetTraj_F \
  bin/MetTraj_B \
@@ -215,6 +216,10 @@ bin/gen_GRIB_index: gen_GRIB_index.f90 MetReader_GRIB_index.o makefile libMetRea
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(grblib) -c gen_GRIB_index.f90
 	$(FC) $(FFLAGS) $(EXFLAGS) MetReader_GRIB_index.o gen_GRIB_index.o $(LIBS) $(grblib) -o bin/gen_GRIB_index
 endif
+
+bin/MetRegrid: tools/MetRegrid.f90 makefile libMetReader.a
+	mkdir -p bin
+	$(FC)  $(FFLAGS) $(EXFLAGS) tools/MetRegrid.f90 -o bin/MetRegrid -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB)
 
 bin/MetSonde: tools/MetSonde.f90 makefile libMetReader.a
 	mkdir -p bin

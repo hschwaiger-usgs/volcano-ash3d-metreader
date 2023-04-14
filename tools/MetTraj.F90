@@ -294,7 +294,7 @@
 ! 6                                     ! ntraj (<10)
 ! 1.524 3.048 6.096 9.144 12.192 15.240 ! level values in km
 ! 1 4 -107.0 50.0 50.0 50.0 6367.470    ! Output projection
-! 5 27 2                                ! iwind iwindformat iformat
+! 5 27 1027 2                           ! iwind iwindformat igrid iformat
 ! 0 12 14                               ! autoflag (0 for auto, 1 for specified)
 ! FC_freq GFS_Archive_Days
 ! 1                                     ! number of windfiles
@@ -534,7 +534,7 @@
 
         ! Line 9: iwind iwindformat iformat
         read(10,'(a80)')linebuffer080
-        read(linebuffer080,*) iw,iwf,idf
+        read(linebuffer080,*) iw,iwf,igrid,idf
 
         ! Line 10: autoflag (0 for auto, 1 for specified) [FC_freq] [GFS_Archive_Days]
         read(10,'(a80)')linebuffer080

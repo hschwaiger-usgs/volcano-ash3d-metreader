@@ -1,0 +1,13 @@
+1 1 -135.0 90.0 0.933 6371.229  ! Proj flags and params of computational grid
+-125.0  38.0   0.0              ! x,y,z of bottom LL corner of grid (km, or deg. if latlongflag=1)  
+15.0    15.0  25.0              ! grid x-width, y-width, depth (km, or deg. if latlonflag=1)  
+0.1     0.1    0.5              ! DX, DY, Dz of grid cells  (km, or deg.)  
+1                               ! iHeightHandler
+1980 5 18 15.5                  ! YYYY MM DD HH.H
+1                               ! Output grid (1,2,3,4 for CompH,CompP,MetH,MetP)
+5                               ! Output Var (1=H,2=Vx,3=Vy,4=Vz,5=T)
+2                               ! Output Dimension (0,1,2,or 3)
+0 0 15                          ! i,j,k of output grid with zeros for unused dims.
+5 25 2 2                        ! iwind iwindformat igrid iformat
+1                               ! number of windfiles
+NCEP

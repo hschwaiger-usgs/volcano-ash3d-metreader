@@ -1,0 +1,59 @@
+-122.18 46.20                         ! lon lat
+1980 5 18 15.5                        ! YYYY MM DD HH.H
+24.0                                  ! simtime
+1                                     ! streamflag (0 for streak lines (static windfield), 1 for streamlines)
+60                                    ! output time step (minutes)
+6                                     ! ntraj (<10)
+1.524 3.048 6.096 9.144 12.192 15.240 ! level values in km
+1 4 -107.0 50.0 50.0 50.0 6367.470    ! Output projection
+1 2 6 1                               ! iwind iwindformat igrid iformat
+0 12 14                               ! autoflag (0 for auto, 1 for specified) FC_freq GFS_Archive_Days
+48                                    ! number of windfiles
+UpperAirSoundings/BOI_1980051700_raw.dat
+UpperAirSoundings/GGW_1980051700_raw.dat
+UpperAirSoundings/GJT_1980051700_raw.dat
+UpperAirSoundings/MFR_1980051700_raw.dat
+UpperAirSoundings/SLC_1980051700_raw.dat
+UpperAirSoundings/SLE_1980051700_raw.dat
+UpperAirSoundings/BOI_1980051712_raw.dat
+UpperAirSoundings/GGW_1980051712_raw.dat
+UpperAirSoundings/GJT_1980051712_raw.dat
+UpperAirSoundings/MFR_1980051712_raw.dat
+UpperAirSoundings/SLC_1980051712_raw.dat
+UpperAirSoundings/SLE_1980051712_raw.dat
+UpperAirSoundings/BOI_1980051800_raw.dat
+UpperAirSoundings/GGW_1980051800_raw.dat
+UpperAirSoundings/GJT_1980051800_raw.dat
+UpperAirSoundings/MFR_1980051800_raw.dat
+UpperAirSoundings/SLC_1980051800_raw.dat
+UpperAirSoundings/SLE_1980051800_raw.dat
+UpperAirSoundings/BOI_1980051812_raw.dat
+UpperAirSoundings/GGW_1980051812_raw.dat
+UpperAirSoundings/GJT_1980051812_raw.dat
+UpperAirSoundings/MFR_1980051812_raw.dat
+UpperAirSoundings/SLC_1980051812_raw.dat
+UpperAirSoundings/SLE_1980051812_raw.dat
+UpperAirSoundings/BOI_1980051900_raw.dat
+UpperAirSoundings/GGW_1980051900_raw.dat
+UpperAirSoundings/GJT_1980051900_raw.dat
+UpperAirSoundings/MFR_1980051900_raw.dat
+UpperAirSoundings/SLC_1980051900_raw.dat
+UpperAirSoundings/SLE_1980051900_raw.dat
+UpperAirSoundings/BOI_1980051912_raw.dat
+UpperAirSoundings/GGW_1980051912_raw.dat
+UpperAirSoundings/GJT_1980051912_raw.dat
+UpperAirSoundings/MFR_1980051912_raw.dat
+UpperAirSoundings/SLC_1980051912_raw.dat
+UpperAirSoundings/SLE_1980051912_raw.dat
+UpperAirSoundings/BOI_1980052000_raw.dat
+UpperAirSoundings/GGW_1980052000_raw.dat
+UpperAirSoundings/GJT_1980052000_raw.dat
+UpperAirSoundings/MFR_1980052000_raw.dat
+UpperAirSoundings/SLC_1980052000_raw.dat
+UpperAirSoundings/SLE_1980052000_raw.dat
+UpperAirSoundings/BOI_1980052012_raw.dat
+UpperAirSoundings/GGW_1980052012_raw.dat
+UpperAirSoundings/GJT_1980052012_raw.dat
+UpperAirSoundings/MFR_1980052012_raw.dat
+UpperAirSoundings/SLC_1980052012_raw.dat
+UpperAirSoundings/SLE_1980052012_raw.dat
