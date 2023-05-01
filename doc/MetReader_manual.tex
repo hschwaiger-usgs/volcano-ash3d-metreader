@@ -17,7 +17,7 @@
 
 \title{MetReader: Documentation and User's Guide}   % type title between braces
 \author{Hans F. Schwaiger}
-\date{January 28, 2019}    % type date between braces
+\date{June 1, 2023}    % type date between braces
 \maketitle
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -56,40 +56,62 @@ This is a library that calculates commonly-used projected coordinates.\\
 \end{itemize}
 
 These libraries are installed by default into \texttt{/opt/USGS}.  If they are
-installed elsewhere, then you will need to edit the makefile to point to your
-installation.
-Additionally, the default makefile will build MetReader with both NetCDF and GRIB
-enabled.  If either of these libraries are unavailable on your system, you can
+installed elsewhere, then you will need to edit the \texttt{makefile}
+to point to your installation.
+Additionally, the default \texttt{makefile} will build MetReader with both NetCDF and GRIB
+interfaces enabled.  If either of these libraries are unavailable on your system, you can
 deactivate those options by setting the corresponding flags to \texttt{F} in the makefile.
-On a RHEL/CentOS system, you can install the data format libraries by typing
+On a Redhat systems (Fedora, RHEL, CentOS, Rocky), you can install the data
+format libraries by typing
 \begin{verbatim}
-     sudo yum install netcdf netcdf-devel grib_api grib_api-devel
+     sudo yum install netcdf netcdf-devel netcdf-fortran netcdf-fortran-devel
+     sudo yum install eccodes eccodes-devel
 \end{verbatim}
 or for Ubuntu
 \begin{verbatim}
      sudo apt-get install libnetcdf* libgrib-api*
 \end{verbatim}
-The library grib-api will be replaced by ecCodes (\texttt{https://confluence.ecmwf.int/display/ECC/ecCodes+Home})
-in 2018.  To use this interface to the grib files, the makefile can be edited to point to
-\begin{verbatim}
-grbLIBS = -leccodes -leccodes_f90
-\end{verbatim}
 To compile MetReader as a library, simple type:
 \begin{verbatim}
-     make all
+     make lib
 \end{verbatim}
-This will build the requested components of the library.  If GRIB is enabled,
+This will build the requested components of the library.  If \texttt{GRIB} is enabled,
 this will also build the GRIB indexer, \texttt{gen\_GRIB\_index}.
 This is a tool that generates an index file of the GRIB records which speeds
 access time to individual records substantially.
+Several other tools can be build via the command:
+\begin{verbatim}
+     make tools
+\end{verbatim}
+These tools include the following (described in Sec. \ref{SecTools}).
+\begin{itemize}
+\item \texttt{MetRegrid} : This program reads a variable from a NWP file and regrids\
+the data to a user-specified grid; then write out regridded point, line, sheet, or volume data.
+\item \texttt{MetSonde} : This tool takes command-line arguments specifying date, time, location
+and writes a file with temperature vs height from GFS or NCEP data.
+\item \texttt{MetCheck} : This program tests the windfiles to make sure all variable values
+are within the expected ranges.
+\item \texttt{gen\_GRIB\_index} : This tool builds a grib index to facilitate reading of grib
+files.
+\item \texttt{probe\_Met} : This is a more general version of \texttt{MetSonde} controled by
+an input file that can handle more NWP data types.
+\item \texttt{MetTraj\_F} : This tool will generate foreward trajectories from based on the
+time-series NWP data.
+\item \texttt{MetTraj\_B} : This tool will generate backward trajectories from based on the
+time-series NWP data.
+\item \texttt{makegfsncml} :  This tool is used to strip out unused variable when converting
+grib to netCDF using the download scripts.
+\end{itemize}
+
 
 To install the library, module files and tools, edit the \texttt{INSTALLDIR} variable of
 the makefile (the default is \texttt{/opt/USGS}) and type:
 \begin{verbatim}
+     make all
      make install
 \end{verbatim}
-This will also install scripts that can be used to download the 0.5 degree GFS
-forecast files and the NCEP 2.5-degree Reanalysis files.
+This will also install scripts that can be used to download the $0.5^{\circ}$ GFS
+forecast files and the NCEP $2.5^{\circ}$ Reanalysis files.
 
 You will need to have write permission in \texttt{\$\{INSTALLDIR\}}
 or install as root.  Assuming the libraries \texttt{projection} and \texttt{hourssince} are
@@ -107,10 +129,14 @@ directory structure:
 |   |   `-- grib2nc.sh
 |   |-- gen_GRIB_index
 |   |-- HoursSince1900
-|   |-- ncMet_check
-|   |-- ncMetSonde
-|   |-- ncMetTraj_B
-|   |-- ncMetTraj_F
+|   |-- MetCheck
+|   |-- MetRegrid
+|   |-- MetSonde
+|   |-- MetTraj_B
+|   |-- MetTraj_F
+|   |-- probe_Met
+|   |-- project_for
+|   |-- project_inv
 |   `-- yyyymmddhh_since_1900
 |-- include
 |   |-- metreader.mod
@@ -120,6 +146,25 @@ directory structure:
     |-- libMetReader.a
     `-- libprojection.a
 \end{verbatim}
+
+The \texttt{makefile} included the following variables that can be changed, depending on your
+system.
+\begin{itemize}
+\item \texttt{SYSTEM} : \texttt{gfortran} or \texttt{ifort}\\
+Fortran compiler.
+\item \texttt{RUN} : \texttt{DEBUG}, \texttt{PROF} or \texttt{OPT}\\
+Sets class of compiler flags for debugging, profiling, of optimization:
+\item \texttt{INSTALLDIR} : \texttt{/opt/USGS} \\
+Install location.
+\item \texttt{USENETCDF} : \texttt{T} or \texttt{F}\\
+Logical flag to build netCDF interface.
+\item \texttt{USEGRIB} : \texttt{T} or \texttt{F}\\
+Logical flag to build GRIB2 interface.
+\item \texttt{USEPOINTERS} : \texttt{T} or \texttt{F}\\
+Logical flag to define public work arrays as pointer or allocatable space. There is no
+real proformance impact for either choice. Older \texttt{gfortran} compilers
+required allocatable arrays, but pointers facilitate access from \texttt{C} programs.
+\end{itemize}
 
 \clearpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -133,7 +178,7 @@ must first be completed.
 The calling program needs to prepare several parameters that define the type of meteorological
 data to be read.  
 \begin{itemize}
-\item \texttt{iw} :: windfile class (the distinction between 3 and 4 will be obsolete soon)
+\item \texttt{iw} :: windfile class 
  \begin{itemize}
  \item 1 : 1-D wind sounding
  \item 2 : 3-D grid is read from a ASCII file
@@ -238,7 +283,7 @@ where the files are stored as follows:
 |-- 2009
     | -- ...
 \end{verbatim}
-if the files are retrieved from \texttt{https://rda.ucar.edu/datasets/ds131.2/}.  This product is
+If the files are retrieved from \texttt{https://rda.ucar.edu/datasets/ds131.2/}.  This product is
 provided in GRIB format and must be converted to NetCDF using \texttt{ncl\_convert2nc -L}.
 %Alternatively, this product is also available from
 %\texttt{https://www.esrl.noaa.gov/psd/data/gridded/data.20thC\_ReanV2c.pressure.html}
@@ -292,7 +337,7 @@ needed by the \texttt{libprojection.a} library.  Below is an example call from A
 \end{verbatim}
 If \texttt{IsLatLon=.true.} then all other projection parameters are ignored.  Similarly,
 some of the parameters are required and others not, depending on the projection used.
-Currently, \texttt{libprojection.a} has implemented
+Currently, \texttt{libprojection.a} has implemented: non-geographic (\texttt{iprojflag=0}),
 Polar stereographic (\texttt{iprojflag=1}),
 Albers Equal Area (\texttt{iprojflag=2}),
 UTM (\texttt{iprojflag=3}),
@@ -324,15 +369,22 @@ be constant.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Reading meteorological data}
-When handling data from the NWP files, there are three grids that MetReader uses:
+When handling data from the NWP files, there are four grids that MetReader uses:
 \begin{itemize}
 \item \texttt{metP} :: the native grid of the NWP file clipped to span the
 computational needs (possible re-ordered)
 \item \texttt{metH} :: the horizontal grid of the NWP file, but with the vertical
 coordinate mapped from the pressure grid of the NWP file to the altitude grid of 
 the computational grid.
+\item \texttt{compP} :: the horizontal grid of the computational grid on the pressure nodes of the NWP grid.
 \item \texttt{compH} :: the full x,y,z of the computational grid.
 \end{itemize}
+For all of these grids, the x (or longitude) and y (or latitude) coordinates are from lowest to
+highest. Some NWP files store the longitude coordinate from north to south, but for
+\texttt{metP}, \texttt{metH}, \texttt{compP} and \texttt{compH}, longitude will be reordered from
+south to north.  Similarly, some NWP products store the vertical coordinate, \texttt{p}, from
+lowest to highest.  The MetReader grids all use a vertical coordinate (either \texttt{p}
+or \texttt{H} ) from the ground surface to altitude.
 Once the computational grid is specified and the sub-grid of the NWP is determined in 
 step 5 above, the following public work spaces are allocated.
 \begin{verbatim}
@@ -343,6 +395,7 @@ step 5 above, the following public work spaces are allocated.
      MR_dum3d_metH(nx_submet,ny_submet,nz_comp)     :: float
      MR_dum2d_comp_int(nx_comp,ny_comp)             :: integer
      MR_dum2d_comp(nx_comp,ny_comp)                 :: float
+     MR_dum3d_compP(nx_comp,ny_comp,np_fullmet)     :: float
      MR_dum3d_compH(nx_comp,ny_comp,nz_comp)        :: float
 \end{verbatim}
 \texttt{nx\_comp}, \texttt{ny\_comp}, \texttt{np\_comp} are the number
@@ -377,7 +430,7 @@ onto \texttt{MR\_dum3d\_metH}.
 
 For simply reading meteorological data onto the computational grid, use
 \begin{verbatim}
-     call MR_Read_3d_Met_Variable_to_CompGrid(ivar,istep,[IsNext])
+     call MR_Read_3d_Met_Variable_to_CompH(ivar,istep,[IsNext])
 \end{verbatim}
 This subroutine reads the variable \texttt{ivar} from the NWP file into
 \texttt{MR\_dum3d\_metP}, then interpolates these values onto \texttt{MR\_dum3d\_metH},
@@ -411,7 +464,7 @@ work array \texttt{MR\_dum2d\_met}, where again,
 \texttt{1:nx\_submet,1:ny\_submet} corresponds to the subset of nodes of the NWP
 file that is needed to span the computational grid.
 \begin{verbatim}
-     call MR_Read_2d_Met_Variable_to_CompGrid(ivar,istep)
+     call MR_Read_2d_Met_Variable_to_CompH(ivar,istep)
 \end{verbatim}
 can be called similar to \texttt{MR\_Read\_2d\_Met\_Variable} which directly reads the
 variable needed and returns the
@@ -419,7 +472,7 @@ values interpolated onto the public work space \texttt{MR\_dum2d\_comp}.
 
 \subsubsection{Regridding meteorological data}
 Internal to MetReader are a variety of regridding subroutines to interpolate from
-the \texttt{metP} grid onto \texttt{metH} or \texttt{compH}.  
+the \texttt{metP} grid onto \texttt{metH},\texttt{compP} or \texttt{compH}.  
 In some circumstances, data is initially needed just on the native NWP grid, but
 then derived values might be required on the full computational grid.
 For example, if air viscosity is needed for a particle fall model, temperature and
@@ -427,7 +480,7 @@ pressure values on the NWP grid can be read.  Then viscosities can be calculated
 of the corresponding nodes of the NWP grid.  To interpolate these values from the 
 \texttt{metP} grid to the \texttt{compH} grid, the subroutine
 \begin{verbatim}
-     call MR_Regrid_MetP_to_CompGrid(istep)
+     call MR_Regrid_MetP_to_CompH(istep)
 \end{verbatim}
 can be used.  This takes the variable \texttt{MR\_dum3d\_metP} and interpolates it
 onto \texttt{MR\_dum3d\_compH}.  Similarly, 
@@ -515,7 +568,7 @@ For example:
 iw    = 1
 iwf   = 2
 igrid = 3
-MR_iwindfiles = 6     # This must be an even multiple of MR_iGrid
+iwindfiles = 6        # This must be an even multiple of igrid
 PADQ_2018060100.dat   # 00Z radio sonde at Kodiak, AK
 PAKN_2018060100.dat   # 00Z radio sonde at King Salmon, AK
 PANC_2018060100.dat   # 00Z radio sonde at Anchorage, AK
@@ -629,19 +682,24 @@ specified by the calling program.
 In most of the world, the radiosonde launch sites are too disperse to form
 a meaningful network across which we can interpolate values.  The radiosonde
 data is most useful for the regions of interest proximal to launch sites.
-Currently, the use of multiple sonde locations is not implemented, but simple
-interpolation using a small number of sonde points is planned for future
-versions of this library.
-%2 sites -> average
-%        -> linear
-%3 sites -> average
-%        -> tri-linear (internal), bi- or mono-linear outside
-%4 sites -> average
-%        -> bi-linear
-%5 sites -> average
-%        -> LS plane
-%6-10    -> LS plane
-%> 10 error
+If multiple radiosonde locations are in the computational domain, then data
+are interpolated onto the computational grid using an inverse distance
+algorithm.  The value at a point $j$ in the computational grid is calculated
+by a weighted average of all ($i=1\rightarrow n_s$) the sonde locations:
+\begin{equation*}
+V_j = \sum_{i=1}^{n_s} v_i w_{ij}
+\end{equation*}
+where $v_i$ are the values at sonde location $i$ and the normalized weights of
+sonde $i$ with respect to grid node $j$ ($w_{ij}$) are calculated via
+\begin{equation*}
+w_{ij} = \frac{d_{ij}^{-p}}{\sum_{i=1}^{n_s} d_{ij}^{-p}}
+\end{equation*}
+where $d_{ij}$ is the distance between sonde $i$ and interpolation point $j$
+and where $p$ controls
+the decay in the radius of influence (default is $p=4$).  Currently, only the closest
+4 stations are considered in the interpolation, but this (and the decay exponent) can
+be adjusted via the variables \texttt{MR\_nstat} and \texttt{MR\_pexp}.  Setting
+\texttt{MR\_nstat} to 1, for example, implements the nearest neighbor algorithm.
 
 \subsection{3-D forecast or reanalysis data}
 MetReader's preferred format for 3-D forecast and reanalysis files is NetCDF.  Many
@@ -757,9 +815,10 @@ is not found, then the variable \texttt{reftime} is checked, if it exists.
 Several examples of these template files used with NAM and GFS
 forecast products are shown in Appendix \ref{ApTemplate}.
 
-\section{Additional tools/Examples}
-In the \texttt{tools} folder, three programs are included the illustrate the
+\section{Additional tools/Examples}\label{SecTools}
+In the \texttt{tools} folder, several programs are included the illustrate the
 use of the library.
+
 \subsection{\texttt{MetCheck}}
 This utility is used for checking the validity of the NWP files.  In some
 cases, the downloading of files might be interrupted or the files on the
@@ -769,6 +828,94 @@ temperature.  If any values are outside of expected ranges, then the program
 stops returning a non-zero stop-code (\verb|stop 1|).
 Usage:\\
 \verb|  MetCheck iwf idf filename [year]|
+
+This utility will write a log file, \texttt{MetCheck\_log.txt} containing four columns:
+filename, step in file, year, day of year.
+\subsection{\texttt{MetRegrid}}
+This is a stand-alone program that uses the MetReader interface to calculate
+regridded atmospheric data.  A control file is provided which defines the
+computational grid specifications, output time, output variable, output
+grid (could be CompH, CompP, MetH, or MetP), and the output dimension.
+The output dimension could be 0 for point data, 1 for line data,
+2 for slices of the computational grid, or 3
+for volume data.  An example control file (\texttt{Regrid\_NCEP.ctr}) for the NCEP 50-year Reanalysis is given 
+in the \texttt{examples} directory.
+\footnotesize
+\begin{verbatim}
+1 1 -135.0 90.0 0.933 6371.229  ! Proj flags and params of computational grid
+-125.0  38.0   0.0              ! x,y,z of bottom LL corner of grid (km, or deg. if latlongflag=1)
+15.0    15.0  25.0              ! grid x-width, y-width, depth (km, or deg. if latlonflag=1)
+0.1     0.1    0.5              ! DX, DY, Dz of grid cells  (km, or deg.)
+1                               ! iHeightHandler
+1980 5 18 15.5                  ! YYYY MM DD HH.H
+1                               ! Output grid (1,2,3,4 for CompH,CompP,MetH,MetP)
+5                               ! Output Var (1=H,2=Vx,3=Vy,4=Vz,5=T)
+2                               ! Output Dimension (0,1,2,or 3)
+0 0 15                          ! i,j,k of output grid with zeros for unused dims.
+5 25 2 2                        ! iwind iwindformat igrid iformat
+1                               ! number of windfiles
+NCEP
+\end{verbatim}
+\normalsize
+Line 1 specifies the projection of the computational grid, in this case, the LatLonFlag=1 indicating
+a latitude-longitude grid (subsequent parameters on this first line are ignored).
+Line 2 give the $x$, $y$, $z$ coordinate of the bottom lower-left corner of the compuataional
+grid.
+Line 3 gives the total width in the three coordinate directions.  
+Line 4 gives the grid spacing in each dimension.  For lines 2-4, the $x$ and $y$ (or $lat$ and $lon$)
+are given in either $\mathrm{km}$ or degrees, whereas all $z$ values are in $\mathrm{km}$.  If a
+pressure-based grid is requested (CompP or MetP), the pressure levels of the NWP file are used
+and the $z$ specifications are ignored.
+Line 5 is the iHeightHandler flag which determines if the program should stop if the computational
+grid requires data above that provided by the NWP file (\texttt{iHeightHandler=2}) or if those nodes
+should be populated using the top-most data of the NWP file (\texttt{iHeightHandler=1}).
+Line 6 specifies the year, month, day and hour of the output.
+Line 7 contains an integer flag specifing the output grid type (CompH,CompP,MetH,MetP).
+Line 8 contains the integer specifying the variable to regrid and export (see Table \ref{ApVar}).
+Line 9 specifies the output dimension (0,1,2,or 3)
+Line 10 contains 3 integers specifying the nodes used in the output. 0 should be given for indexes of unused
+dimensions.  In the example above, the output dimension is 2 indicating a slice of the grid will be
+exported.  We need to specify only one index to indicate the location of the cutting plane.  The $i=0$
+and $j=0$ indicate that the plane is an $x-y$ sheet at $k=15$.  This is interpreted as either the 15th node
+along the height axis of the computational grid or the 15th pressure node of the NWP pressure coordinate,
+depending on the requested grid from line 8.
+Line 11 specifies the windfile format (\texttt{iwind} \texttt{iwindformat} \texttt{igrid} \texttt{iformat}).
+Line 12 gives the number of windfiles to be read.
+Line 13 $\rightarrow$ \texttt{EOF} are the names of the windfiles to be read.
+
+An example control file for a network of radiosonde data is also given in
+\texttt{examples/Regrid\_Sonde.ctr}.  In this case lines 11, 12, and the file listing are given as
+follows:
+\footnotesize
+\begin{verbatim}
+1 2 6 1                         ! iwind iwindformat igrid iformat
+48                              ! number of windfiles
+UpperAirSoundings/BOI_1980051700_raw.dat
+UpperAirSoundings/GGW_1980051700_raw.dat
+UpperAirSoundings/GJT_1980051700_raw.dat
+UpperAirSoundings/MFR_1980051700_raw.dat
+UpperAirSoundings/SLC_1980051700_raw.dat
+UpperAirSoundings/SLE_1980051700_raw.dat
+UpperAirSoundings/BOI_1980051712_raw.dat
+UpperAirSoundings/GGW_1980051712_raw.dat
+UpperAirSoundings/GJT_1980051712_raw.dat
+UpperAirSoundings/MFR_1980051712_raw.dat
+UpperAirSoundings/SLC_1980051712_raw.dat
+UpperAirSoundings/SLE_1980051712_raw.dat
+.....
+\end{verbatim}
+\normalsize
+The \texttt{igrid=6} indicates that there are 6 sonde locations provided.  Each set of 6
+must be repeated in the same order for the subsequent 12-hour times.  Plots of $V_x$ for
+both these control files using the same computational grid are shown below.
+\begin{figure}[htbp]\begin{center}
+ \includegraphics[angle=0,scale=0.55]{Figs/RegNCEP.pdf}
+ \includegraphics[angle=0,scale=0.55]{Figs/RegSonde.pdf}
+ \parbox{15cm}{\caption{\label{FigRegrid}
+ Vx
+ }}
+ \end{center}\end{figure}
+
 
 \subsection{\texttt{MetSonde}}
 This utility is used for probing the NWP files and returning the temperature as a function
@@ -782,7 +929,12 @@ onto the requested point and time and are written to a file (\texttt{GFS\_prof.d
 the current working directory.  This 3-column file contains the height (in $\mathrm{km}$),
 pressure (in $\mathrm{Pa}$) and temperature (in $^{\circ}\mathrm{C}$).
 
+\subsection{\texttt{probe\_Met}}
+
 \subsection{\texttt{MetTraj}}
+
+GIVE DETAILS ON CONTROL FILE
+
 This utility takes a similar argument list as \texttt{MetSonde}, but instead of
 probing a single point and time, this utility calculates trajectories within
 either a GFS forecast package or the NCEP reanalysis files.
@@ -806,6 +958,7 @@ $\mathrm{km}$.
 Usage:\\
 \verb|  MetTraj_F lon lat YYYY MM DD HH [FC_hours nlev lev1 lev2 ...]|
 
+\subsection{\texttt{makegfsncml}}
 
 \section{Windfile management scripts}
 Scripts used to manage GFS and NCEP Reanalysis files are provided in the
@@ -830,9 +983,9 @@ These scripts are intended to be run as cron jobs.  The following line can be ad
 crontab to download the files once they are available.
 \footnotesize
 \begin{verbatim}
-01 22 * * *   /opt/USGS/Ash3d/bin/autorun_scripts/autorun_gfs0.5deg.sh 0  > gfs00_log 2>&1
-01 11 * * *   /opt/USGS/Ash3d/bin/autorun_scripts/autorun_gfs0.5deg.sh 12 > gfs12_log 2>&1
-01 01 * * Sun /opt/USGS/Ash3d/bin/autorun_scripts/autorun_NCEP_50YearReanalysis.sh > NCEP_50yr_log   2>&1
+01 22 * * *   /opt/USGS/bin/autorun_scripts/autorun_gfs.sh 0p50 0  > gfs00_log 2>&1
+01 11 * * *   /opt/USGS/bin/autorun_scripts/autorun_gfs.sh 0p50 12 > gfs12_log 2>&1
+01 01 * * Sun /opt/USGS/bin/autorun_scripts/autorun_NCEP_50YearReanalysis.sh > NCEP_50yr_log   2>&1
 \end{verbatim}
 \normalsize
 

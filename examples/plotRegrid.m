@@ -30,6 +30,10 @@ if (nz0==nz1)
   figure;
   colormap(jet);
   imagesc(X1,Y1,V1);axis xy
+  xlabel('x (or lon)')
+  ylabel('y (or lat)')
+  colorbar;
+  title('Vx');
 elseif (nx0==nx1)
   % Meridional transect (x=something)
   [nx1 ny1 nz1]
@@ -39,6 +43,10 @@ elseif (nx0==nx1)
   figure;
   colormap(jet);
   imagesc(Y1,Z1,V1);axis xy
+  xlabel('y (or lat)')
+  ylabel('z (or p)')
+  colorbar;
+  title('Vx');
 elseif (ny0==ny1)
   %  Zonal transect (y=something)
   [nx1 ny1 nz1]
@@ -48,5 +56,11 @@ elseif (ny0==ny1)
   figure;
   colormap(jet);
   imagesc(X1,Z1,V1);axis xy
-  %contour(X1,Z1,V1)
+  xlabel('x (or lon)')
+  ylabel('z (or p)')
+  colorbar;
+  title('Vx');
 end
+print -depsc RegNCEP.eps
+%print -depsc RegSonde.eps
+

@@ -5,7 +5,7 @@
 1                               ! iHeightHandler
 1980 5 18 15.5                  ! YYYY MM DD HH.H
 1                               ! Output grid (1,2,3,4 for CompH,CompP,MetH,MetP)
-5                               ! Output Var (1=H,2=Vx,3=Vy,4=Vz,5=T)
+2                               ! Output Var (1=H,2=Vx,3=Vy,4=Vz,5=T)
 2                               ! Output Dimension (0,1,2,or 3)
 0 0 15                          ! i,j,k of output grid with zeros for unused dims.
 5 25 2 2                        ! iwind iwindformat igrid iformat

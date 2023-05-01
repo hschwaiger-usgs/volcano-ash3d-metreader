@@ -73,6 +73,7 @@
 
       integer             :: nxmax,nymax,nzmax
       real(kind=8)        :: dx,dy
+      real(kind=8)        :: xwidth,ywidth
       real(kind=4),dimension(:)    ,allocatable :: lon_grid
       real(kind=4),dimension(:)    ,allocatable :: lat_grid
       real(kind=4),dimension(:)    ,allocatable :: z_cc
@@ -172,27 +173,66 @@
         write(MR_global_info,*)"Calculating Forward trajectories"
       endif
 
+      write(MR_global_info,*)"Calling GetWindFile"
+      call GetWindFile(inyear,inmonth,inday,inhour, &
+                          Simtime_in_hours,TrajFlag,&
+                          iw,iwf,igrid,idf,iwfiles,&
+                          autoflag,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
+
+      ! Now set up computational grid.
+
+      !write(*,*)x_fullmet_sp(1),dx_met_const
+      !write(*,*)y_fullmet_sp(1),dy_met_const
+      !stop 5
+      
       nzmax = ntraj
       IsGlobal = .false.
       ! Define grid padding based on the integration time
       if(Simtime_in_hours.le.8.0_8)then
         ! +-15 in lon ; +-10 in lat
-        nxmax =  61; dx = 0.5_4
-        nymax =  41; dy = 0.5_4
+        xwidth = 30.0_4
+        ywidth = 20.0_4
+        !nxmax =  61; dx = 0.5_4
+        !nymax =  41; dy = 0.5_4
       elseif(Simtime_in_hours.le.16.0_8)then
         ! +-25 in lon ; +-15 in lat
-        nxmax = 101; dx = 0.5_4
-        nymax =  61; dy = 0.5_4
+        xwidth = 50.0_4
+        ywidth = 30.0_4
+        !nxmax = 101; dx = 0.5_4
+        !nymax =  61; dy = 0.5_4
       elseif(Simtime_in_hours.le.24.0_8)then
         ! +-35 in lon ; +-20 in lat
-        nxmax = 141; dx = 0.5_4
-        nymax =  81; dy = 0.5_4
+        xwidth = 70.0_4
+        ywidth = 40.0_4
+        !nxmax = 141; dx = 0.5_4
+        !nymax =  81; dy = 0.5_4
       else
         ! Full globe
-        nxmax = 720; dx = 0.5_4
-        nymax =  361; dy = 0.5_4
+        xwidth = 360.0_4
+        ywidth = 180.0_4
+        !nxmax = 720; dx = 0.5_4
+        !nymax =  361; dy = 0.5_4
         IsGlobal = .true.
       endif
+
+      if(iw.eq.1)then
+        ! For the ASCII case, the met grid is not a 2-d grid, but maybe
+        ! scattered points.  We need to set up comp grid independent of
+        ! the met grid.
+        dx = 0.5_4
+        dy = 0.5_4
+      else
+        if(dx_met_const.gt.0.0.and.dy_met_const.gt.0.0)then
+          dx = dx_met_const
+          dy = dy_met_const
+        else
+          dx = 0.5_4
+          dy = 0.5_4
+        endif
+      endif
+      nxmax = ceiling(xwidth/dx) + 1
+      nymax = ceiling(ywidth/dy) + 1
+
       allocate(lon_grid(0:nxmax+1))
       allocate(lat_grid(0:nymax+1))
       allocate(z_cc(nzmax))
@@ -240,12 +280,11 @@
       do i = 1,ntraj
         z_cc(i) = real(OutputLevels(i),4)
       enddo
+      !write(*,*)lon_grid
+      !write(*,*)"-------------"
+      !write(*,*)lat_grid
+      !stop 5
 
-      write(MR_global_info,*)"Calling GetWindFile"
-      call GetWindFile(inyear,inmonth,inday,inhour, &
-                          Simtime_in_hours,TrajFlag,&
-                          iw,iwf,igrid,idf,iwfiles,&
-                          autoflag,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
 
       write(MR_global_info,*)"Setting up wind grids"
       ! Again, since we only need the metH grid, lon_grid and lat_grid are dummy
@@ -1140,18 +1179,33 @@
         end function HS_hours_since_baseyear
       END INTERFACE
 
-      allocate(Vx_meso_last_step_MetH_sp(nx_submet,ny_submet,ntraj))
-      allocate(Vx_meso_next_step_MetH_sp(nx_submet,ny_submet,ntraj))
-      allocate(Vy_meso_last_step_MetH_sp(nx_submet,ny_submet,ntraj))
-      allocate(Vy_meso_next_step_MetH_sp(nx_submet,ny_submet,ntraj))
+      !allocate(Vx_meso_last_step_MetH_sp(nx_submet,ny_submet,ntraj))
+      !allocate(Vx_meso_next_step_MetH_sp(nx_submet,ny_submet,ntraj))
+      !allocate(Vy_meso_last_step_MetH_sp(nx_submet,ny_submet,ntraj))
+      !allocate(Vy_meso_next_step_MetH_sp(nx_submet,ny_submet,ntraj))
+
+      !! These store just the layers relevant, but for all time
+      !allocate(Vx_full(0:nx_submet+1,0:ny_submet+1,ntraj,MR_MetSteps_Total))
+      !allocate(Vy_full(0:nx_submet+1,0:ny_submet+1,ntraj,MR_MetSteps_Total))
+      !allocate(Step_Time_since1900(MR_MetSteps_Total))
+      !! These are needed for each integration point
+      !allocate(dvxdt(0:nx_submet+1,0:ny_submet+1,ntraj))
+      !allocate(dvydt(0:nx_submet+1,0:ny_submet+1,ntraj))
+
+
+      allocate(Vx_meso_last_step_MetH_sp(nx_comp,ny_comp,ntraj))
+      allocate(Vx_meso_next_step_MetH_sp(nx_comp,ny_comp,ntraj))
+      allocate(Vy_meso_last_step_MetH_sp(nx_comp,ny_comp,ntraj))
+      allocate(Vy_meso_next_step_MetH_sp(nx_comp,ny_comp,ntraj))
 
       ! These store just the layers relevant, but for all time
-      allocate(Vx_full(0:nx_submet+1,0:ny_submet+1,ntraj,MR_MetSteps_Total))
-      allocate(Vy_full(0:nx_submet+1,0:ny_submet+1,ntraj,MR_MetSteps_Total))
+      allocate(Vx_full(0:nx_comp+1,0:ny_comp+1,ntraj,MR_MetSteps_Total))
+      allocate(Vy_full(0:nx_comp+1,0:ny_comp+1,ntraj,MR_MetSteps_Total))
       allocate(Step_Time_since1900(MR_MetSteps_Total))
       ! These are needed for each integration point
-      allocate(dvxdt(0:nx_submet+1,0:ny_submet+1,ntraj))
-      allocate(dvydt(0:nx_submet+1,0:ny_submet+1,ntraj))
+      allocate(dvxdt(0:nx_comp+1,0:ny_comp+1,ntraj))
+      allocate(dvydt(0:nx_comp+1,0:ny_comp+1,ntraj))
+
 
       lonmin = 360.0_8
       lonmax =   0.0_8
@@ -1179,6 +1233,7 @@
       ! Loop through all the steps in proper chronological order, but store in
       ! Vx_full, and Vy_full in order of integration (forward or backward)
       do istep = 1,MR_MetSteps_Total
+        write(*,*)"Reading step of ",istep,MR_MetSteps_Total
         MR_iMetStep_Now = istep
         if(TrajFlag.gt.0)then
           stepindx=istep
@@ -1188,32 +1243,62 @@
         Step_Time_since1900(stepindx) = MR_MetStep_Hour_since_baseyear(istep)
         if(istep.lt.MR_MetSteps_Total)call MR_Read_HGT_arrays(istep)
         ivar = 2 ! Vx
-        call MR_Read_3d_MetH_Variable(ivar,istep)
-        Vx_full(1:nx_submet,1:ny_submet,:,stepindx) = &
-          MR_dum3d_MetH(1:nx_submet,1:ny_submet,:)
+        !call MR_Read_3d_MetH_Variable(ivar,istep)
+        !Vx_full(1:nx_submet,1:ny_submet,:,stepindx) = &
+        !  MR_dum3d_MetH(1:nx_submet,1:ny_submet,:)
+        !ivar = 3 ! Vy
+        !call MR_Read_3d_MetH_Variable(ivar,istep)
+        !Vy_full(1:nx_submet,1:ny_submet,:,stepindx) = &
+        !  MR_dum3d_MetH(1:nx_submet,1:ny_submet,:)
+
+        call MR_Read_3d_Met_Variable_to_CompH(ivar,istep)
+        Vx_full(1:nx_comp,1:ny_comp,:,stepindx) = &
+          MR_dum3d_CompH(1:nx_comp,1:ny_comp,:)
         ivar = 3 ! Vy
-        call MR_Read_3d_MetH_Variable(ivar,istep)
-        Vy_full(1:nx_submet,1:ny_submet,:,stepindx) = &
-          MR_dum3d_MetH(1:nx_submet,1:ny_submet,:)
+        call MR_Read_3d_Met_Variable_to_CompH(ivar,istep)
+        Vy_full(1:nx_comp,1:ny_comp,:,stepindx) = &
+          MR_dum3d_CompH(1:nx_comp,1:ny_comp,:)
+
       enddo
+      !write(*,*)Vx_full(5,5,5,:)
+      !stop 5
+
+      !! Finally B.C.'s
+      !Vx_full(:,          0,:,:)=Vx_full(:,        1,:,:)
+      !Vx_full(:,ny_submet+1,:,:)=Vx_full(:,ny_submet,:,:)
+      !Vy_full(:,          0,:,:)=Vy_full(:,        1,:,:)
+      !Vy_full(:,ny_submet+1,:,:)=Vy_full(:,ny_submet,:,:)
+
+      !if(IsGlobal)then
+      !  Vx_full(          0,:,:,:)=Vx_full(nx_submet,:,:,:)
+      !  Vx_full(nx_submet+1,:,:,:)=Vx_full(        1,:,:,:)
+      !  Vy_full(          0,:,:,:)=Vy_full(nx_submet,:,:,:)
+      !  Vy_full(nx_submet+1,:,:,:)=Vy_full(        1,:,:,:)
+      !else
+      !  Vx_full(          0,:,:,:)=Vx_full(        1,:,:,:)
+      !  Vx_full(nx_submet+1,:,:,:)=Vx_full(nx_submet,:,:,:)
+      !  Vy_full(          0,:,:,:)=Vy_full(        1,:,:,:)
+      !  Vy_full(nx_submet+1,:,:,:)=Vy_full(nx_submet,:,:,:)
+      !endif
 
       ! Finally B.C.'s
       Vx_full(:,          0,:,:)=Vx_full(:,        1,:,:)
-      Vx_full(:,ny_submet+1,:,:)=Vx_full(:,ny_submet,:,:)
+      Vx_full(:,ny_comp+1,:,:)=Vx_full(:,ny_comp,:,:)
       Vy_full(:,          0,:,:)=Vy_full(:,        1,:,:)
-      Vy_full(:,ny_submet+1,:,:)=Vy_full(:,ny_submet,:,:)
+      Vy_full(:,ny_comp+1,:,:)=Vy_full(:,ny_comp,:,:)
 
       if(IsGlobal)then
-        Vx_full(          0,:,:,:)=Vx_full(nx_submet,:,:,:)
-        Vx_full(nx_submet+1,:,:,:)=Vx_full(        1,:,:,:)
-        Vy_full(          0,:,:,:)=Vy_full(nx_submet,:,:,:)
-        Vy_full(nx_submet+1,:,:,:)=Vy_full(        1,:,:,:)
+        Vx_full(          0,:,:,:)=Vx_full(nx_comp,:,:,:)
+        Vx_full(nx_comp+1,:,:,:)=Vx_full(        1,:,:,:)
+        Vy_full(          0,:,:,:)=Vy_full(nx_comp,:,:,:)
+        Vy_full(nx_comp+1,:,:,:)=Vy_full(        1,:,:,:)
       else
         Vx_full(          0,:,:,:)=Vx_full(        1,:,:,:)
-        Vx_full(nx_submet+1,:,:,:)=Vx_full(nx_submet,:,:,:)
+        Vx_full(nx_comp+1,:,:,:)=Vx_full(nx_comp,:,:,:)
         Vy_full(          0,:,:,:)=Vy_full(        1,:,:,:)
-        Vy_full(nx_submet+1,:,:,:)=Vy_full(nx_submet,:,:,:)
+        Vy_full(nx_comp+1,:,:,:)=Vy_full(nx_comp,:,:,:)
       endif
+
 
       ! We now have the full x,y,z,vx,vy data needed from the Met file
       ! for the full forward/backward simulation
@@ -1301,32 +1386,50 @@
           ! Get current time and position indecies
           if(IsRegular_MetGrid)then
             ! For regular grids, finding the indecies is trivial
-            ix = floor((x1(kk)-x_submet_sp(1))/abs(dx_met_const)) + 1
-            iy = floor((y1(kk)-y_submet_sp(1))/abs(dy_met_const)) + 1
+!            ix = floor((x1(kk)-x_submet_sp(1))/abs(dx_met_const)) + 1
+!            iy = floor((y1(kk)-y_submet_sp(1))/abs(dy_met_const)) + 1
+            ix = floor((x1(kk)-x_comp_sp(1))/abs(dx_met_const)) + 1
+            iy = floor((y1(kk)-y_comp_sp(1))/abs(dy_met_const)) + 1
+
           else
             ! For non-regular grids (e.g. Gaussian), we need to march over the
             ! subgrid to find the index of the current point.  This could be
             ! faster.
-            do ix=max(ixold(kk),1),nx_submet-1
-              if (x1(kk).ge.x_submet_sp(ix).and.x1(kk).lt.x_submet_sp(ix+1))then
+!            do ix=max(ixold(kk),1),nx_submet-1
+!              if (x1(kk).ge.x_submet_sp(ix).and.x1(kk).lt.x_submet_sp(ix+1))then
+!                exit
+!              endif
+!            enddo
+!            do iy=max(iyold(kk),1),ny_submet-1
+!              if (y1(kk).ge.y_submet_sp(iy).and.y1(kk).lt.y_submet_sp(iy+1))then
+!                exit
+!              endif
+!            enddo
+            do ix=max(ixold(kk),1),nx_comp-1
+              if (x1(kk).ge.x_comp_sp(ix).and.x1(kk).lt.x_comp_sp(ix+1))then
                 exit
               endif
             enddo
-            do iy=max(iyold(kk),1),ny_submet-1
-              if (y1(kk).ge.y_submet_sp(iy).and.y1(kk).lt.y_submet_sp(iy+1))then
+            do iy=max(iyold(kk),1),ny_comp-1
+              if (y1(kk).ge.y_comp_sp(iy).and.y1(kk).lt.y_comp_sp(iy+1))then
                 exit
               endif
             enddo
+
           endif
           if(.not.IsGlobal)then
             ! Skip over points that leave the domain
-            if(ix.le.0.or.ix.ge.nx_submet)cycle
-            if(iy.le.0.or.iy.ge.ny_submet)cycle
+!            if(ix.le.0.or.ix.ge.nx_submet)cycle
+!            if(iy.le.0.or.iy.ge.ny_submet)cycle
+            if(ix.le.0.or.ix.ge.nx_comp)cycle
+            if(iy.le.0.or.iy.ge.ny_comp)cycle
           endif
 
           ! Get the fractional position within the cell
-          xfrac = (x1(kk)-x_submet_sp(ix))/(x_submet_sp(ix+1)-x_submet_sp(ix))
-          yfrac = (y1(kk)-y_submet_sp(iy))/(y_submet_sp(iy+1)-y_submet_sp(iy))
+!          xfrac = (x1(kk)-x_submet_sp(ix))/(x_submet_sp(ix+1)-x_submet_sp(ix))
+!          yfrac = (y1(kk)-y_submet_sp(iy))/(y_submet_sp(iy+1)-y_submet_sp(iy))
+          xfrac = (x1(kk)-x_comp_sp(ix))/(x_comp_sp(ix+1)-x_comp_sp(ix))
+          yfrac = (y1(kk)-y_comp_sp(iy))/(y_comp_sp(iy+1)-y_comp_sp(iy))
           xc = 1.0_4-xfrac
           yc = 1.0_4-yfrac
           ! Build interpolation coefficients

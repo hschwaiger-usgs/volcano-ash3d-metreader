@@ -265,6 +265,7 @@ install:
 uninstall:
 	rm -f $(INSTALLDIR)/lib/$(LIB)
 	rm -f $(INSTALLDIR)/include/metreader.mod
+	rm -f $(INSTALLDIR)/bin/MetRegrid
 	rm -f $(INSTALLDIR)/bin/MetSonde
 	rm -f $(INSTALLDIR)/bin/MetTraj_F
 	rm -f $(INSTALLDIR)/bin/MetTraj_B
