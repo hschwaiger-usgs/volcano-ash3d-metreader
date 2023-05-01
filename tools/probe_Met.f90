@@ -36,7 +36,7 @@
 !    To  probe the NCEP 2.5-degree data (or other iw=5), we need the
 !    full date
 !      probe_Met 2020061000_5.f006.nc 1 1 190.055 52.8222 T 1 1 4 20 2 2018 1 1 0.0
-!    Output is written to the file sonde_ztuvrp.dat
+!    Output is written to the file NWP_prof.dat
 !
 ! Note: to test against the 0.5 GFS data using ncks, use the following commands
 !         52.5N is index 76; 190.0W is index 381

@@ -55,6 +55,7 @@
       integer             :: inyear,inmonth,inday
       real(kind=8)        :: inhour
       real(kind=8)        :: Simtime_in_hours
+      real(kind=8)        :: Met_hours_needed
       integer             :: StreamFlag
       integer             :: OutStepInc_Minutes
       integer             :: ntraj
@@ -130,9 +131,10 @@
           integer         ,intent(in) :: GFS_Archive_Days
           integer         ,intent(in) :: GFS_FC_TotHours
         end subroutine GetWindFile
-        subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
+        subroutine Integrate_ConstH_Traj(StreamFlag,IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj)
           integer,parameter   :: dp        = 8 ! double precision
+          integer      , intent(in)      :: StreamFlag
           logical      , intent(in)      :: IsGlobal
           real(kind=dp), intent(in)      :: inlon
           real(kind=dp), intent(in)      :: inlat
@@ -174,17 +176,17 @@
       endif
 
       write(MR_global_info,*)"Calling GetWindFile"
+      if(StreamFlag.eq.0)then
+        Met_hours_needed = 0.0_8
+      else
+        Met_hours_needed = Simtime_in_hours
+      endif
       call GetWindFile(inyear,inmonth,inday,inhour, &
-                          Simtime_in_hours,TrajFlag,&
+                          Met_hours_needed,TrajFlag,&
                           iw,iwf,igrid,idf,iwfiles,&
                           autoflag,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
 
       ! Now set up computational grid.
-
-      !write(*,*)x_fullmet_sp(1),dx_met_const
-      !write(*,*)y_fullmet_sp(1),dy_met_const
-      !stop 5
-      
       nzmax = ntraj
       IsGlobal = .false.
       ! Define grid padding based on the integration time
@@ -192,26 +194,18 @@
         ! +-15 in lon ; +-10 in lat
         xwidth = 30.0_4
         ywidth = 20.0_4
-        !nxmax =  61; dx = 0.5_4
-        !nymax =  41; dy = 0.5_4
       elseif(Simtime_in_hours.le.16.0_8)then
         ! +-25 in lon ; +-15 in lat
         xwidth = 50.0_4
         ywidth = 30.0_4
-        !nxmax = 101; dx = 0.5_4
-        !nymax =  61; dy = 0.5_4
       elseif(Simtime_in_hours.le.24.0_8)then
         ! +-35 in lon ; +-20 in lat
         xwidth = 70.0_4
         ywidth = 40.0_4
-        !nxmax = 141; dx = 0.5_4
-        !nymax =  81; dy = 0.5_4
       else
         ! Full globe
         xwidth = 360.0_4
         ywidth = 180.0_4
-        !nxmax = 720; dx = 0.5_4
-        !nymax =  361; dy = 0.5_4
         IsGlobal = .true.
       endif
 
@@ -280,11 +274,6 @@
       do i = 1,ntraj
         z_cc(i) = real(OutputLevels(i),4)
       enddo
-      !write(*,*)lon_grid
-      !write(*,*)"-------------"
-      !write(*,*)lat_grid
-      !stop 5
-
 
       write(MR_global_info,*)"Setting up wind grids"
       ! Again, since we only need the metH grid, lon_grid and lat_grid are dummy
@@ -296,12 +285,7 @@
                               IsPeriodic)
 
       write(MR_global_info,*)"Now integrating from start point"
-      if(StreamFlag.ne.1)then
-        write(MR_global_info,*)"Streaklines not yet implemented."
-        write(MR_global_info,*)"Please set the streamflag to 1."
-        stop 1
-      endif
-      call Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
+      call Integrate_ConstH_Traj(StreamFlag,IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj)
 
       write(MR_global_info,*)"Program ended normally."
@@ -339,7 +323,7 @@
 ! 1                                     ! number of windfiles
 ! NOAA20CRv3
 !
-! Example comman-line argument:
+! Example command-line argument:
 !
 !     MetTraj_[F,B] -169.9468 52.8217 2022 8 29 5.5 6.0 3 5.0 10.0 15.0
 !
@@ -852,6 +836,13 @@
             write(MR_windfiles(i),*)trim(ADJUSTL(WINDROOT)),'/NCEP'
           enddo
 
+          FC_year    = HS_YearOfEvent(RunStartHour,MR_BaseYear,MR_useLeap)
+          FC_mon     = HS_MonthOfEvent(RunStartHour,MR_BaseYear,MR_useLeap)
+          FC_day     = HS_DayOfEvent(RunStartHour,MR_BaseYear,MR_useLeap)
+          FC_Package_hour_dp = HS_HourOfDay(RunStartHour,MR_BaseYear,MR_useLeap)
+          ! now round down the hour to the forecast package increment
+          FC_Package_hour    = floor(FC_Package_hour_dp/FC_freq) * FC_freq
+
         elseif(inyear.lt.1948)then
           ! Too old for NCEP runs, must use control file
           write(MR_global_info,*)"Requested start time is too old for NCEP Reanalysis."
@@ -1111,13 +1102,14 @@
 !
 !##############################################################################
 
-      subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
+      subroutine Integrate_ConstH_Traj(StreamFlag,IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj)
 
       use MetReader
 
       implicit none
 
+      integer     , intent(in)      :: StreamFlag
       logical     , intent(in)      :: IsGlobal
       real(kind=8), intent(in)      :: inlon
       real(kind=8), intent(in)      :: inlat
@@ -1179,20 +1171,6 @@
         end function HS_hours_since_baseyear
       END INTERFACE
 
-      !allocate(Vx_meso_last_step_MetH_sp(nx_submet,ny_submet,ntraj))
-      !allocate(Vx_meso_next_step_MetH_sp(nx_submet,ny_submet,ntraj))
-      !allocate(Vy_meso_last_step_MetH_sp(nx_submet,ny_submet,ntraj))
-      !allocate(Vy_meso_next_step_MetH_sp(nx_submet,ny_submet,ntraj))
-
-      !! These store just the layers relevant, but for all time
-      !allocate(Vx_full(0:nx_submet+1,0:ny_submet+1,ntraj,MR_MetSteps_Total))
-      !allocate(Vy_full(0:nx_submet+1,0:ny_submet+1,ntraj,MR_MetSteps_Total))
-      !allocate(Step_Time_since1900(MR_MetSteps_Total))
-      !! These are needed for each integration point
-      !allocate(dvxdt(0:nx_submet+1,0:ny_submet+1,ntraj))
-      !allocate(dvydt(0:nx_submet+1,0:ny_submet+1,ntraj))
-
-
       allocate(Vx_meso_last_step_MetH_sp(nx_comp,ny_comp,ntraj))
       allocate(Vx_meso_next_step_MetH_sp(nx_comp,ny_comp,ntraj))
       allocate(Vy_meso_last_step_MetH_sp(nx_comp,ny_comp,ntraj))
@@ -1205,7 +1183,6 @@
       ! These are needed for each integration point
       allocate(dvxdt(0:nx_comp+1,0:ny_comp+1,ntraj))
       allocate(dvydt(0:nx_comp+1,0:ny_comp+1,ntraj))
-
 
       lonmin = 360.0_8
       lonmax =   0.0_8
@@ -1243,13 +1220,6 @@
         Step_Time_since1900(stepindx) = MR_MetStep_Hour_since_baseyear(istep)
         if(istep.lt.MR_MetSteps_Total)call MR_Read_HGT_arrays(istep)
         ivar = 2 ! Vx
-        !call MR_Read_3d_MetH_Variable(ivar,istep)
-        !Vx_full(1:nx_submet,1:ny_submet,:,stepindx) = &
-        !  MR_dum3d_MetH(1:nx_submet,1:ny_submet,:)
-        !ivar = 3 ! Vy
-        !call MR_Read_3d_MetH_Variable(ivar,istep)
-        !Vy_full(1:nx_submet,1:ny_submet,:,stepindx) = &
-        !  MR_dum3d_MetH(1:nx_submet,1:ny_submet,:)
 
         call MR_Read_3d_Met_Variable_to_CompH(ivar,istep)
         Vx_full(1:nx_comp,1:ny_comp,:,stepindx) = &
@@ -1260,26 +1230,6 @@
           MR_dum3d_CompH(1:nx_comp,1:ny_comp,:)
 
       enddo
-      !write(*,*)Vx_full(5,5,5,:)
-      !stop 5
-
-      !! Finally B.C.'s
-      !Vx_full(:,          0,:,:)=Vx_full(:,        1,:,:)
-      !Vx_full(:,ny_submet+1,:,:)=Vx_full(:,ny_submet,:,:)
-      !Vy_full(:,          0,:,:)=Vy_full(:,        1,:,:)
-      !Vy_full(:,ny_submet+1,:,:)=Vy_full(:,ny_submet,:,:)
-
-      !if(IsGlobal)then
-      !  Vx_full(          0,:,:,:)=Vx_full(nx_submet,:,:,:)
-      !  Vx_full(nx_submet+1,:,:,:)=Vx_full(        1,:,:,:)
-      !  Vy_full(          0,:,:,:)=Vy_full(nx_submet,:,:,:)
-      !  Vy_full(nx_submet+1,:,:,:)=Vy_full(        1,:,:,:)
-      !else
-      !  Vx_full(          0,:,:,:)=Vx_full(        1,:,:,:)
-      !  Vx_full(nx_submet+1,:,:,:)=Vx_full(nx_submet,:,:,:)
-      !  Vy_full(          0,:,:,:)=Vy_full(        1,:,:,:)
-      !  Vy_full(nx_submet+1,:,:,:)=Vy_full(nx_submet,:,:,:)
-      !endif
 
       ! Finally B.C.'s
       Vx_full(:,          0,:,:)=Vx_full(:,        1,:,:)
@@ -1298,7 +1248,6 @@
         Vy_full(          0,:,:,:)=Vy_full(        1,:,:,:)
         Vy_full(nx_comp+1,:,:,:)=Vy_full(nx_comp,:,:,:)
       endif
-
 
       ! We now have the full x,y,z,vx,vy data needed from the Met file
       ! for the full forward/backward simulation
@@ -1386,8 +1335,6 @@
           ! Get current time and position indecies
           if(IsRegular_MetGrid)then
             ! For regular grids, finding the indecies is trivial
-!            ix = floor((x1(kk)-x_submet_sp(1))/abs(dx_met_const)) + 1
-!            iy = floor((y1(kk)-y_submet_sp(1))/abs(dy_met_const)) + 1
             ix = floor((x1(kk)-x_comp_sp(1))/abs(dx_met_const)) + 1
             iy = floor((y1(kk)-y_comp_sp(1))/abs(dy_met_const)) + 1
 
@@ -1395,16 +1342,6 @@
             ! For non-regular grids (e.g. Gaussian), we need to march over the
             ! subgrid to find the index of the current point.  This could be
             ! faster.
-!            do ix=max(ixold(kk),1),nx_submet-1
-!              if (x1(kk).ge.x_submet_sp(ix).and.x1(kk).lt.x_submet_sp(ix+1))then
-!                exit
-!              endif
-!            enddo
-!            do iy=max(iyold(kk),1),ny_submet-1
-!              if (y1(kk).ge.y_submet_sp(iy).and.y1(kk).lt.y_submet_sp(iy+1))then
-!                exit
-!              endif
-!            enddo
             do ix=max(ixold(kk),1),nx_comp-1
               if (x1(kk).ge.x_comp_sp(ix).and.x1(kk).lt.x_comp_sp(ix+1))then
                 exit
@@ -1419,15 +1356,11 @@
           endif
           if(.not.IsGlobal)then
             ! Skip over points that leave the domain
-!            if(ix.le.0.or.ix.ge.nx_submet)cycle
-!            if(iy.le.0.or.iy.ge.ny_submet)cycle
             if(ix.le.0.or.ix.ge.nx_comp)cycle
             if(iy.le.0.or.iy.ge.ny_comp)cycle
           endif
 
           ! Get the fractional position within the cell
-!          xfrac = (x1(kk)-x_submet_sp(ix))/(x_submet_sp(ix+1)-x_submet_sp(ix))
-!          yfrac = (y1(kk)-y_submet_sp(iy))/(y_submet_sp(iy+1)-y_submet_sp(iy))
           xfrac = (x1(kk)-x_comp_sp(ix))/(x_comp_sp(ix+1)-x_comp_sp(ix))
           yfrac = (y1(kk)-y_comp_sp(iy))/(y_comp_sp(iy+1)-y_comp_sp(iy))
           xc = 1.0_4-xfrac

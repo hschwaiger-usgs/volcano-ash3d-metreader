@@ -820,6 +820,7 @@ In the \texttt{tools} folder, several programs are included the illustrate the
 use of the library.
 
 \subsection{\texttt{MetCheck}}
+
 This utility is used for checking the validity of the NWP files.  In some
 cases, the downloading of files might be interrupted or the files on the
 NCEP server might be incomplete or corrupt.  This utility opens each of the files
@@ -832,14 +833,15 @@ Usage:\\
 This utility will write a log file, \texttt{MetCheck\_log.txt} containing four columns:
 filename, step in file, year, day of year.
 \subsection{\texttt{MetRegrid}}
+
 This is a stand-alone program that uses the MetReader interface to calculate
 regridded atmospheric data.  A control file is provided which defines the
 computational grid specifications, output time, output variable, output
 grid (could be CompH, CompP, MetH, or MetP), and the output dimension.
 The output dimension could be 0 for point data, 1 for line data,
 2 for slices of the computational grid, or 3
-for volume data.  An example control file (\texttt{Regrid\_NCEP.ctr}) for the NCEP 50-year Reanalysis is given 
-in the \texttt{examples} directory.
+for volume data.  An example control file (\texttt{Regrid\_NCEP.ctr}) for
+the NCEP 50-year Reanalysis is given  in the \texttt{examples} directory.
 \footnotesize
 \begin{verbatim}
 1 1 -135.0 90.0 0.933 6371.229  ! Proj flags and params of computational grid
@@ -857,7 +859,8 @@ in the \texttt{examples} directory.
 NCEP
 \end{verbatim}
 \normalsize
-Line 1 specifies the projection of the computational grid, in this case, the LatLonFlag=1 indicating
+Line 1 specifies the projection of the computational grid, in this case, the
+\texttt{LatLonFlag=1} indicating
 a latitude-longitude grid (subsequent parameters on this first line are ignored).
 Line 2 give the $x$, $y$, $z$ coordinate of the bottom lower-left corner of the compuataional
 grid.
@@ -912,14 +915,16 @@ both these control files using the same computational grid are shown below.
  \includegraphics[angle=0,scale=0.55]{Figs/RegNCEP.pdf}
  \includegraphics[angle=0,scale=0.55]{Figs/RegSonde.pdf}
  \parbox{15cm}{\caption{\label{FigRegrid}
- Vx
+ Example regridded output of $V_x$ of the NCEP reanalysis (\texttt{iwformat=25}) and
+ 6-point radiosonde data (left and right, respectively) using \texttt{RegridMet} with control files
+ from the \texttt{examples} folder.
  }}
  \end{center}\end{figure}
 
 
 \subsection{\texttt{MetSonde}}
-This utility is used for probing the NWP files and returning the temperature as a function
-of height.  
+This utility is used for probing the either GFS or NCEP 50-uear reanalysis files and
+returning the temperature as a function of height.  
 Usage:\\
 \verb|  MetSonde lon lat YYYY MM DD HH [WIND_ROOT]|
 
@@ -930,18 +935,71 @@ the current working directory.  This 3-column file contains the height (in $\mat
 pressure (in $\mathrm{Pa}$) and temperature (in $^{\circ}\mathrm{C}$).
 
 \subsection{\texttt{probe\_Met}}
+This program is a more general version of \texttt{MetSonde}, requiring 15 or more command-line
+arguments.  The command-line arguments are as follows.
+\\
+\begin{tabular}{ l  l  l }
+filename      & string    & name of input file \\
+timestep      & integer   & time step in file \\
+llflag        & integer   & 0 for using windfile grid; 1 for forcing Lat/Lon \\
+lon/x         & real      & longitude (or x) of sonde point \\
+lat/y         & real      & latitude (or y) of sonde point \\
+trunc flag    & character & truncation flag (T or F) \\
+nvars         & integer   & number of pressure variables to export \\
+varID(nvars)  & integers  & variable ID's to read and export (Tab \ref{ApVar}) \\
+iw            & integer   & windfile format code (3,4,5) \\
+iwf           & integer   & windfile product code \\
+idf           & integer   & igrid (2 for nc, 3 for grib) \\
+year          & integer   & only needed for iw = 5 files \\
+month         & integer   & only needed for iw = 5 files \\
+day           & integer   & only needed for iw = 5 files \\
+hour          & real      & only needed for iw = 5 files \\
+\end{tabular}
+
+For example, the following command will probe a GFS file and write out
+GPH, U, V, and T.
+
+\verb| probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 4 1 2 3 5 4 20 2 |
+
+This will write output data to the file \texttt{NWP\_prof.dat}.
+If the truncation flag is set to \texttt{T}, then data are not interpolated onto
+the requested point, but instead the data corresponding to the node of the NWP
+grid on the lower-left of the cell containing the point will be writen to the output file.
 
 \subsection{\texttt{MetTraj}}
 
-GIVE DETAILS ON CONTROL FILE
-
 This utility takes a similar argument list as \texttt{MetSonde}, but instead of
 probing a single point and time, this utility calculates trajectories within
-either a GFS forecast package or the NCEP reanalysis files.
+the NWP files.
 This utility must be compiled with either a \texttt{-DFORWARD} or \texttt{-DBACKWARD}
 preprocessor flag to generate separate executables for forward or backward trajectories.
-The location of the windfiles is assumed to be the default for GFS and NCEP.  For 
-forward trajectories, forecast package beginning most closely prior to the requested
+This utility can be run with a limited set of command-line arguments if GFS or NCEP
+reanalysis data are to be used, or using a control file which can be used to specify
+a more exhaustive set of options.
+
+For the command-line options, \texttt{MetTraj\_[F,B]} requires at least the longitude,
+latitude, year, month, day and hour.  Optionally, the simulation time (in hours) can
+be provided (default is 24).  Additionally, the trajectory levels can be provided,
+first with the number of
+levels, followed by the level altitudes in km.  To specify 6 hours
+integrations at 3 levels (5, 10, and 15 km), use:
+
+\verb|MetTraj_[F,B] -169.9468 52.8217 2022 8 29 5.5 6.0 3 5.0 10.0 15.0 |
+
+If levels are not provided, then 6 levels are assumed at heights of 1.52,
+3.05, 6.10, 9.14, 12.19, 15.24 km; corresponding to 5000, 10000, 20000, 30000,
+40000, and 50000 ft.
+
+The location of the windfiles is assumed to be the default for GFS and NCEP.
+To test for the optimal windfiles to use, \texttt{MetTraj\_[F,B]} uses three
+parameters that describe the GFS windfiles.
+\texttt{FC\_freq} (default = 12 hours) is the frequency that the GFS forecast
+packages are downloaded.  
+\texttt{GFS\_Archive\_Days} (default = 14 days) is the number of days the GFS
+forecast packages are stored on the system.
+\texttt{GFS\_FC\_TotHours} (default = 198 hours) is the number of forecast hours
+downloaded for each forecast package.
+For  forward trajectories, forecast package beginning most closely prior to the requested
 start time is used unless the start time is greater than two weeks from present.  If
 so, the NCEP files are used.  For the backward trajectories, the forecast package
 chosen is that which can accommodate the default 24-hours of backward integration.
@@ -955,10 +1013,61 @@ while the backward trajectories are  \texttt{btraj[1-6].dat}.
 Optionally, the length of time to integrate and a user-specified list of output
 elevations can be given.  Elevations are given on the command line must be in
 $\mathrm{km}$.
+
 Usage:\\
 \verb|  MetTraj_F lon lat YYYY MM DD HH [FC_hours nlev lev1 lev2 ...]|
 
+If a single string command-line argument if given, it is interpreted to be a control
+file. The control file has the following format.
+
+\footnotesize
+\begin{verbatim}
+-122.18 46.20                         ! lon lat
+1980 5 18 15.5                        ! YYYY MM DD HH.H
+24.0                                  ! simtime
+1                                     ! streamflag (0 for streak, 1 for streamlines)
+60                                    ! output time step (minutes)
+6                                     ! ntraj (<10)
+1.524 3.048 6.096 9.144 12.192 15.240 ! level values in km
+1 4 -107.0 50.0 50.0 50.0 6367.470    ! Output projection
+5 25 2 2                              ! iwind iwindformat igrid iformat
+0 12 14                               ! autoflag (0 for auto, 1 for specified) FC_freq GFS_Archive_Days
+1                                     ! number of windfiles
+NCEP
+\end{verbatim}
+\normalsize
+
+The first two lines specify the start point in space and time.  Line 3 gives the length of time
+in hours for the trajectory forecast.  Note that GPH values at the start point are
+used throughout the simulation so longer simulation times will lead to greater errors in
+assumed GPH values.  Line 4 is an integer flag specifying streamlines (1) where the winds
+evolve in time along the trajectory, or streakline (0) where a static initial wind
+field is used.
+Line 5 allows users to specify the output interval in minutes (default is 60).  Line 6
+is the number of output trajectory levels (up to 10).  In line 7, the altitudes of
+these trajectories is specified.
+Line 8 specifies the coordinate system of the output grid.
+Line 9 gives the windfile descriptions (\texttt{iwind iwindformat igrid iformat}).
+Line 10 allows windfiles to be spelected automatically, similar to when this utility
+is run with command-line options only.  Alternatively, line 11 will specify the number
+of windfiles to read, followed by the windfile names in lines 12+.
+Examples of several command files are given in the folder, \texttt{examples} with some
+select output shown in Figure \ref{FigTraj}
+\begin{figure}[htbp]\begin{center}
+ \includegraphics[angle=0,scale=0.3]{Figs/trajectory_NCEP.pdf}
+ \includegraphics[angle=0,scale=0.3]{Figs/trajectory_Sonde.pdf}
+ \parbox{15cm}{\caption{\label{FigTraj}
+ Example of foreward trajectory output using NCEP reanalysis (\texttt{iwformat=25}) and
+ 6-point radiosonde data (left and right, respectively) using \texttt{RegridMet} with control files
+ from the \texttt{examples} folder.  The start time for both these trajectory simulations is
+ May 18, 1980, 15:30 UTC.
+ }}
+ \end{center}\end{figure}
+
 \subsection{\texttt{makegfsncml}}
+This utility generates a \texttt{ncml} file that can be used when converting
+grib files to netcdf.  The \texttt{ncml} provides tthe conversion tool a template
+for identifying which variables to exclued when writing the netcdf file.
 
 \section{Windfile management scripts}
 Scripts used to manage GFS and NCEP Reanalysis files are provided in the
