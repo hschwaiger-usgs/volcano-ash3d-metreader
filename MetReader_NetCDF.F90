@@ -472,8 +472,10 @@
             nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
             if(nSTAT.ne.NF90_NOERR)then
               call MR_NC_check_status(nSTAT,0,"inq_varid")
-              write(MR_global_error,*)'  Cannot find variable ',invar
-              write(MR_global_error,*)'  Setting Met_var_IsAvailable to .false.'
+              if(MR_VERB.ge.1)then
+                write(MR_global_info,*)'  Cannot find variable ',invar
+                write(MR_global_info,*)'  Setting Met_var_IsAvailable to .false.'
+              endif
               Met_var_IsAvailable(ivar) = .false.
               cycle
             endif
@@ -541,8 +543,10 @@
                                              "units",xtype, length, attnum)
               if(nSTAT.ne.NF90_NOERR)then
                 call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute")
-                write(MR_global_error,*)'MR WARNING: cannot file units ',dimname,nf90_strerror(nSTAT)
-                write(MR_global_log  ,*)'MR WARNING: cannot file units ',dimname,nf90_strerror(nSTAT)
+                if(MR_VERB.ge.1)then
+                  write(MR_global_info,*)'MR WARNING: cannot file units ',dimname,nf90_strerror(nSTAT)
+                  write(MR_global_log ,*)'MR WARNING: cannot file units ',dimname,nf90_strerror(nSTAT)
+                endif
               else
                 nSTAT = nf90_get_att(ncid, var_id,"units",ustring)
                 call MR_NC_check_status(nSTAT,1,"nf90_get_att X units")
@@ -619,8 +623,10 @@
                                              "units",xtype, length, attnum)
               if(nSTAT.ne.NF90_NOERR)then
                 call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute Y units")
-                write(MR_global_error,*)'MR WARNING: cannot file units ',dimname,nf90_strerror(nSTAT)
-                write(MR_global_log  ,*)'MR WARNING: cannot file units ',dimname,nf90_strerror(nSTAT)
+                if(MR_VERB.ge.1)then
+                  write(MR_global_info,*)'MR WARNING: cannot file units ',dimname,nf90_strerror(nSTAT)
+                  write(MR_global_log ,*)'MR WARNING: cannot file units ',dimname,nf90_strerror(nSTAT)
+                endif
               else
                 nSTAT = nf90_get_att(ncid, var_id,"units",ustring)
                 call MR_NC_check_status(nSTAT,1,"nf90_get_att Y units")
@@ -829,20 +835,23 @@
         !-----------------------------------------
 
         ! Now report on what we've found
-        write(MR_global_production,*)" Found these levels"
-        write(MR_global_production,*)"  VaribleID    LevelIdx       dimID      length"
-        do ivar = 1,MR_MAXVARS
-          if (Met_var_IsAvailable(ivar))then
-            if(Met_var_zdim_idx(ivar).eq.0)then
-              write(MR_global_production,*)ivar,Met_var_zdim_idx(ivar),&
-                                           Met_var_zdim_ncid(ivar),0
-            else
-              write(MR_global_production,*)ivar,Met_var_zdim_idx(ivar),&
-                                           Met_var_zdim_ncid(ivar),&
-                                           nlevs_fullmet(Met_var_zdim_idx(ivar))
+        if(MR_VERB.ge.1)then
+          write(MR_global_production,*)" Found these levels"
+          write(MR_global_production,*)"  VaribleID    LevelIdx       dimID      length"
+          do ivar = 1,MR_MAXVARS
+            if (Met_var_IsAvailable(ivar))then
+              if(Met_var_zdim_idx(ivar).eq.0)then
+                write(MR_global_production,*)ivar,Met_var_zdim_idx(ivar),&
+                                             Met_var_zdim_ncid(ivar),0
+              else
+                write(MR_global_production,*)ivar,Met_var_zdim_idx(ivar),&
+                                             Met_var_zdim_ncid(ivar),&
+                                             nlevs_fullmet(Met_var_zdim_idx(ivar))
+              endif
             endif
-          endif
-        enddo
+          enddo
+        endif
+
 #ifdef USEPOINTERS
         if(.not.associated(p_fullmet_sp))then
 #else
@@ -932,11 +941,13 @@
       enddo
       MR_Max_geoH_metP_predicted = z_approx(np_fullmet)
 
-      write(MR_global_info,*)"Dimension info:"
-      write(MR_global_info,*)"  record (time): ",nt_fullmet
-      write(MR_global_info,*)"  level  (z)   : ",np_fullmet
-      write(MR_global_info,*)"  y            : ",ny_fullmet
-      write(MR_global_info,*)"  x            : ",nx_fullmet
+      if(MR_VERB.ge.1)then
+        write(MR_global_info,*)"Dimension info:"
+        write(MR_global_info,*)"  record (time): ",nt_fullmet
+        write(MR_global_info,*)"  level  (z)   : ",np_fullmet
+        write(MR_global_info,*)"  y            : ",ny_fullmet
+        write(MR_global_info,*)"  x            : ",nx_fullmet
+      endif
 
       !************************************************************************
       ! assign boundaries of mesoscale model
@@ -1047,7 +1058,7 @@
         ! First set spatial (x/y) grid
         ! Open first windfile and assume all grids are the same
 
-      write(MR_global_info,*)"About to open first WRF file : ",MR_windfiles(1)
+      if(MR_VERB.ge.1)write(MR_global_info,*)"About to open first WRF file : ",MR_windfiles(1)
       nSTAT=nf90_open(adjustl(trim(MR_windfiles(1))),NF90_NOWRITE, ncid)
       call MR_NC_check_status(nSTAT,1,"nf90_open WRF file")
       
@@ -1093,7 +1104,7 @@
          !   POLE_LON
          !proj +proj=lcc +lon_0=-175.0 +lat_0=55.0 +lat_1=50.0 +lat_2=60.0 +R=6371.229
 
-        write(MR_global_info,*)"  WRF projection detected: Lambert Conformal"
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  WRF projection detected: Lambert Conformal"
 
         nSTAT = nf90_get_att(ncid, NF90_GLOBAL, "DX", WRF_dx)
         call MR_NC_check_status(nSTAT,1,"nf90_get_att DX")
@@ -1188,7 +1199,7 @@
          !   TRUELAT2 (optional) = lat_2 # Cone intersects with the sphere
          !proj +proj=lcc +lon_0=-175.0 +lat_0=55.0 +lat_1=50.0 +lat_2=60.0 +R=6371.229
 
-        write(MR_global_info,*)"  WRF projection detected: Polar Stereographic"
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  WRF projection detected: Polar Stereographic"
 
         nSTAT = nf90_get_att(ncid, NF90_GLOBAL, "DX", WRF_dx)
         call MR_NC_check_status(nSTAT,1,"nf90_get_att DX")
@@ -1284,7 +1295,7 @@
 
          !proj +proj=merc 
 
-        write(MR_global_info,*)"  WRF projection detected: Mercator"
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  WRF projection detected: Mercator"
 
         nSTAT = nf90_get_att(ncid, NF90_GLOBAL, "DX", WRF_dx)
         call MR_NC_check_status(nSTAT,1,"nf90_get_att DX")
@@ -1368,14 +1379,14 @@
         !   pole_lon
         !   stand_lon
 
-        write(MR_global_info,*)"  WRF projection detected: Lon-Lat"
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  WRF projection detected: Lon-Lat"
 
-        write(MR_global_info,*)"WRF: MAP_PROJ=6 : Lon-Lat : Not implemented"
+        write(MR_global_error,*)"WRF: MAP_PROJ=6 : Lon-Lat : Not implemented"
         stop 1
       else
-        write(MR_global_info,*)&
+        write(MR_global_error,*)&
          "The MAP_PROJ global attribute is either not present or is"
-        write(MR_global_info,*)"not a recognized projection."
+        write(MR_global_error,*)"not a recognized projection."
         stop 1
       endif
 
@@ -1622,9 +1633,11 @@
               stop 1
             else
               ! This is probably OK as long as the sim time is within the first file
-              write(MR_global_error,*)'MR WARNING: nf90_open: ',nf90_strerror(nSTAT)
-              write(MR_global_error,*)"    Could not open file: ",trim(adjustl(Z_infile))
-              write(MR_global_error,*)"    This should be OK if the previous file exits."
+              if(MR_VERB.ge.1)then
+                write(MR_global_info,*)'MR WARNING: nf90_open: ',nf90_strerror(nSTAT)
+                write(MR_global_info,*)"    Could not open file: ",trim(adjustl(Z_infile))
+                write(MR_global_info,*)"    This should be OK if the previous file exits."
+              endif
               exit
             endif
           endif
@@ -1683,11 +1696,13 @@
           call date_and_time(VALUES=values)
           Current_Year = values(1)
           if(MR_Comp_StartYear.lt.Current_Year.and.nt_tst.lt.nt_fullmet)then
-            write(MR_global_info,*)"WARNING:  The NCEP files are for an archived year yet are incomplete."
-            write(MR_global_info,*)"          To get the complete year, run the script "
-            write(MR_global_info,*)"            autorun_scripts/get_NCEP_50YearReanalysis.sh",MR_Comp_StartYear
-            write(MR_global_info,*)"          Steps available = ",nt_tst
-            write(MR_global_info,*)"          Hours into year = ",(nt_tst-1)*6
+            if(MR_VERB.ge.1)then
+              write(MR_global_info,*)"WARNING:  The NCEP files are for an archived year yet are incomplete."
+              write(MR_global_info,*)"          To get the complete year, run the script "
+              write(MR_global_info,*)"            autorun_scripts/get_NCEP_50YearReanalysis.sh",MR_Comp_StartYear
+              write(MR_global_info,*)"          Steps available = ",nt_tst
+              write(MR_global_info,*)"          Hours into year = ",(nt_tst-1)*6
+            endif
           endif
         endif
         allocate(MR_windfile_stephour(MR_iwindfiles,nt_fullmet))
@@ -1717,9 +1732,11 @@
               ! Get length of time dimension and allocate MR_windfile_stephour
               nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_fullmet)
               call MR_NC_check_status(nSTAT,1,"nf90_Inquire_Dimension time")
-              write(MR_global_info,*)"  Assuming all NWP files have the same number of steps."
-              write(MR_global_info,*)"   Allocating time arrays for ",MR_iwindfiles,"file(s)"
-              write(MR_global_info,*)"                              ",nt_fullmet,"step(s) each"
+              if(MR_VERB.ge.1)then
+                write(MR_global_info,*)"  Assuming all NWP files have the same number of steps."
+                write(MR_global_info,*)"   Allocating time arrays for ",MR_iwindfiles,"file(s)"
+                write(MR_global_info,*)"                              ",nt_fullmet,"step(s) each"
+              endif
               allocate(MR_windfile_stephour(MR_iwindfiles,nt_fullmet))
               MR_windfile_stephour(:,:) = 0.0_dp
               nSTAT = nf90_inq_varid(ncid,"Times",time_var_id)
@@ -1763,7 +1780,7 @@
 
             ! Each wind file needs a ref-time which in almost all cases is given
             ! in the 'units' attribute of the time variable
-            write(MR_global_info,*)iw,adjustl(trim(MR_windfiles(iw)))
+            if(MR_VERB.ge.1)write(MR_global_info,*)iw,adjustl(trim(MR_windfiles(iw)))
             nSTAT = nf90_open(adjustl(trim(MR_windfiles(iw))),NF90_NOWRITE,ncid)
             call MR_NC_check_status(nSTAT,0,"nf90_open")
             if(nSTAT.ne.NF90_NOERR)then
@@ -1810,9 +1827,11 @@
               ! Get length of time dimension and allocate MR_windfile_stephour
               nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_fullmet)
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Time")
-              write(MR_global_info,*)"  Assuming all NWP files have the same number of steps."
-              write(MR_global_info,*)"   Allocating time arrays for ",MR_iwindfiles,"files"
-              write(MR_global_info,*)"                              ",nt_fullmet,"step(s) each"
+              if(MR_VERB.ge.1)then
+                write(MR_global_info,*)"  Assuming all NWP files have the same number of steps."
+                write(MR_global_info,*)"   Allocating time arrays for ",MR_iwindfiles,"files"
+                write(MR_global_info,*)"                              ",nt_fullmet,"step(s) each"
+              endif
               allocate(MR_windfile_stephour(MR_iwindfiles,nt_fullmet))
             endif
 
@@ -1830,7 +1849,7 @@
             else
               ! if the call to check units above failed, issue a warning
               call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute")
-              write(MR_global_log  ,*)'  Trying to read GRIB_orgReferenceTime'
+              if(MR_VERB.ge.1)write(MR_global_log  ,*)'  Trying to read GRIB_orgReferenceTime'
               ! Try GRIB_orgReferenceTime
               nSTAT = nf90_Inquire_Attribute(ncid, time_var_id,&
                                              "GRIB_orgReferenceTime",xtype, length, attnum)
@@ -1852,7 +1871,8 @@
                     ii = i+6
                     read(tstring2(ii:31),103)itstart_year,itstart_month,itstart_day, &
                                       itstart_hour,itstart_min,itstart_sec
-                    write(MR_global_info,2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
+                    if(MR_VERB.ge.1)&
+                       write(MR_global_info,2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
                                                itstart_hour,itstart_min,itstart_sec
                     filestart_hour = real(itstart_hour,kind=sp) + &
                                      real(itstart_min,kind=sp)/60.0_sp      + &
@@ -1893,10 +1913,10 @@
               if(index(tstring2,'20').ne.0.or.index(tstring2,'19').ne.0)then
                 do i=1,reftimedimlen-1
                   if(tstring2(i:i+1).eq.'20'.or.tstring2(i:i+1).eq.'19')then
-                    write(MR_global_info,*)"Found reference time: ",tstring2(i:reftimedimlen)
+                    if(MR_VERB.ge.1)write(MR_global_info,*)"Found reference time: ",tstring2(i:reftimedimlen)
                     read(tstring2(i:reftimedimlen),103)itstart_year,itstart_month,itstart_day, &
                                       itstart_hour,itstart_min,itstart_sec
-                    write(MR_global_info,2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
+                    if(MR_VERB.ge.1)write(MR_global_info,2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
                                                itstart_hour,itstart_min,itstart_sec
                     filestart_hour = real(itstart_hour,kind=sp) + &
                                      real(itstart_min,kind=sp)/60.0_sp      + &
@@ -1959,15 +1979,17 @@
       ! Finished setting up the start time of each wind file in HoursSince : MR_windfile_starthour(iw)
       !  and the forecast (offset from start of file) for each step        : MR_windfile_stephour(iw,iwstep)
 
-      if (MR_iwind.ne.5)then
-        write(MR_global_info,*)"  File,  step,        Ref,     Offset,  HoursSince"
-        do iw = 1,MR_iwindfiles
-          do iws = 1,nt_fullmet
-            write(MR_global_info,800)iw,iws,real(MR_windfile_starthour(iw),kind=4),&
-                             real(MR_windfile_stephour(iw,iws),kind=4),&
-                             real(MR_windfile_starthour(iw)+MR_windfile_stephour(iw,iws),kind=4)
+      if(MR_VERB.ge.1)then
+        if (MR_iwind.ne.5)then
+          write(MR_global_info,*)"  File,  step,        Ref,     Offset,  HoursSince"
+          do iw = 1,MR_iwindfiles
+            do iws = 1,nt_fullmet
+              write(MR_global_info,800)iw,iws,real(MR_windfile_starthour(iw),kind=4),&
+                               real(MR_windfile_stephour(iw,iws),kind=4),&
+                               real(MR_windfile_starthour(iw)+MR_windfile_stephour(iw,iws),kind=4)
+            enddo
           enddo
-        enddo
+        endif
       endif
  800  format(i7,i7,3f12.2)
 
@@ -2041,6 +2063,7 @@
         write(MR_global_error,*)"  ivar = 4 :: ",Met_var_NC_names(4)
         write(MR_global_error,*)"  ivar = 5 :: ",Met_var_NC_names(5)
         write(MR_global_error,*)"  ivar = 7 :: ",Met_var_NC_names(4)
+        stop 1
       endif
 
       thisYear        = HS_YearOfEvent( inhour,MR_BaseYear,MR_useLeap)
@@ -2322,7 +2345,7 @@
       ! windfiles.  There is no checking if this is actually the case.
       ! Just read the first windfile.
       iw = 1
-      write(MR_global_info,*)"Opening ",iw,trim(adjustl(MR_windfiles(iw)))
+      if(MR_VERB.ge.1)write(MR_global_info,*)"Opening ",iw,trim(adjustl(MR_windfiles(iw)))
       nSTAT = nf90_open(trim(adjustl(MR_windfiles(iw))),NF90_NOWRITE,ncid)
       call MR_NC_check_status(nSTAT,0,"nf90_open")
       if(nSTAT.ne.NF90_NOERR)then
@@ -2331,7 +2354,7 @@
         write(MR_global_error,*)'Exiting'
         stop 1
       else
-        write(MR_global_info,*)"Opened ",trim(adjustl(MR_windfiles(iw)))
+        if(MR_VERB.ge.1)write(MR_global_info,*)"Opened ",trim(adjustl(MR_windfiles(iw)))
       endif
 
       ! Get dim ids, sizes, and associated dimension variable for dims:
@@ -2375,7 +2398,7 @@
           nSTAT = nf90_get_att(ncid, var_id,"_FillValue",dum_sp)
           call MR_NC_check_status(nSTAT,1,"nf90_get_att _FillValue")
           fill_value_sp = dum_sp
-          write(MR_global_info,*)"    Found fill value",fill_value_sp
+          if(MR_VERB.ge.1)write(MR_global_info,*)"    Found fill value",fill_value_sp
           exit
         endif
       enddo
@@ -2478,7 +2501,7 @@
       iwstep = MR_MetStep_tindex(istep)
 
       if(Met_var_NC_names(ivar).eq."")then
-        write(MR_global_info,*)"Variable ",ivar," not available for MR_iwindformat = ",&
+        write(MR_global_error,*)"Variable ",ivar," not available for MR_iwindformat = ",&
                   MR_iwindformat
         stop 1
       endif
@@ -2556,7 +2579,7 @@
       write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&
                          ", file = ",iw,&
                          ", slice = ",iwstep
-      write(MR_global_info,*)"Reading ",trim(adjustl(invar))," from file : ",&
+      if(MR_VERB.ge.1)write(MR_global_info,*)"Reading ",trim(adjustl(invar))," from file : ",&
                 trim(adjustl(infile)),fileposstr
       nSTAT = nf90_open(trim(adjustl(infile)),NF90_NOWRITE,ncid)
       call MR_NC_check_status(nSTAT,0,"nf90_open")
@@ -2665,7 +2688,7 @@
                        start = (/iistart(i),jstart,1,iwstep/),       &
                        count = (/iicount(i),ny_submet,np_met_loc+1,1/))
               call MR_NC_check_status(nSTAT,0,"nf90_get_var PHB")
-              write(MR_global_info,*)istep,"Reading ","PH"," from file : ",trim(adjustl(infile))
+              if(MR_VERB.ge.1)write(MR_global_info,*)istep,"Reading ","PH"," from file : ",trim(adjustl(infile))
               nSTAT = nf90_inq_varid(ncid,"PH",in_var_id2)
               call MR_NC_check_status(nSTAT,0,"nf90_inq_varid PH")
               nSTAT = nf90_get_var(ncid,in_var_id,dum3d_metP_aux(ileft(i):iright(i),:,:,:), &
@@ -2718,7 +2741,7 @@
                 !    and   kappa = R/c_p = 0.2854 (for dry air)
                 ! Temp lives on non-staggered grid, but we need pres. base and pert.
                 ! First get PB (base pressure)
-              write(MR_global_info,*)istep,"Reading ","PB"," from file : ",trim(adjustl(infile))
+              if(MR_VERB.ge.1)write(MR_global_info,*)istep,"Reading ","PB"," from file : ",trim(adjustl(infile))
               nSTAT = nf90_inq_varid(ncid,"PB",in_var_id1)
               call MR_NC_check_status(nSTAT,0,"nf90_inq_varid PB")
               nSTAT = nf90_get_var(ncid,in_var_id1,temp3d_sp(ileft(i):iright(i),:,:,:), &
@@ -2726,7 +2749,7 @@
                        count = (/iicount(i),ny_submet,np_met_loc,1/))
               call MR_NC_check_status(nSTAT,0,"nf90_get_var PB")
                 ! Now get P (perturbation pressure)
-              write(MR_global_info,*)istep,"Reading ","P"," from file : ",trim(adjustl(infile))
+              if(MR_VERB.ge.1)write(MR_global_info,*)istep,"Reading ","P"," from file : ",trim(adjustl(infile))
               nSTAT = nf90_inq_varid(ncid,"P",in_var_id2)
               call MR_NC_check_status(nSTAT,0,"nf90_inq_varid P")
               nSTAT = nf90_get_var(ncid,in_var_id,dum3d_metP_aux(ileft(i):iright(i),:,:,:), &

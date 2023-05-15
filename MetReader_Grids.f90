@@ -26,9 +26,11 @@
 
       integer,intent(in) :: igrid
 
-      write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      write(MR_global_production,*)"----------                          MR_Set_Met_NCEPGeoGrid            ----------"
-      write(MR_global_production,*)"--------------------------------------------------------------------------------"
+      if(MR_VERB.ge.1)then
+        write(MR_global_production,*)"--------------------------------------------------------------------------------"
+        write(MR_global_production,*)"----------                          MR_Set_Met_NCEPGeoGrid            ----------"
+        write(MR_global_production,*)"--------------------------------------------------------------------------------"
+      endif
 
       if(igrid.eq.1227)then
         ! CONUS 3.0-km Lambert Conformal
@@ -688,10 +690,11 @@
         Met_Re            =  6371.229_8
 
       else
-        write(MR_global_info,*)"MR ERROR: MR_Set_Met_NCEPGeoGrid called with invalid code."
+        write(MR_global_error,*)"MR ERROR: MR_Set_Met_NCEPGeoGrid called with invalid code."
         stop 1
       endif
-      write(MR_global_production,*)"--------------------------------------------------------------------------------"
+      if(MR_VERB.ge.1)write(MR_global_production,*)&
+        "--------------------------------------------------------------------------------"
 
       end subroutine MR_Set_Met_NCEPGeoGrid
 
@@ -773,25 +776,27 @@
         xUR = x_comp_sp(nx_comp)
         yUR = y_comp_sp(ny_comp)
       else
-        write(MR_global_info,*)"Met and comp grids differ:"
-        write(MR_global_info,2504)
-        write(MR_global_info,2505)x_comp_sp(1),&
-                     y_comp_sp(1),&
-                     CompPoint_X_on_Met_sp(1,1),&
-                     CompPoint_Y_on_Met_sp(1,1)
-        write(MR_global_info,2505)x_comp_sp(nx_comp),&
-                     y_comp_sp(1),&
-                     CompPoint_X_on_Met_sp(nx_comp,1),&
-                     CompPoint_Y_on_Met_sp(nx_comp,1)
-        write(MR_global_info,2505)x_comp_sp(nx_comp),&
-                     y_comp_sp(ny_comp),&
-                     CompPoint_X_on_Met_sp(nx_comp,ny_comp),&
-                     CompPoint_Y_on_Met_sp(nx_comp,ny_comp)
-        write(MR_global_info,2505)x_comp_sp(1),&
-                     y_comp_sp(ny_comp),&
-                     CompPoint_X_on_Met_sp(1,ny_comp),&
-                     CompPoint_Y_on_Met_sp(1,ny_comp)
-        write(MR_global_info,*)" "
+        if(MR_VERB.ge.1)then
+          write(MR_global_info,*)"Met and comp grids differ:"
+          write(MR_global_info,2504)
+          write(MR_global_info,2505)x_comp_sp(1),&
+                       y_comp_sp(1),&
+                       CompPoint_X_on_Met_sp(1,1),&
+                       CompPoint_Y_on_Met_sp(1,1)
+          write(MR_global_info,2505)x_comp_sp(nx_comp),&
+                       y_comp_sp(1),&
+                       CompPoint_X_on_Met_sp(nx_comp,1),&
+                       CompPoint_Y_on_Met_sp(nx_comp,1)
+          write(MR_global_info,2505)x_comp_sp(nx_comp),&
+                       y_comp_sp(ny_comp),&
+                       CompPoint_X_on_Met_sp(nx_comp,ny_comp),&
+                       CompPoint_Y_on_Met_sp(nx_comp,ny_comp)
+          write(MR_global_info,2505)x_comp_sp(1),&
+                       y_comp_sp(ny_comp),&
+                       CompPoint_X_on_Met_sp(1,ny_comp),&
+                       CompPoint_Y_on_Met_sp(1,ny_comp)
+          write(MR_global_info,*)" "
+        endif
 
           ! This the branch for when Met and Comp grids differ
         xLL = minval(CompPoint_X_on_Met_sp(:,:))
@@ -813,14 +818,16 @@
         endif
       endif
 
-      write(MR_global_info,*)"Region of Met grid required by comp grid (in Met coordinates):"
+      if(MR_VERB.ge.1)then
+        write(MR_global_info,*)"Region of Met grid required by comp grid (in Met coordinates):"
 
-      write(MR_global_info,2501)
-      write(MR_global_info,2502)xLL,yUR,xUR,yUR
-      write(MR_global_info,2503)
-      write(MR_global_info,2503)
-      write(MR_global_info,2502)xLL,yLL,xUR,yLL
-      write(MR_global_info,2501)
+        write(MR_global_info,2501)
+        write(MR_global_info,2502)xLL,yUR,xUR,yUR
+        write(MR_global_info,2503)
+        write(MR_global_info,2503)
+        write(MR_global_info,2502)xLL,yLL,xUR,yLL
+        write(MR_global_info,2501)
+      endif
 
  2501 format(4x,'----------------------------------------------------------------------')
  2502 format(4x,'| (',f10.4,',',f10.4,')',20x,'(',f10.4,',',f10.4,') |')
@@ -832,7 +839,7 @@
         nx_submet = nx_fullmet
         istart = 1
         iend = nx_fullmet
-        write(MR_global_info,*) "Computational domain is periodic"
+        if(MR_VERB.ge.1)write(MR_global_info,*) "Computational domain is periodic"
       else
         if(x_fullmet_sp(1).le.xLL)then
           ! Make sure the start of the comp grid is not below the domain of the
@@ -847,9 +854,9 @@
             if(cond1.and.cond2) istart = i
           enddo
         else
-          write(MR_global_info,*)"MR ERROR: xLL < x_fullmet_sp(1)"
-          write(MR_global_info,*)"     x_fullmet_sp(1) = ",x_fullmet_sp(1)
-          write(MR_global_info,*)"     xLL             = ",xLL
+          write(MR_global_error,*)"MR ERROR: xLL < x_fullmet_sp(1)"
+          write(MR_global_error,*)"     x_fullmet_sp(1) = ",x_fullmet_sp(1)
+          write(MR_global_error,*)"     xLL             = ",xLL
           stop 1
         endif
         iend = 1
@@ -870,28 +877,30 @@
               if(cond1.and.cond2) iend = nx_fullmet+i+1
             enddo
           else
-            write(MR_global_info,*)"MR ERROR: could not find iend"
+            write(MR_global_error,*)"MR ERROR: could not find iend"
             stop 1
           endif
         endif
         nx_submet = iend-istart+1
-        write(MR_global_info,*) "Domain is NOT periodic"
+        if(MR_VERB.ge.1)write(MR_global_info,*) "Domain is NOT periodic"
       endif
 
       !SEE if COMPUTATIONAL REGION STRADDLES THE BREAK IN THE WIND FILE
       !  (EITHER THE PRIME OR ANTI-MERIDIAN)
       if(iend.le.nx_fullmet)then        !yes
         wrapgrid = .false.
-        write(MR_global_info,*)"Comp grid maps within a contiguous region of the Met grid"
-        write(MR_global_info,*)"           wrapgrid = ",wrapgrid
-        write(MR_global_info,*)"Met Sub grid specifications:"
-        write(MR_global_info,*)"             istart = ",istart
-        write(MR_global_info,*)"               iend = ",iend
-        write(MR_global_info,*)"          nx_submet = ",nx_submet
-        write(MR_global_info,*)"         xsubMetMin = ",x_fullmet_sp(istart)
-        write(MR_global_info,*)"                xLL = ",xLL
-        write(MR_global_info,*)"                xUR = ",xUR
-        write(MR_global_info,*)"         xsubMetMax = ",x_fullmet_sp(iend)
+        if(MR_VERB.ge.1)then
+          write(MR_global_info,*)"Comp grid maps within a contiguous region of the Met grid"
+          write(MR_global_info,*)"           wrapgrid = ",wrapgrid
+          write(MR_global_info,*)"Met Sub grid specifications:"
+          write(MR_global_info,*)"             istart = ",istart
+          write(MR_global_info,*)"               iend = ",iend
+          write(MR_global_info,*)"          nx_submet = ",nx_submet
+          write(MR_global_info,*)"         xsubMetMin = ",x_fullmet_sp(istart)
+          write(MR_global_info,*)"                xLL = ",xLL
+          write(MR_global_info,*)"                xUR = ",xUR
+          write(MR_global_info,*)"         xsubMetMax = ",x_fullmet_sp(iend)
+        endif
       else                            !no
         if(IsGlobal_MetGrid)then
           wrapgrid = .true.
@@ -903,34 +912,36 @@
           irhalf_fm_r = nx_submet - ilhalf_nx         ! end index of right half on full met grid
           irhalf_nx   = irhalf_fm_r - irhalf_fm_l +1  ! width of right half
 
-          write(MR_global_info,*)"Comp grid span beyond the upper end of the Met grid"
-          write(MR_global_info,*)"           wrapgrid = ",wrapgrid
-          write(MR_global_info,*)"Met Sub grid specifications:"
-          write(MR_global_info,*)"        ilhalf_fm_l = ",ilhalf_fm_l  ! start index of left half on full met grid
-          write(MR_global_info,*)"        ilhalf_fm_r = ",ilhalf_fm_r  ! end index of left half on full met grid
-          write(MR_global_info,*)"          ilhalf_nx = ",ilhalf_nx    ! width of left half
-          write(MR_global_info,*)"        irhalf_fm_l = ",irhalf_fm_l  ! start index of right half on full met grid
-          write(MR_global_info,*)"        irhalf_fm_r = ",irhalf_fm_r  ! end index of right half on full met grid
-          write(MR_global_info,*)"          irhalf_nx = ",irhalf_nx    ! width of right half
-
-          write(MR_global_info,*)"          nx_submet = ",nx_submet
-          write(MR_global_info,*)"ilhalf_nx+irhalf_nx = ",ilhalf_nx+irhalf_nx
-          write(MR_global_info,*)"         xsubMetMin = ",x_fullmet_sp(ilhalf_fm_l)
-          write(MR_global_info,*)"                xLL = ",xLL
-          write(MR_global_info,*)"                xUR = ",xUR
-          write(MR_global_info,*)"         xsubMetMax = ",x_fullmet_sp(irhalf_fm_r)
+          if(MR_VERB.ge.1)then
+            write(MR_global_info,*)"Comp grid span beyond the upper end of the Met grid"
+            write(MR_global_info,*)"           wrapgrid = ",wrapgrid
+            write(MR_global_info,*)"Met Sub grid specifications:"
+            write(MR_global_info,*)"        ilhalf_fm_l = ",ilhalf_fm_l  ! start index of left half on full met grid
+            write(MR_global_info,*)"        ilhalf_fm_r = ",ilhalf_fm_r  ! end index of left half on full met grid
+            write(MR_global_info,*)"          ilhalf_nx = ",ilhalf_nx    ! width of left half
+            write(MR_global_info,*)"        irhalf_fm_l = ",irhalf_fm_l  ! start index of right half on full met grid
+            write(MR_global_info,*)"        irhalf_fm_r = ",irhalf_fm_r  ! end index of right half on full met grid
+            write(MR_global_info,*)"          irhalf_nx = ",irhalf_nx    ! width of right half
+  
+            write(MR_global_info,*)"          nx_submet = ",nx_submet
+            write(MR_global_info,*)"ilhalf_nx+irhalf_nx = ",ilhalf_nx+irhalf_nx
+            write(MR_global_info,*)"         xsubMetMin = ",x_fullmet_sp(ilhalf_fm_l)
+            write(MR_global_info,*)"                xLL = ",xLL
+            write(MR_global_info,*)"                xUR = ",xUR
+            write(MR_global_info,*)"         xsubMetMax = ",x_fullmet_sp(irhalf_fm_r)
+          endif
         else
-          write(MR_global_info,*)"MR ERROR: Comp grid requirements extend beyond Met grid"
-          write(MR_global_info,*)"                xLL = ",xLL
-          write(MR_global_info,*)"                xUR = ",xUR
-          write(MR_global_info,*)"             istart = ",istart
-          write(MR_global_info,*)"               iend = ",iend
-          write(MR_global_info,*)"         xsubMetMin = ",x_fullmet_sp(1),x_fullmet_sp(istart)
-          write(MR_global_info,*)"         xsubMetMax = ",x_fullmet_sp(iend),x_fullmet_sp(nx_fullmet)
+          write(MR_global_error,*)"MR ERROR: Comp grid requirements extend beyond Met grid"
+          write(MR_global_error,*)"                xLL = ",xLL
+          write(MR_global_error,*)"                xUR = ",xUR
+          write(MR_global_error,*)"             istart = ",istart
+          write(MR_global_error,*)"               iend = ",iend
+          write(MR_global_error,*)"         xsubMetMin = ",x_fullmet_sp(1),x_fullmet_sp(istart)
+          write(MR_global_error,*)"         xsubMetMax = ",x_fullmet_sp(iend),x_fullmet_sp(nx_fullmet)
           stop 1
         endif
       endif
-      write(MR_global_info,*)"-------------"
+      if(MR_VERB.ge.1)write(MR_global_info,*)"-------------"
 
       !SEE IF THE MODEL DOMAIN EXTENDS NORTH OR SOUTH OF THE MESOSCALE DOMAIN
       If(UseFullMetGrid)then
@@ -959,10 +970,10 @@
             jstart = 1
             y_pad_North = .true.
           else
-             write(MR_global_info,*)"MR ERROR: yUR > y_fullmet_sp(1)"
-             write(MR_global_info,*)"     y_fullmet_sp(1).gt.yUR", &
-                        y_fullmet_sp(1),yUR
-             stop 1
+            write(MR_global_error,*)"MR ERROR: yUR > y_fullmet_sp(1)"
+            write(MR_global_error,*)"     y_fullmet_sp(1).gt.yUR", &
+                       y_fullmet_sp(1),yUR
+            stop 1
           endif
 
           ! Find end index
@@ -981,9 +992,9 @@
             jend = ny_fullmet
             y_pad_South = .true.
           else
-             write(MR_global_info,*)"MR ERROR: y_fullmet_sp(ny_fullmet).lt.yLL",&
-                               y_fullmet_sp(ny_fullmet),yLL
-             stop 1
+            write(MR_global_error,*)"MR ERROR: y_fullmet_sp(ny_fullmet).lt.yLL",&
+                              y_fullmet_sp(ny_fullmet),yLL
+            stop 1
           endif
 
         else ! .not.y_inverted
@@ -1005,11 +1016,11 @@
             jstart = 1
             y_pad_North = .true.
           else
-            write(MR_global_info,*)"MR ERROR: yLL < y_fullmet_sp(1)"
-            write(MR_global_info,*)"y_fullmet_sp(1) ",y_fullmet_sp(1)
-            write(MR_global_info,*)"yLL",yLL
-            write(MR_global_info,*)"y_fullmet_sp(1).lt.yLL",y_fullmet_sp(1).lt.yLL
-            write(MR_global_info,*)"y_fullmet_sp(1)-yLL",y_fullmet_sp(1)-yLL
+            write(MR_global_error,*)"MR ERROR: yLL < y_fullmet_sp(1)"
+            write(MR_global_error,*)"y_fullmet_sp(1) ",y_fullmet_sp(1)
+            write(MR_global_error,*)"yLL",yLL
+            write(MR_global_error,*)"y_fullmet_sp(1).lt.yLL",y_fullmet_sp(1).lt.yLL
+            write(MR_global_error,*)"y_fullmet_sp(1)-yLL",y_fullmet_sp(1)-yLL
             stop 1
           endif
           if(y_fullmet_sp(ny_fullmet).ge.yUR)then
@@ -1025,9 +1036,9 @@
             jend = ny_fullmet
             y_pad_South = .true.
           else
-            write(MR_global_info,*)"MR ERROR: yUR > y_fullmet_sp(ny_fullmet)"
-            write(MR_global_info,*)"y_fullmet_sp(my_fullmet)",y_fullmet_sp(ny_fullmet)
-            write(MR_global_info,*)"yUr",yUr
+            write(MR_global_error,*)"MR ERROR: yUR > y_fullmet_sp(ny_fullmet)"
+            write(MR_global_error,*)"y_fullmet_sp(my_fullmet)",y_fullmet_sp(ny_fullmet)
+            write(MR_global_error,*)"yUr",yUr
             stop 1
           endif
         endif
@@ -1036,15 +1047,17 @@
       ! Calculate size of arrays that will hold the relevant section of
       ! the mesoscale model
       ny_submet = jend-jstart+1
-      write(MR_global_info,*)"-------------"
-      write(MR_global_info,*)"             jstart =" ,jstart
-      write(MR_global_info,*)"               jend =" ,jend
-      write(MR_global_info,*)"          ny_submet =" ,ny_submet
-      write(MR_global_info,*)"         ysubMetMin =" ,y_fullmet_sp(jstart)
-      write(MR_global_info,*)"                yLL =" ,yLL
-      write(MR_global_info,*)"                yUR =" ,yUR
-      write(MR_global_info,*)"         ysubMetMax =",y_fullmet_sp(jend)
-      write(MR_global_info,*)"-------------"
+      if(MR_VERB.ge.1)then
+        write(MR_global_info,*)"-------------"
+        write(MR_global_info,*)"             jstart =" ,jstart
+        write(MR_global_info,*)"               jend =" ,jend
+        write(MR_global_info,*)"          ny_submet =" ,ny_submet
+        write(MR_global_info,*)"         ysubMetMin =" ,y_fullmet_sp(jstart)
+        write(MR_global_info,*)"                yLL =" ,yLL
+        write(MR_global_info,*)"                yUR =" ,yUR
+        write(MR_global_info,*)"         ysubMetMax =",y_fullmet_sp(jend)
+        write(MR_global_info,*)"-------------"
+      endif
 
       if(IsPeriodic_CompGrid)then
         allocate( x_submet_sp(0:nx_submet+1))
@@ -1091,7 +1104,7 @@
       enddo
 
       ! Set up for interpolation if needed
-      write(MR_global_info,*)" Calculating mapping of comp "
+      if(MR_VERB.ge.1)write(MR_global_info,*)" Calculating mapping of comp "
       x_start_sub = x_submet_sp(1)
       y_start_sub = y_submet_sp(1)
       do i=1,nx_comp
@@ -1130,16 +1143,16 @@
           endif
           if(.not.IsPeriodic_CompGrid)then
             if(px.lt.x_start_sub.or.px.gt.x_submet_sp(nx_submet))then
-              write(MR_global_info,*)"MR ERROR: Comp point maps out of sub_Met in x."
-              write(MR_global_info,*)"Comp i,j, x      :",i,j,px
-              write(MR_global_info,*)"sub_Met xmin,xmax:",x_start_sub,x_submet_sp(nx_submet)
+              write(MR_global_error,*)"MR ERROR: Comp point maps out of sub_Met in x."
+              write(MR_global_error,*)"Comp i,j, x      :",i,j,px
+              write(MR_global_error,*)"sub_Met xmin,xmax:",x_start_sub,x_submet_sp(nx_submet)
               stop 1
             endif
             if((py.lt.y_start_sub           .and..not.y_pad_South).or.&
                (py.gt.y_submet_sp(ny_submet).and..not.y_pad_North))then
-              write(MR_global_info,*)"MR ERROR: Comp point maps out of sub_Met in y."
-              write(MR_global_info,*)"Comp i,j, y      :",i,j,px,py
-              write(MR_global_info,*)"sub_Met ymin,ymax:",y_start_sub,y_submet_sp(ny_submet)
+              write(MR_global_error,*)"MR ERROR: Comp point maps out of sub_Met in y."
+              write(MR_global_error,*)"Comp i,j, y      :",i,j,px,py
+              write(MR_global_error,*)"sub_Met ymin,ymax:",y_start_sub,y_submet_sp(ny_submet)
               stop 1
             endif
           endif
@@ -1224,7 +1237,6 @@
             write(MR_global_error,*)"Comp point : ",i,j,x_comp_sp(i),y_comp_sp(j)
             write(MR_global_error,*)"Coord on Met: ",CompPoint_X_on_Met_sp(i,j),CompPoint_Y_on_Met_sp(i,j)
             write(MR_global_error,*)"Index on subMet: ",isubmet,jsubmet
-            !write(MR_global_error,*)MR_dx_submet(:)
             write(MR_global_error,*)"fractional pos.: ",xfrac,yfrac
             stop 1
           endif
@@ -1244,7 +1256,7 @@
       if(.not.isGridRelative.or. &  ! We are dealing with NARR data
                Map_Case.eq.4.or. &  ! Met Grid is projected and Comp grid is Lat/Lon
                Map_Case.eq.5)then   ! Met Grid and Comp grids have different projections
-        write(MR_global_info,*)"  Setting up arrays for rotating vectors on Met grid."
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  Setting up arrays for rotating vectors on Met grid."
         allocate(MR_u_ER_metP(nx_submet,ny_submet,np_fullmet))
         allocate(MR_v_ER_metP(nx_submet,ny_submet,np_fullmet))
         allocate(theta_Met(nx_submet,ny_submet))  ! This holds the angle between the projected
@@ -1280,7 +1292,7 @@
       if(Map_Case.eq.3.or. & ! Met is Lat/Lon, but Comp is projected
          Map_Case.eq.4.or. & ! Met is projected, but Comp is Lat/Lon
          Map_Case.eq.5)then  ! Met Grid and Comp grids have different projections
-        write(MR_global_info,*)"  Setting up arrays for rotating vectors on comp grid."
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  Setting up arrays for rotating vectors on comp grid."
         if(MR_useCompH)allocate(MR_dum3d_compH_2(nx_comp,ny_comp,nz_comp))
         if(MR_useCompP)allocate(MR_dum3d_compP_2(nx_comp,ny_comp,np_fullmet))
         allocate(theta_Comp(nx_comp,ny_comp))
@@ -1393,9 +1405,9 @@
         enddo
 
       endif
-      !write(MR_global_info,*)"Finished MR_Set_MetComp_Grids"
-      !write(MR_global_info,*)" "
-      !write(MR_global_production,*)"--------------------------------------------------------------------------------"
+
+      if(MR_VERB.ge.1)write(MR_global_production,*)&
+         "--------------------------------------------------------------------------------"
 
       end subroutine MR_Set_MetComp_Grids
 
@@ -1536,63 +1548,75 @@
         endif !Met_iprojflag.ne.Comp_iprojflag
       endif ! Met and Comp projected
 
-      if(Map_Case.eq.1)then
-        write(MR_global_info,*)"Map_Case = ",Map_Case
-        write(MR_global_info,*)"  Both Comp Grid and Met grids are Lat/Lon"
-      elseif(Map_Case.eq.2)then
-        write(MR_global_info,*)"Map_Case = ",Map_Case
-        write(MR_global_info,*)"  Both Comp Grid and Met grids are the same projection"
-        write(MR_global_info,*)"   Met_iprojflag",Met_iprojflag
-        write(MR_global_info,*)"   Met_lam0",real(Met_lam0,kind=sp)
-        write(MR_global_info,*)"   Met_phi0",real(Met_phi0,kind=sp)
-        write(MR_global_info,*)"   Met_phi1",real(Met_phi1,kind=sp)
-        write(MR_global_info,*)"   Met_phi2",real(Met_phi2,kind=sp)
-        write(MR_global_info,*)"   Met_Re  ",real(Met_Re,kind=sp)
-        write(MR_global_info,*)"   Met_k0  ",real(Met_k0,kind=sp)
-        write(MR_global_info,*)"   Comp_iprojflag",Comp_iprojflag
-        write(MR_global_info,*)"   Comp_lam0",real(Comp_lam0,kind=sp)
-        write(MR_global_info,*)"   Comp_phi0",real(Comp_phi0,kind=sp)
-        write(MR_global_info,*)"   Comp_phi1",real(Comp_phi1,kind=sp)
-        write(MR_global_info,*)"   Comp_phi2",real(Comp_phi2,kind=sp)
-        write(MR_global_info,*)"   Comp_Re  ",real(Comp_Re,kind=sp)
-        write(MR_global_info,*)"   Comp_k0  ",real(Comp_k0,kind=sp)
-      elseif(Map_Case.eq.3)then
-        write(MR_global_info,*)"Map_Case = ",Map_Case
-        write(MR_global_info,*)"  Met Grid is Lat/Lon and Comp grid is projected"
-        write(MR_global_info,*)"   Comp_iprojflag",Comp_iprojflag
-        write(MR_global_info,*)"   Comp_lam0",real(Comp_lam0,kind=sp)
-        write(MR_global_info,*)"   Comp_phi0",real(Comp_phi0,kind=sp)
-        write(MR_global_info,*)"   Comp_phi1",real(Comp_phi1,kind=sp)
-        write(MR_global_info,*)"   Comp_phi2",real(Comp_phi2,kind=sp)
-        write(MR_global_info,*)"   Comp_Re  ",real(Comp_Re,kind=sp)
-        write(MR_global_info,*)"   Comp_k0  ",real(Comp_k0,kind=sp)
-      elseif(Map_Case.eq.4)then
-        write(MR_global_info,*)"Map_Case = ",Map_Case
-        write(MR_global_info,*)"  Met Grid is projected and Comp grid is Lat/Lon"
-        write(MR_global_info,*)"   Met_iprojflag",Met_iprojflag
-        write(MR_global_info,*)"   Met_lam0",real(Met_lam0,kind=sp)
-        write(MR_global_info,*)"   Met_phi0",real(Met_phi0,kind=sp)
-        write(MR_global_info,*)"   Met_phi1",real(Met_phi1,kind=sp)
-        write(MR_global_info,*)"   Met_phi2",real(Met_phi2,kind=sp)
-        write(MR_global_info,*)"   Met_Re  ",real(Met_Re,kind=sp)
-        write(MR_global_info,*)"   Met_k0  ",real(Met_k0,kind=sp)
-      elseif(Map_Case.eq.5)then
-        write(MR_global_info,*)"Map_Case = ",Map_Case
-        write(MR_global_info,*)"  Met Grid and Comp grids have different projections"
-        write(MR_global_info,*)"   Met_iprojflag",Met_iprojflag
-        write(MR_global_info,*)"   Met_lam0",real(Met_lam0,kind=sp)
-        write(MR_global_info,*)"   Met_phi0",real(Met_phi0,kind=sp)
-        write(MR_global_info,*)"   Met_phi1",real(Met_phi1,kind=sp)
-        write(MR_global_info,*)"   Met_phi2",real(Met_phi2,kind=sp)
-        write(MR_global_info,*)"   Met_Re  ",real(Met_Re,kind=sp)
-        write(MR_global_info,*)"   Met_k0  ",real(Met_k0,kind=sp)
-        write(MR_global_info,*)"   Comp_iprojflag",Comp_iprojflag
-        write(MR_global_info,*)"   Comp_lam0",real(Comp_lam0,kind=sp)
-        write(MR_global_info,*)"   Comp_phi0",real(Comp_phi0,kind=sp)
-        write(MR_global_info,*)"   Comp_phi1",real(Comp_phi1,kind=sp)
-        write(MR_global_info,*)"   Comp_phi2",real(Comp_phi2,kind=sp)
-        write(MR_global_info,*)"   Comp_Re  ",real(Comp_Re,kind=sp)
-        write(MR_global_info,*)"   Comp_k0  ",real(Comp_k0,kind=sp)
+      if(MR_VERB.ge.1)then
+        if(Map_Case.eq.1)then
+          if(MR_VERB.ge.1)then
+            write(MR_global_info,*)"Map_Case = ",Map_Case
+            write(MR_global_info,*)"  Both Comp Grid and Met grids are Lat/Lon"
+          endif
+        elseif(Map_Case.eq.2)then
+          if(MR_VERB.ge.1)then
+            write(MR_global_info,*)"Map_Case = ",Map_Case
+            write(MR_global_info,*)"  Both Comp Grid and Met grids are the same projection"
+            write(MR_global_info,*)"   Met_iprojflag",Met_iprojflag
+            write(MR_global_info,*)"   Met_lam0",real(Met_lam0,kind=sp)
+            write(MR_global_info,*)"   Met_phi0",real(Met_phi0,kind=sp)
+            write(MR_global_info,*)"   Met_phi1",real(Met_phi1,kind=sp)
+            write(MR_global_info,*)"   Met_phi2",real(Met_phi2,kind=sp)
+            write(MR_global_info,*)"   Met_Re  ",real(Met_Re,kind=sp)
+            write(MR_global_info,*)"   Met_k0  ",real(Met_k0,kind=sp)
+            write(MR_global_info,*)"   Comp_iprojflag",Comp_iprojflag
+            write(MR_global_info,*)"   Comp_lam0",real(Comp_lam0,kind=sp)
+            write(MR_global_info,*)"   Comp_phi0",real(Comp_phi0,kind=sp)
+            write(MR_global_info,*)"   Comp_phi1",real(Comp_phi1,kind=sp)
+            write(MR_global_info,*)"   Comp_phi2",real(Comp_phi2,kind=sp)
+            write(MR_global_info,*)"   Comp_Re  ",real(Comp_Re,kind=sp)
+            write(MR_global_info,*)"   Comp_k0  ",real(Comp_k0,kind=sp)
+          endif
+        elseif(Map_Case.eq.3)then
+          if(MR_VERB.ge.1)then
+            write(MR_global_info,*)"Map_Case = ",Map_Case
+            write(MR_global_info,*)"  Met Grid is Lat/Lon and Comp grid is projected"
+            write(MR_global_info,*)"   Comp_iprojflag",Comp_iprojflag
+            write(MR_global_info,*)"   Comp_lam0",real(Comp_lam0,kind=sp)
+            write(MR_global_info,*)"   Comp_phi0",real(Comp_phi0,kind=sp)
+            write(MR_global_info,*)"   Comp_phi1",real(Comp_phi1,kind=sp)
+            write(MR_global_info,*)"   Comp_phi2",real(Comp_phi2,kind=sp)
+            write(MR_global_info,*)"   Comp_Re  ",real(Comp_Re,kind=sp)
+            write(MR_global_info,*)"   Comp_k0  ",real(Comp_k0,kind=sp)
+          endif
+        elseif(Map_Case.eq.4)then
+          if(MR_VERB.ge.1)then
+            write(MR_global_info,*)"Map_Case = ",Map_Case
+            write(MR_global_info,*)"  Met Grid is projected and Comp grid is Lat/Lon"
+            write(MR_global_info,*)"   Met_iprojflag",Met_iprojflag
+            write(MR_global_info,*)"   Met_lam0",real(Met_lam0,kind=sp)
+            write(MR_global_info,*)"   Met_phi0",real(Met_phi0,kind=sp)
+            write(MR_global_info,*)"   Met_phi1",real(Met_phi1,kind=sp)
+            write(MR_global_info,*)"   Met_phi2",real(Met_phi2,kind=sp)
+            write(MR_global_info,*)"   Met_Re  ",real(Met_Re,kind=sp)
+            write(MR_global_info,*)"   Met_k0  ",real(Met_k0,kind=sp)
+          endif
+        elseif(Map_Case.eq.5)then
+          if(MR_VERB.ge.1)then
+            write(MR_global_info,*)"Map_Case = ",Map_Case
+            write(MR_global_info,*)"  Met Grid and Comp grids have different projections"
+            write(MR_global_info,*)"   Met_iprojflag",Met_iprojflag
+            write(MR_global_info,*)"   Met_lam0",real(Met_lam0,kind=sp)
+            write(MR_global_info,*)"   Met_phi0",real(Met_phi0,kind=sp)
+            write(MR_global_info,*)"   Met_phi1",real(Met_phi1,kind=sp)
+            write(MR_global_info,*)"   Met_phi2",real(Met_phi2,kind=sp)
+            write(MR_global_info,*)"   Met_Re  ",real(Met_Re,kind=sp)
+            write(MR_global_info,*)"   Met_k0  ",real(Met_k0,kind=sp)
+            write(MR_global_info,*)"   Comp_iprojflag",Comp_iprojflag
+            write(MR_global_info,*)"   Comp_lam0",real(Comp_lam0,kind=sp)
+            write(MR_global_info,*)"   Comp_phi0",real(Comp_phi0,kind=sp)
+            write(MR_global_info,*)"   Comp_phi1",real(Comp_phi1,kind=sp)
+            write(MR_global_info,*)"   Comp_phi2",real(Comp_phi2,kind=sp)
+            write(MR_global_info,*)"   Comp_Re  ",real(Comp_Re,kind=sp)
+            write(MR_global_info,*)"   Comp_k0  ",real(Comp_k0,kind=sp)
+          endif
+        endif
       endif
 
       allocate(CompPoint_on_subMet_idx(nx_comp,ny_comp,2))
@@ -1657,7 +1681,8 @@
         enddo
       endif ! Map_Case
 
-      !write(MR_global_production,*)"--------------------------------------------------------------------------------"
+      if(MR_VERB.ge.1)write(MR_global_production,*)&
+         "--------------------------------------------------------------------------------"
 
       end subroutine MR_Set_Comp2Met_Map
 
@@ -1741,11 +1766,11 @@
           ii = CompPoint_on_subMet_idx(i,j,1)
           jj = CompPoint_on_subMet_idx(i,j,2)
           if(ii.lt.1.or.ii.gt.nx_max-1)then
-            write(MR_global_info,*)"MR ERROR: ii maps out of grid: ",ii
+            write(MR_global_error,*)"MR ERROR: ii maps out of grid: ",ii
             stop 1
           endif
           if(jj.lt.0.or.jj.gt.ny1)then
-            write(MR_global_info,*)"MR ERROR: jj maps out of grid: ",jj,ny1
+            write(MR_global_error,*)"MR ERROR: jj maps out of grid: ",jj,ny1
             stop 1
           endif
           ! Look up this comp points weights
@@ -1826,12 +1851,12 @@
         enddo
         ! Check that interval was found
         if(.not.found_interv)then
-          write(MR_global_info,*)"MR ERROR:  Did not find interval in vertical 1-D interpolation."
-          write(MR_global_info,*)"z_met = "
-          write(MR_global_info,*)z_met
-          write(MR_global_info,*)" "
-          write(MR_global_info,*)"z_comp = "
-          write(MR_global_info,*)z_comp
+          write(MR_global_error,*)"MR ERROR:  Did not find interval in vertical 1-D interpolation."
+          write(MR_global_error,*)"z_met = "
+          write(MR_global_error,*)z_met
+          write(MR_global_error,*)" "
+          write(MR_global_error,*)"z_comp = "
+          write(MR_global_error,*)z_comp
           stop 1
         endif
       enddo
@@ -1853,6 +1878,7 @@
       subroutine MR_Read_Met_Template
 
       use MetReader
+
       use projection
 
       implicit none
@@ -1861,7 +1887,7 @@
       !integer, parameter :: dp        = 8 ! double precision
 
       logical      :: IsThere
-      character(len=130) :: lllinebuffer
+      character(len=130) :: linebuffer130
       character(len=80)  :: Met_projection_line
 
       integer :: ioerr
@@ -1876,19 +1902,18 @@
       character(len=5)  :: vname_WMO
       real(kind=8)      :: StepInterval
 
-      write(MR_global_info,*)"Inside MR_Read_Met_Template"
       inquire( file=adjustl(trim(MR_iwf_template)), exist=IsThere )
       if(.not.IsThere)then
-        write(MR_global_info,*)"MR ERROR: Could not find NWP template file ",&
+        write(MR_global_error,*)"MR ERROR: Could not find NWP template file ",&
                    adjustl(trim(MR_iwf_template))
-        write(MR_global_info,*)"          Make sure the calling program sets MR_iwf_template"
-        write(MR_global_info,*)"          and that it is linked to the cwd."
+        write(MR_global_error,*)"          Make sure the calling program sets MR_iwf_template"
+        write(MR_global_error,*)"          and that it is linked to the cwd."
         stop 1
       endif
 
       open(unit=27,file=adjustl(trim(MR_iwf_template)),status='unknown')
-      read(27,'(a130)')lllinebuffer
-      Met_projection_line = lllinebuffer(1:80)
+      read(27,'(a130)')linebuffer130
+      Met_projection_line = linebuffer130(1:80)
       call PJ_Set_Proj_Params(Met_projection_line)
 
       if(PJ_ilatlonflag.eq.0)then
@@ -1912,60 +1937,62 @@
       Met_k0        = PJ_k0
       Met_Re        = PJ_radius_earth
 
-      read(27,'(a130)')lllinebuffer
-      read(lllinebuffer,*,iostat=ioerr)StepInterval,useLeap_str
+      read(27,'(a130)')linebuffer130
+      read(linebuffer130,*,iostat=ioerr)StepInterval,useLeap_str
 
       if (ioerr.eq.0)then
         ! Two values read, process useLeap_str to determine T or F
         if(useLeap_str(1:1).eq.'F'.or.useLeap_str(1:1).eq.'f')then
           MR_useLeap = .false.
-          write(MR_global_info,*)"This windfile template specifies that leap years are NOT to"
-          write(MR_global_info,*)"be used.  Resetting MR_useLeap = .false."
+          if(MR_VERB.ge.1)then
+            write(MR_global_info,*)"This windfile template specifies that leap years are NOT to"
+            write(MR_global_info,*)"be used.  Resetting MR_useLeap = .false."
+          endif
         endif
       else
         ! default will be whatever is set in the host program or in
         ! MetReader.f90 if the calling program doesn't specify
-        read(lllinebuffer,*,iostat=ioerr)StepInterval
+        read(linebuffer130,*,iostat=ioerr)StepInterval
       endif
-      read(27,'(a130)')lllinebuffer
-      read(lllinebuffer,*,err=2002)ndims_custom,nvars_custom
+      read(27,'(a130)')linebuffer130
+      read(linebuffer130,*,err=2002)ndims_custom,nvars_custom
 
-      write(MR_global_info,*)"  Reading dimensions: ",ndims_custom
+      if(MR_VERB.ge.1)write(MR_global_info,*)"  Reading dimensions: ",ndims_custom
       do i = 1,ndims_custom
-        read(27,'(a130)')lllinebuffer
-        read(lllinebuffer,1501)dv_char,dimID,fac,dname
+        read(27,'(a130)')linebuffer130
+        read(linebuffer130,1501)dv_char,dimID,fac,dname
         if(dv_char.ne.'d')then
-          write(MR_global_info,*)"MR ERROR : Trying to read variable into dimension"
-          write(MR_global_info,*)"dv_char = ",dv_char
-          write(MR_global_info,*)"dimID   = ",dimID
-          write(MR_global_info,*)"fac     = ",fac
-          write(MR_global_info,*)"dname   = ",dname
+          write(MR_global_error,*)"MR ERROR : Trying to read variable into dimension"
+          write(MR_global_error,*)"dv_char = ",dv_char
+          write(MR_global_error,*)"dimID   = ",dimID
+          write(MR_global_error,*)"fac     = ",fac
+          write(MR_global_error,*)"dname   = ",dname
           stop 1
         endif
         if(dimID.le.9)then
           Met_dim_IsAvailable(dimID) = .true.
           Met_dim_names(dimID)       = adjustl(trim(dname))
           Met_dim_fac(i)             = fac
-          write(MR_global_info,*)dimID,' ',Met_dim_names(dimID)
+          if(MR_VERB.ge.1)write(MR_global_info,*)dimID,' ',Met_dim_names(dimID)
         else
-          write(MR_global_info,*)"MR ERROR: dimID too large",dimID
+          write(MR_global_error,*)"MR ERROR: dimID too large",dimID
           stop 1
         endif
       enddo
-      write(MR_global_info,*)"  Reading variables: ",nvars_custom
+      if(MR_VERB.ge.1)write(MR_global_info,*)"  Reading variables: ",nvars_custom
       do i = 1,nvars_custom
-        read(27,'(a130)')lllinebuffer
-        read(lllinebuffer,1511)dv_char,vndim,zindx,varID, &
+        read(27,'(a130)')linebuffer130
+        read(linebuffer130,1511)dv_char,vndim,zindx,varID, &
                                 fac,vname_WMO,vname
         if(dv_char.ne.'v')then
-          write(MR_global_info,*)"MR ERROR : Trying to read dimension into variable"
-          write(MR_global_info,*)"dv_char   = ",dv_char
-          write(MR_global_info,*)"vndim     = ",vndim
-          write(MR_global_info,*)"zindx     = ",zindx
-          write(MR_global_info,*)"varID     = ",varID
-          write(MR_global_info,*)"fac       = ",fac
-          write(MR_global_info,*)"vname_WMO = ",vname_WMO
-          write(MR_global_info,*)"vname     = ",vname
+          write(MR_global_error,*)"MR ERROR : Trying to read dimension into variable"
+          write(MR_global_error,*)"dv_char   = ",dv_char
+          write(MR_global_error,*)"vndim     = ",vndim
+          write(MR_global_error,*)"zindx     = ",zindx
+          write(MR_global_error,*)"varID     = ",varID
+          write(MR_global_error,*)"fac       = ",fac
+          write(MR_global_error,*)"vname_WMO = ",vname_WMO
+          write(MR_global_error,*)"vname     = ",vname
           stop 1
         endif
 
@@ -1976,9 +2003,9 @@
           Met_var_ndim(varID)              = vndim
           Met_var_zdim_idx(varID)          = zindx
           Met_var_conversion_factor(varID) = fac
-          write(MR_global_info,*)varID,Met_var_WMO_names(varID),' ',Met_var_NC_names(varID)
+          if(MR_VERB.ge.1)write(MR_global_info,*)varID,Met_var_WMO_names(varID),' ',Met_var_NC_names(varID)
         else
-          write(MR_global_info,*)"MR ERROR: varID too large",varID
+          write(MR_global_error,*)"MR ERROR: varID too large",varID
           stop 1
         endif
       enddo
@@ -1991,10 +2018,10 @@
 1511  format(a1,i3,i3,i3,f9.2,a7,a71)
 
 !2001  write(MR_global_info,*)  'error reading ForecastInterval'
-!      write(MR_global_info,*)lllinebuffer
+!      write(MR_global_info,*)linebuffer130
 !      stop 1
-2002  write(MR_global_info,*)  'error reading number of custom dims and vars.'
-      write(MR_global_info,*)lllinebuffer
+2002  write(MR_global_error,*)  'error reading number of custom dims and vars.'
+      write(MR_global_error,*)linebuffer130
       stop 1
 
       end subroutine MR_Read_Met_Template

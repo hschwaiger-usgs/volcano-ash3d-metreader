@@ -340,7 +340,7 @@
         do itime = 1,MR_Snd_nt_fullmet
           do iloc = 1,MR_nSnd_Locs
             iw_idx = (itime-1)*MR_nSnd_Locs + iloc
-            write(MR_global_info,*)"Opening sonde file ",iw_idx,&
+            if(MR_VERB.ge.1)write(MR_global_info,*)"Opening sonde file ",iw_idx,&
                                    adjustl(trim(MR_windfiles(iw_idx)))
             fid = 127
             open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))), status='unknown',err=1971)
@@ -373,15 +373,17 @@
                 allocate(SndColReadOrder(MR_Snd_nvars)) ! This is the read oder
               endif
               read(linebuffer,*,iostat=ioerr) rvalue1,ivalue1, ivalue2, SndColReadOrder(1:MR_Snd_nvars)
-              write(MR_global_info,*)" Parsing sonde info line as:"
-              write(MR_global_info,*)"  wind time: ",rvalue1
-              write(MR_global_info,*)"  nlevels  : ",ivalue1
-              write(MR_global_info,*)"  nvars    : ",ivalue2
-              write(MR_global_info,*)"  ivars(1:nvar) : ",SndColReadOrder(1:MR_Snd_nvars)
+              if(MR_VERB.ge.1)then
+                write(MR_global_info,*)" Parsing sonde info line as:"
+                write(MR_global_info,*)"  wind time: ",rvalue1
+                write(MR_global_info,*)"  nlevels  : ",ivalue1
+                write(MR_global_info,*)"  nvars    : ",ivalue2
+                write(MR_global_info,*)"  ivars(1:nvar) : ",SndColReadOrder(1:MR_Snd_nvars)
 
-              write(MR_global_info,*)"1-d ASCII file should contain ",ivalue2," columns"
+                write(MR_global_info,*)"1-d ASCII file should contain ",ivalue2," columns"
+              endif
               do iv = 1,MR_Snd_nvars
-                write(MR_global_info,*)" Column ",iv,MR_SndVarsName(SndColReadOrder(iv))
+                if(MR_VERB.ge.1)write(MR_global_info,*)" Column ",iv,MR_SndVarsName(SndColReadOrder(iv))
                 if (SndColReadOrder(iv).eq.0)then
                   Met_dim_IsAvailable(2) = .true.  ! P
                 elseif (SndColReadOrder(iv).eq.1)then
@@ -459,7 +461,6 @@
             read(linebuffer,*,iostat=ioerr) rvalue1,rvalue2, ivalue1
             if(ioerr.eq.0)then
               ! A third parameter is present: first value of projection line
-              write(*,*)rvalue1,rvalue2, ivalue1
               Snd_Have_Coord = .true.
               ilatlonflag = ivalue1
             else
@@ -661,7 +662,7 @@
                   elseif(SndColReadOrder(ic).eq.7)then   ! Wind direction (from deg E of N)
                     WindDirection(il)  = rvalues(ic)
                   else
-                    write(MR_global_error,*)&
+                    if(MR_VERB.ge.1)write(MR_global_error,*)&
                       "MR Warning: Ignoring data for variable ",MR_SndVarsName(SndColReadOrder(ic))
                   endif
                 enddo
@@ -693,12 +694,14 @@
               Met_var_IsAvailable(2) = .true.  ! U
               Met_var_IsAvailable(3) = .true.  ! V
               Met_var_IsAvailable(5) = .true.  ! T
-              if(il.eq.1)then
-                write(MR_global_info,*)"Sonde values loaded."
-                write(MR_global_info,203)MR_SndVarsName(1:7)
+              if(MR_VERB.ge.1)then
+                if(il.eq.1)then
+                  write(MR_global_info,*)"Sonde values loaded."
+                  write(MR_global_info,203)MR_SndVarsName(1:7)
+                endif
+                write(MR_global_info,204)il,real(MR_SndVars_metP(iloc,itime,1:5,il),kind=4),&
+                                          WindVelocity(il),WindDirection(il)
               endif
-              write(MR_global_info,204)il,real(MR_SndVars_metP(iloc,itime,1:5,il),kind=4),&
-                                        WindVelocity(il),WindDirection(il)
  203          format(3x,'Level',6x,a3,'(Pa)', &
                                 7x,a3,'(km)', &
                                 3x,a3,'(m/s)', &
@@ -790,7 +793,7 @@
         do itime = 1,MR_Snd_nt_fullmet
           do iloc = 1,MR_nSnd_Locs
             iw_idx = (itime-1)*MR_nSnd_Locs + iloc
-            write(MR_global_info,*)"Opening sonde file ",iw_idx,&
+            if(MR_VERB.ge.1)write(MR_global_info,*)"Opening sonde file ",iw_idx,&
                                    adjustl(trim(MR_windfiles(iw_idx)))
             fid = 127
             open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))), status='unknown',err=1971)
@@ -1151,12 +1154,13 @@
               MR_SndVars_metP(iloc,itime,4,:) = &
                 real(WindVelocity(:)*cos(pi + DEG2RAD*WindDirection(:)),kind=sp)
 
-              write(MR_global_production,*)"==================================================================="
-              write(MR_global_production,140)
-   140        format('Pressure (Pa)','    Height (km)', &
-                     '        Vx (m/s)','        Vy (m/s)', &
-                     '       Temp. (C)','  Wind Vel (m/s)','       Wind Dir.')
-              do iil=1,16
+              if(MR_VERB.ge.1)then
+                write(MR_global_production,*)"==================================================================="
+                write(MR_global_production,140)
+   140          format('Pressure (Pa)','    Height (km)', &
+                       '        Vx (m/s)','        Vy (m/s)', &
+                       '       Temp. (C)','  Wind Vel (m/s)','       Wind Dir.')
+                do iil=1,16
                   write(MR_global_production,*)MR_SndVars_metP(iloc,itime,1,iil),&
                             MR_SndVars_metP(iloc,itime,2,iil),&
                             MR_SndVars_metP(iloc,itime,3,iil),&
@@ -1164,8 +1168,9 @@
                             MR_SndVars_metP(iloc,itime,5,iil),&
                             WindVelocity(iil),&
                             WindDirection(iil)
-              enddo
-              write(MR_global_production,*)"==================================================================="
+                enddo
+                write(MR_global_production,*)"==================================================================="
+              endif
             else
               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
               !  Reading data Textlist format from http://weather.uwyo.edu/
@@ -1192,7 +1197,8 @@
               il = 0  ! counter for the number of data lines read
               iil = 1 ! index for which mandatory pressure level we are currently at
               ! Plan to read up to MAX_ROWS
-              write(MR_global_production,*)"==================================================================="
+              if(MR_VERB.ge.1)write(MR_global_production,*)&
+                 "==================================================================="
               do while (il.ne.MAX_ROWS.and. &  ! Assume there are no more than MAX_ROWS of data
                         iil.le.nlev)             ! Do not bother reading past 10 hPa
                 ! HFS Check if we've skipped the mandatory pressure level.  If so, interpolate
@@ -1212,7 +1218,6 @@
                 endif
                 if (abs(pres_Snd_tmp(iil)-rvalue1).lt.1.0_sp) then ! Sometimes the last level is 10.5
                   ! found the next mandatory level
-                  !write(*,*)"Found pressure level ",iil, pres_Snd_tmp(iil)
                   MR_SndVars_metP(iloc,itime,1,iil) = rvalue1 * 100.0_sp
                   MR_SndVars_metP(iloc,itime,2,iil) = real(ivalue2,kind=4)*1.0e-3_sp  ! convert to km
                   MR_SndVars_metP(iloc,itime,5,iil) = rvalue3 + 273.0_sp   ! convert to K
@@ -1222,7 +1227,8 @@
                     real(WindVelocity(iil)*sin(pi + DEG2RAD*WindDirection(iil)),kind=sp)
                   MR_SndVars_metP(iloc,itime,4,iil) = &
                   real(WindVelocity(iil)*cos(pi + DEG2RAD*WindDirection(iil)),kind=sp)
-                  write(MR_global_production,*)MR_SndVars_metP(iloc,itime,1,iil),&
+                  if(MR_VERB.ge.1)write(MR_global_production,*)&
+                            MR_SndVars_metP(iloc,itime,1,iil),&
                             MR_SndVars_metP(iloc,itime,2,iil),&
                             MR_SndVars_metP(iloc,itime,3,iil),&
                             MR_SndVars_metP(iloc,itime,4,iil),&
@@ -1244,16 +1250,20 @@
                   ! Check if we've read past the data and are in the Station footer
                   substr_pos1 = index(linebuffer,'Station')
                   if(substr_pos1.ne.0)then
-                    write(*,*)"MR ERROR: Read past the end of data without finding the last"
-                    write(*,*)"          mandatory pressure level"
+                    if(MR_VERB.ge.1)write(MR_global_production,*)&
+                       "MR WARNING: Read past the end of data without finding the last"
+                    if(MR_VERB.ge.1)write(MR_global_production,*)&
+                       "             mandatory pressure level"
                     nlev = iil-1
-                    write(*,*)"          Resetting nlev to : ",nlev
+                    if(MR_VERB.ge.1)write(MR_global_production,*)&
+                       "             Resetting nlev to : ",nlev
                   endif
                   ! First try to read the five expected values: pres, height, temp, direc, speed
                   read(linebuffer,150,iostat=ioerr)rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
                 endif
               enddo
-              write(MR_global_production,*)"==================================================================="
+              if(MR_VERB.ge.1)write(MR_global_production,*)&
+                 "==================================================================="
    150  format(1x,f7.1,i7,f7.1,21x,i7,i7)
    151  format(45x,i2,i2,i2,1x,i2)
    153  format(45x,i5)
@@ -1345,22 +1355,27 @@
         stop 1
       endif
 
-      write(MR_global_info,*)"Sonde data read:"
-      write(MR_global_info,*)"  number of points     = ",MR_nSnd_Locs
-      write(MR_global_info,*)"  number of time steps = ",MR_Snd_nt_fullmet
+      if(MR_VERB.ge.1)then
+        write(MR_global_info,*)"Sonde data read:"
+        write(MR_global_info,*)"  number of points     = ",MR_nSnd_Locs
+        write(MR_global_info,*)"  number of time steps = ",MR_Snd_nt_fullmet
+      endif
 
       ! Finished setting up the start time of each wind file in HoursSince : MR_windfile_starthour(iw)
       !  and the forecast (offset from start of file) for each step        : MR_windfile_stephour(iw,iwstep)
-      write(MR_global_info,*)"File, step, Ref, Offset, HoursSince"
-      do iw = 1,MR_iwindfiles
-        do iws = 1,nt_fullmet
-          write(MR_global_info,*)iw,iws,real(MR_windfile_starthour(iw),kind=4),&
-                           real(MR_windfile_stephour(iw,iws),kind=4),&
-                           real(MR_windfile_starthour(iw)+MR_windfile_stephour(iw,iws),kind=4)
+      if(MR_VERB.ge.1)then
+        write(MR_global_info,*)"File, step, Ref, Offset, HoursSince"
+        do iw = 1,MR_iwindfiles
+          do iws = 1,nt_fullmet
+            write(MR_global_info,*)iw,iws,real(MR_windfile_starthour(iw),kind=4),&
+                             real(MR_windfile_stephour(iw,iws),kind=4),&
+                             real(MR_windfile_starthour(iw)+MR_windfile_stephour(iw,iws),kind=4)
+          enddo
         enddo
-      enddo
+      endif
 
-      write(MR_global_production,*)"--------------------------------------------------------------------------------"
+      if(MR_VERB.ge.1)write(MR_global_production,*)&
+         "--------------------------------------------------------------------------------"
 
       return
 
@@ -1473,7 +1488,8 @@
         stop 1
       endif
 
-      write(MR_global_production,*)"--------------------------------------------------------------------------------"
+      if(MR_VERB.ge.1)write(MR_global_production,*)&
+         "--------------------------------------------------------------------------------"
 
       end subroutine MR_Set_MetComp_Grids_ASCII_1d
 
@@ -1583,7 +1599,8 @@
         enddo
       else
         ! W is typically not provided
-        write(MR_global_production,*)"Attempting to read unavailalble variable: ",ivar
+        if(MR_VERB.ge.1)write(MR_global_production,*)&
+           "Attempting to read unavailalble variable: ",ivar
         MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_fullmet) = 0.0_sp
       endif
 
@@ -2872,17 +2889,21 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           Stat_elv = real(MR_Snd_el(i),kind=sp)
           FoundStation = .true.
           StatIdx = i
-          write(MR_global_info,*)" Radiosonde station: ",MR_Snd_cd(i),StatID,MR_Snd_lnm(i)
-          write(MR_global_info,*)"  longitude = ",Stat_lon
-          write(MR_global_info,*)"  latitude  = ",Stat_lat
-          write(MR_global_info,*)"  elevation = ",Stat_elv
+          if(MR_VERB.ge.1)then
+            write(MR_global_info,*)" Radiosonde station: ",MR_Snd_cd(i),StatID,MR_Snd_lnm(i)
+            write(MR_global_info,*)"  longitude = ",Stat_lon
+            write(MR_global_info,*)"  latitude  = ",Stat_lat
+            write(MR_global_info,*)"  elevation = ",Stat_elv
+          endif
           exit
         endif
       enddo
 
       if(.not.FoundStation)then
-        write(MR_global_info,*)"Radiosonde stations not found for ID ",StatID
-        write(MR_global_info,*)"  Please enter the station longitude (degrees) : "
+        if(MR_VERB.ge.1)then
+          write(MR_global_info,*)"Radiosonde stations not found for ID ",StatID
+          write(MR_global_info,*)"  Please enter the station longitude (degrees) : "
+        endif
         read(5,*) linebuffer
         read(linebuffer,*,iostat=ioerr) tmp_sp
         if(ioerr.ne.0)then
@@ -2897,7 +2918,8 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
         endif
         Stat_lon = tmp_sp
 
-        write(MR_global_info,*)"  Please enter the station latitude  (degrees) : "
+        if(MR_VERB.ge.1)write(MR_global_info,*)&
+           "  Please enter the station latitude  (degrees) : "
         read(5,*) linebuffer
         read(linebuffer,*,iostat=ioerr) tmp_sp
         if(ioerr.ne.0)then
@@ -2912,7 +2934,8 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
         endif
         Stat_lat = tmp_sp
 
-        write(MR_global_info,*)"  Please enter the station elevation (m a.s.l.): "
+        if(MR_VERB.ge.1)write(MR_global_info,*)&
+           "  Please enter the station elevation (m a.s.l.): "
         read(5,*) linebuffer
         read(linebuffer,*,iostat=ioerr) tmp_sp
         if(ioerr.ne.0)then
@@ -2955,11 +2978,13 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       real(kind=sp)     :: latLL,lonLL
       real(kind=sp)     :: latUR,lonUR
 
-      write(*,*)"Radiosonde stations currently loaded:"
-      do i=1,MR_nSnd_Locs
-        ii = Snd_idx(i)
-        write(*,*)MR_Snd_id(ii),adjustl(trim(MR_Snd_lnm(ii))),',',MR_Snd_st(ii),',',MR_Snd_ct(ii)
-      enddo
+      if(MR_VERB.ge.1)then
+        write(MR_global_info,*)"Radiosonde stations currently loaded:"
+        do i=1,MR_nSnd_Locs
+          ii = Snd_idx(i)
+          write(MR_global_info,*)MR_Snd_id(ii),adjustl(trim(MR_Snd_lnm(ii))),',',MR_Snd_st(ii),',',MR_Snd_ct(ii)
+        enddo
+      endif
 
       de = x_comp_sp(2)-x_comp_sp(1)
       dn = y_comp_sp(2)-y_comp_sp(1)
@@ -2978,10 +3003,13 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
            latUR.gt.MR_Snd_lt(i).and.&
            lonLL.lt.MR_Snd_ln(i).and.&
            lonUR.gt.MR_Snd_ln(i))then
-          if(nSnd_InDomain.eq.0) &
-            write(*,*)" Stations found in domain:"
-          nSnd_InDomain = nSnd_InDomain + 1
-          write(*,*)MR_Snd_id(i),adjustl(trim(MR_Snd_lnm(i))),',',MR_Snd_st(i),',',MR_Snd_ct(i)
+          if(MR_VERB.ge.1)then
+            if(nSnd_InDomain.eq.0) &
+              write(MR_global_info,*)" Stations found in domain:"
+            nSnd_InDomain = nSnd_InDomain + 1
+            if(MR_VERB.ge.1)write(MR_global_info,*)&
+               MR_Snd_id(i),adjustl(trim(MR_Snd_lnm(i))),',',MR_Snd_st(i),',',MR_Snd_ct(i)
+          endif
         endif
       enddo
 

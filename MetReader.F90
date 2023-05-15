@@ -74,7 +74,6 @@
       integer, parameter,private :: dp = selected_real_kind(15,  307) ! double precision
       integer, parameter,private :: qp = selected_real_kind(33, 4931) ! quad precision
 
-      integer, parameter       :: MR_VERB = 1
       integer, parameter       :: MR_MAXVARS    = 50 ! Maximum number of variables in fixed arrays
 
       real(kind=dp), parameter :: MR_EPS_SMALL  = 1.0e-7_dp  ! Small number
@@ -84,6 +83,8 @@
       real(kind=sp), parameter :: DEG2RAD_MET   = 1.7453292519943295e-2_sp
       real(kind=sp), parameter :: MR_MIN_DZ     = 1.0e-4_sp   ! used in reassigning z for low-level negative GPH
 
+      ! These output levels and stream IDs can be changed by the calling program
+      integer,public :: MR_VERB                = 1
       integer,public :: MR_global_essential    = 6
       integer,public :: MR_global_production   = 6
       integer,public :: MR_global_debug        = 6
@@ -1060,7 +1061,7 @@
       if (MR_iwindformat.eq.0) then
           ! Custom format based on template
         MR_Reannalysis = .false.
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "Custom format based on template"
 
           ! This expects that MR_iwf_template has been filled by the calling program
@@ -1069,14 +1070,14 @@
       elseif (MR_iwindformat.eq.1) then
           ! ASCII profile
         MR_Reannalysis = .false.
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "ASCII profile"
       elseif (MR_iwindformat.eq.2) then
           ! Radiosonde data
         MR_Reannalysis = .false.
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "Radiosonde data"
-        write(MR_global_info,*)"  Number of radiosonde stations = ",MR_iGridCode
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  Number of radiosonde stations = ",MR_iGridCode
       elseif (MR_iwindformat.eq.3) then 
         ! NARR3D NAM221 32 km North America files
           ! https://rda.ucar.edu/datasets/ds608.0/
@@ -1085,7 +1086,7 @@
           !   See  http://www.emc.ncep.noaa.gov/mmb/rreanl/faq.html#eta-winds
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! the lastest version of NARR data is v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NARR3D NAM221 32 km North America files with Re=6367.47"
 
         MR_iGridCode = 1221  ! This is almost NAM221, but uses a diff Re
@@ -1131,7 +1132,7 @@
           !   nam.t00z.awip3200.tm00.grib2
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NAM221 32 km North America files with Re=6371.229"
 
         MR_iGridCode = 221
@@ -1177,7 +1178,7 @@
           !  nam.t00z.awipak00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NAM216 AK 45km"
 
         MR_iGridCode = 216
@@ -1224,7 +1225,7 @@
         !    nam.t00z.grbgrd00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NAM Regional 90 km grid 104"
 
         MR_iGridCode = 104
@@ -1271,7 +1272,7 @@
           !    nam.t00z.awp21100.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "CONUS 212 40km"
 
         MR_iGridCode = 212
@@ -1319,7 +1320,7 @@
           !   nam.t00z.awphys00.grb2.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "CONUS 218 (12km)"
 
         MR_iGridCode = 218
@@ -1356,7 +1357,7 @@
           !    nam.t00z.conusnest.hiresf00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "CONUS 227 (5.1 km)"
 
         MR_iGridCode = 227
@@ -1408,7 +1409,7 @@
           !    nam.t00z.awipak00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NAM 242 11.25 km AK"
 
         MR_iGridCode = 242
@@ -1451,7 +1452,7 @@
           !    nam.t00z.hawaiinest.hiresf00.tm0
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   " NAM 196 2.5 km HI"
 
         MR_iGridCode = 196
@@ -1502,7 +1503,7 @@
           !    nam.t00z.alaskanest.hiresf00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NAM 198 5.953 km AK"
 
         MR_iGridCode = 198
@@ -1562,7 +1563,7 @@
           !       appears to be in the order they are processed in the grib file
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NAM 91 2.976 km AK"
 
         MR_iGridCode = 91
@@ -1614,7 +1615,7 @@
           !  nam.t00z.conusnest.hiresf00.tm00.grib2.nc
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "CONUS no grid ID (3.0 km)"
 
         MR_iGridCode = 1227
@@ -1667,7 +1668,7 @@
           !    
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "GFS 0.5"
 
         MR_iGridCode = 4
@@ -1710,7 +1711,7 @@
           ! http://www.nco.ncep.noaa.gov/pmb/products/gfs/
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "GFS 0.5-degree"
 
         MR_iGridCode = 3
@@ -1744,7 +1745,7 @@
           !  
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "GFS 0.25"
 
         MR_iGridCode = 193
@@ -1785,7 +1786,7 @@
          ! https://rda.ucar.edu/datasets/ds091.0
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! latest is 0, but deprecated
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NCEP / DOE reanalysis 2.5 degree files"
 
         MR_iGridCode = 2
@@ -1817,7 +1818,7 @@
          ! NASA-MERRA reanalysis 0.625 x 0.5 degree files 
 
         if(MR_iversion.eq.-1)MR_iversion = 2 ! v1 finished in 2016
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NASA-MERRA-2 reanalysis 0.625/0.5 degree files"
 
         MR_iGridCode = 1024
@@ -1854,7 +1855,7 @@
          ! NCEP/NCAR reanalysis 2.5 degree files 
 
         if(MR_iversion.eq.-1)MR_iversion = 0 !
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NCEP/NCAR reanalysis 2.5 degree files"
 
         MR_iGridCode = 2
@@ -1919,7 +1920,7 @@
          ! https://rda.ucar.edu/datasets/ds628.0/
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! 
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "JRA-55 reanalysis 1.25 degree files"
 
         MR_iGridCode = 45
@@ -1956,7 +1957,7 @@
         endif
         if(MR_iversion.eq.2)then
 
-          write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+          if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                     "NOAA-CIRES reanalysis 2.0 degree files"
   
           MR_iGridCode = 1027
@@ -2007,7 +2008,7 @@
           ! Note: this is also avalable from
           ! https://psl.noaa.gov/data/gridded/data.20thC_ReanV3.html, but might
           ! need format verification
-          write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+          if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                     "NOAA-CIRES-DOE reanalysis v3"
 
           MR_iGridCode = 1027
@@ -2036,7 +2037,7 @@
          ! ECMWF Interim Reanalysis (ERA-Interim)
          ! https://rda.ucar.edu/datasets/ds627.0
 
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "ECMWF Interim Reanalysis (ERA-Interim)"
 
         MR_iGridCode = 170
@@ -2076,7 +2077,7 @@
          ! https://rda.ucar.edu/datasets/ds630.0
          ! Note: files are provided as one variable per file
 
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "ECMWF ERA5 reanalysis"
 
         MR_iGridCode = 1029
@@ -2130,7 +2131,7 @@
          ! https://rda.ucar.edu/datasets/ds626.0
          ! Note: files are provided as one variable per file
 
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "ECMWF ERA20C reanalysis"
 
         MR_iGridCode = 1030
@@ -2162,7 +2163,7 @@
          ! Air Force Weather Agency subcenter = 0
          ! GALWEM
 
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "Air Force Weather Agency subcenter = 0"
 
         MR_iGridCode = 1032
@@ -2191,7 +2192,7 @@
          ! http://www.cesm.ucar.edu/models/atm-cam/
          ! peleoclimate monthly averages
 
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "CCSM3.0 Community Atmosphere Model (CAM)"
 
         MR_iGridCode = 1033
@@ -2221,7 +2222,7 @@
       elseif (MR_iwindformat.eq.40)then
          ! NASA-GEOS Cp
 
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NASA-GEOS Cp"
 
         MR_iGridCode = 1040
@@ -2248,7 +2249,7 @@
       elseif (MR_iwindformat.eq.41)then
          ! NASA-GEOS Np
 
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "NASA-GEOS Np"
 
         MR_iGridCode = 1041
@@ -2275,7 +2276,7 @@
       elseif (MR_iwindformat.eq.50)then
          ! WRF - output
 
-        write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
+        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
                   "WRF"
 
         MR_iGridCode = 1050
@@ -2327,12 +2328,12 @@
         stop 1
       endif
 
-      write(MR_global_info,*)"                grid ID = ",MR_iGridCode
+      if(MR_VERB.ge.1)write(MR_global_info,*)"                grid ID = ",MR_iGridCode
       select case (MR_idataFormat)
       case(1)
-        write(MR_global_info,*)"            data format = ",MR_idataFormat,"ASCII"
+        if(MR_VERB.ge.1)write(MR_global_info,*)"            data format = ",MR_idataFormat,"ASCII"
       case(2)
-        write(MR_global_info,*)"            data format = ",MR_idataFormat,"NETCDF"
+        if(MR_VERB.ge.1)write(MR_global_info,*)"            data format = ",MR_idataFormat,"NETCDF"
 #ifndef USENETCDF
         write(MR_global_error,*)"MR ERROR: Met files are netcdf, but MetReader was not"
         write(MR_global_error,*)"          compiled with netcdf support."
@@ -2340,7 +2341,7 @@
         stop 1
 #endif
       case(3)
-        write(MR_global_info,*)"            data format = ",MR_idataFormat,"GRIB"
+        if(MR_VERB.ge.1)write(MR_global_info,*)"            data format = ",MR_idataFormat,"GRIB"
 #ifndef USEGRIB
         write(MR_global_error,*)"MR ERROR: Met files are grib, but MetReader was not"
         write(MR_global_error,*)"          compiled with grib support."
@@ -2353,12 +2354,14 @@
         stop 1
       end select
 
-      write(MR_global_info,*)"     Allocating space for ",MR_iwindfiles,"file(s)."
+      if(MR_VERB.ge.1)write(MR_global_info,*)"     Allocating space for ",MR_iwindfiles,"file(s)."
 
       if (MR_iwind.eq.5)then
-        write(MR_global_info,*)"For iwf=5:: one variable per file,"
-        write(MR_global_info,*)"Only the directory should be listed. The remaining"
-        write(MR_global_info,*)"path is hard-coded."
+        if(MR_VERB.ge.1)then
+          write(MR_global_info,*)"For iwf=5:: one variable per file,"
+          write(MR_global_info,*)"Only the directory should be listed. The remaining"
+          write(MR_global_info,*)"path is hard-coded."
+        endif
         ! Reset MR_iwindfiles to 2: only one "file" will be read,
         ! but we need this to be 2 to accommodate runs that might span two years/months
         ! For ERA5 files, data is provided in daily files so MR_iwindfiles might be > 2
@@ -2381,7 +2384,7 @@
 
       allocate (MR_windfiles(MR_iwindfiles))
       do i=1,MR_iwindfiles
-        write(MR_windfiles(i),'(130x)')
+        if(MR_VERB.ge.1)write(MR_windfiles(i),'(130x)')
       enddo
       allocate (MR_windfiles_nt_fullmet(MR_iwindfiles))
       MR_windfiles_nt_fullmet(:)=0
@@ -2391,7 +2394,7 @@
         MR_windfiles_Have_GRIB_index = .false.
         allocate (MR_windfiles_GRIB_index(MR_iwindfiles))
         do i=1,MR_iwindfiles
-          write(MR_windfiles_GRIB_index(i),'(130x)')
+          if(MR_VERB.ge.1)write(MR_windfiles_GRIB_index(i),'(130x)')
         enddo
       endif
 
@@ -2479,6 +2482,10 @@
       character(len=130) :: infile
       integer            :: ivar
       real(kind=8)       :: inhour
+      character(len=8)  :: date
+      character(len=10) :: time2
+      character(len=5)  :: zone
+      integer           :: values(8)
 
       INTERFACE
         subroutine MR_Set_iwind5_filenames(inhour,ivar,infile)
@@ -2527,18 +2534,21 @@
           ! is given
           MR_Comp_StartYear = iy
         else
-          write(MR_global_info,*)"MR WARNING: If the iw=5 (NCEP Reannalysis, NOAA Reannalysis, "
-          write(MR_global_info,*)"            etc.) are used, then MR_Read_Met_DimVars"
-          write(MR_global_info,*)"            should be called with a start year.  This is needed"
-          write(MR_global_info,*)"            to allocate the correct number of time steps per file."
-          write(MR_global_info,*)"            Setting MR_Comp_StartYear to 2018 for a non-leap year."
-          write(MR_global_info,*)"            However, MR_Comp_StartYear will be checked later to"
-          write(MR_global_info,*)"            verify that the start year is not a leap year."
-          write(MR_global_info,*)"            If there is an inconsistancy, the program will stop."
-          write(MR_global_info,*)"            If MR_Comp_StartYear is changed to a leap year outside"
-          write(MR_global_info,*)"            of MetReader, then the results will be incorrect."
-          ! HFS KLUDG: change to year of program execution
-          MR_Comp_StartYear = 2023
+          if(MR_VERB.ge.1)then
+            write(MR_global_info,*)"MR WARNING: If the iw=5 (NCEP Reannalysis, NOAA Reannalysis, "
+            write(MR_global_info,*)"            etc.) are used, then MR_Read_Met_DimVars"
+            write(MR_global_info,*)"            should be called with a start year.  This is needed"
+            write(MR_global_info,*)"            to allocate the correct number of time steps per file."
+            write(MR_global_info,*)"            Setting MR_Comp_StartYear to 2018 for a non-leap year."
+            write(MR_global_info,*)"            However, MR_Comp_StartYear will be checked later to"
+            write(MR_global_info,*)"            verify that the start year is not a leap year."
+            write(MR_global_info,*)"            If there is an inconsistancy, the program will stop."
+            write(MR_global_info,*)"            If MR_Comp_StartYear is changed to a leap year outside"
+            write(MR_global_info,*)"            of MetReader, then the results will be incorrect."
+          endif
+          ! Setting to year of program execution
+          call date_and_time(date,time2,zone,values)
+          MR_Comp_StartYear = values(1)
         endif
 
       endif
@@ -2555,7 +2565,7 @@
       endif
 
       ! Check the existence of the wind files
-      write(MR_global_info,*)"  Verifying existance of windfiles:"
+      if(MR_VERB.ge.1)write(MR_global_info,*)"  Verifying existance of windfiles:"
       ! Note iwf=5 cases have the number of windfiles (MR_iwindfiles)
       ! modified in MR_Allocate_FullMetFileList to be the number of
       ! anticipated files based on the length of the simulation and the number
@@ -2563,7 +2573,7 @@
       if(MR_iwind.ne.5)then
         do i=1,MR_iwindfiles
           inquire( file=adjustl(trim(MR_windfiles(i))), exist=IsThere )
-          write(MR_global_info,*)"     ",i,adjustl(trim(MR_windfiles(i))),IsThere
+          if(MR_VERB.ge.1)write(MR_global_info,*)"     ",i,adjustl(trim(MR_windfiles(i))),IsThere
           if(.not.IsThere)then
             write(MR_global_error,*)"MR ERROR: Could not find windfile ",i
             write(MR_global_error,*)"          ",adjustl(trim(MR_windfiles(i)))
@@ -2583,7 +2593,7 @@
             stop 1
 #endif
             inquire( file=adjustl(trim(infile)), exist=IsThere )
-            write(MR_global_info,*)" ",i,trim(adjustl(trim(infile))),IsThere
+            if(MR_VERB.ge.1)write(MR_global_info,*)" ",i,trim(adjustl(trim(infile))),IsThere
             if(.not.IsThere)then
               write(MR_global_error,*)"MR ERROR: Could not find windfile ",i
               write(MR_global_error,*)"          ",adjustl(trim(infile))
@@ -2836,13 +2846,13 @@
         call MR_Set_MetComp_Grids
 
         if(MR_Save_Velocities)then
-          write(MR_global_info,*)"Velocities will be saved on the metP grid"
+          if(MR_VERB.ge.1)write(MR_global_info,*)"Velocities will be saved on the metP grid"
           allocate(MR_vx_metP_last(nx_submet,ny_submet,np_fullmet));MR_vx_metP_last(:,:,:)=0.0_sp
           allocate(MR_vx_metP_next(nx_submet,ny_submet,np_fullmet));MR_vx_metP_next(:,:,:)=0.0_sp
           allocate(MR_vy_metP_last(nx_submet,ny_submet,np_fullmet));MR_vy_metP_last(:,:,:)=0.0_sp
           allocate(MR_vy_metP_next(nx_submet,ny_submet,np_fullmet));MR_vy_metP_next(:,:,:)=0.0_sp
         else
-          write(MR_global_info,*)"Velocities not saved"
+          if(MR_VERB.ge.1)write(MR_global_info,*)"Velocities not saved"
         endif
 
       case default
@@ -3068,9 +3078,10 @@
             ! If only 1 step/file, use the next file (if present)
           met_t2 = MR_windfile_starthour(1)+MR_windfile_stephour(2,1)
         else
-          !
-          write(MR_global_info,*)"WARNING: Only one time step available."
-          write(MR_global_info,*)"         Setting interval step to 1000.0"
+          if(MR_VERB.ge.1)then
+            write(MR_global_info,*)"WARNING: Only one time step available."
+            write(MR_global_info,*)"         Setting interval step to 1000.0"
+          endif
           met_t2 = met_t1 + 1000.0
         endif
         StepInterval = met_t2 - met_t1
@@ -3080,9 +3091,11 @@
       if(MR_iwind.eq.1.and.MR_iwindformat.eq.1)then
         ! For the ASCII profile cases (not the radiosonde), hours are given as offset
         ! from the start time.  So reset all hours to relative to eStartHour
-        write(MR_global_info,*)"Note:  The hours value in 1d ascii profiles are interpreted as offset"
-        write(MR_global_info,*)"       hours.  Shifting the file time to reflect the requested start"
-        write(MR_global_info,*)"       time plus offset."
+        if(MR_VERB.ge.1)then
+          write(MR_global_info,*)"Note:  The hours value in 1d ascii profiles are interpreted as offset"
+          write(MR_global_info,*)"       hours.  Shifting the file time to reflect the requested start"
+          write(MR_global_info,*)"       time plus offset."
+        endif
         do i=1,MR_Snd_nt_fullmet
           MR_windfile_starthour(i) = MR_windfile_starthour(i) + MR_Comp_StartHour
         enddo
@@ -3092,14 +3105,16 @@
       if(MR_Comp_StartHour.lt.met_t1)then
         ! Start time requested is before that available, check if we can extrapolate
         if(MR_Comp_StartHour.ge.met_t1-met_dt1)then
-          write(MR_global_info,*)"WARNING: Start time is before the first time step"
-          write(MR_global_info,*)"         However, it is within one interval so we will"
-          write(MR_global_info,*)"         apply the value at MR_windfile_starthour(1)."
-          write(MR_global_info,*)"         Using a time step interval of ",StepInterval
-          if(StepInterval.gt.720.0_dp)then
-            if(MR_iwind.eq.1.and.MR_iwindformat.eq.1.and.nt_fullmet.eq.1)then
-              write(MR_global_info,*)"         Note: This interval is set high since only one"
-              write(MR_global_info,*)"               sonde file was provided."
+          if(MR_VERB.ge.1)then
+            write(MR_global_info,*)"WARNING: Start time is before the first time step"
+            write(MR_global_info,*)"         However, it is within one interval so we will"
+            write(MR_global_info,*)"         apply the value at MR_windfile_starthour(1)."
+            write(MR_global_info,*)"         Using a time step interval of ",StepInterval
+            if(StepInterval.gt.720.0_dp)then
+              if(MR_iwind.eq.1.and.MR_iwindformat.eq.1.and.nt_fullmet.eq.1)then
+                write(MR_global_info,*)"         Note: This interval is set high since only one"
+                write(MR_global_info,*)"               sonde file was provided."
+              endif
             endif
           endif
           prestep = .true.
@@ -3109,7 +3124,7 @@
           stop 1
         endif
       else
-        write(MR_global_info,*)"Start hour of simulation is in range of NWP data"
+        if(MR_VERB.ge.1)write(MR_global_info,*)"Start hour of simulation is in range of NWP data"
         prestep  = .false.
       endif
       !   Checking if a post-step is needed
@@ -3118,13 +3133,15 @@
       if(MR_Comp_StartHour+MR_Comp_Time_in_hours.ge.met_t1)then
         ! Start time requested is after that available, check if we can extrapolate
         if(MR_Comp_StartHour+MR_Comp_Time_in_hours.le.met_t1+met_dt1)then
-          write(MR_global_info,*)"WARNING: End time is at or after the last time step."
-          write(MR_global_info,*)"         However, it is within one interval so we will"
-          write(MR_global_info,*)"         apply the value at MR_windfile_starthour(MR_iwindfiles)"
-          if(StepInterval.gt.720.0_dp)then
-            if(MR_iwind.eq.1.and.MR_iwindformat.eq.1.and.nt_fullmet.eq.1)then
-              write(MR_global_info,*)"         Note: This interval is set high since only one"
-              write(MR_global_info,*)"               sonde file was provided."
+          if(MR_VERB.ge.1)then
+            write(MR_global_info,*)"WARNING: End time is at or after the last time step."
+            write(MR_global_info,*)"         However, it is within one interval so we will"
+            write(MR_global_info,*)"         apply the value at MR_windfile_starthour(MR_iwindfiles)"
+            if(StepInterval.gt.720.0_dp)then
+              if(MR_iwind.eq.1.and.MR_iwindformat.eq.1.and.nt_fullmet.eq.1)then
+                write(MR_global_info,*)"         Note: This interval is set high since only one"
+                write(MR_global_info,*)"               sonde file was provided."
+              endif
             endif
           endif
           poststep = .true.
@@ -3142,7 +3159,7 @@
           stop 1
         endif
       else
-        write(MR_global_info,*)"End hour of simulation is in range of NWP data"
+        if(MR_VERB.ge.1)write(MR_global_info,*)"End hour of simulation is in range of NWP data"
         poststep  = .false.
       endif
 
@@ -3151,12 +3168,14 @@
       ! Note: If pre-step or post-step is needed, istep will be incremented accordingly.
       ! Once we know the number of steps needed, we will allocate space, then fill the variables
       ! with just the step info needed.
-      write(MR_global_info,*)'    File num  | Step in file  |  stephour   |   SimStartHour   | nMetStep | Note'
+      if(MR_VERB.ge.1)write(MR_global_info,*)&
+         '    File num  | Step in file  |  stephour   |   SimStartHour   | nMetStep | Note'
       if(prestep)then
         Found_First_Step = .true.
         istep = 1
         stephour = MR_windfile_starthour(1) + MR_windfile_stephour(1,1) - StepInterval
-        write(MR_global_info,150)1,1,stephour,MR_Comp_StartHour,istep,"Prestep before MR_Comp_StartHour "
+        if(MR_VERB.ge.1)write(MR_global_info,150)1,1,stephour,MR_Comp_StartHour,&
+                        istep,"Prestep before MR_Comp_StartHour "
       else
         Found_First_Step = .false.
         istep = 0
@@ -3179,7 +3198,7 @@
             if(MR_windfiles_nt_fullmet(iw).lt.NT_MAXOUT)then
               ! This suppresses outputting the windfile step info for the files that contain a year's
               ! worth of data (NCEP 2.5, etc)
-              write(MR_global_info,150)                    &
+              if(MR_VERB.ge.1)write(MR_global_info,150)                    &
                 iw,iwstep,stephour,MR_Comp_StartHour,istep,&
                 "Before or at MR_Comp_StartHour."
             endif
@@ -3189,7 +3208,7 @@
               Found_First_Step = .true.
               istep = istep + 1
               if(MR_windfiles_nt_fullmet(iw).lt.NT_MAXOUT)then
-                write(MR_global_info,150)                    &
+                if(MR_VERB.ge.1)write(MR_global_info,150)                    &
                   iw,iwstep,stephour,MR_Comp_StartHour,istep,&
                   "After MR_Comp_StartHour "
               endif
@@ -3203,7 +3222,7 @@
           endif
           if(Found_Last_Step &
              .and.MR_windfiles_nt_fullmet(iw).lt.NT_MAXOUT)then ! This condition suppresses output for NCEP 2.5
-              write(MR_global_info,150)                    &
+              if(MR_VERB.ge.1)write(MR_global_info,150)                    &
                 iw,iwstep,stephour,MR_Comp_StartHour,istep,&
                 "At or after END OF SIM  "
           endif
@@ -3218,7 +3237,8 @@
           stephour = MR_windfile_starthour(MR_iwindfiles) + &
                        MR_windfile_stephour(MR_iwindfiles,MR_windfiles_nt_fullmet(MR_iwindfiles)) + &
                        StepInterval
-          write(MR_global_info,150)MR_iwindfiles,1,stephour,MR_Comp_StartHour,nMetSteps_Comp,"Poststep after END OF SIM  "
+          if(MR_VERB.ge.1)write(MR_global_info,150)MR_iwindfiles,1,stephour,&
+                     MR_Comp_StartHour,nMetSteps_Comp,"Poststep after END OF SIM  "
 
         else
           write(MR_global_error,*)"MR ERROR:  Something is wrong.  Could not find the last MetStep needed for"
@@ -3231,11 +3251,13 @@
       ! We now have the number of steps needed for the computation
       ! Allocate the lists
       MR_MetSteps_Total = nMetSteps_Comp
-      write(MR_global_info,*)"MR: Allocating space for ",MR_MetSteps_Total,"step(s)"
+      if(MR_VERB.ge.1)write(MR_global_info,*)"MR: Allocating space for ",MR_MetSteps_Total,"step(s)"
       if(prestep.or.poststep)then
-        write(MR_global_info,*)"         Including:"
-        if(prestep) write(MR_global_info,*)"             1 prestep"
-        if(poststep)write(MR_global_info,*)"             1 poststep"
+        if(MR_VERB.ge.1)then
+          write(MR_global_info,*)"         Including:"
+          if(prestep) write(MR_global_info,*)"             1 prestep"
+          if(poststep)write(MR_global_info,*)"             1 poststep"
+        endif
       endif
       if (.not. allocated(MR_MetStep_File)) then
         allocate(MR_MetStep_File(MR_MetSteps_Total))               ;MR_MetStep_File(:)=''
@@ -3335,8 +3357,10 @@
       enddo
       MR_MetStep_Interval(MR_MetSteps_Total)=MR_MetStep_Interval(MR_MetSteps_Total-1)
 
-      write(MR_global_info,*)"Comp start = ",real(MR_Comp_StartHour,kind=4)
-      write(MR_global_info,*)"Comp end   = ",real(MR_Comp_StartHour+MR_Comp_Time_in_hours,kind=4)
+      if(MR_VERB.ge.1)then
+        write(MR_global_info,*)"Comp start = ",real(MR_Comp_StartHour,kind=4)
+        write(MR_global_info,*)"Comp end   = ",real(MR_Comp_StartHour+MR_Comp_Time_in_hours,kind=4)
+      endif
 
       do istep = 1,MR_MetSteps_Total
         iw       = MR_MetStep_findex(istep)
@@ -3345,7 +3369,7 @@
       enddo
 
 !     MAKE SURE THE WIND MODEL TIME WINDOW COVERS THE ENTIRE SIMULATION TIME
-      write(MR_global_info,99)
+      if(MR_VERB.ge.1)write(MR_global_info,99)
 99    format(/,4x,'Making sure the mesoscale model time covers the simulation time . . . ')
       if (MR_MetStep_Hour_since_baseyear(1).gt.MR_Comp_StartHour) then
         write(MR_global_error,*)"MR ERROR:  Wind data starts after SimStartHour"
@@ -3356,8 +3380,6 @@
         do i = 1,MR_MetSteps_Total
           write(MR_global_error,*)"    ",i,MR_MetStep_Hour_since_baseyear(i)
         enddo
-        !write(MR_global_log ,101)
-!101     format(4x,'Error.  The model starts after the first eruption. Program stopped.')
         stop 1
       elseif (MR_MetStep_Hour_since_baseyear(MR_MetSteps_Total).lt.(MR_Comp_StartHour+MR_Comp_Time_in_hours)) then
         write(MR_global_error,*)"MR ERROR:  Last met time is earlier than simulation time"
@@ -3372,7 +3394,7 @@
 102     format(4x,'Error.  The model ends before the end of the last eruption.  Program stopped.')
         stop 1
       endif
-      write(MR_global_info,103)
+      if(MR_VERB.ge.1)write(MR_global_info,103)
 103   format(4x,'Good.  It does.',/)
 
       CALLED_MR_Set_Met_Times = .true.
@@ -3425,7 +3447,7 @@
         write(MR_global_production,*)"--------------------------------------------------------------------------------"
       endif
 
-      write(MR_global_production,*)"     Reading HGT array for istep = ",istep
+      if(MR_VERB.ge.1)write(MR_global_production,*)"     Reading HGT array for istep = ",istep
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -3659,7 +3681,6 @@
             ! Assign top node
             if(MR_iHeightHandler.eq.1)then
               z_col_metP(np_fullmet+2) = z_col_metP(np_fullmet+1) + 10.0_sp
-              !write(MR_global_info,*)z_col_metP(np_fullmet+1:np_fullmet+2)
             elseif(MR_iHeightHandler.eq.2)then
               z_col_metP(np_fullmet+2) = Suppl_H
               if(ivar.ne.5)then
@@ -4479,12 +4500,14 @@
           ! increase linearly with k
           do k=2,np_fullmet
             if (z_col_metP(k)<z_col_metP(k-1))then
-              write(MR_global_info,*)"MR_WARNING: Need to adjust value in MR_Regrid_MetP_to_MetH"
-              write(MR_global_info,*)"            that are not increasing in height with decreasing p"
-              write(MR_global_info,*)"i = ",i
-              write(MR_global_info,*)"j = ",j
-              write(MR_global_info,*)"k = ",k
-              write(MR_global_info,*)z_col_metP
+              if(MR_VERB.ge.2)then
+                write(MR_global_info,*)"MR_WARNING: Need to adjust value in MR_Regrid_MetP_to_MetH"
+                write(MR_global_info,*)"            that are not increasing in height with decreasing p"
+                write(MR_global_info,*)"i = ",i
+                write(MR_global_info,*)"j = ",j
+                write(MR_global_info,*)"k = ",k
+                write(MR_global_info,*)z_col_metP
+              endif
               knext=k       !find the first value of z_col_metP that's above z_col_metP(k-1)
               do while (z_col_metP(knext)<z_col_metP(k-1))
                  knext=knext+1

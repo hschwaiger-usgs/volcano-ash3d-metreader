@@ -129,7 +129,7 @@
           !   Assume all files have the same format
           ! Note: you can inspect the grib header using grib_dump tmp.grib2 > header.txt
 
-        write(MR_global_production,*)&
+        if(MR_VERB.ge.1)write(MR_global_production,*)&
           "Opening grib file to find version number"
         iw = 1
 
@@ -145,7 +145,7 @@
         if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_close_file ")
 
       endif
-      write(MR_global_production,*)"Grib version = ",MR_GRIB_Version
+      if(MR_VERB.ge.1)write(MR_global_production,*)"Grib version = ",MR_GRIB_Version
       !---------------------------------------------------------------------------------
       ! Checking for dimension length and values for x,y,t,p
       !   Assume all files have the same format
@@ -297,14 +297,14 @@
             call codes_get(igribv(ir),'jDirectionIncrementInDegrees',dum_dp,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get jDirectionIncrementInDegrees ")
             dy_met_const = real(dum_dp,kind=4)
-            write(MR_global_production,*)"Setting x grid starting at",Lon_start
-            write(MR_global_production,*)"with a spacing of ",dx_met_const
+            if(MR_VERB.ge.1)write(MR_global_production,*)"Setting x grid starting at",Lon_start
+            if(MR_VERB.ge.1)write(MR_global_production,*)"with a spacing of ",dx_met_const
             do i=1,nx_fullmet
               x_fullmet_sp(i) = real(Lon_start,kind=sp)+ &
                                  (i-1)* dx_met_const
             enddo
-            write(MR_global_production,*)"Setting y grid starting at",Lat_start
-            write(MR_global_production,*)"with a spacing of ",dy_met_const
+            if(MR_VERB.ge.1)write(MR_global_production,*)"Setting y grid starting at",Lat_start
+            if(MR_VERB.ge.1)write(MR_global_production,*)"with a spacing of ",dy_met_const
             if(y_inverted)then
               do j = 1,ny_fullmet
                 y_fullmet_sp(j) = real(y_start - (j-1)*dy_met_const,kind=sp)
@@ -405,7 +405,7 @@
             Met_Re   =  6371.229_8
           else
             write(MR_global_error,*)&
-         'MR ERROR: Cannot determine the projection from the GRIB file.'
+             'MR ERROR: Cannot determine the projection from the GRIB file.'
             stop 1
           endif
           ! Override for the case of NARR
@@ -430,18 +430,20 @@
             call PJ_proj_for(Lon_start,Lat_start, Met_iprojflag, &
                      Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
                      x_start,y_start)
-            write(MR_global_production,*)"Getting start coordinate for ",Lon_start,Lat_start
-            write(MR_global_production,*)" Projected coordinate = ",x_start,y_start
+            if(MR_VERB.ge.1)write(MR_global_production,*)&
+                             "Getting start coordinate for ",Lon_start,Lat_start
+            if(MR_VERB.ge.1)write(MR_global_production,*)&
+                             " Projected coordinate = ",x_start,y_start
           endif
 
           if(.not.ReadGrid)then
-            write(MR_global_production,*)"Setting x grid starting at",x_start
-            write(MR_global_production,*)"with a spacing of ",dx_met_const
+            if(MR_VERB.ge.1)write(MR_global_production,*)"Setting x grid starting at",x_start
+            if(MR_VERB.ge.1)write(MR_global_production,*)"with a spacing of ",dx_met_const
             do i = 0,nx_fullmet+1
               x_fullmet_sp(i) = real(x_start + (i-1)*dx_met_const,kind=sp)
             enddo
-            write(MR_global_production,*)"Setting y grid starting at",y_start
-            write(MR_global_production,*)"with a spacing of ",dy_met_const
+            if(MR_VERB.ge.1)write(MR_global_production,*)"Setting y grid starting at",y_start
+            if(MR_VERB.ge.1)write(MR_global_production,*)"with a spacing of ",dy_met_const
             if(y_inverted)then
               do i = 1,ny_fullmet
                 y_fullmet_sp(i) = real(y_start - (i-1)*dy_met_const,kind=sp)
@@ -682,21 +684,23 @@
         enddo
       endif
 
-      write(MR_global_production,*)" Found these levels"
-      write(MR_global_production,*)&
-        "  VaribleID    LevelIdx       dimID      length"
-      do ivar = 1,MR_MAXVARS
-        if (Met_var_IsAvailable(ivar))then 
-          if(Met_var_zdim_idx(ivar).eq.0)then
-            write(MR_global_production,*)ivar,Met_var_zdim_idx(ivar),0,0,&
-                                         trim(adjustl(Met_var_GRIB_names(ivar)))
-          else
-            write(MR_global_production,*)ivar,Met_var_zdim_idx(ivar),0,&
-                                         nlevs_fullmet(Met_var_zdim_idx(ivar)),&
-                                         trim(adjustl(Met_var_GRIB_names(ivar)))
+      if(MR_VERB.ge.1)then
+        write(MR_global_production,*)" Found these levels"
+        write(MR_global_production,*)&
+          "  VaribleID    LevelIdx       dimID      length"
+        do ivar = 1,MR_MAXVARS
+          if (Met_var_IsAvailable(ivar))then 
+            if(Met_var_zdim_idx(ivar).eq.0)then
+              write(MR_global_production,*)ivar,Met_var_zdim_idx(ivar),0,0,&
+                                           trim(adjustl(Met_var_GRIB_names(ivar)))
+            else
+              write(MR_global_production,*)ivar,Met_var_zdim_idx(ivar),0,&
+                                           nlevs_fullmet(Met_var_zdim_idx(ivar)),&
+                                           trim(adjustl(Met_var_GRIB_names(ivar)))
+            endif
           endif
-        endif
-      enddo
+        enddo
+      endif
 
       ! Now assign these levels to the working arrays
       ! Geopotential is the first variable checked, use this for np_fullmet
@@ -714,11 +718,13 @@
         z_approx(k) = MR_Z_US_StdAtm(p_fullmet_sp(k))
       enddo
 
-      write(MR_global_info,*)"Dimension info:"
-      write(MR_global_info,*)"  record (time): ",nt_fullmet
-      write(MR_global_info,*)"  level  (z)   : ",np_fullmet
-      write(MR_global_info,*)"  y            : ",ny_fullmet
-      write(MR_global_info,*)"  x            : ",nx_fullmet
+      if(MR_VERB.ge.1)then
+        write(MR_global_info,*)"Dimension info:"
+        write(MR_global_info,*)"  record (time): ",nt_fullmet
+        write(MR_global_info,*)"  level  (z)   : ",np_fullmet
+        write(MR_global_info,*)"  y            : ",ny_fullmet
+        write(MR_global_info,*)"  x            : ",nx_fullmet
+      endif
 
       !************************************************************************
       ! assign boundaries of mesoscale model
@@ -741,6 +747,7 @@
         yUR_fullmet = y_fullmet_sp(ny_fullmet)
       endif
 
+      if(MR_VERB.ge.1)&
       write(MR_global_production,*)&
        "----------------------------------------",&
        "----------------------------------------"
@@ -830,6 +837,7 @@
         write(MR_global_error,*)"MR ERROR: iwf=27 is a GRIB1 format."
         write(MR_global_error,*)"       The GRIB1 reader is not yet working"
         stop 1
+
         ! Here the branch for when MR_iwindformat = 27
         ! First copy path read in to slot 2
         !if(MR_runAsForecast)then
@@ -873,15 +881,17 @@
 
           ! Each wind file needs a ref-time which in almost all cases is given
           ! in the 'units' attribute of the time variable
-          write(MR_global_info,*)iw,trim(adjustl(MR_windfiles(iw)))
+          if(MR_VERB.ge.1)write(MR_global_info,*)iw,trim(adjustl(MR_windfiles(iw)))
 
           if(iw.eq.1)then
             ! For now, assume one time step per file
             nt_fullmet = 1
-            write(MR_global_info,*)"  Assuming all NWP files have the same number of steps."
-            write(MR_global_info,*)"   For grib, assume one time step per file."
-            write(MR_global_info,*)"   Allocating time arrays for ",MR_iwindfiles,"file(s)"
-            write(MR_global_info,*)"                              ",nt_fullmet,"step(s) each"
+            if(MR_VERB.ge.1)then
+              write(MR_global_info,*)"  Assuming all NWP files have the same number of steps."
+              write(MR_global_info,*)"   For grib, assume one time step per file."
+              write(MR_global_info,*)"   Allocating time arrays for ",MR_iwindfiles,"file(s)"
+              write(MR_global_info,*)"                              ",nt_fullmet,"step(s) each"
+            endif
             allocate(MR_windfile_stephour(MR_iwindfiles,nt_fullmet))
           endif
 
@@ -913,8 +923,9 @@
           itstart_min   = mod(dataTime,100)
           itstart_sec   = 0
 
-          write(MR_global_info,2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
-                                     itstart_hour,itstart_min,itstart_sec
+          if(MR_VERB.ge.1)write(MR_global_info,2100)&
+             "Ref time = ",itstart_year,itstart_month,itstart_day, &
+             itstart_hour,itstart_min,itstart_sec
 
           call codes_release(igrib,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
@@ -936,15 +947,16 @@
 
       ! Finished setting up the start time of each wind file in HoursSince : MR_windfile_starthour(iw)
       !  and the forecast (offset from start of file) for each step        : MR_windfile_stephour(iw,iwstep)
-
-      write(MR_global_info,*)"  File,  step,        Ref,     Offset,  HoursSince"
-      do iw = 1,MR_iwindfiles
-        do iws = 1,nt_fullmet
-          write(MR_global_info,800)iw,iws,real(MR_windfile_starthour(iw),kind=4),&
-                           real(MR_windfile_stephour(iw,iws),kind=4),&
-                           real(MR_windfile_starthour(iw)+MR_windfile_stephour(iw,iws),kind=4)
+      if(MR_VERB.ge.1)then
+        write(MR_global_info,*)"  File,  step,        Ref,     Offset,  HoursSince"
+        do iw = 1,MR_iwindfiles
+          do iws = 1,nt_fullmet
+            write(MR_global_info,800)iw,iws,real(MR_windfile_starthour(iw),kind=4),&
+                             real(MR_windfile_stephour(iw,iws),kind=4),&
+                             real(MR_windfile_starthour(iw)+MR_windfile_stephour(iw,iws),kind=4)
+          enddo
         enddo
-      enddo
+      endif
  800  format(i7,i7,3f12.2)
 
       if(MR_VERB.ge.2)then
@@ -1296,9 +1308,6 @@
             p_met_loc(1:np_met_loc)  = &
               int(levs_fullmet_sp(idx,1:nlevs_fullmet(idx))/100.0_sp)
           else
-            !write(MR_global_info,*)"np_met_loc",np_met_loc
-            !write(MR_global_info,*)idx
-            !write(MR_global_info,*)nlevs_fullmet
             p_met_loc(1:np_met_loc)  = &
               int(levs_fullmet_sp(idx,1:nlevs_fullmet(idx)))
           endif
@@ -1341,9 +1350,9 @@
           write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&
                          ", file = ",iw,&
                          ", slice = ",iwstep
-          write(MR_global_info,*)"Reading ",trim(adjustl(invar)),&
-                " from file : ",&
-                trim(adjustl(index_file)),fileposstr
+          if(MR_VERB.ge.1)write(MR_global_info,*)&
+             "Reading ",trim(adjustl(invar)),&
+             " from file : ",trim(adjustl(index_file)),fileposstr
 
           call codes_index_read(idx,index_file)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_read ")
@@ -1450,8 +1459,6 @@
           write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&
                          ", file = ",iw,&
                          ", slice = ",iwstep
-          !write(MR_global_info,*)"Reading ",trim(adjustl(invar))," from file : ",&
-          !          trim(adjustl(grib_file_path))!,nx_submet,ny_submet,np_met_loc
           write(MR_global_info,*)"Reading ",trim(adjustl(invar)),&
                 " from file : ",&
                 trim(adjustl(grib_file_path)),fileposstr
@@ -1465,7 +1472,6 @@
           !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_grib_multi_support_on ")
 
           ! Loop on all the messages in a file.
-          !call grib_new_from_file(ifile,igrib,nSTAT)
           call codes_new_from_file(ifile,igrib,nSTAT)
           count1=0
 
@@ -1539,9 +1545,9 @@
           write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&
                          ", file = ",iw,&
                          ", slice = ",iwstep
-          write(MR_global_info,*)"Reading ",trim(adjustl(invar))," from file : ",&
-                    trim(adjustl(index_file)),&
-                fileposstr
+          if(MR_VERB.ge.1)write(MR_global_info,*)&
+             "Reading ",trim(adjustl(invar))," from file : ",&
+             trim(adjustl(index_file)),fileposstr
 
           call codes_index_read(idx,index_file,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_read ")
@@ -1674,8 +1680,9 @@
         else
           ! We don't have/(can't make) the index file so scan all messages of the
           ! grib2 file
-          write(MR_global_info,*)istep,ivar,"Reading ",trim(adjustl(invar))," from file : ",&
-                    trim(adjustl(grib_file_path))
+          if(MR_VERB.ge.1)write(MR_global_info,*)&
+             istep,ivar,"Reading ",trim(adjustl(invar))," from file : ",&
+             trim(adjustl(grib_file_path))
           ifile=5
           call codes_open_file(ifile,grib_file_path,'R',nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
