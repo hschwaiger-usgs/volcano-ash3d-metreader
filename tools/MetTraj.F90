@@ -389,7 +389,7 @@
       elseif(nargs.ge.6)then
         ! Here, everything is set from the command-line with lots of assumed
         ! values.  Only GFS and NCEP 50-year are used here.
-        write(MR_global_production,*)"Reading comand-line"
+        write(MR_global_production,*)"Reading command-line"
         !  And here is what we assume:
         StreamFlag = 1  ! This means we are doing streamlines, NOT streaklines
         Simtime_in_hours = 24.0_8   ! Length of time to integrate (can be changed on command-line)

@@ -1712,7 +1712,7 @@
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "GFS 0.5-degree"
+                  "GFS 1.0-degree"
 
         MR_iGridCode = 3
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)

@@ -1810,16 +1810,19 @@
             endif
             nSTAT = nf90_inquire_dimension(ncid,gph_DimIDs(1),indim)
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension X")
-            Met_dim_names(4)= trim(adjustl(indim))
+            if(iw.eq.1)Met_dim_names(4)= trim(adjustl(indim))
             nSTAT = nf90_inquire_dimension(ncid,gph_DimIDs(2),indim)
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Y")
-            Met_dim_names(3)= trim(adjustl(indim))
+            if(iw.eq.1)Met_dim_names(3)= trim(adjustl(indim))
             nSTAT = nf90_inquire_dimension(ncid,gph_DimIDs(3),indim)
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension level")
-            Met_dim_names(2)= trim(adjustl(indim))
+              ! It may be worth checking subsequent iw to make sure the
+              ! names are the same (isobaric1 vs isobaric2 or something)
+            if(iw.eq.1)Met_dim_names(2)= trim(adjustl(indim))
             nSTAT = nf90_inquire_dimension(ncid,gph_DimIDs(4),indim)
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Time")
-            Met_dim_names(1)= trim(adjustl(indim))
+              ! Same comment as above but for time1 vs time.
+            if(iw.eq.1)Met_dim_names(1)= trim(adjustl(indim))
 
             nSTAT = nf90_inq_dimid(ncid,trim(adjustl(Met_dim_names(1))),t_dim_id)
             call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid Time")
@@ -1848,7 +1851,7 @@
               reftimedimlen = 31  ! set the length to the full amount
             else
               ! if the call to check units above failed, issue a warning
-              call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute")
+              call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute Time units")
               if(MR_VERB.ge.1)write(MR_global_log  ,*)'  Trying to read GRIB_orgReferenceTime'
               ! Try GRIB_orgReferenceTime
               nSTAT = nf90_Inquire_Attribute(ncid, time_var_id,&
@@ -2392,14 +2395,16 @@
         call MR_NC_check_status(nSTAT,1,"nf90_inq_varid")
         nSTAT = nf90_Inquire_Attribute(ncid, var_id,&
                                        "_FillValue",xtype, length, attnum)
-        call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute")
+        ! Normally, we would issue a warning if we can't find this attribute, but
+        ! most files will not have this
+        !call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute _FillValue")
         if(nSTAT.eq.0)then
           FoundFillVAttr = .true.
           nSTAT = nf90_get_att(ncid, var_id,"_FillValue",dum_sp)
           call MR_NC_check_status(nSTAT,1,"nf90_get_att _FillValue")
           fill_value_sp = dum_sp
           if(MR_VERB.ge.1)write(MR_global_info,*)"    Found fill value",fill_value_sp
-          exit
+          exit  ! if we've found _FillValue, then break out of the do loop
         endif
       enddo
 
