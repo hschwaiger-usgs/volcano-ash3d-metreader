@@ -19,7 +19,10 @@
       nargs = command_argument_count()
 
       if (nargs.ne.1) then
-        write(0,*)"MR ERROR: no grib file given"
+        !do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        !  write(errlog(io),*)"MR ERROR: no grib file given"
+          write(6,*)"MR ERROR: no grib file given"
+        !endif;enddo
         stop 1
       else
         call get_command_argument(1, arg, status)

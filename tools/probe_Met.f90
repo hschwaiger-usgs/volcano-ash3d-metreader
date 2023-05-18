@@ -133,46 +133,47 @@
 !     TEST READ COMMAND LINE ARGUMENTS
       nargs = command_argument_count()
       if (nargs.lt.9) then
-        write(MR_global_error,*)"ERROR: insufficient command-line arguments"
-        write(MR_global_error,*)"Usage: probe_Met filename tstep llflag lon lat trunc nvars ",&
-                                "vars(nvars) iw iwf (inyear inmonth inday inhour)"
-        write(MR_global_error,*)"       file         : string  : name of input file"
-        write(MR_global_error,*)"       timestep     : integer : step in file"
-        write(MR_global_error,*)"       llflag       : integer : 0 for using windfile grid; 1 for"
-        write(MR_global_error,*)"                                  forcing Lat/Lon"
-        write(MR_global_error,*)"       lon/x        : real    : longitude (or x) of sonde point"
-        write(MR_global_error,*)"       lat/y        : real    : latitude (or y) of sonde point"
-        write(MR_global_error,*)"       trunc flag   : char    : truncation flag (T or F)"
-        write(MR_global_error,*)"                                  T = coordinates truncated to nearest met node"
-        write(MR_global_error,*)"                                  F = values interpolated onto given coordinate"
-        write(MR_global_error,*)"       nvars        : integer : number of pressure variables to export"
-        write(MR_global_error,*)"       varID(nvars) : integers: variable ID's to read and export"
-        write(MR_global_error,*)"                        1 = GPH (km)"
-        write(MR_global_error,*)"                        2 = U (m/s)"
-        write(MR_global_error,*)"                        3 = V (m/s)"
-        write(MR_global_error,*)"                        4 = W (m/s)"
-        write(MR_global_error,*)"                        5 = T (K)"
-        write(MR_global_error,*)"       iw           : integer : windfile format code (3,4,5)"
-        write(MR_global_error,*)"       iwf          : integer : windfile product code"
-        write(MR_global_error,*)"       idf          : integer : igrid (2 for nc, 3 for grib)"
-        write(MR_global_error,*)"       year         : integer : only needed for iw = 5 files"
-        write(MR_global_error,*)"       month        : integer : "
-        write(MR_global_error,*)"       day          : integer : "
-        write(MR_global_error,*)"       hour         : real    : "
-        write(MR_global_error,*)"  "
-        write(MR_global_error,*)"     To probe a 0.5-degree GFS file in nc format for GPH only, use:"
-        write(MR_global_error,*)"       probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 1 1 4 20 2"
-        write(MR_global_error,*)"      same, but adding u,v,t"
-        write(MR_global_error,*)"       probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 4 1 2 3 5 4 20 2"
-        write(MR_global_error,*)"     To probe a NAM 91 grid over AK in nc format with a LL coordinate, use:"
-        write(MR_global_error,*)"       probe_Met nam.tm06.grib2 1 1 190.055 52.8222 F 4 1 2 3 5 4 13 3"
-        write(MR_global_error,*)"      with a projected coordinate:"
-        write(MR_global_error,*)"       probe_Met nam.tm06.grib2 1 0 -1363.94 -3758.61 F 4 1 2 3 5 4 13 3"
-        write(MR_global_error,*)"     To  probe the NCEP 2.5-degree data (or other iw=5), we need the"
-        write(MR_global_error,*)"     full date"
-        write(MR_global_error,*)"       probe_Met 2020061000_5.f006.nc 1 1 190.055 52.8222 T 1 1 4 20 2 2018 1 1 0.0"
-        write(MR_global_error,*)"     Output is written to the file NWP_prof.dat"
-
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"ERROR: insufficient command-line arguments"
+          write(errlog(io),*)"Usage: probe_Met filename tstep llflag lon lat trunc nvars ",&
+                                  "vars(nvars) iw iwf (inyear inmonth inday inhour)"
+          write(errlog(io),*)"       file         : string  : name of input file"
+          write(errlog(io),*)"       timestep     : integer : step in file"
+          write(errlog(io),*)"       llflag       : integer : 0 for using windfile grid; 1 for"
+          write(errlog(io),*)"                                  forcing Lat/Lon"
+          write(errlog(io),*)"       lon/x        : real    : longitude (or x) of sonde point"
+          write(errlog(io),*)"       lat/y        : real    : latitude (or y) of sonde point"
+          write(errlog(io),*)"       trunc flag   : char    : truncation flag (T or F)"
+          write(errlog(io),*)"                                  T = coordinates truncated to nearest met node"
+          write(errlog(io),*)"                                  F = values interpolated onto given coordinate"
+          write(errlog(io),*)"       nvars        : integer : number of pressure variables to export"
+          write(errlog(io),*)"       varID(nvars) : integers: variable ID's to read and export"
+          write(errlog(io),*)"                        1 = GPH (km)"
+          write(errlog(io),*)"                        2 = U (m/s)"
+          write(errlog(io),*)"                        3 = V (m/s)"
+          write(errlog(io),*)"                        4 = W (m/s)"
+          write(errlog(io),*)"                        5 = T (K)"
+          write(errlog(io),*)"       iw           : integer : windfile format code (3,4,5)"
+          write(errlog(io),*)"       iwf          : integer : windfile product code"
+          write(errlog(io),*)"       idf          : integer : igrid (2 for nc, 3 for grib)"
+          write(errlog(io),*)"       year         : integer : only needed for iw = 5 files"
+          write(errlog(io),*)"       month        : integer : "
+          write(errlog(io),*)"       day          : integer : "
+          write(errlog(io),*)"       hour         : real    : "
+          write(errlog(io),*)"  "
+          write(errlog(io),*)"     To probe a 0.5-degree GFS file in nc format for GPH only, use:"
+          write(errlog(io),*)"       probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 1 1 4 20 2"
+          write(errlog(io),*)"      same, but adding u,v,t"
+          write(errlog(io),*)"       probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 4 1 2 3 5 4 20 2"
+          write(errlog(io),*)"     To probe a NAM 91 grid over AK in nc format with a LL coordinate, use:"
+          write(errlog(io),*)"       probe_Met nam.tm06.grib2 1 1 190.055 52.8222 F 4 1 2 3 5 4 13 3"
+          write(errlog(io),*)"      with a projected coordinate:"
+          write(errlog(io),*)"       probe_Met nam.tm06.grib2 1 0 -1363.94 -3758.61 F 4 1 2 3 5 4 13 3"
+          write(errlog(io),*)"     To  probe the NCEP 2.5-degree data (or other iw=5), we need the"
+          write(errlog(io),*)"     full date"
+          write(errlog(io),*)"       probe_Met 2020061000_5.f006.nc 1 1 190.055 52.8222 T 1 1 4 20 2 2018 1 1 0.0"
+          write(errlog(io),*)"     Output is written to the file NWP_prof.dat"
+        endif;enddo
         stop 1
       else
         ! Get file name or windroot for iw=5
@@ -180,26 +181,38 @@
         read(arg,*)infile
         inquire( file=infile, exist=IsThere )
         if(.not.IsThere)then
-          write(MR_global_error,*)"ERROR: Cannot find input file"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"ERROR: Cannot find input file"
+          endif;enddo
           stop 1
         endif
-        write(MR_global_info,*)"infile = ",infile
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"infile = ",infile
+        endif;enddo
         ! Get time step to use
         call get_command_argument(2, arg, status)
         read(arg,*)intstep
-        write(MR_global_info,*)"intstep = ",intstep
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"intstep = ",intstep
+        endif;enddo
 
         ! Get Lat/Lon flag
         call get_command_argument(3, arg, status)
         read(arg,*)inLLflag
         if(inLLflag.eq.0)then
-          write(MR_global_info,*)"Lat/Lon flag not set."
-          write(MR_global_info,*)"Using native grid of windfile (which may be LL)."
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Lat/Lon flag not set."
+            write(outlog(io),*)"Using native grid of windfile (which may be LL)."
+          endif;enddo
         elseif(inLLflag.eq.1)then
-          write(MR_global_info,*)"Lat/Lon flag is set."
-          write(MR_global_info,*)"Using a Lat/Lon grid regardless of the windfile."
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Lat/Lon flag is set."
+            write(outlog(io),*)"Using a Lat/Lon grid regardless of the windfile."
+          endif;enddo
         else
-          write(MR_global_error,*)"ERROR: inLLflag must be either 0 or 1"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"ERROR: inLLflag must be either 0 or 1"
+          endif;enddo
           stop 1
         endif
         ! Get lon and lat
@@ -207,11 +220,15 @@
         read(arg,*)inlon
         ! round to the nearest third decimel
         inlon = nint(inlon * 1000.0_4) *0.001_4
-        write(MR_global_info,*)"inlon = ",inlon
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"inlon = ",inlon
+        endif;enddo
         call get_command_argument(5, arg, status)
         read(arg,*)inlat
         inlat = nint(inlat * 1000.0_4) *0.001_4
-        write(MR_global_info,*)"inlat = ",inlat
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"inlat = ",inlat
+        endif;enddo
 
         ! Get truncation flag
         call get_command_argument(6, arg, status)
@@ -222,24 +239,32 @@
           Truncate = .false.
         endif
         if(Truncate)then
-          write(MR_global_info,*)"Truncate = ",Truncate, "output will be on met node"
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Truncate = ",Truncate, "output will be on met node"
+          endif;enddo
         else
-          write(MR_global_info,*)"Truncate = ",Truncate, &
-                    "output will be on interpolated point"
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Truncate = ",Truncate, &
+                      "output will be on interpolated point"
+          endif;enddo
         endif
 
         ! Get number of variables to read/export
         call get_command_argument(7, arg, status)
         read(arg,*)invars
-        write(MR_global_info,*)"invars = ",invars
-        write(MR_global_info,*)"Allocating var list of length ",invars
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"invars = ",invars
+          write(outlog(io),*)"Allocating var list of length ",invars
+        endif;enddo
         allocate(invarlist(invars))
 
         ! Get variable IDs
         do i=1,invars
           call get_command_argument(7+i, arg, status)
           read(arg,*)invarlist(i)
-          write(MR_global_info,*)" Requested variable ID ",invarlist(i)
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)" Requested variable ID ",invarlist(i)
+          endif;enddo
         enddo
 
         ! Get wind format, wind product, and data format ID's
@@ -249,7 +274,9 @@
         read(arg,*)iwf
         call get_command_argument(10+invars, arg, status)
         read(arg,*)idf
-        write(MR_global_info,*)"Expecting wind format, NWP product ID and data type:",iw,iwf,idf
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Expecting wind format, NWP product ID and data type:",iw,iwf,idf
+        endif;enddo
 
         ! Get year, month, day, hour
         if(nargs.ge.11+invars)then
@@ -277,19 +304,27 @@
           inhour=0.0
         endif
         if(inyear.gt.0)then
-          write(MR_global_info,*)"Read date/hour as ",inyear,inmonth,inday,inhour
-          write(MR_global_info,*)"This will overwrite the requested timestep above"
-          write(MR_global_info,*)"only when using iw=5"
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Read date/hour as ",inyear,inmonth,inday,inhour
+            write(outlog(io),*)"This will overwrite the requested timestep above"
+            write(outlog(io),*)"only when using iw=5"
+          endif;enddo
         else
-          write(MR_global_info,*)"Optional arguments for date/hour not provided"
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Optional arguments for date/hour not provided"
+          endif;enddo
         endif
 
       endif
 
       if(Truncate)then
-        write(MR_global_info,*)"Truncating profile onto ",inlon,inlat
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Truncating profile onto ",inlon,inlat
+        endif;enddo
       else
-        write(MR_global_info,*)"Interpolating profile onto ",inlon,inlat
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Interpolating profile onto ",inlon,inlat
+        endif;enddo
       endif
 
       igrid   = 0 ! 
@@ -321,15 +356,19 @@
       endif
       if(IsLatLon_CompGrid)then
         if(inlon.lt.-360.0)then
-          write(MR_global_error,*)"ERROR: Longitude must be gt -360"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"ERROR: Longitude must be gt -360"
+          endif;enddo
           stop 1
         endif
         if(inlon.lt.0.0_4.or.inlon.gt.360.0_4)inlon=mod(inlon+360.0_4,360.0_4)
       endif
 
       if(Truncate)then
-        write(MR_global_info,*)&
-          "Truncating input coordinate to grid point on Met grid."
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)&
+            "Truncating input coordinate to grid point on Met grid."
+        endif;enddo
         do i=1,nx_fullmet-1
           if(x_fullmet_sp(i).le.inlon.and.x_fullmet_sp(i+1).gt.inlon)then
             inlon = x_fullmet_sp(i)
@@ -348,7 +387,9 @@
             endif
           enddo
         endif
-        write(MR_global_info,*)"Coordinate reset to ",inlon,inlat
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Coordinate reset to ",inlon,inlat
+        endif;enddo
       endif
 
       nxmax = 3 ! 
@@ -364,8 +405,10 @@
         lon_grid(1:3) = (/inlon-1.0_4*abs(dx_met_const),inlon,inlon+1.0_4*abs(dx_met_const)/)
         lat_grid(1:3) = (/inlat-1.0_4*abs(dy_met_const),inlat,inlat+1.0_4*abs(dy_met_const)/)
       endif
-      write(MR_global_info,*)"lon grid = ",lon_grid
-      write(MR_global_info,*)"lat_grid = ",lat_grid
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"lon grid = ",lon_grid
+        write(outlog(io),*)"lat_grid = ",lat_grid
+      endif;enddo
 
       allocate(z_cc(nzmax))    ; z_cc(1:2) = (/0.0_4, 10.0_4/)
 
@@ -375,7 +418,9 @@
                                  Met_phi0,Met_phi1,Met_phi2,&
                                  Met_k0,Met_Re)
 
-      write(MR_global_info,*)"Setting up wind grids"
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"Setting up wind grids"
+      endif;enddo
       call MR_Initialize_Met_Grids(nxmax,nymax,nzmax,&
                               lon_grid(1:nxmax), &
                               lat_grid(1:nymax), &
@@ -388,12 +433,16 @@
       call MR_Set_Met_Times(steptime,0.0_8)
 
       do i=1,50
-        write(MR_global_info,*)i,Met_var_NC_names(i),Met_var_IsAvailable(i)
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)i,Met_var_NC_names(i),Met_var_IsAvailable(i)
+        endif;enddo
       enddo
       
       call GetMetProfile(invars,invarlist)
 
-      write(MR_global_info,*)"Program ended normally."
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"Program ended normally."
+      endif;enddo
 
       end program probe_Met
 
@@ -434,7 +483,9 @@
       ! these are small
       allocate(u(np_fullmet))
       allocate(v(np_fullmet))
-      write(MR_global_info,*)" Inside GetMetProfile"
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)" Inside GetMetProfile"
+      endif;enddo
 
       ! First load the Met grids for Geopotential
       MR_iMetStep_Now = 1 ! This is initialized to 0
@@ -442,11 +493,15 @@
 
       do iv = 1,invars
         ivar = invarlist(iv)
-        write(MR_global_info,*)"Map_Case  and varID = ",Map_Case,iv
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Map_Case  and varID = ",Map_Case,iv
+        endif;enddo
         if (Map_Case.eq.4.and. & ! Only need to do this if Met=proj and
                                  ! comp is LL
             (iv.eq.2.or.iv.eq.3))then
-          write(MR_global_info,*)"MR Calling MR_Rotate_UV_GR2ER_Met to rotate vec"
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"MR Calling MR_Rotate_UV_GR2ER_Met to rotate vec"
+          endif;enddo
           ! if a vector call, store u and v to rotate
           call MR_Rotate_UV_GR2ER_Met(MR_iMetStep_Now,.true.)
           u(1:np_fullmet) = MR_dum3d_compP(2,2,1:np_fullmet)
@@ -454,7 +509,9 @@
           if(iv.eq.2)outvars(iv,1:np_fullmet) =u(1:np_fullmet)
           if(iv.eq.3)outvars(iv,1:np_fullmet) =v(1:np_fullmet)
         else
-          write(MR_global_info,*)"Calling MR_Read_3d_Met_Variable_to_CompP"
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Calling MR_Read_3d_Met_Variable_to_CompP"
+          endif;enddo
           call MR_Read_3d_Met_Variable_to_CompP(ivar,MR_iMetStep_Now)
           outvars(iv,1:np_fullmet) = MR_dum3d_compP(2,2,1:np_fullmet)
         endif

@@ -115,42 +115,43 @@
 !     TEST READ COMMAND LINE ARGUMENTS
       nargs = command_argument_count()
       if (nargs.lt.3) then
-        write(MR_global_info,*)"ERROR: not enough command-line arguments."
-        write(MR_global_info,*)"  Usage: MetCheck iwf idf filename [year]"
-        write(MR_global_info,*)"   where "
-        write(MR_global_info,*)"     iwf =  3 NARR3D NAM221 32 km North America files"
-        write(MR_global_info,*)"     iwf =  4 NARR3D NAM221 32 km North America files"
-        write(MR_global_info,*)"     iwf =  5 NAM216 AK 45km"
-        write(MR_global_info,*)"     iwf =  6 NAM Regional 90 km grid 104"
-        write(MR_global_info,*)"     iwf =  7 CONUS 212 40km"
-        write(MR_global_info,*)"     iwf =  8 CONUS 218 (12km)"
-        write(MR_global_info,*)"     iwf = 10 NAM 242 11.25 km AK"
-        write(MR_global_info,*)"     iwf = 11 NAM 196 2.5 km HI"
-        write(MR_global_info,*)"     iwf = 12 NAM 198 5.953 km AK"
-        write(MR_global_info,*)"     iwf = 13 NAM 91 2.976 km AK"
-        write(MR_global_info,*)"     iwf = 20 GFS 0.5"
-        write(MR_global_info,*)"     iwf = 21 GFS 1.0"
-        write(MR_global_info,*)"     iwf = 22 GFS 0.25"
-        write(MR_global_info,*)"     iwf = 23 NCEP / DOE reanalysis 2.5 degree files"
-        write(MR_global_info,*)"     iwf = 24 NASA-MERRA-2 reanalysis 0.625x0.5 degree files"
-        write(MR_global_info,*)"     iwf = 25 NCEP/NCAR reanalysis 2.5 degree files"
-        write(MR_global_info,*)"     iwf = 27 NOAA-CIRES reanalysis 2.5 degree files"
-        write(MR_global_info,*)"     iwf = 28 ECMWF Interim Reanalysis (ERA-Interim)"
-        write(MR_global_info,*)"     iwf = 32 Air Force Weather Agency subcenter = 0"
-        write(MR_global_info,*)"     iwf = 33 CCSM3.0 Community Atmosphere Model (CAM)"
-        write(MR_global_info,*)"     iwf = 40 NASA-GEOS Cp"
-        write(MR_global_info,*)"     iwf = 41 NASA-GEOS Np"
-        write(MR_global_info,*)"     iwf = 50 WRF"
-        write(MR_global_info,*)"     "
-        write(MR_global_info,*)"     idf = 2 NetCDF"
-        write(MR_global_info,*)"     idf = 3 grib"
-        write(MR_global_info,*)"     "
-        write(MR_global_info,*)"     filename = name of file of root directory for NCEP"
-        write(MR_global_info,*)"     "
-        write(MR_global_info,*)"     [year] = year for NCEP tests"
-        write(MR_global_info,*)"               This is optional and defaults to current year"
-        write(MR_global_info,*)"               if not provided."
-
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"ERROR: not enough command-line arguments."
+          write(errlog(io),*)"  Usage: MetCheck iwf idf filename [year]"
+          write(errlog(io),*)"   where "
+          write(errlog(io),*)"     iwf =  3 NARR3D NAM221 32 km North America files"
+          write(errlog(io),*)"     iwf =  4 NARR3D NAM221 32 km North America files"
+          write(errlog(io),*)"     iwf =  5 NAM216 AK 45km"
+          write(errlog(io),*)"     iwf =  6 NAM Regional 90 km grid 104"
+          write(errlog(io),*)"     iwf =  7 CONUS 212 40km"
+          write(errlog(io),*)"     iwf =  8 CONUS 218 (12km)"
+          write(errlog(io),*)"     iwf = 10 NAM 242 11.25 km AK"
+          write(errlog(io),*)"     iwf = 11 NAM 196 2.5 km HI"
+          write(errlog(io),*)"     iwf = 12 NAM 198 5.953 km AK"
+          write(errlog(io),*)"     iwf = 13 NAM 91 2.976 km AK"
+          write(errlog(io),*)"     iwf = 20 GFS 0.5"
+          write(errlog(io),*)"     iwf = 21 GFS 1.0"
+          write(errlog(io),*)"     iwf = 22 GFS 0.25"
+          write(errlog(io),*)"     iwf = 23 NCEP / DOE reanalysis 2.5 degree files"
+          write(errlog(io),*)"     iwf = 24 NASA-MERRA-2 reanalysis 0.625x0.5 degree files"
+          write(errlog(io),*)"     iwf = 25 NCEP/NCAR reanalysis 2.5 degree files"
+          write(errlog(io),*)"     iwf = 27 NOAA-CIRES reanalysis 2.5 degree files"
+          write(errlog(io),*)"     iwf = 28 ECMWF Interim Reanalysis (ERA-Interim)"
+          write(errlog(io),*)"     iwf = 32 Air Force Weather Agency subcenter = 0"
+          write(errlog(io),*)"     iwf = 33 CCSM3.0 Community Atmosphere Model (CAM)"
+          write(errlog(io),*)"     iwf = 40 NASA-GEOS Cp"
+          write(errlog(io),*)"     iwf = 41 NASA-GEOS Np"
+          write(errlog(io),*)"     iwf = 50 WRF"
+          write(errlog(io),*)"     "
+          write(errlog(io),*)"     idf = 2 NetCDF"
+          write(errlog(io),*)"     idf = 3 grib"
+          write(errlog(io),*)"     "
+          write(errlog(io),*)"     filename = name of file of root directory for NCEP"
+          write(errlog(io),*)"     "
+          write(errlog(io),*)"     [year] = year for NCEP tests"
+          write(errlog(io),*)"               This is optional and defaults to current year"
+          write(errlog(io),*)"               if not provided."
+        endif;enddo
         stop 1
       else
         call get_command_argument(1, arg, status)
@@ -178,14 +179,18 @@
            iwf.ne.33.and.&
            iwf.ne.41.and.&
            iwf.ne.42)then
-          write(MR_global_info,*)"ERROR: windformat not recognized"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"ERROR: windformat not recognized"
+          endif;enddo
           stop 1
         endif
         call get_command_argument(2, arg, status)
         read(arg,*)idf
         if(idf.ne.2.and.&
            idf.ne.3)then
-          write(MR_global_info,*)"ERROR: Only netcdf (2) and grib (3) supported"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"ERROR: Only netcdf (2) and grib (3) supported"
+          endif;enddo
           stop 1
         endif
 
@@ -204,8 +209,9 @@
         !MR_Comp_StartHour     = HS_hours_since_baseyear(iy,1,1,0.0_8,1900,.True.)
         !MR_Comp_Time_in_hours = 1.0
       endif
-
-      write(MR_global_info,*)"Set up windfile data structure"
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"Set up windfile data structure"
+      endif;enddo
       if(iwf.eq.25)then
         iw      = 5
         MR_Comp_StartHour     = HS_hours_since_baseyear(iy,1,1,0.0_8,1900,.True.)
@@ -283,10 +289,12 @@
                 do p=1,np
                   tmp=MR_dum3d_metP(i,j,p)
                   if(tmp.lt.v1.or.tmp.gt.v2)then
-                    write(MR_global_info,*)"ERROR reading value for ivar=",ivar
-                    write(MR_global_info,*)"      at i,j,p = ",i,j,p
-                    write(MR_global_info,*)"      Value read = ",tmp
-                    write(MR_global_info,*)"      Min / Max = ",v1,v2
+                    do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                      write(errlog(io),*)"ERROR reading value for ivar=",ivar
+                      write(errlog(io),*)"      at i,j,p = ",i,j,p
+                      write(errlog(io),*)"      Value read = ",tmp
+                      write(errlog(io),*)"      Min / Max = ",v1,v2
+                    endif;enddo
                     close(19)
                     stop 1
                   endif
@@ -313,7 +321,10 @@
       enddo
 
       close(19)
-      write(MR_global_info,*)"Program ended normally."
+
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"Program ended normally."
+      endif;enddo
 
       end program MetCheck
 

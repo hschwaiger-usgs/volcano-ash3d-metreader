@@ -84,13 +84,28 @@
       real(kind=sp), parameter :: MR_MIN_DZ     = 1.0e-4_sp   ! used in reassigning z for low-level negative GPH
 
       ! These output levels and stream IDs can be changed by the calling program
-      integer,public :: MR_VERB                = 1
-      integer,public :: MR_global_essential    = 6
-      integer,public :: MR_global_production   = 6
-      integer,public :: MR_global_debug        = 6
-      integer,public :: MR_global_info         = 6
-      integer,public :: MR_global_log          = 6
-      integer,public :: MR_global_error        = 6
+      ! default verbosity is 3
+      ! This will write everything from verbosity_log to verbosity_error to both stdout and stdlog
+      integer,dimension(2) :: VB = (/3,3/) ! Verbosity level for stdout and logfile, respectively
+      integer,public :: MR_VERB                = 3
+      integer :: stdin         = 5
+      integer :: MR_global_log = 9
+
+      integer :: MR_nio = 1   ! Number of output streams to use: 1 for just stdout,stderr or 2 to include a logfile
+      integer :: io
+      integer,dimension(2) :: outlog = (/6,9/) ! Assumes stdin=6, logfile=9
+      integer,dimension(2) :: errlog = (/0,9/) ! Assumes sterr=0, logfile=9
+
+      integer,parameter :: verbosity_debug2       = 1  ! Additional debugging information only written to stdout
+      integer,parameter :: verbosity_debug1       = 2  ! Debugging information only written to stdout
+      integer,parameter :: verbosity_log          = 3  ! Time step information (this is the limit for writing to logfile)
+      integer,parameter :: verbosity_info         = 4  ! Additional information on run set up and shutdown
+      integer,parameter :: verbosity_statistics   = 5  ! Details on health of run (timing, mass conservation)
+      integer,parameter :: verbosity_production   = 6  ! Major program flow info
+      integer,parameter :: verbosity_essential    = 7  ! Only start up and shutdown messages
+      integer,parameter :: verbosity_error        = 8  ! No logging to stdout, only stderr (and logfile)
+      integer,parameter :: verbosity_silent       = 9  ! No logging to stdout,stderr. Logfile written as normal
+      integer,parameter :: verbosity_dark         = 10 ! No logging to stdout,stderr or logfile
 
       logical        :: MR_useCompGrid         = .true. ! Reset this to .false. if you only need the Met grid
       logical        :: MR_useCompTime         = .true. ! Reset this to .false. if you only need the time of the file
@@ -572,11 +587,11 @@
 
       implicit none
 
-      if(MR_VERB.ge.1)then
-        write(MR_global_production,*)"-------------------------------------------------------"
-        write(MR_global_production,*)"-------- Resetting all MetReader Memory ---------------"
-        write(MR_global_production,*)"-------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"-------------------------------------------------------"
+        write(outlog(io),*)"-------- Resetting all MetReader Memory ---------------"
+        write(outlog(io),*)"-------------------------------------------------------"
+      endif;enddo
 
 #ifndef USEPOINTERS
        if(allocated(MR_windfile_starthour         ))deallocate(MR_windfile_starthour)
@@ -754,22 +769,28 @@
       MR_idataFormat        = idf
       MR_iwindfiles         = iwfiles
 
-      if(MR_VERB.ge.1)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Allocate_FullMetFileList                           ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      ! This should be the first subroutine called so reset verbosity levels
+      ! in case this was changed in the calling program
+      VB(1:2) = (/MR_VERB,MR_VERB/)
+
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Allocate_FullMetFileList                           ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
       if ((MR_iwind.ne.1).and.(MR_iwind.ne.2).and. &
           (MR_iwind.ne.3).and.(MR_iwind.ne.4).and. &
           (MR_iwind.ne.5)) then
-        write(MR_global_error,*)'MR_iwind must be between 1 and 5. Program stopped'
-        write(MR_global_error,*)' MR_iwind = ',MR_iwind
-        write(MR_global_error,*)' MR_IWIND OPTIONS:'
-        write(MR_global_error,*)' MR_iwind = 1 read from a 1-D wind sounding'
-        write(MR_global_error,*)'            2 read from 3D gridded ASCII files'
-        write(MR_global_error,*)'            3 read from a single, multistep file'
-        write(MR_global_error,*)'            4 read from multiple files'
-        write(MR_global_error,*)'            5 read variables from separate files'
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)'MR_iwind must be between 1 and 5. Program stopped'
+          write(errlog(io),*)' MR_iwind = ',MR_iwind
+          write(errlog(io),*)' MR_IWIND OPTIONS:'
+          write(errlog(io),*)' MR_iwind = 1 read from a 1-D wind sounding'
+          write(errlog(io),*)'            2 read from 3D gridded ASCII files'
+          write(errlog(io),*)'            3 read from a single, multistep file'
+          write(errlog(io),*)'            4 read from multiple files'
+          write(errlog(io),*)'            5 read variables from separate files'
+        endif;enddo
         stop 1
       endif
 
@@ -1061,23 +1082,28 @@
       if (MR_iwindformat.eq.0) then
           ! Custom format based on template
         MR_Reannalysis = .false.
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "Custom format based on template"
-
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "Custom format based on template"
+        endif;enddo
           ! This expects that MR_iwf_template has been filled by the calling program
         call MR_Read_Met_Template
 
       elseif (MR_iwindformat.eq.1) then
           ! ASCII profile
         MR_Reannalysis = .false.
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "ASCII profile"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "ASCII profile"
+        endif;enddo
       elseif (MR_iwindformat.eq.2) then
           ! Radiosonde data
         MR_Reannalysis = .false.
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "Radiosonde data"
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  Number of radiosonde stations = ",MR_iGridCode
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "Radiosonde data"
+          write(outlog(io),*)"  Number of radiosonde stations = ",MR_iGridCode
+        endif;enddo
       elseif (MR_iwindformat.eq.3) then 
         ! NARR3D NAM221 32 km North America files
           ! https://rda.ucar.edu/datasets/ds608.0/
@@ -1086,8 +1112,10 @@
           !   See  http://www.emc.ncep.noaa.gov/mmb/rreanl/faq.html#eta-winds
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! the lastest version of NARR data is v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NARR3D NAM221 32 km North America files with Re=6367.47"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NARR3D NAM221 32 km North America files with Re=6367.47"
+        endif;enddo
 
         MR_iGridCode = 1221  ! This is almost NAM221, but uses a diff Re
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode) 
@@ -1132,8 +1160,10 @@
           !   nam.t00z.awip3200.tm00.grib2
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NAM221 32 km North America files with Re=6371.229"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NAM221 32 km North America files with Re=6371.229"
+        endif;enddo
 
         MR_iGridCode = 221
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1178,8 +1208,10 @@
           !  nam.t00z.awipak00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NAM216 AK 45km"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NAM216 AK 45km"
+        endif;enddo
 
         MR_iGridCode = 216
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1225,8 +1257,10 @@
         !    nam.t00z.grbgrd00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NAM Regional 90 km grid 104"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NAM Regional 90 km grid 104"
+        endif;enddo
 
         MR_iGridCode = 104
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1272,8 +1306,10 @@
           !    nam.t00z.awp21100.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "CONUS 212 40km"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "CONUS 212 40km"
+        endif;enddo
 
         MR_iGridCode = 212
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1320,8 +1356,10 @@
           !   nam.t00z.awphys00.grb2.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "CONUS 218 (12km)"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "CONUS 218 (12km)"
+        endif;enddo
 
         MR_iGridCode = 218
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1357,8 +1395,10 @@
           !    nam.t00z.conusnest.hiresf00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "CONUS 227 (5.1 km)"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "CONUS 227 (5.1 km)"
+        endif;enddo
 
         MR_iGridCode = 227
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1409,8 +1449,10 @@
           !    nam.t00z.awipak00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NAM 242 11.25 km AK"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NAM 242 11.25 km AK"
+        endif;enddo
 
         MR_iGridCode = 242
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1452,8 +1494,10 @@
           !    nam.t00z.hawaiinest.hiresf00.tm0
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  " NAM 196 2.5 km HI"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    " NAM 196 2.5 km HI"
+        endif;enddo
 
         MR_iGridCode = 196
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1503,8 +1547,10 @@
           !    nam.t00z.alaskanest.hiresf00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NAM 198 5.953 km AK"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NAM 198 5.953 km AK"
+        endif;enddo
 
         MR_iGridCode = 198
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1563,8 +1609,10 @@
           !       appears to be in the order they are processed in the grib file
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NAM 91 2.976 km AK"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NAM 91 2.976 km AK"
+        endif;enddo
 
         MR_iGridCode = 91
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1615,8 +1663,10 @@
           !  nam.t00z.conusnest.hiresf00.tm00.grib2.nc
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "CONUS no grid ID (3.0 km)"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "CONUS no grid ID (3.0 km)"
+        endif;enddo
 
         MR_iGridCode = 1227
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1668,8 +1718,10 @@
           !    
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "GFS 0.5"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "GFS 0.5"
+        endif;enddo
 
         MR_iGridCode = 4
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1711,8 +1763,10 @@
           ! http://www.nco.ncep.noaa.gov/pmb/products/gfs/
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "GFS 1.0-degree"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "GFS 1.0-degree"
+        endif;enddo
 
         MR_iGridCode = 3
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1745,8 +1799,10 @@
           !  
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "GFS 0.25"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "GFS 0.25"
+        endif;enddo
 
         MR_iGridCode = 193
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1786,8 +1842,10 @@
          ! https://rda.ucar.edu/datasets/ds091.0
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! latest is 0, but deprecated
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NCEP / DOE reanalysis 2.5 degree files"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NCEP / DOE reanalysis 2.5 degree files"
+        endif;enddo
 
         MR_iGridCode = 2
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1818,8 +1876,10 @@
          ! NASA-MERRA reanalysis 0.625 x 0.5 degree files 
 
         if(MR_iversion.eq.-1)MR_iversion = 2 ! v1 finished in 2016
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NASA-MERRA-2 reanalysis 0.625/0.5 degree files"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NASA-MERRA-2 reanalysis 0.625/0.5 degree files"
+        endif;enddo
 
         MR_iGridCode = 1024
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1855,8 +1915,10 @@
          ! NCEP/NCAR reanalysis 2.5 degree files 
 
         if(MR_iversion.eq.-1)MR_iversion = 0 !
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NCEP/NCAR reanalysis 2.5 degree files"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                   "NCEP/NCAR reanalysis 2.5 degree files"
+        endif;enddo
 
         MR_iGridCode = 2
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1911,7 +1973,9 @@
           fill_value_sp = -9999.0_sp
 
         else
-          write(MR_global_error,*)"MR ERROR : NCEP Reannalysis provided only as iwind 4 or iwind 5"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : NCEP Reannalysis provided only as iwind 4 or iwind 5"
+          endif;enddo
           stop 1
         endif
 
@@ -1920,8 +1984,10 @@
          ! https://rda.ucar.edu/datasets/ds628.0/
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! 
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "JRA-55 reanalysis 1.25 degree files"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "JRA-55 reanalysis 1.25 degree files"
+        endif;enddo
 
         MR_iGridCode = 45
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -1957,9 +2023,11 @@
         endif
         if(MR_iversion.eq.2)then
 
-          if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                    "NOAA-CIRES reanalysis 2.0 degree files"
-  
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+            write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                      "NOAA-CIRES reanalysis 2.0 degree files"
+          endif;enddo
+
           MR_iGridCode = 1027
           call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
           MR_Reannalysis = .true.
@@ -2008,8 +2076,10 @@
           ! Note: this is also avalable from
           ! https://psl.noaa.gov/data/gridded/data.20thC_ReanV3.html, but might
           ! need format verification
-          if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                    "NOAA-CIRES-DOE reanalysis v3"
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+            write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                      "NOAA-CIRES-DOE reanalysis v3"
+          endif;enddo
 
           MR_iGridCode = 1027
           call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -2037,8 +2107,10 @@
          ! ECMWF Interim Reanalysis (ERA-Interim)
          ! https://rda.ucar.edu/datasets/ds627.0
 
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "ECMWF Interim Reanalysis (ERA-Interim)"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "ECMWF Interim Reanalysis (ERA-Interim)"
+        endif;enddo
 
         MR_iGridCode = 170
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -2077,8 +2149,10 @@
          ! https://rda.ucar.edu/datasets/ds630.0
          ! Note: files are provided as one variable per file
 
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "ECMWF ERA5 reanalysis"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "ECMWF ERA5 reanalysis"
+        endif;enddo
 
         MR_iGridCode = 1029
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -2131,8 +2205,10 @@
          ! https://rda.ucar.edu/datasets/ds626.0
          ! Note: files are provided as one variable per file
 
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "ECMWF ERA20C reanalysis"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "ECMWF ERA20C reanalysis"
+        endif;enddo
 
         MR_iGridCode = 1030
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -2163,8 +2239,10 @@
          ! Air Force Weather Agency subcenter = 0
          ! GALWEM
 
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "Air Force Weather Agency subcenter = 0"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "Air Force Weather Agency subcenter = 0"
+        endif;enddo
 
         MR_iGridCode = 1032
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -2192,8 +2270,10 @@
          ! http://www.cesm.ucar.edu/models/atm-cam/
          ! peleoclimate monthly averages
 
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "CCSM3.0 Community Atmosphere Model (CAM)"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "CCSM3.0 Community Atmosphere Model (CAM)"
+        endif;enddo
 
         MR_iGridCode = 1033
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -2222,8 +2302,10 @@
       elseif (MR_iwindformat.eq.40)then
          ! NASA-GEOS Cp
 
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NASA-GEOS Cp"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NASA-GEOS Cp"
+        endif;enddo
 
         MR_iGridCode = 1040
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -2249,8 +2331,10 @@
       elseif (MR_iwindformat.eq.41)then
          ! NASA-GEOS Np
 
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "NASA-GEOS Np"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NASA-GEOS Np"
+        endif;enddo
 
         MR_iGridCode = 1041
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -2276,8 +2360,10 @@
       elseif (MR_iwindformat.eq.50)then
          ! WRF - output
 
-        if(MR_VERB.ge.1)write(MR_global_info,*)"  NWP format to be used = ",MR_iwindformat,&
-                  "WRF"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "WRF"
+        endif;enddo
 
         MR_iGridCode = 1050
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
@@ -2322,46 +2408,64 @@
         Met_var_conversion_factor(1) = 1.0_sp/9.81_sp
 
       else
-        write(MR_global_error,*)'MR ERROR : MR_iwindformat not supported'
-        write(MR_global_error,*)'           MR_iwindformat=',MR_iwindformat,&
-                                     '. Program stopped in MetReader.f90'
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then     
+          write(errlog(io),*)'MR ERROR : MR_iwindformat not supported'
+          write(errlog(io),*)'           MR_iwindformat=',MR_iwindformat,&
+                                       '. Program stopped in MetReader.f90'
+        endif;enddo
         stop 1
       endif
 
-      if(MR_VERB.ge.1)write(MR_global_info,*)"                grid ID = ",MR_iGridCode
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
+        write(outlog(io),*)"                grid ID = ",MR_iGridCode
+      endif;enddo
       select case (MR_idataFormat)
       case(1)
-        if(MR_VERB.ge.1)write(MR_global_info,*)"            data format = ",MR_idataFormat,"ASCII"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then       
+          write(outlog(io),*)"            data format = ",MR_idataFormat,"ASCII"
+        endif;enddo
       case(2)
-        if(MR_VERB.ge.1)write(MR_global_info,*)"            data format = ",MR_idataFormat,"NETCDF"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then        
+          write(outlog(io),*)"            data format = ",MR_idataFormat,"NETCDF"
+        endif;enddo
 #ifndef USENETCDF
-        write(MR_global_error,*)"MR ERROR: Met files are netcdf, but MetReader was not"
-        write(MR_global_error,*)"          compiled with netcdf support."
-        write(MR_global_error,*)"          Please recompile MetReader with netcdf support"
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"MR ERROR: Met files are netcdf, but MetReader was not"
+          write(errlog(io),*)"          compiled with netcdf support."
+          write(errlog(io),*)"          Please recompile MetReader with netcdf support"
+        endif;enddo
         stop 1
 #endif
       case(3)
-        if(MR_VERB.ge.1)write(MR_global_info,*)"            data format = ",MR_idataFormat,"GRIB"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then        
+          write(outlog(io),*)"            data format = ",MR_idataFormat,"GRIB"
+        endif;enddo
 #ifndef USEGRIB
-        write(MR_global_error,*)"MR ERROR: Met files are grib, but MetReader was not"
-        write(MR_global_error,*)"          compiled with grib support."
-        write(MR_global_error,*)"          Please recompile MetReader with grib support"
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"MR ERROR: Met files are grib, but MetReader was not"
+          write(errlog(io),*)"          compiled with grib support."
+          write(errlog(io),*)"          Please recompile MetReader with grib support"
+        endif;enddo
         stop 1
 #endif
       case default
-        write(MR_global_error,*)"MR ERROR:  MR_idataFormat not 1:4."
-        write(MR_global_error,*)"           Exiting in MR_Allocate_FullMetFileList"
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"MR ERROR:  MR_idataFormat not 1:4."
+          write(errlog(io),*)"           Exiting in MR_Allocate_FullMetFileList"
+        endif;enddo
         stop 1
       end select
 
-      if(MR_VERB.ge.1)write(MR_global_info,*)"     Allocating space for ",MR_iwindfiles,"file(s)."
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then         
+        write(outlog(io),*)"     Allocating space for ",MR_iwindfiles,"file(s)."
+      endif;enddo
 
       if (MR_iwind.eq.5)then
-        if(MR_VERB.ge.1)then
-          write(MR_global_info,*)"For iwf=5:: one variable per file,"
-          write(MR_global_info,*)"Only the directory should be listed. The remaining"
-          write(MR_global_info,*)"path is hard-coded."
-        endif
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then              
+          write(outlog(io),*)"For iwf=5:: one variable per file,"
+          write(outlog(io),*)"Only the directory should be listed. The remaining"
+          write(outlog(io),*)"path is hard-coded."
+        endif;enddo
         ! Reset MR_iwindfiles to 2: only one "file" will be read,
         ! but we need this to be 2 to accommodate runs that might span two years/months
         ! For ERA5 files, data is provided in daily files so MR_iwindfiles might be > 2
@@ -2384,7 +2488,7 @@
 
       allocate (MR_windfiles(MR_iwindfiles))
       do i=1,MR_iwindfiles
-        if(MR_VERB.ge.1)write(MR_windfiles(i),'(130x)')
+        write(MR_windfiles(i),'(130x)')
       enddo
       allocate (MR_windfiles_nt_fullmet(MR_iwindfiles))
       MR_windfiles_nt_fullmet(:)=0
@@ -2394,7 +2498,7 @@
         MR_windfiles_Have_GRIB_index = .false.
         allocate (MR_windfiles_GRIB_index(MR_iwindfiles))
         do i=1,MR_iwindfiles
-          if(MR_VERB.ge.1)write(MR_windfiles_GRIB_index(i),'(130x)')
+          write(MR_windfiles_GRIB_index(i),'(130x)')
         enddo
       endif
 
@@ -2413,24 +2517,26 @@
         if(mod(MR_iwindfiles,MR_nSnd_Locs).eq.0)then
           MR_Snd_nt_fullmet = MR_iwindfiles / MR_nSnd_Locs
         else
-          write(MR_global_error,*)"MR ERROR:  The grid code for 1d ascii input is interpreted to be"
-          write(MR_global_error,*)"           the number of sonde locations.  Each group of sondes can"
-          write(MR_global_error,*)"           be repeated, correspoding to multiple timesteps.  The"
-          write(MR_global_error,*)"           number of windfiles must be a multiple of the number of"
-          write(MR_global_error,*)"           locations"
-          write(MR_global_error,*)"                   MR_iwind = ",MR_iwind
-          write(MR_global_error,*)"             MR_iwindformat = ",MR_iwindformat
-          write(MR_global_error,*)"               MR_iGridCode = ",MR_iGridCode
-          write(MR_global_error,*)"             MR_idataFormat = ",MR_idataFormat
-          write(MR_global_error,*)"               MR_nSnd_Locs = ",MR_iGridCode
-          write(MR_global_error,*)"          MR_Snd_nt_fullmet = ",real(MR_iwindfiles)/real(MR_nSnd_Locs)
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR:  The grid code for 1d ascii input is interpreted to be"
+            write(errlog(io),*)"           the number of sonde locations.  Each group of sondes can"
+            write(errlog(io),*)"           be repeated, correspoding to multiple timesteps.  The"
+            write(errlog(io),*)"           number of windfiles must be a multiple of the number of"
+            write(errlog(io),*)"           locations"
+            write(errlog(io),*)"                   MR_iwind = ",MR_iwind
+            write(errlog(io),*)"             MR_iwindformat = ",MR_iwindformat
+            write(errlog(io),*)"               MR_iGridCode = ",MR_iGridCode
+            write(errlog(io),*)"             MR_idataFormat = ",MR_idataFormat
+            write(errlog(io),*)"               MR_nSnd_Locs = ",MR_iGridCode
+            write(errlog(io),*)"          MR_Snd_nt_fullmet = ",real(MR_iwindfiles)/real(MR_nSnd_Locs)
+          endif;enddo
           stop 1
         endif
       endif
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       CALLED_MR_Allocate_FullMetFileList = .true.
 
@@ -2495,11 +2601,11 @@
         end subroutine MR_Set_iwind5_filenames
       END INTERFACE
 
-      if(MR_VERB.ge.1)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Read_Met_DimVars                                   ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_Met_DimVars                                   ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -2513,9 +2619,11 @@
       ! Need to add a check here for the case where MR_windfiles is a pointer, but has not been filled
 #else
       if(.not.allocated(MR_windfiles))then
-        write(MR_global_error,*)"MR ERROR:  The list of windfile names, MR_windfiles, has not been"
-        write(MR_global_error,*)"           allocated.  The calling program must allocate this"
-        write(MR_global_error,*)"           array via the subroutine MR_Allocate_FullMetFileList."
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"MR ERROR:  The list of windfile names, MR_windfiles, has not been"
+          write(errlog(io),*)"           allocated.  The calling program must allocate this"
+          write(errlog(io),*)"           array via the subroutine MR_Allocate_FullMetFileList."
+        endif;enddo
         stop 1
       endif
 #endif
@@ -2534,18 +2642,18 @@
           ! is given
           MR_Comp_StartYear = iy
         else
-          if(MR_VERB.ge.1)then
-            write(MR_global_info,*)"MR WARNING: If the iw=5 (NCEP Reannalysis, NOAA Reannalysis, "
-            write(MR_global_info,*)"            etc.) are used, then MR_Read_Met_DimVars"
-            write(MR_global_info,*)"            should be called with a start year.  This is needed"
-            write(MR_global_info,*)"            to allocate the correct number of time steps per file."
-            write(MR_global_info,*)"            Setting MR_Comp_StartYear to 2018 for a non-leap year."
-            write(MR_global_info,*)"            However, MR_Comp_StartYear will be checked later to"
-            write(MR_global_info,*)"            verify that the start year is not a leap year."
-            write(MR_global_info,*)"            If there is an inconsistancy, the program will stop."
-            write(MR_global_info,*)"            If MR_Comp_StartYear is changed to a leap year outside"
-            write(MR_global_info,*)"            of MetReader, then the results will be incorrect."
-          endif
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"MR WARNING: If the iw=5 (NCEP Reannalysis, NOAA Reannalysis, "
+            write(outlog(io),*)"            etc.) are used, then MR_Read_Met_DimVars"
+            write(outlog(io),*)"            should be called with a start year.  This is needed"
+            write(outlog(io),*)"            to allocate the correct number of time steps per file."
+            write(outlog(io),*)"            Setting MR_Comp_StartYear to 2018 for a non-leap year."
+            write(outlog(io),*)"            However, MR_Comp_StartYear will be checked later to"
+            write(outlog(io),*)"            verify that the start year is not a leap year."
+            write(outlog(io),*)"            If there is an inconsistancy, the program will stop."
+            write(outlog(io),*)"            If MR_Comp_StartYear is changed to a leap year outside"
+            write(outlog(io),*)"            of MetReader, then the results will be incorrect."
+          endif;enddo
           ! Setting to year of program execution
           call date_and_time(date,time2,zone,values)
           MR_Comp_StartYear = values(1)
@@ -2556,27 +2664,35 @@
       ! Verify that the first windfile has been changed from its initialized value
       tmp_str = MR_windfiles(1)
       if(tmp_str(1:15).eq.'              ')then
-        write(MR_global_error,*)"MR ERROR: The array MR_windfiles appears to not be set."
-        write(MR_global_error,*)"          Please have the calling program write the names of"
-        write(MR_global_error,*)"          the windfiles to MR_windfiles(1:MR_iwindfiles)"
-        write(MR_global_error,*)" "
-        write(MR_global_error,*)"          Contents of the first slot is -",MR_windfiles(1),"-"
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"MR ERROR: The array MR_windfiles appears to not be set."
+          write(errlog(io),*)"          Please have the calling program write the names of"
+          write(errlog(io),*)"          the windfiles to MR_windfiles(1:MR_iwindfiles)"
+          write(errlog(io),*)" "
+          write(errlog(io),*)"          Contents of the first slot is -",MR_windfiles(1),"-"
+        endif;enddo
         stop 1
       endif
 
       ! Check the existence of the wind files
-      if(MR_VERB.ge.1)write(MR_global_info,*)"  Verifying existance of windfiles:"
-      ! Note iwf=5 cases have the number of windfiles (MR_iwindfiles)
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"  Verifying existance of windfiles:"
+      endif;enddo
+     ! Note iwf=5 cases have the number of windfiles (MR_iwindfiles)
       ! modified in MR_Allocate_FullMetFileList to be the number of
       ! anticipated files based on the length of the simulation and the number
       ! of steps per file.
       if(MR_iwind.ne.5)then
         do i=1,MR_iwindfiles
           inquire( file=adjustl(trim(MR_windfiles(i))), exist=IsThere )
-          if(MR_VERB.ge.1)write(MR_global_info,*)"     ",i,adjustl(trim(MR_windfiles(i))),IsThere
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"     ",i,adjustl(trim(MR_windfiles(i))),IsThere
+          endif;enddo
           if(.not.IsThere)then
-            write(MR_global_error,*)"MR ERROR: Could not find windfile ",i
-            write(MR_global_error,*)"          ",adjustl(trim(MR_windfiles(i)))
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR: Could not find windfile ",i
+              write(errlog(io),*)"          ",adjustl(trim(MR_windfiles(i)))
+            endif;enddo
             stop 1
           endif
         enddo
@@ -2588,15 +2704,21 @@
 #ifdef USENETCDF
             call MR_Set_iwind5_filenames(inhour,ivar,infile)
 #else
-            write(MR_global_error,*)"MR ERROR: Currently, iw=5 required netcdf."
-            write(MR_global_error,*)"          Recompile MetReader with netcdf enabled"
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR: Currently, iw=5 required netcdf."
+              write(errlog(io),*)"          Recompile MetReader with netcdf enabled"
+            endif;enddo
             stop 1
 #endif
             inquire( file=adjustl(trim(infile)), exist=IsThere )
-            if(MR_VERB.ge.1)write(MR_global_info,*)" ",i,trim(adjustl(trim(infile))),IsThere
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)" ",i,trim(adjustl(trim(infile))),IsThere
+            endif;enddo
             if(.not.IsThere)then
-              write(MR_global_error,*)"MR ERROR: Could not find windfile ",i
-              write(MR_global_error,*)"          ",adjustl(trim(infile))
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then           
+                write(errlog(io),*)"MR ERROR: Could not find windfile ",i
+                write(errlog(io),*)"          ",adjustl(trim(infile))
+              endif;enddo
               stop 1
             endif
           enddo
@@ -2623,20 +2745,24 @@
           call MR_Read_Met_DimVars_GRIB
 #endif
         else
-          write(MR_global_error,*)"MR ERROR: Unknown MR_idataFormat:",MR_idataFormat
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then   
+            write(errlog(io),*)"MR ERROR: Unknown MR_idataFormat:",MR_idataFormat
+          endif;enddo
           stop 1
         endif
       case default
-        write(MR_global_error,*)"MR ERROR:  MR_iwind not 1-4."
-        write(MR_global_error,*)"           Exiting in MR_Read_Met_DimVars"
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then    
+          write(errlog(io),*)"MR ERROR:  MR_iwind not 1-4."
+          write(errlog(io),*)"           Exiting in MR_Read_Met_DimVars"
+        endif;enddo
         stop 1
       end select
 
       CALLED_MR_Read_Met_DimVars = .true.
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       end subroutine MR_Read_Met_DimVars
 
@@ -2669,11 +2795,11 @@
       real(kind=8),intent(in) :: ko
       real(kind=8),intent(in) :: Re
 
-      if(MR_VERB.ge.1)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Set_CompProjection                                 ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Set_CompProjection                                 ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       isLatLon_CompGrid = LL_flag
 
@@ -2701,7 +2827,9 @@
           Comp_phi2    = phi2
         elseif(Comp_iprojflag.eq.3)then
           ! UTM
-          write(MR_global_error,*)"MR ERROR : WARNING: UTM not yet verified"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : WARNING: UTM not yet verified"
+          endif;enddo
           stop 1
         elseif(Comp_iprojflag.eq.4)then
           ! Lambert conformal conic (NARR, NAM218, NAM221)
@@ -2723,9 +2851,9 @@
 
       CALLED_MR_Set_CompProjection = .true.
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       return
 
@@ -2777,11 +2905,11 @@
       !                          *_Met_H for subset of Met grid on height levels
       !                          *_comp_H for data regridded to computational grid
 
-      if(MR_VERB.ge.1)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Initialize_Met_Grids                               ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Initialize_Met_Grids                               ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -2814,16 +2942,20 @@
       ! strictly increasing
       do i=1,nx-1
         if(x_comp_sp(i).gt.x_comp_sp(i+1))then
-          write(MR_global_error,*)"MR ERROR:  x_comp not strictly increasing"
-          write(MR_global_error,*)s_comp_sp
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR:  x_comp not strictly increasing"
+            write(errlog(io),*)s_comp_sp
+          endif;enddo
           stop 1
         endif
       enddo
 
       do j=1,ny-1
         if(y_comp_sp(j).gt.y_comp_sp(j+1))then
-          write(MR_global_error,*)"MR ERROR:  y_comp not strictly increasing"
-          write(MR_global_error,*)y_comp_sp
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR:  y_comp not strictly increasing"
+            write(errlog(io),*)y_comp_sp
+          endif;enddo
           stop 1
         endif
       enddo
@@ -2846,18 +2978,24 @@
         call MR_Set_MetComp_Grids
 
         if(MR_Save_Velocities)then
-          if(MR_VERB.ge.1)write(MR_global_info,*)"Velocities will be saved on the metP grid"
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Velocities will be saved on the metP grid"
+          endif;enddo
           allocate(MR_vx_metP_last(nx_submet,ny_submet,np_fullmet));MR_vx_metP_last(:,:,:)=0.0_sp
           allocate(MR_vx_metP_next(nx_submet,ny_submet,np_fullmet));MR_vx_metP_next(:,:,:)=0.0_sp
           allocate(MR_vy_metP_last(nx_submet,ny_submet,np_fullmet));MR_vy_metP_last(:,:,:)=0.0_sp
           allocate(MR_vy_metP_next(nx_submet,ny_submet,np_fullmet));MR_vy_metP_next(:,:,:)=0.0_sp
         else
-          if(MR_VERB.ge.1)write(MR_global_info,*)"Velocities not saved"
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Velocities not saved"
+          endif;enddo
         endif
 
       case default
-        write(MR_global_error,*)"MR ERROR:  MR_iwind not 1:5."
-        write(MR_global_error,*)"           Exiting in MR_Initialize_Met_Grids"
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then       
+          write(errlog(io),*)"MR ERROR:  MR_iwind not 1:5."
+          write(errlog(io),*)"           Exiting in MR_Initialize_Met_Grids"
+        endif;enddo
         stop 1
       end select
 
@@ -2894,9 +3032,9 @@
 
       CALLED_MR_Initialize_Met_Grids = .true.
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       end subroutine MR_Initialize_Met_Grids
 
@@ -2918,11 +3056,11 @@
       real(kind=sp),intent(in) :: dumxy1_sp(nx,ny)
       integer      ,intent(in) :: dum_int
 
-      if(MR_VERB.ge.1)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Set_SigmaAlt_Scaling                               ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Set_SigmaAlt_Scaling                               ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       MR_use_SigmaAlt   = .true.
       MR_ztop           = dum_sp
@@ -2936,9 +3074,9 @@
         MR_jacob(1:nx,1:ny) = 1.0_sp
       endif
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       end subroutine MR_Set_SigmaAlt_Scaling
 
@@ -3018,11 +3156,11 @@
 
       END INTERFACE
 
-      if(MR_VERB.ge.1)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Set_Met_Times                                      ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Set_Met_Times                                      ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -3078,10 +3216,10 @@
             ! If only 1 step/file, use the next file (if present)
           met_t2 = MR_windfile_starthour(1)+MR_windfile_stephour(2,1)
         else
-          if(MR_VERB.ge.1)then
-            write(MR_global_info,*)"WARNING: Only one time step available."
-            write(MR_global_info,*)"         Setting interval step to 1000.0"
-          endif
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"WARNING: Only one time step available."
+            write(outlog(io),*)"         Setting interval step to 1000.0"
+          endif;enddo
           met_t2 = met_t1 + 1000.0
         endif
         StepInterval = met_t2 - met_t1
@@ -3091,11 +3229,11 @@
       if(MR_iwind.eq.1.and.MR_iwindformat.eq.1)then
         ! For the ASCII profile cases (not the radiosonde), hours are given as offset
         ! from the start time.  So reset all hours to relative to eStartHour
-        if(MR_VERB.ge.1)then
-          write(MR_global_info,*)"Note:  The hours value in 1d ascii profiles are interpreted as offset"
-          write(MR_global_info,*)"       hours.  Shifting the file time to reflect the requested start"
-          write(MR_global_info,*)"       time plus offset."
-        endif
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Note:  The hours value in 1d ascii profiles are interpreted as offset"
+          write(outlog(io),*)"       hours.  Shifting the file time to reflect the requested start"
+          write(outlog(io),*)"       time plus offset."
+        endif;enddo
         do i=1,MR_Snd_nt_fullmet
           MR_windfile_starthour(i) = MR_windfile_starthour(i) + MR_Comp_StartHour
         enddo
@@ -3105,26 +3243,30 @@
       if(MR_Comp_StartHour.lt.met_t1)then
         ! Start time requested is before that available, check if we can extrapolate
         if(MR_Comp_StartHour.ge.met_t1-met_dt1)then
-          if(MR_VERB.ge.1)then
-            write(MR_global_info,*)"WARNING: Start time is before the first time step"
-            write(MR_global_info,*)"         However, it is within one interval so we will"
-            write(MR_global_info,*)"         apply the value at MR_windfile_starthour(1)."
-            write(MR_global_info,*)"         Using a time step interval of ",StepInterval
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"WARNING: Start time is before the first time step"
+            write(outlog(io),*)"         However, it is within one interval so we will"
+            write(outlog(io),*)"         apply the value at MR_windfile_starthour(1)."
+            write(outlog(io),*)"         Using a time step interval of ",StepInterval
             if(StepInterval.gt.720.0_dp)then
               if(MR_iwind.eq.1.and.MR_iwindformat.eq.1.and.nt_fullmet.eq.1)then
-                write(MR_global_info,*)"         Note: This interval is set high since only one"
-                write(MR_global_info,*)"               sonde file was provided."
+                write(outlog(io),*)"         Note: This interval is set high since only one"
+                write(outlog(io),*)"               sonde file was provided."
               endif
             endif
-          endif
+          endif;enddo
           prestep = .true.
         else
-          write(MR_global_error,*)"MR ERROR: Start time is before the first available data and"
-          write(MR_global_error,*)"       cannot be extrapolated."
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: Start time is before the first available data and"
+            write(errlog(io),*)"       cannot be extrapolated."
+          endif;enddo
           stop 1
         endif
       else
-        if(MR_VERB.ge.1)write(MR_global_info,*)"Start hour of simulation is in range of NWP data"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Start hour of simulation is in range of NWP data"
+        endif;enddo
         prestep  = .false.
       endif
       !   Checking if a post-step is needed
@@ -3133,33 +3275,37 @@
       if(MR_Comp_StartHour+MR_Comp_Time_in_hours.ge.met_t1)then
         ! Start time requested is after that available, check if we can extrapolate
         if(MR_Comp_StartHour+MR_Comp_Time_in_hours.le.met_t1+met_dt1)then
-          if(MR_VERB.ge.1)then
-            write(MR_global_info,*)"WARNING: End time is at or after the last time step."
-            write(MR_global_info,*)"         However, it is within one interval so we will"
-            write(MR_global_info,*)"         apply the value at MR_windfile_starthour(MR_iwindfiles)"
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"WARNING: End time is at or after the last time step."
+            write(outlog(io),*)"         However, it is within one interval so we will"
+            write(outlog(io),*)"         apply the value at MR_windfile_starthour(MR_iwindfiles)"
             if(StepInterval.gt.720.0_dp)then
               if(MR_iwind.eq.1.and.MR_iwindformat.eq.1.and.nt_fullmet.eq.1)then
-                write(MR_global_info,*)"         Note: This interval is set high since only one"
-                write(MR_global_info,*)"               sonde file was provided."
+                write(outlog(io),*)"         Note: This interval is set high since only one"
+                write(outlog(io),*)"               sonde file was provided."
               endif
             endif
-          endif
+          endif;enddo
           poststep = .true.
         else
-          write(MR_global_error,*)"MR ERROR: End time is after the last available data and"
-          write(MR_global_error,*)"       cannot be extrapolated."
-          write(MR_global_error,*)"  MR_Comp_StartHour    = ",real(MR_Comp_StartHour,kind=4),&
-                                  HS_yyyymmddhhmm_since(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
-          write(MR_global_error,*)"  MR_Comp_Time_in_hours= ",real(MR_Comp_Time_in_hours,kind=4),&
-                                  HS_yyyymmddhhmm_since(MR_Comp_Time_in_hours,MR_BaseYear,MR_useLeap)
-          write(MR_global_error,*)"  met_t1               = ",real(met_t1,kind=4),&
-                                  HS_yyyymmddhhmm_since(met_t1,MR_BaseYear,MR_useLeap)
-          write(MR_global_error,*)"  met_dt1              = ",real(met_dt1,kind=4),&
-                                  HS_yyyymmddhhmm_since(met_dt1,MR_BaseYear,MR_useLeap)
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: End time is after the last available data and"
+            write(errlog(io),*)"       cannot be extrapolated."
+            write(errlog(io),*)"  MR_Comp_StartHour    = ",real(MR_Comp_StartHour,kind=4),&
+                                    HS_yyyymmddhhmm_since(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
+            write(errlog(io),*)"  MR_Comp_Time_in_hours= ",real(MR_Comp_Time_in_hours,kind=4),&
+                                    HS_yyyymmddhhmm_since(MR_Comp_Time_in_hours,MR_BaseYear,MR_useLeap)
+            write(errlog(io),*)"  met_t1               = ",real(met_t1,kind=4),&
+                                    HS_yyyymmddhhmm_since(met_t1,MR_BaseYear,MR_useLeap)
+            write(errlog(io),*)"  met_dt1              = ",real(met_dt1,kind=4),&
+                                    HS_yyyymmddhhmm_since(met_dt1,MR_BaseYear,MR_useLeap)
+          endif;enddo
           stop 1
         endif
       else
-        if(MR_VERB.ge.1)write(MR_global_info,*)"End hour of simulation is in range of NWP data"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"End hour of simulation is in range of NWP data"
+        endif;enddo
         poststep  = .false.
       endif
 
@@ -3168,14 +3314,18 @@
       ! Note: If pre-step or post-step is needed, istep will be incremented accordingly.
       ! Once we know the number of steps needed, we will allocate space, then fill the variables
       ! with just the step info needed.
-      if(MR_VERB.ge.1)write(MR_global_info,*)&
-         '    File num  | Step in file  |  stephour   |   SimStartHour   | nMetStep | Note'
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)&
+           '    File num  | Step in file  |  stephour   |   SimStartHour   | nMetStep | Note'
+      endif;enddo
       if(prestep)then
         Found_First_Step = .true.
         istep = 1
         stephour = MR_windfile_starthour(1) + MR_windfile_stephour(1,1) - StepInterval
-        if(MR_VERB.ge.1)write(MR_global_info,150)1,1,stephour,MR_Comp_StartHour,&
-                        istep,"Prestep before MR_Comp_StartHour "
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),150)1,1,stephour,MR_Comp_StartHour,&
+                          istep,"Prestep before MR_Comp_StartHour "
+        endif;enddo
       else
         Found_First_Step = .false.
         istep = 0
@@ -3198,9 +3348,11 @@
             if(MR_windfiles_nt_fullmet(iw).lt.NT_MAXOUT)then
               ! This suppresses outputting the windfile step info for the files that contain a year's
               ! worth of data (NCEP 2.5, etc)
-              if(MR_VERB.ge.1)write(MR_global_info,150)                    &
-                iw,iwstep,stephour,MR_Comp_StartHour,istep,&
-                "Before or at MR_Comp_StartHour."
+              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                write(outlog(io),150)                    &
+                  iw,iwstep,stephour,MR_Comp_StartHour,istep,&
+                  "Before or at MR_Comp_StartHour."
+              endif;enddo
             endif
           else
             !  Otherwise, increment index if we are still in the needed time bracket
@@ -3208,9 +3360,11 @@
               Found_First_Step = .true.
               istep = istep + 1
               if(MR_windfiles_nt_fullmet(iw).lt.NT_MAXOUT)then
-                if(MR_VERB.ge.1)write(MR_global_info,150)                    &
-                  iw,iwstep,stephour,MR_Comp_StartHour,istep,&
-                  "After MR_Comp_StartHour "
+                do io=1,MR_nio;if(VB(io).le.verbosity_info)then 
+                  write(outlog(io),150)                    &
+                    iw,iwstep,stephour,MR_Comp_StartHour,istep,&
+                    "After MR_Comp_StartHour "
+                endif;enddo
               endif
             endif
           endif
@@ -3222,9 +3376,11 @@
           endif
           if(Found_Last_Step &
              .and.MR_windfiles_nt_fullmet(iw).lt.NT_MAXOUT)then ! This condition suppresses output for NCEP 2.5
-              if(MR_VERB.ge.1)write(MR_global_info,150)                    &
-                iw,iwstep,stephour,MR_Comp_StartHour,istep,&
-                "At or after END OF SIM  "
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then 
+              write(outlog(io),150)                    &
+                  iw,iwstep,stephour,MR_Comp_StartHour,istep,&
+                  "At or after END OF SIM  "
+            endif;enddo
           endif
         enddo
       enddo
@@ -3237,12 +3393,15 @@
           stephour = MR_windfile_starthour(MR_iwindfiles) + &
                        MR_windfile_stephour(MR_iwindfiles,MR_windfiles_nt_fullmet(MR_iwindfiles)) + &
                        StepInterval
-          if(MR_VERB.ge.1)write(MR_global_info,150)MR_iwindfiles,1,stephour,&
-                     MR_Comp_StartHour,nMetSteps_Comp,"Poststep after END OF SIM  "
-
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then  
+            write(outlog(io),150)MR_iwindfiles,1,stephour,&
+                       MR_Comp_StartHour,nMetSteps_Comp,"Poststep after END OF SIM  "
+          endif;enddo
         else
-          write(MR_global_error,*)"MR ERROR:  Something is wrong.  Could not find the last MetStep needed for"
-          write(MR_global_error,*)"           the simulation."
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then  
+            write(errlog(io),*)"MR ERROR:  Something is wrong.  Could not find the last MetStep needed for"
+            write(errlog(io),*)"           the simulation."
+          endif;enddo
           stop 1
         endif
       endif
@@ -3251,13 +3410,15 @@
       ! We now have the number of steps needed for the computation
       ! Allocate the lists
       MR_MetSteps_Total = nMetSteps_Comp
-      if(MR_VERB.ge.1)write(MR_global_info,*)"MR: Allocating space for ",MR_MetSteps_Total,"step(s)"
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then  
+        write(outlog(io),*)"MR: Allocating space for ",MR_MetSteps_Total,"step(s)"
+      endif;enddo
       if(prestep.or.poststep)then
-        if(MR_VERB.ge.1)then
-          write(MR_global_info,*)"         Including:"
-          if(prestep) write(MR_global_info,*)"             1 prestep"
-          if(poststep)write(MR_global_info,*)"             1 poststep"
-        endif
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then  
+          write(outlog(io),*)"         Including:"
+          if(prestep) write(outlog(io),*)"             1 prestep"
+          if(poststep)write(outlog(io),*)"             1 poststep"
+        endif;enddo
       endif
       if (.not. allocated(MR_MetStep_File)) then
         allocate(MR_MetStep_File(MR_MetSteps_Total))               ;MR_MetStep_File(:)=''
@@ -3345,8 +3506,10 @@
           MR_MetStep_Hour_Of_Day(istep)     = real(HS_HourOfDay(real(stephour,kind=dp),MR_BaseYear,MR_useLeap),kind=sp)
           MR_iwind5_year(istep)             = MR_MetStep_year(istep)
         else
-          write(MR_global_error,*)"MR ERROR:  Something is wrong.  Could not find the last MetStep needed for"
-          write(MR_global_error,*)"           the simulation."
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then  
+            write(errlog(io),*)"MR ERROR:  Something is wrong.  Could not find the last MetStep needed for"
+            write(errlog(io),*)"           the simulation."
+          endif;enddo
           stop 1
         endif
       endif
@@ -3357,10 +3520,10 @@
       enddo
       MR_MetStep_Interval(MR_MetSteps_Total)=MR_MetStep_Interval(MR_MetSteps_Total-1)
 
-      if(MR_VERB.ge.1)then
-        write(MR_global_info,*)"Comp start = ",real(MR_Comp_StartHour,kind=4)
-        write(MR_global_info,*)"Comp end   = ",real(MR_Comp_StartHour+MR_Comp_Time_in_hours,kind=4)
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then  
+        write(outlog(io),*)"Comp start = ",real(MR_Comp_StartHour,kind=4)
+        write(outlog(io),*)"Comp end   = ",real(MR_Comp_StartHour+MR_Comp_Time_in_hours,kind=4)
+      endif;enddo
 
       do istep = 1,MR_MetSteps_Total
         iw       = MR_MetStep_findex(istep)
@@ -3369,39 +3532,47 @@
       enddo
 
 !     MAKE SURE THE WIND MODEL TIME WINDOW COVERS THE ENTIRE SIMULATION TIME
-      if(MR_VERB.ge.1)write(MR_global_info,99)
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then  
+        write(outlog(io),99)
+      endif;enddo
 99    format(/,4x,'Making sure the mesoscale model time covers the simulation time . . . ')
       if (MR_MetStep_Hour_since_baseyear(1).gt.MR_Comp_StartHour) then
-        write(MR_global_error,*)"MR ERROR:  Wind data starts after SimStartHour"
-        write(MR_global_error,*)"WindHour(MR_iwindfiles) = ",MR_MetStep_Hour_since_baseyear(MR_MetSteps_Total)
-        write(MR_global_error,*)"SimStartHour            = ",MR_Comp_StartHour
-        write(MR_global_error,*)"Simtime_in_hours        = ",MR_Comp_Time_in_hours
-        write(MR_global_error,*)"  All steps:"
-        do i = 1,MR_MetSteps_Total
-          write(MR_global_error,*)"    ",i,MR_MetStep_Hour_since_baseyear(i)
-        enddo
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then  
+          write(errlog(io),*)"MR ERROR:  Wind data starts after SimStartHour"
+          write(errlog(io),*)"WindHour(MR_iwindfiles) = ",MR_MetStep_Hour_since_baseyear(MR_MetSteps_Total)
+          write(errlog(io),*)"SimStartHour            = ",MR_Comp_StartHour
+          write(errlog(io),*)"Simtime_in_hours        = ",MR_Comp_Time_in_hours
+          write(errlog(io),*)"  All steps:"
+          do i = 1,MR_MetSteps_Total
+            write(errlog(io),*)"    ",i,MR_MetStep_Hour_since_baseyear(i)
+          enddo
+        endif;enddo
         stop 1
       elseif (MR_MetStep_Hour_since_baseyear(MR_MetSteps_Total).lt.(MR_Comp_StartHour+MR_Comp_Time_in_hours)) then
-        write(MR_global_error,*)"MR ERROR:  Last met time is earlier than simulation time"
-        write(MR_global_error,*)"MR_MetSteps_Total     = ",MR_MetSteps_Total
-        write(MR_global_error,*)"Last time step       = ",MR_MetStep_Hour_since_baseyear(MR_MetSteps_Total)
-        write(MR_global_error,*)"SimStartHour         = ",MR_Comp_StartHour
-        write(MR_global_error,*)"Simtime_in_hours     = ",MR_Comp_Time_in_hours
-        do i = 1,MR_MetSteps_Total
-          write(MR_global_error,*)"    ",i,MR_MetStep_Hour_since_baseyear(i)
-        enddo
-        write(MR_global_error ,102)
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then     
+          write(errlog(io),*)"MR ERROR:  Last met time is earlier than simulation time"
+          write(errlog(io),*)"MR_MetSteps_Total     = ",MR_MetSteps_Total
+          write(errlog(io),*)"Last time step       = ",MR_MetStep_Hour_since_baseyear(MR_MetSteps_Total)
+          write(errlog(io),*)"SimStartHour         = ",MR_Comp_StartHour
+          write(errlog(io),*)"Simtime_in_hours     = ",MR_Comp_Time_in_hours
+          do i = 1,MR_MetSteps_Total
+            write(errlog(io),*)"    ",i,MR_MetStep_Hour_since_baseyear(i)
+          enddo
+          write(errlog(io) ,102)
+        endif;enddo
 102     format(4x,'Error.  The model ends before the end of the last eruption.  Program stopped.')
         stop 1
       endif
-      if(MR_VERB.ge.1)write(MR_global_info,103)
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        write(outlog(io),103)
+      endif;enddo
 103   format(4x,'Good.  It does.',/)
 
       CALLED_MR_Set_Met_Times = .true.
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       end subroutine MR_Set_Met_Times
 
@@ -3441,13 +3612,15 @@
         first_time = .true.
       endif
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Read_HGT_arrays                                    ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_HGT_arrays                                    ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
-      if(MR_VERB.ge.1)write(MR_global_production,*)"     Reading HGT array for istep = ",istep
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"     Reading HGT array for istep = ",istep
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -3505,15 +3678,17 @@
       endif
       if(MR_iHeightHandler.eq.1)then
         if(z_comp_sp(nz_comp).gt.Max_geoH_metP)then
-          write(MR_global_error,*)"MR ERROR : Computational grid extends higher than met grid"
-          write(MR_global_error,*)"           iHeightHandler = 1:  exiting"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Computational grid extends higher than met grid"
+            write(errlog(io),*)"           iHeightHandler = 1:  exiting"
+          endif;enddo
           stop 1
         endif
       endif
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       end subroutine MR_Read_HGT_arrays
 
@@ -3539,11 +3714,11 @@
       integer,intent(in)        :: ivar
       integer,intent(in)        :: istep
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Read_3d_MetP_Variable                              ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_3d_MetP_Variable                              ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -3573,9 +3748,9 @@
 
       end select
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       end subroutine MR_Read_3d_MetP_Variable
 
@@ -3611,11 +3786,11 @@
       integer :: np_fully_padded
       real(kind=sp),dimension(:),allocatable :: dumVertCoord_sp
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Read_3d_MetH_Variable                              ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_3d_MetH_Variable                              ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -3713,9 +3888,9 @@
         enddo ! j
       enddo  ! i
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       return
 
@@ -3755,11 +3930,11 @@
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Read_3d_Met_Variable_to_CompH                      ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_3d_Met_Variable_to_CompH                      ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -3838,9 +4013,9 @@
 
       deallocate(tmp_regrid2d_sp)
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       return
 
@@ -3880,11 +4055,11 @@
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
 
-      if(MR_VERB.ge.1)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Read_3d_Met_Variable_to_CompP                      ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_3d_Met_Variable_to_CompP                      ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -3895,8 +4070,10 @@
                                  .true.)     ! CALLED_MR_Set_Met_Times(this check is needed)
 
       if(.not.MR_useCompP)then
-        write(MR_global_error,*)"MR ERROR: Trying to run a CompP subroutine"
-        write(MR_global_error,*)"          with MR_useCompP = .false."
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"MR ERROR: Trying to run a CompP subroutine"
+          write(errlog(io),*)"          with MR_useCompP = .false."
+        endif;enddo
         stop 0
       endif
 
@@ -3957,9 +4134,9 @@
 
       deallocate(tmp_regrid2d_sp)
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       return
 
@@ -3988,11 +4165,11 @@
       integer,intent(in)        :: ivar
       integer,intent(in)        :: istep   
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Read_2d_Met_Variable                               ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_2d_Met_Variable                               ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -4021,9 +4198,9 @@
 
       end select
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       end subroutine MR_Read_2d_Met_Variable
 
@@ -4058,11 +4235,11 @@
       integer             :: i,j
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Read_2d_Met_Variable_to_CompGrid                   ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_2d_Met_Variable_to_CompGrid                   ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -4097,9 +4274,9 @@
 
       deallocate(tmp_regrid2d_sp)
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       return
 
@@ -4132,11 +4309,11 @@
       real(kind=sp) :: vx_new,vy_new
       real(kind=sp) :: rotang
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Rotate_UV_GR2ER_Met                                ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Rotate_UV_GR2ER_Met                                ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -4148,12 +4325,6 @@
 
       ! Rotate wind vectors on the MetP grid for NARR cases with Map_Case = 2 (both projected)
       ! or rotate to LL on MetP grid for Map_Case = 4 (Met=proj, Comp=LL)
-      !write(MR_global_info,*)" Rotating Earth-relative projected Met winds to grid-relative"
-      !write(MR_global_info,*)"  or rotating projected grid-relative Met winds to Earth-relative"
-
-      !if(.not.MR_Save_Velocities)then
-      !  write(MR_global_info,*)"MR WARNING: Velocities not saved"
-      !endif
 
       call MR_Read_3d_MetP_Variable(2,istep)
         MR_u_ER_metP = MR_dum3d_metP
@@ -4215,9 +4386,9 @@
         endif
       endif
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       end subroutine MR_Rotate_UV_GR2ER_Met
 
@@ -4254,11 +4425,11 @@
       real(kind=sp) :: vx_new,vy_new
       real(kind=sp) :: rotang1
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Rotate_UV_ER2GR_Met                                ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Rotate_UV_ER2GR_Met                                ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -4291,7 +4462,9 @@
         call MR_Regrid_MetP_to_CompH(istep)
         ! Now compH and compH_2 have vx and vy
       else
-        write(MR_global_error,*)"Should not be calling this subroutine unless Map_Case=3 or 5"
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"Should not be calling this subroutine unless Map_Case=3 or 5"
+        endif;enddo
         stop 1
       endif
 
@@ -4315,9 +4488,9 @@
         enddo
       enddo
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       end subroutine MR_Rotate_UV_ER2GR_Comp
 
@@ -4343,11 +4516,12 @@
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Regrid_MetP_to_CompH                               ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Regrid_MetP_to_CompH                               ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
+
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
       call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
@@ -4418,9 +4592,9 @@
 
       deallocate(tmp_regrid2d_sp)
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       return
 
@@ -4452,11 +4626,11 @@
       integer :: i,j,k
       integer :: kc,knext
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Regrid_MetP_to_MetH                                ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Regrid_MetP_to_MetH                                ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -4500,14 +4674,14 @@
           ! increase linearly with k
           do k=2,np_fullmet
             if (z_col_metP(k)<z_col_metP(k-1))then
-              if(MR_VERB.ge.2)then
-                write(MR_global_info,*)"MR_WARNING: Need to adjust value in MR_Regrid_MetP_to_MetH"
-                write(MR_global_info,*)"            that are not increasing in height with decreasing p"
-                write(MR_global_info,*)"i = ",i
-                write(MR_global_info,*)"j = ",j
-                write(MR_global_info,*)"k = ",k
-                write(MR_global_info,*)z_col_metP
-              endif
+              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                write(outlog(io),*)"MR_WARNING: Need to adjust value in MR_Regrid_MetP_to_MetH"
+                write(outlog(io),*)"            that are not increasing in height with decreasing p"
+                write(outlog(io),*)"i = ",i
+                write(outlog(io),*)"j = ",j
+                write(outlog(io),*)"k = ",k
+                write(outlog(io),*)z_col_metP
+              endif;enddo
               knext=k       !find the first value of z_col_metP that's above z_col_metP(k-1)
               do while (z_col_metP(knext)<z_col_metP(k-1))
                  knext=knext+1
@@ -4531,9 +4705,9 @@
         enddo ! j
       enddo  ! i
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       return
 
@@ -4559,11 +4733,11 @@
       integer             :: i,j
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-        write(MR_global_production,*)"----------      MR_Regrid_Met2d_to_Comp2d                             ----------"
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Regrid_Met2d_to_Comp2d                             ----------"
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -4588,9 +4762,9 @@
 
       deallocate(tmp_regrid2d_sp)
 
-      if(MR_VERB.ge.2)then
-        write(MR_global_production,*)"--------------------------------------------------------------------------------"
-      endif
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)"--------------------------------------------------------------------------------"
+      endif;enddo
 
       return
 
@@ -4670,7 +4844,9 @@
                                      MR_dum3d_metP(rside,:,:)) / &
                                     (dx_fac*MR_dx_submet(i)*KM_2_M)
           else
-            write(MR_global_error,*)"Need to fix DelMetP_Dx for non-regular grids."
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"Need to fix DelMetP_Dx for non-regular grids."
+            endif;enddo
             stop 1
           endif
         endif
@@ -4743,7 +4919,9 @@
                                      MR_dum3d_metP(:,rside,:)) / &
                                     (dy_fac*MR_dy_submet(j)*KM_2_M)
           else
-            write(MR_global_error,*)"Need to fix DelMetP_Dy for non-regular grids."
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"Need to fix DelMetP_Dy for non-regular grids."
+            endif;enddo
             stop 1
           endif
         endif
@@ -4787,7 +4965,9 @@
         MR_Temp_US_StdAtm = US_StdAtm_Tnodes(1)
       elseif(zin.ge.US_StdAtm_znodes(MAXATMOSNODES))then
         MR_Temp_US_StdAtm = US_StdAtm_Tnodes(MAXATMOSNODES)
-        write(MR_global_error,*)"Stopping in Temp_US_StdAtm"
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"Stopping in Temp_US_StdAtm"
+        endif;enddo
         stop 1
       else
         ! interpolate
@@ -4843,8 +5023,10 @@
         MR_Z_US_StdAtm = US_StdAtm_pnodes(1)
       elseif(pin.le.US_StdAtm_pnodes(MAXATMOSNODES))then
         MR_Z_US_StdAtm = US_StdAtm_pnodes(MAXATMOSNODES)
-        write(MR_global_error,*)"MR ERROR: Pressure provided is below lowest value of US StdAtm."
-        write(MR_global_error,*)"Stopping in MR_Z_US_StdAtm"
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"MR ERROR: Pressure provided is below lowest value of US StdAtm."
+          write(errlog(io),*)"Stopping in MR_Z_US_StdAtm"
+        endif;enddo
         stop 1
       else
         ! interpolate
@@ -5023,8 +5205,9 @@
       else
         ! Should not be here!
         ! We assume that the variable lives on the GPH grid or a subset
-        write(MR_global_error,*)'MR ERROR: Variable has more levels than GPH'
-        write(MR_global_log  ,*)'MR ERROR: Variable has more levels than GPH'
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)'MR ERROR: Variable has more levels than GPH'
+        endif;enddo
         stop 1
       endif
 
@@ -5166,74 +5349,84 @@
       ! Check prerequisites
       if(test_allocate.eqv..true.)then
         if(CALLED_MR_Allocate_FullMetFileList.eqv..false.)then
-          write(MR_global_error,*)"MR ERROR:  The subroutine MR_Allocate_FullMetFileList has not be called."
-          write(MR_global_error,*)"           This must first be called to allocate the space for the"
-          write(MR_global_error,*)"           windfiles.  The calling format is:"
-          write(MR_global_error,*)"             MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)"
-          write(MR_global_error,*)"               where iw      = windfile class (1-5)"
-          write(MR_global_error,*)"                     iwf     = windfile format number (1-51)"
-          write(MR_global_error,*)"                     igrid   = 2d grid code used (if known)"
-          write(MR_global_error,*)"                     idf     = data format ID (ascii, netcdf, grib, etc)"
-          write(MR_global_error,*)"                     iwfiles = number of windfiles to be read"
-          write(MR_global_error,*)" "
-          write(MR_global_error,*)"           The array MR_windfiles(1:iwfiles) must then be filled within"
-          write(MR_global_error,*)"           the calling program."
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR:  The subroutine MR_Allocate_FullMetFileList has not be called."
+            write(errlog(io),*)"           This must first be called to allocate the space for the"
+            write(errlog(io),*)"           windfiles.  The calling format is:"
+            write(errlog(io),*)"             MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)"
+            write(errlog(io),*)"               where iw      = windfile class (1-5)"
+            write(errlog(io),*)"                     iwf     = windfile format number (1-51)"
+            write(errlog(io),*)"                     igrid   = 2d grid code used (if known)"
+            write(errlog(io),*)"                     idf     = data format ID (ascii, netcdf, grib, etc)"
+            write(errlog(io),*)"                     iwfiles = number of windfiles to be read"
+            write(errlog(io),*)" "
+            write(errlog(io),*)"           The array MR_windfiles(1:iwfiles) must then be filled within"
+            write(errlog(io),*)"           the calling program."
+          endif;enddo
           failtest_allocate = .true.
         endif
       endif
 
       if(test_dimvars.eqv..true.)then
         if(CALLED_MR_Read_Met_DimVars.eqv..false.)then
-          write(MR_global_error,*)"MR ERROR:  The subroutine MR_Read_Met_DimVars has not be called."
-          write(MR_global_error,*)"           This must first be called to determine the size (x,y,z,t) of"
-          write(MR_global_error,*)"           the windfiles.  The calling format is:"
-          write(MR_global_error,*)"             MR_Read_Met_DimVars(optional_argument = iyear)"
-          write(MR_global_error,*)"               where the argument iyear determines nt for leap/non-leap years"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then     
+            write(errlog(io),*)"MR ERROR:  The subroutine MR_Read_Met_DimVars has not be called."
+            write(errlog(io),*)"           This must first be called to determine the size (x,y,z,t) of"
+            write(errlog(io),*)"           the windfiles.  The calling format is:"
+            write(errlog(io),*)"             MR_Read_Met_DimVars(optional_argument = iyear)"
+            write(errlog(io),*)"               where the argument iyear determines nt for leap/non-leap years"
+          endif;enddo
           failtest_dimvars = .true.
         endif
       endif
 
       if(test_compproj.eqv..true.)then
         if(CALLED_MR_Set_CompProjection.eqv..false.)then
-          write(MR_global_error,*)"MR ERROR:  The subroutine MR_Set_CompProjection has not be called."
-          write(MR_global_error,*)"           This must first be called to determine the subgrid needed"
-          write(MR_global_error,*)"           from the windfiles.  The calling format is:"
-          write(MR_global_error,*)"             MR_Set_CompProjection(LL_flag,ipf,lam0,phi0,phi1,phi2,ko,Re)"
-          write(MR_global_error,*)"               where LL_flag = 0,1 (for projected or lon/lat, respectively)"
-          write(MR_global_error,*)"                     ipf     = 1-5 (projection code)"
-          write(MR_global_error,*)"                     lam0    = central longitude"
-          write(MR_global_error,*)"                     phi0    = first latitude for projection"
-          write(MR_global_error,*)"                     phi1    = second latitude for projection"
-          write(MR_global_error,*)"                     phi2    = third latitude for projection"
-          write(MR_global_error,*)"                     ko      = scaling term (<=1.0)"
-          write(MR_global_error,*)"                     Re      = radius of earth in km"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then     
+            write(errlog(io),*)"MR ERROR:  The subroutine MR_Set_CompProjection has not be called."
+            write(errlog(io),*)"           This must first be called to determine the subgrid needed"
+            write(errlog(io),*)"           from the windfiles.  The calling format is:"
+            write(errlog(io),*)"             MR_Set_CompProjection(LL_flag,ipf,lam0,phi0,phi1,phi2,ko,Re)"
+            write(errlog(io),*)"               where LL_flag = 0,1 (for projected or lon/lat, respectively)"
+            write(errlog(io),*)"                     ipf     = 1-5 (projection code)"
+            write(errlog(io),*)"                     lam0    = central longitude"
+            write(errlog(io),*)"                     phi0    = first latitude for projection"
+            write(errlog(io),*)"                     phi1    = second latitude for projection"
+            write(errlog(io),*)"                     phi2    = third latitude for projection"
+            write(errlog(io),*)"                     ko      = scaling term (<=1.0)"
+            write(errlog(io),*)"                     Re      = radius of earth in km"
+          endif;enddo
           failtest_compproj = .true.
         endif
       endif
 
       if(test_initmetgrid.eqv..true.)then
         if(CALLED_MR_Initialize_Met_Grids.eqv..false.)then
-          write(MR_global_error,*)"MR ERROR:  The subroutine MR_Initialize_Met_Grids has not be called."
-          write(MR_global_error,*)"           This must first be called to allocate the computational grid needed"
-          write(MR_global_error,*)"           and to generate the mapping from the windfiles.  The calling format is:"
-          write(MR_global_error,*)"             MR_Initialize_Met_Grids(nx,ny,nz,dumx_sp,dumy_sp,dumz_sp,periodic)"
-          write(MR_global_error,*)"               where nx,ny,nz = size of comp. grid in x,y,z"
-          write(MR_global_error,*)"                     dumx_sp  = cell-centered grid points in x"
-          write(MR_global_error,*)"                     dumy_sp  = cell-centered grid points in y"
-          write(MR_global_error,*)"                     dumz_sp  = cell-centered grid points in z"
-          write(MR_global_error,*)"                     periodic = true or false for periodic grids"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR:  The subroutine MR_Initialize_Met_Grids has not be called."
+            write(errlog(io),*)"           This must first be called to allocate the computational grid needed"
+            write(errlog(io),*)"           and to generate the mapping from the windfiles.  The calling format is:"
+            write(errlog(io),*)"             MR_Initialize_Met_Grids(nx,ny,nz,dumx_sp,dumy_sp,dumz_sp,periodic)"
+            write(errlog(io),*)"               where nx,ny,nz = size of comp. grid in x,y,z"
+            write(errlog(io),*)"                     dumx_sp  = cell-centered grid points in x"
+            write(errlog(io),*)"                     dumy_sp  = cell-centered grid points in y"
+            write(errlog(io),*)"                     dumz_sp  = cell-centered grid points in z"
+            write(errlog(io),*)"                     periodic = true or false for periodic grids"
+          endif;enddo
           failtest_initmetgrid = .true.
         endif
       endif
 
       if(test_setmettimes.eqv..true.)then
         if(CALLED_MR_Set_Met_Times.eqv..false.)then
-          write(MR_global_error,*)"MR ERROR:  The subroutine MR_Set_Met_Times has not be called."
-          write(MR_global_error,*)"           This must first be called to trim the list of windfiles to just"
-          write(MR_global_error,*)"           that needed by the simulation.  The calling format is:"
-          write(MR_global_error,*)"             MR_Set_Met_Times(eStartHour,Duration)"
-          write(MR_global_error,*)"               where eStartHour = start time needed in hours since basetime"
-          write(MR_global_error,*)"                     Duration   = length of time needed"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR:  The subroutine MR_Set_Met_Times has not be called."
+            write(errlog(io),*)"           This must first be called to trim the list of windfiles to just"
+            write(errlog(io),*)"           that needed by the simulation.  The calling format is:"
+            write(errlog(io),*)"             MR_Set_Met_Times(eStartHour,Duration)"
+            write(errlog(io),*)"               where eStartHour = start time needed in hours since basetime"
+            write(errlog(io),*)"                     Duration   = length of time needed"
+          endif;enddo
           failtest_setmettimes = .true.
         endif
       endif

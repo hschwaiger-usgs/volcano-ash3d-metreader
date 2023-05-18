@@ -101,16 +101,22 @@
       IsPeriodic  = .false.
       if(IsLatLon)then
         if(xLL.lt.-360.0_4)then
-          write(MR_global_error,*)"ERROR: xLL must be >-360 and <360"
-          write(MR_global_error,*)"       From control file, xLL = ",xLL
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"ERROR: xLL must be >-360 and <360"
+            write(errlog(io),*)"       From control file, xLL = ",xLL
+          endif;enddo
           stop 1
         elseif(xLL.lt.0.0_4)then
           ! shift negative lon to range 0->360
           xLL=xLL+360.0_4
-          write(MR_global_info,*)"Resetting to range 0->360"
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Resetting to range 0->360"
+          endif;enddo
         elseif(xLL.gt.360.0_4)then 
-          write(MR_global_info,*)"WARNING: xLL is greater than 360"
-          write(MR_global_info,*)"Resetting to range 0->360"
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"WARNING: xLL is greater than 360"
+            write(outlog(io),*)"Resetting to range 0->360"
+          endif;enddo
           xLL=xLL-360.0_4
         endif
         if(gridwidth_x.ge.360.0_4.or.&
@@ -146,33 +152,47 @@
 
       ! Noting what we are planning to do to the stdout
       if(Met_var_IsAvailable(outvar_ID))then
-        write(MR_global_info,*)"Planning to read variable:",&
-                  trim(adjustl(Met_var_NC_names(outvar_ID)))," (",&
-                  trim(adjustl(Met_var_GRIB_names(outvar_ID))),")"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Planning to read variable:",&
+                    trim(adjustl(Met_var_NC_names(outvar_ID)))," (",&
+                    trim(adjustl(Met_var_GRIB_names(outvar_ID))),")"
+        endif;enddo
       else
-        write(MR_global_info,*)"Variable is not available for this windfile"
-        write(MR_global_info,*)"  outvar_ID = ",outvar_ID
-        write(MR_global_info,*)"  var name  = ",trim(adjustl(Met_var_NC_names(outvar_ID)))," (",&
-                                   trim(adjustl(Met_var_GRIB_names(outvar_ID))),")"
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"Variable is not available for this windfile"
+          write(errlog(io),*)"  outvar_ID = ",outvar_ID
+          write(errlog(io),*)"  var name  = ",trim(adjustl(Met_var_NC_names(outvar_ID)))," (",&
+                                     trim(adjustl(Met_var_GRIB_names(outvar_ID))),")"
+        endif;enddo
         stop 1
       endif
 
       ! Output grid (1,2,3,4 for CompH,CompP,MetH,MetP)
       if(outgrid_ID.eq.1)then
-        write(MR_global_info,*)"Output will be interpolated onto the CompH grid"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Output will be interpolated onto the CompH grid"
+        endif;enddo
         IsH = .true.
       elseif(outgrid_ID.eq.2)then
-        write(MR_global_info,*)"Output will be interpolated onto the CompP grid"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Output will be interpolated onto the CompP grid"
+        endif;enddo
         IsH = .false.
       elseif(outgrid_ID.eq.3)then
-        write(MR_global_info,*)"Output will be interpolated onto the MetH grid"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Output will be interpolated onto the MetH grid"
+        endif;enddo
         IsH = .true.
       elseif(outgrid_ID.eq.4)then
-        write(MR_global_info,*)"Output will be interpolated onto the MetP grid"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Output will be interpolated onto the MetP grid"
+        endif;enddo
         IsH = .false.
       else
-        write(MR_global_error,*)"ERROR: outgrid_ID not recognized; expecting 1-4"
-        write(MR_global_error,*)"       outgrid_ID = ",outgrid_ID
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"ERROR: outgrid_ID not recognized; expecting 1-4"
+          write(errlog(io),*)"       outgrid_ID = ",outgrid_ID
+        endif;enddo
         stop 1
       endif
 
@@ -180,14 +200,18 @@
       MR_iMetStep_Now = 1
       tfrac = (MR_Comp_StartHour-MR_MetStep_Hour_since_baseyear(MR_iMetStep_Now))/ &
                MR_MetStep_Interval(MR_iMetStep_Now)
-      write(MR_global_info,*)"Hour = ",inhour
-      write(MR_global_info,*)"Using a fractional step of ",tfrac
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"Hour = ",inhour
+        write(outlog(io),*)"Using a fractional step of ",tfrac
+      endif;enddo
       if(outgrid_ID.eq.1)then
         ! We need CompH grids
         nx = nxmax
         ny = nymax
         nz = nzmax
-        write(MR_global_info,*)" Output array is of size ",nx,ny,nz
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)" Output array is of size ",nx,ny,nz
+        endif;enddo
         allocate(out3d_t1(nx,ny,nz))
         allocate(out3d_t2(nx,ny,nz))
         allocate(   out3d(nx,ny,nz))
@@ -202,7 +226,9 @@
         nx = nxmax
         ny = nymax
         nz = np_fullmet
-        write(MR_global_info,*)" Output array is of size ",nx,ny,nz
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)" Output array is of size ",nx,ny,nz
+        endif;enddo
         allocate(out3d_t1(nx,ny,nz))
         allocate(out3d_t2(nx,ny,nz))
         allocate(   out3d(nx,ny,nz))
@@ -216,7 +242,9 @@
         nx = nx_submet
         ny = ny_submet
         nz = nzmax
-        write(MR_global_info,*)" Output array is of size ",nx,ny,nz
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)" Output array is of size ",nx,ny,nz
+        endif;enddo
         allocate(out3d_t1(nx,ny,nz))
         allocate(out3d_t2(nx,ny,nz))
         allocate(   out3d(nx,ny,nz))
@@ -231,7 +259,9 @@
         nx = nx_submet
         ny = ny_submet
         nz = np_fullmet
-        write(MR_global_info,*)" Output array is of size ",nx,ny,nz
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)" Output array is of size ",nx,ny,nz
+        endif;enddo
         allocate(out3d_t1(nx,ny,nz))
         allocate(out3d_t2(nx,ny,nz))
         allocate(   out3d(nx,ny,nz))
@@ -241,8 +271,10 @@
         out3d_t2(1:nx,1:ny,1:nz) = MR_dum3d_metP(1:nx,1:ny,1:nz)
         out3d = out3d_t1 + (out3d_t2-out3d_t1)*real(tfrac,kind=4)
       else
-        write(MR_global_error,*)"ERROR: outgrid_ID not recognized; expecting 1-4"
-        write(MR_global_error,*)"       outgrid_ID = ",outgrid_ID
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"ERROR: outgrid_ID not recognized; expecting 1-4"
+          write(errlog(io),*)"       outgrid_ID = ",outgrid_ID
+        endif;enddo
         stop 1
       endif
 
@@ -253,74 +285,98 @@
       open(unit=20,file=outfilename)
       ! First check the indexes for validity
       if(iidx.lt.0.or.jidx.lt.0.or.kidx.lt.0)then
-        write(MR_global_error,*)"ERROR: Output index must be non-negative"
-        write(MR_global_error,*)"   iidx = ", iidx
-        write(MR_global_error,*)"   jidx = ", jidx 
-        write(MR_global_error,*)"   kidx = ", kidx
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"ERROR: Output index must be non-negative"
+          write(errlog(io),*)"   iidx = ", iidx
+          write(errlog(io),*)"   jidx = ", jidx 
+          write(errlog(io),*)"   kidx = ", kidx
+        endif;enddo
         stop 1
       elseif(iidx.gt.nx)then
-        write(MR_global_error,*)"ERROR: Output index must not be greater than output array."
-        write(MR_global_error,*)"   nx   = ", nx
-        write(MR_global_error,*)"   iidx = ", iidx
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"ERROR: Output index must not be greater than output array."
+          write(errlog(io),*)"   nx   = ", nx
+          write(errlog(io),*)"   iidx = ", iidx
+        endif;enddo
         stop 1
       elseif(jidx.gt.ny)then
-        write(MR_global_error,*)"ERROR: Output index must not be greater than output array."
-        write(MR_global_error,*)"   ny   = ", ny
-        write(MR_global_error,*)"   jidx = ", kidx
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"ERROR: Output index must not be greater than output array."
+          write(errlog(io),*)"   ny   = ", ny
+          write(errlog(io),*)"   jidx = ", kidx
+        endif;enddo
         stop 1
       elseif(kidx.gt.nz)then
-        write(MR_global_error,*)"ERROR: Output index must not be greater than output array."
-        write(MR_global_error,*)"   nz   = ", nz
-        write(MR_global_error,*)"   kidx = ", kidx
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"ERROR: Output index must not be greater than output array."
+          write(errlog(io),*)"   nz   = ", nz
+          write(errlog(io),*)"   kidx = ", kidx
+        endif;enddo
         stop 1
       endif
 210   format(3i8,4f12.4)
       if(outdim_ID.eq.0)then
         ! We need all three indexes to be non-zero for point output
         if(iidx.eq.0.or.jidx.eq.0.or.kidx.eq.0)then
-          write(MR_global_info,*)" Unknown point",iidx,jidx,kidx
-          write(MR_global_info,*)" For 0-d output, each index must be specified"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)" Unknown point",iidx,jidx,kidx
+            write(errlog(io),*)" For 0-d output, each index must be specified"
+          endif;enddo
           stop 1
         endif
-        write(MR_global_info,*)"Writing point data at:"
-        write(MR_global_info,*)"    ", iidx
-        write(MR_global_info,*)"    ", jidx 
-        write(MR_global_info,*)"    ", kidx
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Writing point data at:"
+          write(outlog(io),*)"    ", iidx
+          write(outlog(io),*)"    ", jidx 
+          write(outlog(io),*)"    ", kidx
+        endif;enddo
         if(outgrid_ID.eq.1)then
-         ! CompH
-         write(20,210)iidx,jidx,kidx,x_cc(iidx),y_cc(jidx),z_cc(kidx),out3d(iidx,jidx,kidx)
+          ! CompH
+          write(20,210)iidx,jidx,kidx,x_cc(iidx),y_cc(jidx),z_cc(kidx),out3d(iidx,jidx,kidx)
         elseif(outgrid_ID.eq.1)then
-         ! CompP
-         write(20,210)iidx,jidx,kidx,x_cc(iidx),y_cc(jidx),p_fullmet_sp(kidx),out3d(iidx,jidx,kidx)
+          ! CompP
+          write(20,210)iidx,jidx,kidx,x_cc(iidx),y_cc(jidx),p_fullmet_sp(kidx),out3d(iidx,jidx,kidx)
         elseif(outgrid_ID.eq.3)then
-         ! MetH
-         write(20,210)iidx,jidx,kidx,x_submet_sp(iidx),y_submet_sp(jidx),z_cc(kidx),out3d(iidx,jidx,kidx)
+          ! MetH
+          write(20,210)iidx,jidx,kidx,x_submet_sp(iidx),y_submet_sp(jidx),z_cc(kidx),out3d(iidx,jidx,kidx)
         elseif(outgrid_ID.eq.4)then
-         ! MetP
-         write(20,210)iidx,jidx,kidx,x_submet_sp(iidx),y_submet_sp(jidx),p_fullmet_sp(kidx),out3d(iidx,jidx,kidx)
+          ! MetP
+          write(20,210)iidx,jidx,kidx,x_submet_sp(iidx),y_submet_sp(jidx),p_fullmet_sp(kidx),out3d(iidx,jidx,kidx)
         endif
       elseif(outdim_ID.eq.1)then
         ! We need two of three indexes to be non-zero for line output
         if((iidx.eq.0.and.(jidx.eq.0.or.kidx.eq.0)).or.&
            (jidx.eq.0.and.kidx.eq.0))then
-          write(MR_global_info,*)" Unknown line",iidx,jidx,kidx
-          write(MR_global_info,*)" For 1-d output, two of three indexes must be specified"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)" Unknown line",iidx,jidx,kidx
+            write(errlog(io),*)" For 1-d output, two of three indexes must be specified"
+          endif;enddo
           stop 1
         endif
-        write(MR_global_info,*)"Writing line data at:"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Writing line data at:"
+        endif;enddo
         if(iidx.eq.0)then
           ! line along x at jinx,kind
           if(outgrid_ID.eq.1.or.outgrid_ID.eq.2)then
-            write(MR_global_info,*)"    y = ",y_cc(jidx),jidx
-            write(MR_global_info,*)"    x range = ",x_cc(1),x_cc(nxmax)
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"    y = ",y_cc(jidx),jidx
+              write(outlog(io),*)"    x range = ",x_cc(1),x_cc(nxmax)
+            endif;enddo
           else
-            write(MR_global_info,*)"    y = ",y_submet_sp(jidx),jidx
-            write(MR_global_info,*)"    x range = ",y_submet_sp(1),y_submet_sp(nymax)
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"    y = ",y_submet_sp(jidx),jidx
+              write(outlog(io),*)"    x range = ",y_submet_sp(1),y_submet_sp(nymax)
+            endif;enddo
           endif
           if(outgrid_ID.eq.1.or.outgrid_ID.eq.3)then
-            write(MR_global_info,*)"    z = ",z_cc(kidx),kidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"    z = ",z_cc(kidx),kidx
+            endif;enddo
           else
-            write(MR_global_info,*)"    p = ",p_fullmet_sp(kidx),kidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"    p = ",p_fullmet_sp(kidx),kidx
+            endif;enddo
           endif
 
           do i=1,nx
@@ -341,16 +397,24 @@
         elseif(jidx.eq.0)then
           ! line along y at iinx,kidx
           if(outgrid_ID.eq.1.or.outgrid_ID.eq.2)then
-            write(MR_global_info,*)"    x = ",x_cc(iidx),iidx
-            write(MR_global_info,*)"    y range = ",y_cc(1),y_cc(nymax)
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"    x = ",x_cc(iidx),iidx
+              write(outlog(io),*)"    y range = ",y_cc(1),y_cc(nymax)
+            endif;enddo
           else
-            write(MR_global_info,*)"    x = ",x_submet_sp(iidx),iidx
-            write(MR_global_info,*)"    y range = ",y_submet_sp(1),y_submet_sp(nymax)
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"    x = ",x_submet_sp(iidx),iidx
+              write(outlog(io),*)"    y range = ",y_submet_sp(1),y_submet_sp(nymax)
+            endif;enddo
           endif
           if(outgrid_ID.eq.1.or.outgrid_ID.eq.3)then
-            write(MR_global_info,*)"    z = ",z_cc(kidx),kidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"    z = ",z_cc(kidx),kidx
+            endif;enddo
           else
-            write(MR_global_info,*)"    p = ",p_fullmet_sp(kidx),kidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"    p = ",p_fullmet_sp(kidx),kidx
+            endif;enddo
           endif
           do j=1,ny
             if(outgrid_ID.eq.1)then
@@ -370,16 +434,24 @@
         elseif(kidx.eq.0)then
           ! line along z at iinx,jind
           if(outgrid_ID.eq.1.or.outgrid_ID.eq.2)then
-            write(MR_global_info,*)"    x = ",x_cc(iidx),iidx
-            write(MR_global_info,*)"    y = ",y_cc(jidx),jidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"    x = ",x_cc(iidx),iidx
+              write(outlog(io),*)"    y = ",y_cc(jidx),jidx
+            endif;enddo
           else
-            write(MR_global_info,*)"    x = ",x_submet_sp(iidx),iidx
-            write(MR_global_info,*)"    y = ",y_submet_sp(jidx),jidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"    x = ",x_submet_sp(iidx),iidx
+              write(outlog(io),*)"    y = ",y_submet_sp(jidx),jidx
+            endif;enddo
           endif
           if(outgrid_ID.eq.1.or.outgrid_ID.eq.3)then
-            write(MR_global_info,*)"    z range = ",z_cc(1),z_cc(nzmax)
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"    z range = ",z_cc(1),z_cc(nzmax)
+            endif;enddo
           else
-            write(MR_global_info,*)"    p range = ",p_fullmet_sp(1),p_fullmet_sp(nzmax)
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"    p range = ",p_fullmet_sp(1),p_fullmet_sp(nzmax)
+            endif;enddo
           endif
           do k=1,nz
             if(outgrid_ID.eq.1)then
@@ -397,26 +469,36 @@
             endif
           enddo
         else
-          write(MR_global_info,*)" Unknown line",iidx,jidx,kidx
-          write(MR_global_info,*)" For 1-d output, the dimension along the line should have index=0"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)" Unknown line",iidx,jidx,kidx
+            write(errlog(io),*)" For 1-d output, the dimension along the line should have index=0"
+          endif;enddo
           stop 1
         endif
       elseif(outdim_ID.eq.2)then
-        write(MR_global_info,*)"Writing slice data at:"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Writing slice data at:"
+        endif;enddo
         if(iidx.eq.0.and.jidx.eq.0)then
           ! Map-view slices
           if(outgrid_ID.eq.1.or.outgrid_ID.eq.3)then
             ! Vert Coord is Z
             zout = z_cc(kidx)
-            write(MR_global_info,*)"       xy slice data at z=",zout,kidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"       xy slice data at z=",zout,kidx
+          endif;enddo
           else
             ! Vert Coord is P
             zout = p_fullmet_sp(kidx)
-            write(MR_global_info,*)"       xp slice data at p=",zout,kidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"       xp slice data at p=",zout,kidx
+            endif;enddo
           endif
           if(outgrid_ID.eq.1.or.outgrid_ID.eq.2)then
             ! Horz Coords are Comp
-            write(MR_global_info,*)"Writing data to out file:",nx,ny
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"Writing data to out file:",nx,ny
+            endif;enddo
             do i=1,nx
               do j=1,ny
                 write(20,210)i,j,kidx,x_cc(i),y_cc(j),zout,out3d(i,j,kidx)
@@ -434,7 +516,9 @@
           ! east-west slices
           if(outgrid_ID.eq.1)then
             ! CompH
-            write(MR_global_info,*)"       xz slice data at y=",y_cc(jidx),jidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"       xz slice data at y=",y_cc(jidx),jidx
+            endif;enddo
             do i=1,nx
               do k=1,nz
                 write(20,210)i,jidx,k,x_cc(i),y_cc(jidx),z_cc(k),out3d(i,jidx,k)
@@ -442,7 +526,9 @@
             enddo
           elseif(outgrid_ID.eq.2)then
             ! CompP
-            write(MR_global_info,*)"       xp slice data at y=",y_cc(jidx),jidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"       xp slice data at y=",y_cc(jidx),jidx
+            endif;enddo
             do i=1,nx
               do k=1,nz
                 write(20,210)i,jidx,k,x_cc(i),y_cc(jidx),p_fullmet_sp(k),out3d(i,jidx,k)
@@ -450,7 +536,9 @@
             enddo
           elseif(outgrid_ID.eq.3)then
             ! MetH
-            write(MR_global_info,*)"       xz slice data at y=",y_submet_sp(jidx),jidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"       xz slice data at y=",y_submet_sp(jidx),jidx
+            endif;enddo
             do i=1,nx
               do k=1,nz
                 write(20,210)i,jidx,k,x_submet_sp(i),y_submet_sp(jidx),z_cc(k),out3d(i,jidx,k)
@@ -458,7 +546,9 @@
             enddo
           elseif(outgrid_ID.eq.4)then
             ! MetP
-            write(MR_global_info,*)"       xz slice data at y=",y_submet_sp(jidx),jidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"       xz slice data at y=",y_submet_sp(jidx),jidx
+            endif;enddo
             do i=1,nx
               do k=1,nz
                 write(20,210)i,jidx,k,x_submet_sp(i),y_submet_sp(jidx),p_fullmet_sp(k),out3d(i,jidx,k)
@@ -469,7 +559,9 @@
           ! north-south slices
           if(outgrid_ID.eq.1)then
             ! CompH
-            write(MR_global_info,*)"       yz slice data at x=",x_cc(iidx),iidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"       yz slice data at x=",x_cc(iidx),iidx
+            endif;enddo
             do j=1,ny
               do k=1,nz
                 write(20,210)iidx,j,k,x_cc(iidx),y_cc(j),z_cc(k),out3d(iidx,j,k)
@@ -477,7 +569,9 @@
             enddo
           elseif(outgrid_ID.eq.2)then
             ! CompP
-            write(MR_global_info,*)"       yp slice data at x=",x_cc(iidx),iidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"       yp slice data at x=",x_cc(iidx),iidx
+            endif;enddo
             do j=1,ny
               do k=1,nz
                 write(20,210)iidx,j,k,x_cc(iidx),y_cc(j),p_fullmet_sp(k),out3d(iidx,j,k)
@@ -485,7 +579,9 @@
             enddo
           elseif(outgrid_ID.eq.3)then
             ! MetH
-            write(MR_global_info,*)"       yz slice data at x=",x_submet_sp(iidx),iidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"       yz slice data at x=",x_submet_sp(iidx),iidx
+            endif;enddo
             do j=1,ny
               do k=1,nz
                 write(20,210)iidx,j,k,x_submet_sp(iidx),y_submet_sp(j),z_cc(k),out3d(iidx,j,k)
@@ -493,7 +589,9 @@
             enddo
           elseif(outgrid_ID.eq.4)then
             ! MetP
-            write(MR_global_info,*)"       yp slice data at x=",x_submet_sp(iidx),iidx
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"       yp slice data at x=",x_submet_sp(iidx),iidx
+            endif;enddo
             do j=1,ny
               do k=1,nz
                 write(20,210)iidx,j,k,x_submet_sp(iidx),y_submet_sp(j),p_fullmet_sp(k),out3d(iidx,j,k)
@@ -501,12 +599,16 @@
             enddo
           endif
         else
-          write(MR_global_info,*)" Unknown slice",iidx,jidx,kidx
-          write(MR_global_info,*)" For 2-d output, the slicing dimension should have index=0"
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)" Unknown slice",iidx,jidx,kidx
+            write(errlog(io),*)" For 2-d output, the slicing dimension should have index=0"
+          endif;enddo
           stop 1
         endif
       elseif(outdim_ID.eq.3)then
-        write(MR_global_info,*)"Writing volume data"
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Writing volume data"
+        endif;enddo
         do i=1,nx
           do j=1,ny
             do k=1,nz
@@ -515,12 +617,16 @@
           enddo
         enddo
       else
-        write(MR_global_info,*)" Unknown data output dimension.",outdim_ID
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(outlog(io),*)" Unknown data output dimension.",outdim_ID
+        endif;enddo
         stop 1
       endif
       close(20)
 
-      write(MR_global_info,*)"Program ended normally."
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"Program ended normally."
+      endif;enddo
 
       end program MetRegrid
 
@@ -627,12 +733,16 @@
       endif
 
       ! we're using a control file.
-      write(MR_global_production,*)"Reading control file"
+      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        write(outlog(io),*)"Reading control file"
+      endif;enddo
       call get_command_argument(1, arg, status)
       read(arg,*) infile
       inquire( file=infile, exist=IsThere )
       if(.not.IsThere)then
-        write(MR_global_error,*)"ERROR: Cannot find input file"
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"ERROR: Cannot find input file"
+        endif;enddo
         stop 1
       endif
       open(unit=10,file=infile,status='old',err=1900)
@@ -710,7 +820,9 @@
       do i=1,iwfiles
         read(10,'(a130)')linebuffer130
         read(linebuffer130,'(a130)')MR_windfiles(i)
-        write(MR_global_info,*)i,trim(adjustl(MR_windfiles(i)))
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)i,trim(adjustl(MR_windfiles(i)))
+        endif;enddo
       enddo
 
       return
@@ -719,28 +831,38 @@
 !     ERROR TRAPS
 
       !ERROR TRAPS TO STDIN
-1900  write(MR_global_error,*)  'error: cannot find input file: ',infile
-      write(MR_global_error,*)  'Program stopped'
+1900  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        write(errlog(io),*)  'error: cannot find input file: ',infile
+        write(errlog(io),*)  'Program stopped'
+      endif;enddo
       stop 1
 
-1901  write(MR_global_error,*)  'error reading xLL or yLL.'
-      write(MR_global_error,*)  'You entered: ',linebuffer080
-      write(MR_global_error,*)  'Program stopped.'
+1901  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        write(errlog(io),*)  'error reading xLL or yLL.'
+        write(errlog(io),*)  'You entered: ',linebuffer080
+        write(errlog(io),*)  'Program stopped.'
+      endif;enddo
       stop 1
 
-1902  write(MR_global_error,*)  'error reading width and height of model domain.'
-      write(MR_global_error,*)  'You entered: ', linebuffer080
-      write(MR_global_error,*)  'Program stopped'
+1902  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        write(errlog(io),*)  'error reading width and height of model domain.'
+        write(errlog(io),*)  'You entered: ', linebuffer080
+        write(errlog(io),*)  'Program stopped'
+      endif;enddo
       stop 1
 
-1904  write(MR_global_error,*)  'error reading dx or dy.'
-      write(MR_global_error,*)  'You entered: ',linebuffer080
-      write(MR_global_error,*)  'Program stopped.'
+1904  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        write(errlog(io),*)  'error reading dx or dy.'
+        write(errlog(io),*)  'You entered: ',linebuffer080
+        write(errlog(io),*)  'Program stopped.'
+      endif;enddo
       stop 1
 
-1905  write(MR_global_error,*)  'error reading iHeightHandler.'
-      write(MR_global_error,*)  'You gave: ', linebuffer080
-      write(MR_global_error,*)  'Program stopped.'
+1905  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        write(errlog(io),*)  'error reading iHeightHandler.'
+        write(errlog(io),*)  'You gave: ', linebuffer080
+        write(errlog(io),*)  'Program stopped.'
+      endif;enddo
       stop 1
 
       end subroutine Read_ComdLine_InpFile
@@ -760,25 +882,27 @@
 
       implicit none
 
-        write(MR_global_info,*)"Too few command-line arguments:"
-        write(MR_global_info,*)"  Usage: MetRegrid command_file"
-        write(MR_global_info,*)"   Where the command file has the following format"
-        write(MR_global_info,*)"--------------------------------------------------"
-        write(MR_global_info,*)"1 1 -135.0 90.0 0.933 6371.229  ! Proj flags and params of computational grid"
-        write(MR_global_info,*)"-125.0  38.0   0.0              ! x,y,z of bottom LL corner of grid (km, or deg. if latlongflag=1)"
-        write(MR_global_info,*)"15.0    15.0  25.0              ! grid x-width, y-width, depth (km, or deg. if latlonflag=1)"
-        write(MR_global_info,*)"0.5     0.5    2.0              ! DX, DY, Dz of grid cells  (km, or deg.)"
-        write(MR_global_info,*)"1                               ! iHeightHandler"
-        write(MR_global_info,*)"1980 5 18 15.5                  ! YYYY MM DD HH.H"
-        write(MR_global_info,*)"1                               ! Output grid (1,2,3,4 for CompH,CompP,MetH,MetP)"
-        write(MR_global_info,*)"5                               ! Output Var (1=H,2=Vx,3=Vy,4=Vz,5=T)"
-        write(MR_global_info,*)"2                               ! Output Dimension (0,1,2,or 3)"
-        write(MR_global_info,*)"0 0 1                           ! i,j,k of output grid with zeros for unused dims."
-        write(MR_global_info,*)"5 25 2 2                        ! iwind iwindformat igrid iformat"
-        write(MR_global_info,*)"1                               ! number of windfiles"
-        write(MR_global_info,*)"NCEP"
-        write(MR_global_info,*)"--------------------------------------------------"
-        stop 1
+      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        write(errlog(io),*)"Too few command-line arguments:"
+        write(errlog(io),*)"  Usage: MetRegrid command_file"
+        write(errlog(io),*)"   Where the command file has the following format"
+        write(errlog(io),*)"--------------------------------------------------"
+        write(errlog(io),*)"1 1 -135.0 90.0 0.933 6371.229  ! Proj flags and params of computational grid"
+        write(errlog(io),*)"-125.0  38.0   0.0              ! x,y,z of bottom LL corner of grid (km, or deg. if latlongflag=1)"
+        write(errlog(io),*)"15.0    15.0  25.0              ! grid x-width, y-width, depth (km, or deg. if latlonflag=1)"
+        write(errlog(io),*)"0.5     0.5    2.0              ! DX, DY, Dz of grid cells  (km, or deg.)"
+        write(errlog(io),*)"1                               ! iHeightHandler"
+        write(errlog(io),*)"1980 5 18 15.5                  ! YYYY MM DD HH.H"
+        write(errlog(io),*)"1                               ! Output grid (1,2,3,4 for CompH,CompP,MetH,MetP)"
+        write(errlog(io),*)"5                               ! Output Var (1=H,2=Vx,3=Vy,4=Vz,5=T)"
+        write(errlog(io),*)"2                               ! Output Dimension (0,1,2,or 3)"
+        write(errlog(io),*)"0 0 1                           ! i,j,k of output grid with zeros for unused dims."
+        write(errlog(io),*)"5 25 2 2                        ! iwind iwindformat igrid iformat"
+        write(errlog(io),*)"1                               ! number of windfiles"
+        write(errlog(io),*)"NCEP"
+        write(errlog(io),*)"--------------------------------------------------"
+      endif;enddo
+      stop 1
 
       end subroutine write_usage
 
