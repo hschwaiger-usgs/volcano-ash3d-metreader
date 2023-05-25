@@ -467,7 +467,7 @@
           if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_open")
           do ivar = 1,MR_MAXVARS
             if (.not.Met_var_IsAvailable(ivar)) cycle  ! Only look at variables that are available
-            if (Met_var_ndim(ivar).ne.4) cycle         !  and only ones with a 'level' dimension
+            if (Met_var_ndim(ivar).ne.4) cycle         !  and only ones with a 'level' dimension (i.e. with 4 dimensions)
             invar = Met_var_NC_names(ivar)
             nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
             if(nSTAT.ne.NF90_NOERR)then
@@ -751,7 +751,7 @@
             ! tidy up
             deallocate(var_dimIDs)
           enddo ! ivar
-  
+ 
           ! We have all the level dimension names and dim_ids; now we need to get the sizes
           allocate(nlevs_fullmet(nlev_coords_detected))
           allocate(levs_code(nlev_coords_detected))

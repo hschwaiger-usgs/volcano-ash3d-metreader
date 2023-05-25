@@ -1160,6 +1160,7 @@
       if(ivar.eq.4 ) Dimension_of_Variable = 3 ! Vz
       if(ivar.eq.5 ) Dimension_of_Variable = 3 ! Temperature
       if(ivar.eq.6 ) Dimension_of_Variable = 3 ! Pressure (only for WRF or other eta-level files)
+      if(ivar.eq.7 ) Dimension_of_Variable = 3 ! PVV
 
       if(ivar.eq.10) Dimension_of_Variable = 2 ! Planetary Boundary Layer Height
       if(ivar.eq.11) Dimension_of_Variable = 2 ! U @ 10m

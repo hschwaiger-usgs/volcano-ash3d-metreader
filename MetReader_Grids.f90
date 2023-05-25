@@ -2066,6 +2066,22 @@
           stop 1
         endif
       enddo
+      ! copy availibility of VVEL and W
+      if(Met_var_IsAvailable(4))then
+        Met_var_IsAvailable(7)       = Met_var_IsAvailable(4)
+        Met_var_NC_names(7)          = Met_var_NC_names(4)
+        Met_var_WMO_names(7)         = Met_var_WMO_names(4)
+        Met_var_ndim(7)              = Met_var_ndim(4)
+        Met_var_zdim_idx(7)          = Met_var_zdim_idx(4)
+        Met_var_conversion_factor(7) = Met_var_conversion_factor(4)
+      elseif(Met_var_IsAvailable(7))then
+        Met_var_IsAvailable(4)       = Met_var_IsAvailable(7)
+        Met_var_NC_names(4)          = Met_var_NC_names(7)
+        Met_var_WMO_names(4)         = Met_var_WMO_names(7)
+        Met_var_ndim(4)              = Met_var_ndim(7)
+        Met_var_zdim_idx(4)          = Met_var_zdim_idx(7)
+        Met_var_conversion_factor(4) = Met_var_conversion_factor(7)
+      endif
 
       close(27)
 
