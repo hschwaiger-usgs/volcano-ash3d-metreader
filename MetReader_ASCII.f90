@@ -81,6 +81,7 @@
       subroutine MR_Read_Met_DimVars_ASCII_1d
 
       use MetReader
+
       use projection
 
       implicit none
@@ -3256,10 +3257,10 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       real(kind=8)  :: fac1,fac2
 
       ! From https://www.movable-type.co.uk/scripts/latlong.html
-      lam1 = lon1*DEG2RAD_MET
-      psi1 = lat1*DEG2RAD_MET
-      lam2 = lon2*DEG2RAD_MET
-      psi2 = lat2*DEG2RAD_MET
+      lam1 = lon1*MR_DEG2RAD
+      psi1 = lat1*MR_DEG2RAD
+      lam2 = lon2*MR_DEG2RAD
+      psi2 = lat2*MR_DEG2RAD
       dpsi = psi2-psi1
       dlam = lam2-lam1
 
@@ -3269,7 +3270,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       fac2 = sqrt(1.0_8-a)
       c = 2.0_8*atan2( fac1, fac2 )
 
-      MR_Haversine = RAD_EARTH_MET * c
+      MR_Haversine = MR_RAD_EARTH * c
 
       end function MR_Haversine
 

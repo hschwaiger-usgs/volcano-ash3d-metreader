@@ -31,7 +31,7 @@
 !        subroutine MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)
 !        subroutine MR_Read_Met_DimVars(iy)
 !        subroutine MR_Set_CompProjection(LL_flag,ipf,lam0,phi0,phi1,phi2,ko,Re)
-!        subroutine MR_Initialize_Met_Gridsnx,ny,nz,dumx_sp,dumy_sp,dumz_sp,periodic)
+!        subroutine MR_Initialize_Met_Grids(nx,ny,nz,dumx_sp,dumy_sp,dumz_sp,periodic)
 !        subroutine MR_Set_SigmaAlt_Scaling(nx,ny,nz,dum_sp,dumz_sp,dumxy1_sp,dum_int)
 !        subroutine MR_Set_Met_Times(eStartHour,Duration)
 !        subroutine MR_Read_HGT_arrays(istep,reset_first_time)
@@ -62,55 +62,68 @@
 
       implicit none
 
+        ! Set everything to private by default
+      private
+
+        ! Publicly available subroutines/functions
+      public MR_Reset_Memory,MR_Allocate_FullMetFileList,MR_Set_CompProjection,&
+             MR_Read_Met_DimVars,MR_Set_Met_Times,MR_Initialize_Met_Grids,&
+             MR_Read_HGT_arrays,MR_Read_3d_Met_Variable_to_CompH,MR_Read_3d_Met_Variable_to_CompP,&
+             MR_Read_3d_MetH_Variable,MR_Read_3d_MetP_Variable,&
+             MR_Rotate_UV_GR2ER_Met,&
+             MR_Temp_US_StdAtm,MR_Z_US_StdAtm,MR_Pres_US_StdAtm,&
+             MR_QC_3dvar
+
+      integer, parameter,private :: sp = selected_real_kind( 6,   37) ! single precision
+      integer, parameter,private :: dp = selected_real_kind(15,  307) ! double precision
+      integer, parameter,private :: qp = selected_real_kind(33, 4931) ! quad precision
+
+        ! Publicly available variables
+#include "MR_version.h"
       ! This file (MR_version.h) is the output of the simple script
 !get_version.sh 
 !  echo -n "      character(len=40),parameter,public :: MR_GitComID ='" > MR_version.h
 !  git log -n 1 | grep commit | cut -f 2 -d' ' | tr -d $'\n' >> MR_version.h
 !  echo -n "'" >> MR_version.h
 !    which sets the variable containing the git commit ID : MR_GitComID
-#include "MR_version.h"
 
-      integer, parameter,private :: sp = selected_real_kind( 6,   37) ! single precision
-      integer, parameter,private :: dp = selected_real_kind(15,  307) ! double precision
-      integer, parameter,private :: qp = selected_real_kind(33, 4931) ! quad precision
+      integer, parameter,public       :: MR_MAXVARS    = 50 ! Maximum number of variables in fixed arrays
 
-      integer, parameter       :: MR_MAXVARS    = 50 ! Maximum number of variables in fixed arrays
-
-      real(kind=dp), parameter :: MR_EPS_SMALL  = 1.0e-7_dp  ! Small number
+      real(kind=dp), parameter,public :: MR_EPS_SMALL  = 1.0e-7_dp  ! Small number
       real(kind=dp), parameter :: MR_EPS_TINY   = 1.0e-12_dp ! Very small number
 
-      real(kind=sp), parameter :: RAD_EARTH_MET = 6371.229_sp ! Radius of Earth in km
-      real(kind=sp), parameter :: DEG2RAD_MET   = 1.7453292519943295e-2_sp
+      real(kind=sp), parameter,public :: MR_RAD_EARTH = 6371.229_sp ! Radius of Earth in km
+      real(kind=sp), parameter,public :: MR_DEG2RAD   = 1.7453292519943295e-2_sp
       real(kind=sp), parameter :: MR_MIN_DZ     = 1.0e-4_sp   ! used in reassigning z for low-level negative GPH
 
       ! These output levels and stream IDs can be changed by the calling program
       ! default verbosity is 3
       ! This will write everything from verbosity_log to verbosity_error to both stdout and stdlog
-      integer,dimension(2) :: VB = (/3,3/) ! Verbosity level for stdout and logfile, respectively
+      integer,dimension(2),public :: VB = (/3,3/) ! Verbosity level for stdout and logfile, respectively
       integer,public :: MR_VERB                = 3
-      integer :: stdin         = 5
+      integer,public :: stdin         = 5
       integer :: MR_global_log = 9
 
-      integer :: MR_nio = 1   ! Number of output streams to use: 1 for just stdout,stderr or 2 to include a logfile
-      integer :: io
-      integer,dimension(2) :: outlog = (/6,9/) ! Assumes stdin=6, logfile=9
-      integer,dimension(2) :: errlog = (/0,9/) ! Assumes sterr=0, logfile=9
+      integer,public :: MR_nio = 1   ! Number of output streams to use: 1 for just stdout,stderr or 2 to include a logfile
+      integer,public :: io
+      integer,dimension(2),public :: outlog = (/6,9/) ! Assumes stdin=6, logfile=9
+      integer,dimension(2),public :: errlog = (/0,9/) ! Assumes sterr=0, logfile=9
 
-      integer,parameter :: verbosity_debug2       = 1  ! Additional debugging information only written to stdout
-      integer,parameter :: verbosity_debug1       = 2  ! Debugging information only written to stdout
-      integer,parameter :: verbosity_log          = 3  ! Time step information (this is the limit for writing to logfile)
-      integer,parameter :: verbosity_info         = 4  ! Additional information on run set up and shutdown
-      integer,parameter :: verbosity_statistics   = 5  ! Details on health of run (timing, mass conservation)
-      integer,parameter :: verbosity_production   = 6  ! Major program flow info
-      integer,parameter :: verbosity_essential    = 7  ! Only start up and shutdown messages
-      integer,parameter :: verbosity_error        = 8  ! No logging to stdout, only stderr (and logfile)
-      integer,parameter :: verbosity_silent       = 9  ! No logging to stdout,stderr. Logfile written as normal
-      integer,parameter :: verbosity_dark         = 10 ! No logging to stdout,stderr or logfile
+      integer,parameter,public :: verbosity_debug2       = 1  ! Additional debugging information only written to stdout
+      integer,parameter,public :: verbosity_debug1       = 2  ! Debugging information only written to stdout
+      integer,parameter,public :: verbosity_log          = 3  ! Time step information (this is the limit for writing to logfile)
+      integer,parameter,public :: verbosity_info         = 4  ! Additional information on run set up and shutdown
+      integer,parameter,public :: verbosity_statistics   = 5  ! Details on health of run (timing, mass conservation)
+      integer,parameter,public :: verbosity_production   = 6  ! Major program flow info
+      integer,parameter,public :: verbosity_essential    = 7  ! Only start up and shutdown messages
+      integer,parameter,public :: verbosity_error        = 8  ! No logging to stdout, only stderr (and logfile)
+      integer,parameter,public :: verbosity_silent       = 9  ! No logging to stdout,stderr. Logfile written as normal
+      integer,parameter,public :: verbosity_dark         = 10 ! No logging to stdout,stderr or logfile
 
-      logical        :: MR_useCompGrid         = .true. ! Reset this to .false. if you only need the Met grid
-      logical        :: MR_useCompTime         = .true. ! Reset this to .false. if you only need the time of the file
-      logical        :: MR_useCompH            = .true.
-      logical        :: MR_useCompP            = .true.
+      logical       ,public :: MR_useCompGrid         = .true. ! Reset this to .false. if you only need the Met grid
+      logical       ,public :: MR_useCompTime         = .true. ! Reset this to .false. if you only need the time of the file
+      logical       ,public :: MR_useCompH            = .true.
+      logical       ,public :: MR_useCompP            = .true.
 
       integer,public :: MR_iwind       !     MR_IWIND specifies the type of wind input to the model:
                              !   MR_IWIND=1 if a 1-D wind sounding is use, 
@@ -202,7 +215,7 @@
       integer           , allocatable,dimension(:),public :: MR_MetStep_DOY
       real(kind=dp)     , allocatable,dimension(:),public :: MR_MetStep_Hour_Of_Day
 
-      logical                                             :: MR_Reannalysis   = .false.
+      logical                                     ,public :: MR_Reannalysis   = .false.
       integer           ,dimension(:), allocatable,public :: MR_iwind5_year
 
       !    Native grid of Met file using Pressure as vertical coordinate
@@ -246,10 +259,10 @@
       !                       upper nodes don't change between 11 and 20 km; above
       !                       20 km they increase by 2 C/km, as in the Standard
       !                       atmosphere.  A warning is written to the log file.
-      integer       :: MR_iHeightHandler = 2
+      integer       ,public :: MR_iHeightHandler = 2
 
         ! The following are used for sonde data
-      integer                                           :: num_RadSnd_Stat
+      integer                                   ,public :: num_RadSnd_Stat
       character(len=4 ),dimension(:),allocatable,public :: MR_Snd_cd   ! Station code
       integer          ,dimension(:),allocatable,public :: MR_Snd_id   ! WMO station ID
       real(kind=dp)    ,dimension(:),allocatable,public :: MR_Snd_lt   ! Station latitude
@@ -259,11 +272,11 @@
       character(len=2 ),dimension(:),allocatable,public :: MR_Snd_st   ! Station state
       character(len=2 ),dimension(:),allocatable,public :: MR_Snd_ct   ! Station country
 
-      integer :: MR_nSnd_Locs      = 1     ! Number of Sonde locations
-      integer :: MR_Snd_nt_fullmet = 1     ! Number of times at the Sonde locations
-      integer :: MR_Snd_nvars      = 5     ! Number of Sonde variables (P,H,U,V,T,+user-specified)
-      logical :: Snd_Have_PT    = .false.  ! 3-col ASCII input do not have pres and temp
-      logical :: Snd_Have_Coord = .false.  ! If the 1-d data have the optional projection params
+      integer,public :: MR_nSnd_Locs      = 1     ! Number of Sonde locations
+      integer,public :: MR_Snd_nt_fullmet = 1     ! Number of times at the Sonde locations
+      integer,public :: MR_Snd_nvars      = 5     ! Number of Sonde variables (P,H,U,V,T,+user-specified)
+      logical,public :: Snd_Have_PT    = .false.  ! 3-col ASCII input do not have pres and temp
+      logical,public :: Snd_Have_Coord = .false.  ! If the 1-d data have the optional projection params
                                            ! then it will be used, otherwise vel will be relative
                                            ! to comp grid.
       integer      ,dimension(:)      ,allocatable, public :: Snd_idx           ! Index of radiosonde in master list
@@ -305,41 +318,41 @@
                                                                                ! rotation is needed
 #endif
 
-      integer       :: nt_fullmet    ! length of t of file
-      integer       :: nx_fullmet    ! length of x or lon of full met grid
-      integer       :: ny_fullmet    ! length of y or lat of full met grid
-      integer       :: np_fullmet    ! length of pressure of full met grid for H,U,V
+      integer,public       :: nt_fullmet    ! length of t of file
+      integer,public       :: nx_fullmet    ! length of x or lon of full met grid
+      integer,public       :: ny_fullmet    ! length of y or lat of full met grid
+      integer,public       :: np_fullmet    ! length of pressure of full met grid for H,U,V
       integer       :: np_fullmet_pad = 1 ! We might need to pad the top of the pressure grid.
-      integer       :: neta_fullmet  ! Only used by WRF
-      real(kind=sp) :: Pressure_Conv_Fac = 100.0_sp  ! factor for converting from Met file units to Pa
+      integer,public       :: neta_fullmet  ! Only used by WRF
+      real(kind=sp),public :: Pressure_Conv_Fac = 100.0_sp  ! factor for converting from Met file units to Pa
 
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:),   pointer :: x_fullmet_sp    => null() ! x-coordinates of full met grid
-      real(kind=sp),dimension(:),   pointer :: y_fullmet_sp    => null() ! y-coordinates of full met grid
-      real(kind=sp),dimension(:),   pointer :: p_fullmet_sp    => null() ! z-coordinates of full met grid for H
-      real(kind=sp),dimension(:,:), pointer :: levs_fullmet_sp => null() ! This hold each of the numbered level coordinates:
+      real(kind=sp),dimension(:),   pointer,public :: x_fullmet_sp    => null() ! x-coordinates of full met grid
+      real(kind=sp),dimension(:),   pointer,public :: y_fullmet_sp    => null() ! y-coordinates of full met grid
+      real(kind=sp),dimension(:),   pointer,public :: p_fullmet_sp    => null() ! z-coordinates of full met grid for H
+      real(kind=sp),dimension(:,:), pointer,public :: levs_fullmet_sp => null() ! This hold each of the numbered level coordinates:
                                                                          !    i.e. isobaric, isobaric1, isobaric2, but also
                                                                          !    height_above_ground, depth_below_surface_layer, etc.
                                                                          !    p_fullmet_sp,p_fullmet_[Vz,RH]sp are copies of one
                                                                          !    of the slices
-      integer,dimension(:), pointer :: nlevs_fullmet                     ! length of z coordinate
-      integer,dimension(:), pointer :: levs_code                         ! code indicating how to map to the GPH grid
+      integer,dimension(:), pointer,public :: nlevs_fullmet                     ! length of z coordinate
+      integer,dimension(:), pointer,public :: levs_code                         ! code indicating how to map to the GPH grid
                                                                          !   0 = no mapping (not a pressure coordinate)
                                                                          !   1 = one-to-one mapping (U,V)
                                                                          !   2 = upper truncation (missing upper levels)
                                                                          !   3 = interpolation (missing mid-levels)
                                                                          !   4 = more levels than GPH grid
 #else
-      real(kind=sp),dimension(:),  allocatable :: x_fullmet_sp    ! x-coordinates of full met grid
-      real(kind=sp),dimension(:),  allocatable :: y_fullmet_sp    ! y-coordinates of full met grid
-      real(kind=sp),dimension(:),  allocatable :: p_fullmet_sp    ! z-coordinates of full met grid for H
-      real(kind=sp),dimension(:,:),allocatable :: levs_fullmet_sp ! This hold each of the numbered level coordinates:
+      real(kind=sp),dimension(:),  allocatable,public :: x_fullmet_sp    ! x-coordinates of full met grid
+      real(kind=sp),dimension(:),  allocatable,public :: y_fullmet_sp    ! y-coordinates of full met grid
+      real(kind=sp),dimension(:),  allocatable,public :: p_fullmet_sp    ! z-coordinates of full met grid for H
+      real(kind=sp),dimension(:,:),allocatable,public :: levs_fullmet_sp ! This hold each of the numbered level coordinates:
                                                                   !    i.e. isobaric, isobaric1, isobaric2, but also
                                                                   !    height_above_ground, depth_below_surface_layer, etc.
                                                                   !    p_fullmet_sp,p_fullmet_[Vz,RH]sp are copies of one
                                                                   !    of the slices
-      integer,dimension(:), allocatable :: nlevs_fullmet
-      integer,dimension(:), allocatable :: levs_code                     ! code indicating how to map to the GPH grid
+      integer,dimension(:), allocatable,public :: nlevs_fullmet
+      integer,dimension(:), allocatable,public :: levs_code                     ! code indicating how to map to the GPH grid
                                                                          !   0 = no mapping (not a pressure coordinate)
                                                                          !   1 = one-to-one mapping (U,V)
                                                                          !   2 = upper truncation (missing upper levels)
@@ -347,101 +360,111 @@
                                                                          !   4 = more levels than GPH grid
 #endif
 
-      logical       :: IsLatLon_MetGrid
-      logical       :: IsGlobal_MetGrid     = .false.  ! Not all Lon/Lat grids are periodic
-      logical       :: IsLatLon_CompGrid
-      logical       :: IsPeriodic_CompGrid  = .false.
-      logical       :: UseFullMetGrid       = .false.  ! This is the special case where the comp grid
+      logical,public       :: IsLatLon_MetGrid
+      logical,public       :: IsGlobal_MetGrid     = .false.  ! Not all Lon/Lat grids are periodic
+      logical,public       :: IsLatLon_CompGrid
+      logical,public       :: IsPeriodic_CompGrid  = .false.
+      logical,public       :: UseFullMetGrid       = .false.  ! This is the special case where the comp grid
                                                        ! equals the Met grid
-
-      integer       :: nx_submet ! length of x or lon of sub-grid
-      integer       :: ny_submet ! length of y or lat of sub-grid
-#ifdef USEPOINTERS
-      real(kind=sp),dimension(:), pointer:: x_submet_sp => null() ! x-coordinates of met sub-grid
-      real(kind=sp),dimension(:), pointer:: y_submet_sp => null() ! y-coordinates of met sub-grid
-      real(kind=sp),dimension(:), pointer:: z_approx    => null() ! approximate altidue from STD Atmos and press (in km)
-#else
-      real(kind=sp),dimension(:), allocatable :: x_submet_sp ! x-coordinates of met sub-grid
-      real(kind=sp),dimension(:), allocatable :: y_submet_sp ! y-coordinates of met sub-grid
-      real(kind=sp),dimension(:), allocatable :: z_approx ! approximate altitude from STD Atmos and press (in km)
-#endif
-
-      logical :: x_inverted     = .false.
-      logical :: y_inverted     = .false. ! Some LatLon grids start at the North Pole and increment down
-      logical :: z_inverted     = .false. ! Some grids give top pressure first
-      logical :: y_pad_North    = .false. ! Some computational grids will require values above the top met point
-      logical :: y_pad_South    = .false. !   
-      logical :: isGridRelative = .true.  ! Most windfiles, whether Lat/Lon or projected, give
+      logical,public :: isGridRelative = .true.  ! Most windfiles, whether Lat/Lon or projected, give
                                           ! velocities relative to the grid of the file.  Some (NARR)
                                           ! give velocities relative to earth coordinates and need to
                                           ! be rotated
-      real(kind=dp),dimension(:,:) ,allocatable :: theta_Met  ! Earth to grid
-      real(kind=dp),dimension(:,:) ,allocatable :: theta_Comp ! Earth to grid
+
+      logical,public       :: IsRegular_MetGrid                ! True if the grid-spacing is uniform
+      real(kind=sp),public :: dx_met_const
+      real(kind=sp),public :: dy_met_const
+
+
+      integer,public       :: nx_submet ! length of x or lon of sub-grid
+      integer,public       :: ny_submet ! length of y or lat of sub-grid
+#ifdef USEPOINTERS
+      real(kind=sp),dimension(:), pointer,public :: x_submet_sp => null() ! x-coordinates of met sub-grid
+      real(kind=sp),dimension(:), pointer,public :: y_submet_sp => null() ! y-coordinates of met sub-grid
+      real(kind=sp),dimension(:), pointer,public :: z_approx    => null() ! approximate altidue from STD Atmos and press (in km)
+#else
+      real(kind=sp),dimension(:), allocatable,public :: x_submet_sp ! x-coordinates of met sub-grid
+      real(kind=sp),dimension(:), allocatable,public :: y_submet_sp ! y-coordinates of met sub-grid
+      real(kind=sp),dimension(:), allocatable,public :: z_approx ! approximate altitude from STD Atmos and press (in km)
+#endif
+
+      logical,public :: x_inverted     = .false.
+      logical,public :: y_inverted     = .false. ! Some LatLon grids start at the North Pole and increment down
+      logical,public :: z_inverted     = .false. ! Some grids give top pressure first
+      logical,public :: y_pad_North    = .false. ! Some computational grids will require values above the top met point
+      logical,public :: y_pad_South    = .false. !   
+      real(kind=dp),dimension(:,:) ,allocatable,public :: theta_Met  ! Earth to grid
+      real(kind=dp),dimension(:,:) ,allocatable,public :: theta_Comp ! Earth to grid
 
       ! Met copies of projection variables, used for proj call on Met Grid
-      integer      :: Met_iprojflag
-      real(kind=8) :: Met_Re
-      real(kind=8) :: Met_k0
-      real(kind=8) :: Met_phi0    != 90.0_ip        ! latitude of projection point
-      real(kind=8) :: Met_lam0 != -135.0_ip   ! longitude of projection point
-      real(kind=8) :: Met_lam1,Met_phi1
-      real(kind=8) :: Met_lam2,Met_phi2
+      integer     ,public :: Met_iprojflag
+      real(kind=8),public :: Met_Re
+      real(kind=8),public :: Met_k0
+      real(kind=8),public :: Met_phi0    != 90.0_ip        ! latitude of projection point
+      real(kind=8),public :: Met_phi1
+      real(kind=8),public :: Met_phi2
+      real(kind=8),public :: Met_lam0 != -135.0_ip   ! longitude of projection point
+      real(kind=8),public :: Met_lam1
+      real(kind=8),public :: Met_lam2
 
-      integer      :: Comp_iprojflag
-      real(kind=8) :: Comp_Re
-      real(kind=8) :: Comp_k0
-      real(kind=8) :: Comp_phi0    != 90.0_ip        ! latitude of projection point
-      real(kind=8) :: Comp_lam0 != -135.0_ip   ! longitude of projection point
-      real(kind=8) :: Comp_lam1,Comp_phi1
-      real(kind=8) :: Comp_lam2,Comp_phi2
+      integer     ,public :: Comp_iprojflag
+      real(kind=8),public :: Comp_Re
+      real(kind=8),public :: Comp_k0
+      real(kind=8),public :: Comp_phi0    != 90.0_ip        ! latitude of projection point
+      real(kind=8),public :: Comp_lam0 != -135.0_ip   ! longitude of projection point
+      real(kind=8),public :: Comp_lam1
+      real(kind=8),public :: Comp_phi1
+      real(kind=8),public :: Comp_lam2
+      real(kind=8),public :: Comp_phi2
 
-      integer      :: Map_Case
+      integer     ,public :: Map_Case
 
       ! Some geometry terms
 #ifdef USEPOINTERS
       real(kind=sp),dimension(:,:)     ,pointer :: rdphi_MetP_sp           => null()
       real(kind=sp),dimension(:,:,:)   ,pointer :: rdlambda_MetP_sp        => null()
-      real(kind=sp),dimension(:)       ,pointer :: MR_dx_met, MR_dx_submet => null()
-      real(kind=sp),dimension(:)       ,pointer :: MR_dy_met, MR_dy_submet => null()
+      real(kind=sp),dimension(:)       ,pointer,public :: MR_dx_met               => null()
+      real(kind=sp),dimension(:)       ,pointer,public :: MR_dx_submet            => null()
+      real(kind=sp),dimension(:)       ,pointer,public :: MR_dy_met               => null()
+      real(kind=sp),dimension(:)       ,pointer,public :: MR_dy_submet            => null()
 #else
-      real(kind=sp),dimension(:,:)     ,allocatable,private :: rdphi_MetP_sp
-      real(kind=sp),dimension(:,:,:)   ,allocatable,private :: rdlambda_MetP_sp
-      real(kind=sp),dimension(:)       ,allocatable         :: MR_dx_met, MR_dx_submet
-      real(kind=sp),dimension(:)       ,allocatable         :: MR_dy_met, MR_dy_submet
+      real(kind=sp),dimension(:,:)     ,allocatable :: rdphi_MetP_sp
+      real(kind=sp),dimension(:,:,:)   ,allocatable :: rdlambda_MetP_sp
+      real(kind=sp),dimension(:)       ,allocatable,public :: MR_dx_met
+      real(kind=sp),dimension(:)       ,allocatable,public :: MR_dx_submet
+      real(kind=sp),dimension(:)       ,allocatable,public :: MR_dy_met
+      real(kind=sp),dimension(:)       ,allocatable,public :: MR_dy_submet
 #endif
 
-      logical       :: IsRegular_MetGrid                ! True if the grid-spacing is uniform
-      real(kind=sp) :: dx_met_const, dy_met_const
-
         ! There are some computational grid variables we might need, so make local copies
-      integer       :: MR_BaseYear            = 1900    ! This should be reset in calling program
-      logical       :: MR_useLeap             = .true.  ! This too
-      integer       :: MR_Comp_StartYear
-      integer       :: MR_Comp_StartMonth
-      integer       :: MR_Comp_StartDay
-      real(kind=dp) :: MR_Comp_StartHour      = 0.0_dp  ! Note that these must be double-precision to
-      real(kind=dp) :: MR_Comp_Time_in_hours  = 0.0_dp  ! be passed correctly to HoursSince
-      integer       :: nx_comp
-      integer       :: ny_comp
-      integer       :: nz_comp
+      integer      ,public :: MR_BaseYear            = 1900    ! This should be reset in calling program
+      logical      ,public :: MR_useLeap             = .true.  ! This too
+      integer      ,public :: MR_Comp_StartYear
+      integer      ,public :: MR_Comp_StartMonth
+      integer      ,public :: MR_Comp_StartDay
+      real(kind=dp),public :: MR_Comp_StartHour      = 0.0_dp  ! Note that these must be double-precision to
+      real(kind=dp),public :: MR_Comp_Time_in_hours  = 0.0_dp  ! be passed correctly to HoursSince
+      integer      ,public :: nx_comp
+      integer      ,public :: ny_comp
+      integer      ,public :: nz_comp
       real(kind=sp) :: dx_comp,dy_comp
       real(kind=sp) :: MaxZ_comp_sp
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:),    pointer :: x_comp_sp => null() ! x-coordinates of computational grid
-      real(kind=sp),dimension(:),    pointer :: y_comp_sp => null() ! y-coordinates of computational grid
-      real(kind=sp),dimension(:),    pointer :: z_comp_sp => null() ! z-coordinates of computational grid
-      real(kind=sp),dimension(:,:),  pointer :: CompPoint_X_on_Met_sp   => null() ! x-coord (on Met grid) of comp point
-      real(kind=sp),dimension(:,:),  pointer :: CompPoint_Y_on_Met_sp   => null() ! y-coord (on Met grid) of comp point
-      integer      ,dimension(:,:,:),pointer :: CompPoint_on_subMet_idx => null() ! index on met sub-grid of comp point
-      real(kind=sp),dimension(:,:,:),pointer :: bilin_map_wgt => null()
+      real(kind=sp),dimension(:),    pointer,public :: x_comp_sp => null() ! x-coordinates of computational grid
+      real(kind=sp),dimension(:),    pointer,public :: y_comp_sp => null() ! y-coordinates of computational grid
+      real(kind=sp),dimension(:),    pointer,public :: z_comp_sp => null() ! z-coordinates of computational grid
+      real(kind=sp),dimension(:,:),  pointer,public :: CompPoint_X_on_Met_sp   => null() ! x-coord (on Met grid) of comp point
+      real(kind=sp),dimension(:,:),  pointer,public :: CompPoint_Y_on_Met_sp   => null() ! y-coord (on Met grid) of comp point
+      integer      ,dimension(:,:,:),pointer,public :: CompPoint_on_subMet_idx => null() ! index on met sub-grid of comp point
+      real(kind=sp),dimension(:,:,:),pointer,public :: bilin_map_wgt => null()
 #else
-      real(kind=sp),dimension(:),    allocatable :: x_comp_sp ! x-coordinates of computational grid
-      real(kind=sp),dimension(:),    allocatable :: y_comp_sp ! y-coordinates of computational grid
-      real(kind=sp),dimension(:),    allocatable :: z_comp_sp ! z-coordinates of computational grid
-      real(kind=sp),dimension(:,:),  allocatable :: CompPoint_X_on_Met_sp   ! x-coord (on Met grid) of comp point
-      real(kind=sp),dimension(:,:),  allocatable :: CompPoint_Y_on_Met_sp   ! y-coord (on Met grid) of comp point
-      integer      ,dimension(:,:,:),allocatable :: CompPoint_on_subMet_idx ! index on met sub-grid of comp point
-      real(kind=sp),dimension(:,:,:),allocatable :: bilin_map_wgt
+      real(kind=sp),dimension(:),    allocatable,public :: x_comp_sp ! x-coordinates of computational grid
+      real(kind=sp),dimension(:),    allocatable,public :: y_comp_sp ! y-coordinates of computational grid
+      real(kind=sp),dimension(:),    allocatable,public :: z_comp_sp ! z-coordinates of computational grid
+      real(kind=sp),dimension(:,:),  allocatable,public :: CompPoint_X_on_Met_sp   ! x-coord (on Met grid) of comp point
+      real(kind=sp),dimension(:,:),  allocatable,public :: CompPoint_Y_on_Met_sp   ! y-coord (on Met grid) of comp point
+      integer      ,dimension(:,:,:),allocatable,public :: CompPoint_on_subMet_idx ! index on met sub-grid of comp point
+      real(kind=sp),dimension(:,:,:),allocatable,public :: bilin_map_wgt
 #endif
       ! Here are a few variables needed for sigma-altitude coordinates
       logical        :: MR_use_SigmaAlt   = .false.
@@ -459,11 +482,11 @@
       real(kind=sp),dimension(:,:),  allocatable :: MR_jacob  ! Jacobian of trans. = MR_ztop-MR_zsurf
 #endif
 
-      logical                        :: FoundFillVAttr = .false.
-      real(kind=sp)                  :: fill_value_sp  = -9999.0_sp  ! Initialize to the commonly used fill value
-      character(len=30),dimension(9) :: Met_dim_names      ! name of dimension
-      logical          ,dimension(9) :: Met_dim_IsAvailable
-      real(kind=sp)    ,dimension(9) :: Met_dim_fac  = 1.0_sp
+      logical                       ,public :: FoundFillVAttr = .false.
+      real(kind=sp),public                  :: fill_value_sp  = -9999.0_sp  ! Initialize to the commonly used fill value
+      character(len=30),dimension(9),public :: Met_dim_names      ! name of dimension
+      logical          ,dimension(9),public :: Met_dim_IsAvailable
+      real(kind=sp)    ,dimension(9),public :: Met_dim_fac  = 1.0_sp
       ! Here is the list of variables that can be read.  Each iwindformat will
       ! have just a sub-set available with specific names.  For now, allocate
       ! space for 50 variable names
@@ -506,57 +529,62 @@
         !  45 = Precipitation rate convective  (liquid)
         !  46 = Precipitation rate large-scale (ice)
         !  47 = Precipitation rate convective  (ice)
-      logical          ,dimension(MR_MAXVARS)   :: Met_var_IsAvailable      ! true if iwf contains the var
-      character(len=71),dimension(MR_MAXVARS)   :: Met_var_NC_names          ! name in the file
-      character(len=71),dimension(MR_MAXVARS)   :: Met_var_GRIB_names        ! name in the file
-      character(len=5) ,dimension(MR_MAXVARS)   :: Met_var_WMO_names        ! WMO version of the name
-      integer          ,dimension(MR_MAXVARS)   :: Met_var_ndim             ! 
-      integer          ,dimension(MR_MAXVARS)   :: Met_var_zdim_idx         ! The index of this coordinate (used in Met_var_nlevs) 
-      integer          ,dimension(MR_MAXVARS)   :: Met_var_zdim_ncid        ! The dimID of the dimension in the nc file
-      integer                                   :: nlev_coords_detected = 0
-      integer          ,dimension(MR_MAXVARS,4) :: Met_var_GRIB2_DPcPnSt    ! Grib2 files have variables identified by
+      logical          ,dimension(MR_MAXVARS),public   :: Met_var_IsAvailable      ! true if iwf contains the var
+      character(len=71),dimension(MR_MAXVARS),public   :: Met_var_NC_names          ! name in the file
+      character(len=71),dimension(MR_MAXVARS),public   :: Met_var_GRIB_names        ! name in the file
+      character(len=5) ,dimension(MR_MAXVARS),public   :: Met_var_WMO_names        ! WMO version of the name
+      integer          ,dimension(MR_MAXVARS),public   :: Met_var_ndim             ! 
+      integer          ,dimension(MR_MAXVARS),public   :: Met_var_zdim_idx         ! The index of this coordinate (used in Met_var_nlevs) 
+      integer          ,dimension(MR_MAXVARS),public   :: Met_var_zdim_ncid        ! The dimID of the dimension in the nc file
+      integer                                ,public   :: nlev_coords_detected = 0
+      integer          ,dimension(MR_MAXVARS,4),public :: Met_var_GRIB2_DPcPnSt    ! Grib2 files have variables identified by
                                                                             ! discpln,param_cat,param_num,surf_class
-      integer          ,dimension(MR_MAXVARS)   :: Met_var_GRIB1_Param      !   indicatorOfParameter
-      integer          ,dimension(MR_MAXVARS)   :: Met_var_GRIB1_Table      !   table2Version
-      character(len=3) ,dimension(MR_MAXVARS)   :: Met_var_GRIB1_St         ! level type (pl, src, 116 etc)
-      integer                                   :: MR_GRIB_Version  = 0
+      integer          ,dimension(MR_MAXVARS),public   :: Met_var_GRIB1_Param      !   indicatorOfParameter
+      integer          ,dimension(MR_MAXVARS),public   :: Met_var_GRIB1_Table      !   table2Version
+      character(len=3) ,dimension(MR_MAXVARS),public   :: Met_var_GRIB1_St         ! level type (pl, src, 116 etc)
+      integer                                ,public   :: MR_GRIB_Version  = 0
 
-      real(kind=sp)    ,dimension(MR_MAXVARS)   :: Met_var_conversion_factor
+      real(kind=sp)    ,dimension(MR_MAXVARS),public   :: Met_var_conversion_factor
 
       integer          ,dimension(MR_MAXVARS)   :: Met_var_nlevs
 
         ! Variables needed by netcdf reader
-      real(kind=sp) :: iwf25_scale_facs(MR_MAXVARS)
-      real(kind=sp) :: iwf25_offsets(MR_MAXVARS)
-      real(kind=sp) :: x_in_iwf25_sp(192)
-      real(kind=sp) :: y_in_iwf25_sp(94)
+      real(kind=sp),public :: iwf25_scale_facs(MR_MAXVARS)
+      real(kind=sp),public :: iwf25_offsets(MR_MAXVARS)
+      real(kind=sp),public :: x_in_iwf25_sp(192)
+      real(kind=sp),public :: y_in_iwf25_sp(94)
         ! Here is the mapping for bilinear weighting coefficients (amap) and
         ! indices (imap) from the 1.875-deg 2d grid to the 2.5-deg 
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:,:,:)   ,pointer :: amap_iwf25 => null()
-      integer      ,dimension(:,:,:)   ,pointer :: imap_iwf25 => null()
+      real(kind=sp),dimension(:,:,:)   ,pointer,public :: amap_iwf25 => null()
+      integer      ,dimension(:,:,:)   ,pointer,public :: imap_iwf25 => null()
 #else
-      real(kind=sp),dimension(:,:,:)   ,allocatable :: amap_iwf25
-      integer      ,dimension(:,:,:)   ,allocatable :: imap_iwf25
+      real(kind=sp),dimension(:,:,:)   ,allocatable,public :: amap_iwf25
+      integer      ,dimension(:,:,:)   ,allocatable,public :: imap_iwf25
 #endif
-      integer(kind=sp),dimension(:,:,:),allocatable :: tmpsurf2d_short
+      integer(kind=sp),dimension(:,:,:),allocatable,public :: tmpsurf2d_short
 
-      integer :: istart, iend
-      integer :: jstart, jend
-      integer :: ilhalf_fm_l, ilhalf_fm_r
-      integer :: irhalf_fm_l, irhalf_fm_r
-      integer :: ilhalf_nx, irhalf_nx
-      logical :: wrapgrid
+      integer,public :: istart
+      integer,public :: iend
+      integer,public :: jstart
+      integer,public :: jend
+      integer,public :: ilhalf_fm_l
+      integer,public :: ilhalf_fm_r
+      integer,public :: irhalf_fm_l
+      integer,public :: irhalf_fm_r
+      integer,public :: ilhalf_nx
+      integer,public :: irhalf_nx
+      logical,public :: wrapgrid
 
       real(kind=sp)   ,dimension(:)       ,allocatable :: temp1d_sp
-      real(kind=sp)   ,dimension(:,:,:)   ,allocatable :: temp2d_sp
-      real(kind=sp)   ,dimension(:,:,:,:) ,allocatable :: temp3d_sp
-      integer(kind=sp),dimension(:,:,:)   ,allocatable :: temp2d_int
+      real(kind=sp)   ,dimension(:,:,:)   ,allocatable,public :: temp2d_sp
+      real(kind=sp)   ,dimension(:,:,:,:) ,allocatable,public :: temp3d_sp
+      integer(kind=sp),dimension(:,:,:)   ,allocatable,public :: temp2d_int
       integer(kind=sp),dimension(:,:,:)   ,allocatable :: temp2d_short
-      integer(kind=sp),dimension(:,:,:,:) ,allocatable :: temp3d_short
+      integer(kind=sp),dimension(:,:,:,:) ,allocatable,public :: temp3d_short
 
-      real(kind=4),dimension(:,:),allocatable :: Met_Proj_lat
-      real(kind=4),dimension(:,:),allocatable :: Met_Proj_lon
+      real(kind=4),dimension(:,:),allocatable,public :: Met_Proj_lat
+      real(kind=4),dimension(:,:),allocatable,public :: Met_Proj_lon
 
       ! Status variables for error-checking
       logical :: Check_prereq_conditions            = .true.
@@ -570,7 +598,7 @@
       ! Defaults to linux-style, but this can be changed in the calling program
       integer              :: MR_OS_TYPE    = 1       ! 1=linux, 2=apple, 3=windows
       character (len=2)    :: MR_DirPrefix  = ''
-      character (len=1)    :: MR_DirDelim   = '/'
+      character (len=1),public    :: MR_DirDelim   = '/'
 
       contains
 
@@ -584,8 +612,6 @@
 !##############################################################################
 
       subroutine MR_Reset_Memory
-
-      implicit none
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"-------------------------------------------------------"
@@ -752,8 +778,6 @@
 !##############################################################################
 
       subroutine MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)
-
-      implicit none
 
       integer,intent(in)      :: iw
       integer,intent(in)      :: iwf
@@ -2576,8 +2600,6 @@
 
       subroutine MR_Read_Met_DimVars(iy)
 
-      implicit none
-
       integer, optional,intent(in) :: iy  ! Note: this is only needed for iw=5
                                           !       since we need to know how many
                                           !       metsteps to allocate
@@ -2785,8 +2807,6 @@
 
       subroutine MR_Set_CompProjection(LL_flag,ipf,lam0,phi0,phi1,phi2,ko,Re)
 
-      implicit none
-
       logical     ,intent(in) :: LL_flag
       integer     ,intent(in) :: ipf
       real(kind=8),intent(in) :: lam0,phi0
@@ -2890,8 +2910,6 @@
 
       subroutine MR_Initialize_Met_Grids(nx,ny,nz, &
                                       dumx_sp,dumy_sp,dumz_sp,periodic)
-
-      implicit none
 
       integer      ,intent(in) :: nx,ny,nz
       real(kind=sp),intent(in) :: dumx_sp(nx)
@@ -3008,22 +3026,22 @@
         do k=1,np_fullmet
           if(IsRegular_MetGrid)then
             ! length scale along y (in meters)
-            rdphi_MetP_sp(:,k) = dy_met_const*DEG2RAD_MET * (RAD_EARTH_MET+z_approx(k))*1000.0_sp
+            rdphi_MetP_sp(:,k) = dy_met_const*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))*1000.0_sp
             do j=1,ny_submet
               ! length scale along x (in meters)
-              rdlambda_MetP_sp(:,j,k) =(RAD_EARTH_MET+z_approx(k))*1000.0_sp * &
-                                      cos(DEG2RAD_MET*(y_submet_sp(j)-0.5_sp*dy_met_const)) * &
-                                      dx_met_const*DEG2RAD_MET
+              rdlambda_MetP_sp(:,j,k) =(MR_RAD_EARTH+z_approx(k))*1000.0_sp * &
+                                      cos(MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*dy_met_const)) * &
+                                      dx_met_const*MR_DEG2RAD
             enddo
           else
             do i=1,nx_submet
               do j=1,ny_submet
                 ! length scale along y (in meters)
-                rdphi_MetP_sp(:,k) = MR_dy_submet(j)*DEG2RAD_MET * (RAD_EARTH_MET+z_approx(k))*1000.0_sp
+                rdphi_MetP_sp(:,k) = MR_dy_submet(j)*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))*1000.0_sp
                 ! length scale along x (in meters)
-                rdlambda_MetP_sp(i,j,k) =(RAD_EARTH_MET+z_approx(k))*1000.0_sp * &
-                                        cos(DEG2RAD_MET*(y_submet_sp(j)-0.5_sp*MR_dy_submet(j))) * &
-                                        MR_dx_submet(i)*DEG2RAD_MET
+                rdlambda_MetP_sp(i,j,k) =(MR_RAD_EARTH+z_approx(k))*1000.0_sp * &
+                                        cos(MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*MR_dy_submet(j))) * &
+                                        MR_dx_submet(i)*MR_DEG2RAD
               enddo
             enddo
           endif
@@ -3047,8 +3065,6 @@
       subroutine MR_Set_SigmaAlt_Scaling(nx,ny,nz, &
                                          dum_sp, dumz_sp, dumxy1_sp, &
                                          dum_int)
-
-      implicit none
 
       integer      ,intent(in) :: nx,ny,nz
       real(kind=sp),intent(in) :: dum_sp
@@ -3097,8 +3113,6 @@
 !##############################################################################
 
       subroutine MR_Set_Met_Times(eStartHour,Duration)
-
-      implicit none
 
       integer, parameter :: sp        = 4 ! single precision
       integer, parameter :: dp        = 8 ! double precision
@@ -3599,8 +3613,6 @@
 
       subroutine MR_Read_HGT_arrays(istep,reset_first_time)
 
-      implicit none
-
       integer,intent(in)           :: istep
       logical, optional,intent(in) :: reset_first_time
 
@@ -3709,8 +3721,6 @@
 
       subroutine MR_Read_3d_MetP_Variable(ivar,istep)
 
-      implicit none
-
       integer,intent(in)        :: ivar
       integer,intent(in)        :: istep
 
@@ -3771,9 +3781,7 @@
 
       subroutine MR_Read_3d_MetH_Variable(ivar,istep)
 
-      implicit none
-
-      integer, parameter :: sp        = 4 ! single precision
+      !integer, parameter :: sp        = 4 ! single precision
 
       integer,intent(in)        :: ivar
       integer,intent(in)        :: istep
@@ -3921,8 +3929,6 @@
 
       subroutine MR_Read_3d_Met_Variable_to_CompH(ivar,istep,IsNext)
 
-      implicit none
-
       integer,intent(in)           :: ivar
       integer,intent(in)           :: istep
       logical, optional,intent(in) :: IsNext
@@ -4046,8 +4052,6 @@
 
       subroutine MR_Read_3d_Met_Variable_to_CompP(ivar,istep,IsNext)
 
-      implicit none
-
       integer,intent(in)           :: ivar
       integer,intent(in)           :: istep
       logical, optional,intent(in) :: IsNext
@@ -4158,9 +4162,7 @@
 
       subroutine MR_Read_2d_Met_Variable(ivar,istep)
 
-      implicit none
-
-      integer, parameter :: sp        = 4 ! single precision
+      !integer, parameter :: sp        = 4 ! single precision
 
       integer,intent(in)        :: ivar
       integer,intent(in)        :: istep   
@@ -4226,8 +4228,6 @@
 !##############################################################################
 
       subroutine MR_Read_2d_Met_Variable_to_CompGrid(ivar,istep)
-
-      implicit none
 
       integer,intent(in)        :: ivar
       integer,intent(in)        :: istep
@@ -4297,8 +4297,6 @@
 !##############################################################################
 
       subroutine MR_Rotate_UV_GR2ER_Met(istep,SetComp)
-
-      implicit none
 
       integer,intent(in)  :: istep
       logical,optional,intent(in) :: SetComp
@@ -4415,8 +4413,6 @@
 
       subroutine MR_Rotate_UV_ER2GR_Comp(istep)
 
-      implicit none
-
       integer,intent(in)  :: istep
 
       integer             :: i,j,k
@@ -4508,8 +4504,6 @@
 !##############################################################################
 
       subroutine MR_Regrid_MetP_to_CompH(istep)
-
-      implicit none
 
       integer,intent(in)  :: istep
 
@@ -4614,9 +4608,7 @@
 
       subroutine MR_Regrid_MetP_to_MetH(istep)
 
-      implicit none
-
-      integer, parameter :: sp        = 4 ! single precision
+      !integer, parameter :: sp        = 4 ! single precision
 
       integer,intent(in)  :: istep
 
@@ -4728,8 +4720,6 @@
 
       subroutine MR_Regrid_Met2d_to_Comp2d
 
-      implicit none
-
       integer             :: i,j
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
 
@@ -4784,9 +4774,7 @@
 
       subroutine MR_DelMetP_Dx
 
-      implicit none
-
-      integer, parameter :: sp        = 4 ! single precision
+      !integer, parameter :: sp        = 4 ! single precision
 
       integer :: i
       integer :: lside,rside
@@ -4869,9 +4857,7 @@
 
       subroutine MR_DelMetP_Dy
 
-      implicit none
-
-      integer, parameter :: sp        = 4 ! single precision
+      !integer, parameter :: sp        = 4 ! single precision
 
       integer :: i,j
       integer :: lside,rside
@@ -4939,8 +4925,6 @@
 
       function MR_Temp_US_StdAtm(zin)
 
-      implicit none
-
       real(kind=sp) :: MR_Temp_US_StdAtm
       real(kind=sp) :: zin
 
@@ -4996,8 +4980,6 @@
 !##############################################################################
 
       function MR_Z_US_StdAtm(pin)
-
-      implicit none
 
       real(kind=sp) :: MR_Z_US_StdAtm  ! in km
       real(kind=sp) :: pin          ! in mb
@@ -5058,8 +5040,6 @@
 
       function MR_Pres_US_StdAtm(zin)
 
-      implicit none
-
       real(kind=sp) :: MR_Pres_US_StdAtm
       real(kind=sp) :: zin
 
@@ -5106,10 +5086,8 @@
                  bc_low_sp, bc_high_sp)
 
 
-      implicit none
-
-      integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      !integer, parameter :: sp        = 4 ! single precision
+      !integer, parameter :: dp        = 8 ! double precision
 
       integer               ,intent(in)    :: ivar
       integer               ,intent(in)    :: nx_max,ny_max,nz1_max
@@ -5331,8 +5309,6 @@
                                        test_compproj,    &
                                        test_initmetgrid, &
                                        test_setmettimes)
-
-      implicit none
 
       logical ,intent(in) :: test_allocate    ! Check if MR_Allocate_FullMetFileList was called
       logical ,intent(in) :: test_dimvars     ! Check if MR_Read_Met_DimVars
