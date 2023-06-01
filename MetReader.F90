@@ -70,7 +70,10 @@
              MR_Read_Met_DimVars,MR_Set_Met_Times,MR_Initialize_Met_Grids,&
              MR_Read_HGT_arrays,MR_Read_3d_Met_Variable_to_CompH,MR_Read_3d_Met_Variable_to_CompP,&
              MR_Read_3d_MetH_Variable,MR_Read_3d_MetP_Variable,&
-             MR_Rotate_UV_GR2ER_Met,&
+             MR_Read_2d_Met_Variable,MR_Read_2d_Met_Variable_to_CompGrid,&
+             MR_Rotate_UV_GR2ER_Met,MR_Rotate_UV_ER2GR_Comp,&
+             MR_Regrid_MetP_to_CompH,MR_Regrid_MetP_to_MetH,MR_Regrid_Met2d_to_Comp2d,&
+             MR_DelMetP_Dx,MR_DelMetP_Dy,&
              MR_Temp_US_StdAtm,MR_Z_US_StdAtm,MR_Pres_US_StdAtm,&
              MR_QC_3dvar
 
@@ -105,7 +108,7 @@
       integer :: MR_global_log = 9
 
       integer,public :: MR_nio = 1   ! Number of output streams to use: 1 for just stdout,stderr or 2 to include a logfile
-      integer,public :: io
+      !integer,public :: io
       integer,dimension(2),public :: outlog = (/6,9/) ! Assumes stdin=6, logfile=9
       integer,dimension(2),public :: errlog = (/0,9/) ! Assumes sterr=0, logfile=9
 
@@ -596,8 +599,8 @@
 
       ! Info on how to build file paths
       ! Defaults to linux-style, but this can be changed in the calling program
-      integer              :: MR_OS_TYPE    = 1       ! 1=linux, 2=apple, 3=windows
-      character (len=2)    :: MR_DirPrefix  = ''
+      integer          ,public    :: MR_OS_TYPE    = 1       ! 1=linux, 2=apple, 3=windows
+      character (len=2),public    :: MR_DirPrefix  = ''
       character (len=1),public    :: MR_DirDelim   = '/'
 
       contains
@@ -612,6 +615,8 @@
 !##############################################################################
 
       subroutine MR_Reset_Memory
+
+      integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"-------------------------------------------------------"
@@ -786,6 +791,7 @@
       integer,intent(in)      :: iwfiles
 
       integer :: i
+      integer :: io                           ! Index for output streams
 
       MR_iwind              = iw
       MR_iwindformat        = iwf
@@ -2615,6 +2621,8 @@
       character(len=5)  :: zone
       integer           :: values(8)
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
         subroutine MR_Set_iwind5_filenames(inhour,ivar,infile)
           real(kind=8)      ,intent(in)  :: inhour
@@ -2815,6 +2823,8 @@
       real(kind=8),intent(in) :: ko
       real(kind=8),intent(in) :: Re
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Set_CompProjection                                 ----------"
@@ -2918,6 +2928,7 @@
       logical      ,intent(in) :: periodic
 
       integer       :: i,j,k
+      integer :: io                           ! Index for output streams
 
       !                allocates *_Met_P for subset of Met grid on pressure levels
       !                          *_Met_H for subset of Met grid on height levels
@@ -3072,6 +3083,8 @@
       real(kind=sp),intent(in) :: dumxy1_sp(nx,ny)
       integer      ,intent(in) :: dum_int
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Set_SigmaAlt_Scaling                               ----------"
@@ -3134,6 +3147,8 @@
       real(kind=8) :: met_t1,met_t2,met_dt1
       logical      :: prestep, poststep
       integer :: files_per_tstep
+
+      integer :: io                           ! Index for output streams
 
       INTERFACE
         real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
@@ -3620,6 +3635,8 @@
       logical,save :: first_time = .true.
       integer :: k
 
+      integer :: io                           ! Index for output streams
+
       if(present(reset_first_time)) then
         first_time = .true.
       endif
@@ -3724,6 +3741,8 @@
       integer,intent(in)        :: ivar
       integer,intent(in)        :: istep
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_3d_MetP_Variable                              ----------"
@@ -3793,6 +3812,8 @@
       integer :: kc,knext
       integer :: np_fully_padded
       real(kind=sp),dimension(:),allocatable :: dumVertCoord_sp
+
+      integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
@@ -3936,6 +3957,8 @@
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_3d_Met_Variable_to_CompH                      ----------"
@@ -4059,6 +4082,8 @@
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_3d_Met_Variable_to_CompP                      ----------"
@@ -4167,6 +4192,8 @@
       integer,intent(in)        :: ivar
       integer,intent(in)        :: istep   
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_2d_Met_Variable                               ----------"
@@ -4234,6 +4261,8 @@
 
       integer             :: i,j
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
+
+      integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
@@ -4306,6 +4335,8 @@
       real(kind=sp) :: vx_old,vy_old
       real(kind=sp) :: vx_new,vy_new
       real(kind=sp) :: rotang
+
+      integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
@@ -4421,6 +4452,8 @@
       real(kind=sp) :: vx_new,vy_new
       real(kind=sp) :: rotang1
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Rotate_UV_ER2GR_Met                                ----------"
@@ -4509,6 +4542,8 @@
 
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
+
+      integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
@@ -4618,6 +4653,8 @@
       integer :: i,j,k
       integer :: kc,knext
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_MetP_to_MetH                                ----------"
@@ -4723,6 +4760,8 @@
       integer             :: i,j
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_Met2d_to_Comp2d                             ----------"
@@ -4780,6 +4819,8 @@
       integer :: lside,rside
       real(kind=sp) :: dx_fac
       real(kind=sp) :: KM_2_M
+
+      integer :: io                           ! Index for output streams
 
       KM_2_M = 100.0_sp
 
@@ -4864,6 +4905,8 @@
       real(kind=sp) :: dy_fac
       real(kind=sp) :: KM_2_M
 
+      integer :: io                           ! Index for output streams
+
       KM_2_M = 100.0_sp
 
       do j=1,ny_submet
@@ -4934,7 +4977,9 @@
 
       real(kind=sp) :: frac
       real(kind=sp) :: Delta_temp
+
       integer :: k,kk
+      integer :: io                           ! Index for output streams
 
       US_StdAtm_znodes = (/ 0.0_sp, 11.0_sp, 20.0_sp, 32.0_sp, &
                            47.0_sp, 51.0_sp, 71.0_sp, 84.852_sp, &
@@ -4991,6 +5036,7 @@
       real(kind=sp) :: frac
       real(kind=sp) :: Delta_z
       integer :: k,kk
+      integer :: io                           ! Index for output streams
 
       US_StdAtm_znodes = (/ 0.0_sp,  11.0_sp,  20.0_sp,  32.0_sp,   &
                            47.0_sp,  51.0_sp,  71.0_sp,  84.852_sp, &
@@ -5105,7 +5151,7 @@
       integer ::  i,j,k,kk,kkk,klow,khigh
       integer :: idx
       real(kind=sp) :: pp,pv,p1,p2,fac
-
+      integer :: io                           ! Index for output streams
 
       InterpolateLev(:) = .false.
       ExtrapolateLev(:) = .false.
@@ -5321,6 +5367,8 @@
       logical :: failtest_compproj    = .false.
       logical :: failtest_initmetgrid = .false.
       logical :: failtest_setmettimes = .false.
+
+      integer :: io                           ! Index for output streams
 
       ! Check prerequisites
       if(test_allocate.eqv..true.)then

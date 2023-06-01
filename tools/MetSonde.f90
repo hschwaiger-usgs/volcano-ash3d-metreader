@@ -27,7 +27,10 @@
 
       program MetSonde
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,verbosity_info,&
+         MR_BaseYear,MR_useLeap,&
+           MR_Initialize_Met_Grids
 
       implicit none
 
@@ -51,6 +54,8 @@
 
       integer :: BaseYear = 1900
       logical :: useLeap  = .true.
+
+      integer :: io                           ! Index for output streams
 
       INTERFACE
         subroutine Read_ComdLine(inlon,inlat, &
@@ -149,7 +154,10 @@
                     inyear,inmonth,inday,inhour,&
                     WINDROOT)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_info,verbosity_error,&
+           MR_Set_CompProjection
+
       use projection
 
       implicit none
@@ -171,6 +179,8 @@
       integer :: iprojflag
       real(kind=8) :: lambda0,phi0,phi1,phi2,k0,radius_earth
       logical :: IsLatLon
+
+      integer :: io                           ! Index for output streams
 
 !     TEST READ COMMAND LINE ARGUMENTS
       nargs = command_argument_count()
@@ -264,7 +274,13 @@
                              WINDROOT, &
                              FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_info,verbosity_error,&
+         MR_BaseYear,MR_useLeap,MR_Comp_StartHour,MR_Comp_Time_in_hours,&
+         MR_iwindfiles,MR_windfiles,&
+           MR_Allocate_FullMetFileList,&
+           MR_Read_Met_DimVars,&
+           MR_Set_Met_Times
 
       implicit none
 
@@ -324,6 +340,8 @@
       logical,dimension(:),allocatable :: GFS_candidate
       integer,dimension(:),allocatable :: GFS_FC_step_avail
       integer :: OptimalPackageNum
+
+      integer :: io                           ! Index for output streams
 
       INTERFACE
         character (len=13) function HS_yyyymmddhhmm_since(HoursSince,byear,useLeaps)
@@ -619,7 +637,15 @@
 
       subroutine GetMetProfile(inlon,inlat,inyear,inmonth,inday,inhour)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,verbosity_info,&
+         MR_geoH_metP_last,MR_geoH_metP_next,dx_met_const,dy_met_const,&
+         MR_BaseYear,MR_useLeap,MR_dum3d_MetP,MR_iMetStep_Now,&
+         nx_submet,ny_submet,np_fullmet,x_submet_sp,y_submet_sp,p_fullmet_sp,&
+         MR_MetStep_Interval,MR_MetStep_Hour_since_baseyear,&
+           MR_Read_HGT_arrays,&
+           MR_Read_3d_MetP_Variable,&
+           MR_Read_Met_DimVars
 
       implicit none
 
@@ -641,6 +667,8 @@
       real(kind=4),dimension(:),allocatable :: tempprof1,tempprof2,tempprof
       real(kind=4) :: TropoH,TropoP,TropoT
       real(kind=4) :: lapse_1,lapse_2,lapse_3
+
+      integer :: io                           ! Index for output streams
 
       INTERFACE
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)

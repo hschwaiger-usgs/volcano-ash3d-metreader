@@ -89,6 +89,8 @@
       integer :: i
       real(kind=8) :: steptime
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
         real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
           real(kind=8)          :: HoursSince
@@ -477,6 +479,8 @@
 
       real(kind=4),dimension(:,:),allocatable :: outvars
       real(kind=4),dimension(:)  ,allocatable :: u,v
+
+      integer :: io                           ! Index for output streams
 
       allocate(outvars(invars,np_fullmet))
       ! We only need u and v for Map_Case = 5, but allocate anyway since

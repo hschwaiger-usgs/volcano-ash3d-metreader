@@ -153,6 +153,8 @@
       logical           :: HasTTCC   = .false.
       integer           :: DayOfMonth, SndHour
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
         subroutine MR_Load_Radiosonde_Station_Data
         end subroutine MR_Load_Radiosonde_Station_Data
@@ -1451,6 +1453,8 @@
       integer, parameter :: sp        = 4 ! single precision
       !integer, parameter :: dp        = 8 ! double precision
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
         subroutine MR_Get_Radiosonde_Stations_InDomain
         end subroutine MR_Get_Radiosonde_Stations_InDomain
@@ -1603,6 +1607,8 @@
       integer :: icol, i, j
       integer :: itime
 
+      integer :: io                           ! Index for output streams
+
       ! itime is not just the file index since we might have multiple stations per tstep
       itime = (MR_MetStep_findex(istep)-1)/MR_nSnd_Locs + 1
             ! these variables are set in MR_Read_Met_DimVars_ASCII_1d
@@ -1664,6 +1670,7 @@
       real(kind=sp),dimension(nx2,ny2),intent(out) :: wrk_comp
 
       integer :: i,j,iloc
+      integer :: io                           ! Index for output streams
 
       wrk_comp = 0.0_sp
       do i = 1,nx2
@@ -1703,6 +1710,7 @@
       character(len=2 ),dimension(MAX_STAT_NUM) :: st   ! Station state
       character(len=2 ),dimension(MAX_STAT_NUM) :: ct   ! Station country
       integer :: i
+      integer :: io                           ! Index for output streams
 
       ! Load the station data.  This is from two files available on 
       ! https://ruc.noaa.gov/raobs/General_Information.html
@@ -2913,6 +2921,8 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       character(len=80) :: linebuffer
       real(kind=sp)     :: tmp_sp
 
+      integer :: io                           ! Index for output streams
+
       StatIdx = -1
       FoundStation = .false.
       do i=1,num_RadSnd_Stat
@@ -3026,6 +3036,8 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       real(kind=sp)     :: de,dn
       real(kind=sp)     :: latLL,lonLL
       real(kind=sp)     :: latUR,lonUR
+
+      integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Radiosonde stations currently loaded:"
@@ -3273,6 +3285,3 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       MR_Haversine = MR_RAD_EARTH * c
 
       end function MR_Haversine
-
-
-

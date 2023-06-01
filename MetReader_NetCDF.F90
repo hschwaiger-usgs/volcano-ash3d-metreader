@@ -69,6 +69,8 @@
       logical :: IsTruncatedDim
       character(len=130)   :: infile
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
         subroutine MR_NC_check_status(nSTAT, errcode, operation)
           integer, intent(in) :: nSTAT
@@ -1052,6 +1054,8 @@
 
       real(kind=dp) :: lat_in,lon_in
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
         subroutine MR_NC_check_status(nSTAT, errcode, operation)
           integer, intent(in) :: nSTAT
@@ -1543,6 +1547,8 @@
       !integer               :: HS_YearOfEvent
       !integer               :: HS_MonthOfEvent
       !integer               :: HS_DayOfEvent
+
+      integer :: io                           ! Index for output streams
 
       INTERFACE
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
@@ -2088,6 +2094,8 @@
       integer :: thisYear,thisMonth,thisDay
       logical :: Use_ds630 = .false.
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
         logical function HS_IsLeapYear(iyear)
           integer            :: iyear
@@ -2398,6 +2406,8 @@
       real(kind=sp):: dum_sp
       integer :: ivar
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
         subroutine MR_NC_check_status(nSTAT, errcode, operation)
           integer, intent(in) :: nSTAT
@@ -2548,6 +2558,8 @@
       real(kind=sp) :: Z_top, T_top
       real(kind=sp) :: pp
       integer       :: idx
+
+      integer :: io                           ! Index for output streams
 
       INTERFACE
         subroutine MR_NC_check_status(nSTAT, errcode, operation)
@@ -3271,6 +3283,8 @@
       character(len=*), intent(in) :: operation
 
       character(len=9) :: severity
+
+      integer :: io                           ! Index for output streams
 
       if (errcode.eq.0)then
         severity = "WARNING: "

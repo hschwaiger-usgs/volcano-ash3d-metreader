@@ -20,7 +20,24 @@
 
       program MetRegrid
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,verbosity_error,verbosity_info,&
+         MR_Comp_StartHour,MR_Comp_Time_in_hours,MR_iMetStep_Now, &
+         outlog,errlog,x_submet_sp,y_submet_sp,p_fullmet_sp,&
+         MR_MetStep_Interval,Met_var_GRIB_names,Met_var_NC_names,&
+         Met_var_IsAvailable,&
+         MR_dum3d_compH,MR_dum3d_compP,MR_dum3d_metH,MR_dum3d_metP,&
+         np_fullmet,nx_submet,ny_submet,&
+           MR_Read_Met_DimVars,&
+           MR_Set_Met_Times,&
+           MR_Initialize_Met_Grids,&
+           MR_Read_3d_MetP_Variable,&
+           MR_Read_3d_Met_Variable_to_CompH,&
+           MR_Read_3d_Met_Variable_to_CompP,&
+           MR_Read_3d_MetH_Variable,&
+           MR_Read_HGT_arrays,&
+           MR_Allocate_FullMetFileList,&
+           MR_MetStep_Hour_since_baseyear
 
       implicit none
 
@@ -58,6 +75,7 @@
 
       real(kind=4),dimension(:,:,:),allocatable :: out3d_t1,out3d_t2,out3d
       
+      integer :: io                           ! Index for output streams
 
       INTERFACE
       subroutine Read_ComdLine_InpFile(IsLatLon,xLL,yLL,zbot,&
@@ -666,7 +684,14 @@
                       inyear,inmonth,inday,inhour,&
                       outgrid_ID,outvar_ID,outdim_ID,iidx,jidx,kidx)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_info,verbosity_error,&
+         MR_windfiles,MR_BaseYear,MR_useLeap,MR_Comp_StartHour,MR_Comp_Time_in_hours,&
+         MR_iHeightHandler,&
+           MR_Set_CompProjection,&
+           MR_Allocate_FullMetFileList
+
+
       use projection
 
       implicit none
@@ -710,6 +735,8 @@
       character(len=130) :: linebuffer130
       character(len=80)  :: Comp_projection_line
       integer            :: ilatlonflag
+
+      integer :: io                           ! Index for output streams
 
       INTERFACE
         subroutine write_usage
@@ -878,9 +905,12 @@
 
       subroutine write_usage
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,errlog,verbosity_error
 
       implicit none
+
+      integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
         write(errlog(io),*)"Too few command-line arguments:"

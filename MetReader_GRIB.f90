@@ -99,6 +99,8 @@
       logical :: IsNewLevel
       integer :: iz
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
         subroutine MR_GRIB_check_status(nSTAT, errcode, operation)
           integer, intent(in) :: nSTAT
@@ -820,6 +822,8 @@
       integer            :: igrib
       integer            :: nSTAT
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
           integer            :: iyear
@@ -1088,6 +1092,8 @@
       logical :: Use_GRIB_Index = .false.
       integer :: fn_idx
       character(len=40)  :: fileposstr
+
+      integer :: io                           ! Index for output streams
 
       INTERFACE
         subroutine MR_GRIB_check_status(nSTAT, errcode, operation)
@@ -2075,6 +2081,8 @@
 
       character(len=50) :: err_message
       character(len=9) :: severity
+
+      integer :: io                           ! Index for output streams
 
       if (errcode.eq.0)then
         severity = "WARNING: "

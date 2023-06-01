@@ -85,6 +85,8 @@
 
       logical      :: IsGlobal
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
       subroutine Read_ComdLine_InpFile(inlon,inlat, &
                       inyear,inmonth,inday,inhour,Simtime_in_hours,&
@@ -387,6 +389,8 @@
       character(len=80) :: linebuffer080
       character(len=80) :: Comp_projection_line
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
         subroutine write_usage
         end subroutine write_usage
@@ -673,6 +677,8 @@
 
       implicit none
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
         write(errlog(io),*)"Too few command-line arguments:"
         write(errlog(io),*)"  Usage: MetTraj_[F,B] lon lat YYYY MM DD HH.H (FC_hours nlev lev1 lev2 ...)"
@@ -782,6 +788,8 @@
       character (len=100):: infile
       character(len=80 ) :: linebuffer080
       character(len=130) :: linebuffer130
+
+      integer :: io                           ! Index for output streams
 
       INTERFACE
         character (len=13) function HS_yyyymmddhhmm_since(HoursSince,byear,useLeaps)
@@ -1236,6 +1244,8 @@
       real(kind=8) :: x_fin,y_fin
       real(kind=8) :: xstep,ystep
       real(kind=8) :: lonmin,lonmax,latmin,latmax
+
+      integer :: io                           ! Index for output streams
 
       INTERFACE
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)

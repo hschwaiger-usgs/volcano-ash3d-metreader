@@ -24,7 +24,20 @@
 
       program MetCheck
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,verbosity_error,verbosity_info,verbosity_production,errlog,outlog,&
+         MR_BaseYear,MR_useLeap,MR_nio,MR_Comp_StartHour,MR_Comp_Time_in_hours,&
+         IsLatLon_MetGrid,Met_iprojflag,Met_k0,Met_lam0,Met_phi0,Met_phi1,Met_phi2,&
+         Met_Re,MR_useCompGrid,MR_useCompTime,nt_fullmet,nx_fullmet,ny_fullmet,&
+         MR_windfiles,MR_windfile_stephour,MR_dum3d_metP,nlevs_fullmet,&
+         Met_dim_IsAvailable,Met_var_zdim_idx,MR_windfiles,&
+           MR_Allocate_FullMetFileList,MR_windfile_starthour,&
+           MR_Read_Met_DimVars,&
+           MR_Set_Met_Times,&
+           MR_Set_CompProjection,&
+           MR_Initialize_Met_Grids,&
+           MR_Read_HGT_arrays,&
+           MR_Read_3d_MetP_Variable
 
       implicit none
 
@@ -70,6 +83,8 @@
       integer :: Current_Year
       real(kind=8) :: hsince
       integer      :: idx
+
+      integer :: io                           ! Index for output streams
 
       INTERFACE
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)

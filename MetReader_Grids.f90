@@ -26,6 +26,8 @@
 
       integer,intent(in) :: igrid
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------                          MR_Set_Met_NCEPGeoGrid            ----------"
@@ -762,6 +764,8 @@
       logical       :: cond1, cond2, cond3
       integer       :: nx_tmp
 
+      integer :: io                           ! Index for output streams
+
       INTERFACE
         subroutine MR_Set_Comp2Met_Map
         end subroutine MR_Set_Comp2Met_Map
@@ -1489,6 +1493,8 @@
       real(kind=dp) :: x_in ,y_in
       real(kind=dp) :: x_out,y_out
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------                          MR_Set_Comp2Met_Map               ----------"
@@ -1750,6 +1756,8 @@
 
       real(kind=sp),dimension(:,:),allocatable :: wrk_loc
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_Met2Comp                                    ----------"
@@ -1857,6 +1865,8 @@
 
       logical :: found_interv
 
+      integer :: io                           ! Index for output streams
+
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_P2H_linear                                  ----------"
@@ -1940,6 +1950,8 @@
       character(len=71) :: vname
       character(len=5)  :: vname_WMO
       real(kind=8)      :: StepInterval
+
+      integer :: io                           ! Index for output streams
 
       inquire( file=adjustl(trim(MR_iwf_template)), exist=IsThere )
       if(.not.IsThere)then
