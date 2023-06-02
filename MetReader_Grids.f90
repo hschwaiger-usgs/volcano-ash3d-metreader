@@ -20,7 +20,11 @@
 
       subroutine MR_Set_Met_NCEPGeoGrid(igrid)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_production,&
+         IsLatLon_MetGrid,IsGlobal_MetGrid,IsRegular_MetGrid,isGridRelative,&
+         Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
+         MR_iversion,MR_Reannalysis
 
       implicit none
 
@@ -736,7 +740,22 @@
 
       subroutine MR_Set_MetComp_Grids
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         CompPoint_X_on_Met_sp,CompPoint_Y_on_Met_sp,x_comp_sp,x_submet_sp,nx_submet,&
+         MR_dx_submet,y_submet_sp,ny_submet,MR_dy_submet,MR_u_ER_metP,theta_Met,&
+         MR_dum2d_met_int,MR_dum2d_met,MR_dum3d_metP,MR_dum3d2_metP,MR_dum3d_metH,&
+         MR_dum2d_comp_int,MR_dum2d_comp,MR_dum3d_compP,MR_dum3d_compH,&
+         MR_geoH_metP_last,MR_geoH_metP_next,ilhalf_fm_l,ilhalf_nx,irhalf_fm_l,irhalf_nx,&
+         istart,jstart,MR_v_ER_metP,MR_dum3d_compH_2,MR_dum3d_compP_2,theta_Comp,&
+         amap_iwf25,imap_iwf25,y_in_iwf25_sp,x_fullmet_sp,y_fullmet_sp,MR_dx_met,&
+         MR_dy_met,x_in_iwf25_sp,y_comp_sp,iend,ilhalf_fm_r,IsGlobal_MetGrid,&
+         Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
+         isGridRelative,bilin_map_wgt,CompPoint_on_subMet_idx,y_pad_South,y_pad_North,&
+         y_inverted,wrapgrid,UseFullMetGrid,ny_fullmet,ny_comp,nx_comp,nx_fullmet,&
+         irhalf_fm_r,IsLatLon_MetGrid,IsPeriodic_CompGrid,jend,Map_Case,&
+         Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
+         MR_iwindformat,MR_useCompH,MR_useCompP,np_fullmet,nz_comp
 
       use projection
 
@@ -1479,7 +1498,14 @@
 
       subroutine MR_Set_Comp2Met_Map
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,verbosity_info,verbosity_production,&
+         CompPoint_on_subMet_idx,bilin_map_wgt,CompPoint_X_on_Met_sp,CompPoint_Y_on_Met_sp,&
+         Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
+         Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
+         y_comp_sp,x_comp_sp,nx_comp,ny_comp,IsLatLon_MetGrid,IsLatLon_CompGrid,Map_Case
+         
+
       use projection
 
       implicit none
@@ -1737,7 +1763,10 @@
 
       subroutine MR_Regrid_Met2Comp(nx1,ny1,wrk_met,nx2,ny2,wrk_comp)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug1,&
+         bilin_map_wgt,CompPoint_on_subMet_idx,y_pad_South,y_pad_North,&
+         IsPeriodic_CompGrid
 
       implicit none
 
@@ -1846,7 +1875,8 @@
       subroutine MR_Regrid_P2H_linear(nzm,z_met ,var_met, &
                                       nzc,z_comp,var_comp)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug1
 
       implicit none
 
@@ -1926,7 +1956,14 @@
 
       subroutine MR_Read_Met_Template
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
+         Met_var_IsAvailable,Met_var_NC_names,Met_var_WMO_names,Met_var_ndim,&
+         Met_var_zdim_idx,Met_var_conversion_factor,Met_dim_names,Met_dim_fac,&
+         Met_dim_IsAvailable,MR_useLeap,MR_MAXVARS,MR_iwf_template,&
+         Met_iprojflag,Met_lam0,Met_lam1,Met_lam2,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
+         IsLatLon_MetGrid,IsGlobal_MetGrid
+
 
       use projection
 

@@ -33,9 +33,21 @@
 
       subroutine MR_Read_Met_DimVars_netcdf
 
-      use MetReader
-      use netcdf
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         nlevs_fullmet,nlevs_fullmet,levs_code,nlev_coords_detected,levs_fullmet_sp,&
+         p_fullmet_sp,x_fullmet_sp,y_fullmet_sp,MR_dx_met,MR_dy_met,iwf25_scale_facs,&
+         iwf25_offsets,z_approx,dx_met_const,dy_met_const,&
+         IsGlobal_MetGrid,IsLatLon_MetGrid,IsRegular_MetGrid,MR_EPS_SMALL,MR_iversion,&
+         MR_iwind,MR_iwindformat,MR_Max_geoH_metP_predicted,MR_MAXVARS,MR_Use_RDA,&
+         np_fullmet,nt_fullmet,nx_fullmet,ny_fullmet,Pressure_Conv_Fac,x_inverted,&
+         y_inverted,z_inverted,Met_var_zdim_idx,MR_windfiles,Met_var_IsAvailable,&
+         Met_var_ndim,Met_var_NC_names,Met_dim_names,Met_var_zdim_ncid,&
+           MR_Z_US_StdAtm
+
       use projection
+
+      use netcdf
 
       implicit none
 
@@ -1015,9 +1027,19 @@
 
       subroutine MR_Get_WRF_grid
 
-      use MetReader
-      use netcdf
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_debug1,&
+         Met_Proj_lat,Met_Proj_lon,x_fullmet_sp,y_fullmet_sp,nx_fullmet,ny_fullmet,&
+         MR_dx_met,MR_dy_met,p_fullmet_sp,np_fullmet,nlevs_fullmet,levs_code,&
+         levs_fullmet_sp,Met_var_zdim_idx,dx_met_const,dy_met_const,IsLatLon_MetGrid,&
+         IsRegular_MetGrid,Met_iprojflag,Met_k0,Met_lam0,Met_phi0,Met_phi1,Met_phi2,&
+         Met_Re,MR_Max_geoH_metP_predicted,neta_fullmet,nlev_coords_detected,&
+         nt_fullmet,x_inverted,y_inverted,z_inverted,MR_windfiles,Met_dim_names,&
+           MR_Z_US_StdAtm
+
       use projection
+
+      use netcdf
 
       implicit none
 
@@ -1495,7 +1517,15 @@
 
       subroutine MR_Read_Met_Times_netcdf
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         MR_windfile_starthour,MR_iwindfiles,y_fullmet_sp,ny_fullmet,x_fullmet_sp,nx_fullmet,&
+         MR_windfiles_nt_fullmet,MR_windfile_stephour,Met_dim_names,&
+         Met_dim_fac,Met_var_NC_names,MR_windfiles,Met_dim_IsAvailable,nt_fullmet,MR_iwindformat,&
+         x_inverted,y_inverted,MR_iwind,MR_iw5_hours_per_file,MR_Comp_StartHour,MR_BaseYear,MR_useLeap,&
+         MR_iw5_root,MR_iversion,MR_Comp_StartYear,MR_Comp_StartMonth,MR_Comp_StartDay,MR_DirDelim,&
+         IsRegular_MetGrid
+
       use netcdf
 
       implicit none
@@ -2080,7 +2110,11 @@
 
       subroutine MR_Set_iwind5_filenames(inhour,ivar,infile)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug1,&
+         Met_var_NC_names,MR_BaseYear,MR_useLeap,MR_Use_RDA,MR_iwindformat,MR_iw5_prefix,MR_iw5_root,&
+         MR_DirDelim,MR_DirDelim,MR_iw5_suffix1,MR_iw5_suffix2,MR_iversion,&
+         MR_Comp_StartYear
 
       implicit none
 
@@ -2382,9 +2416,14 @@
 
       subroutine MR_Set_Met_Dims_Template_netcdf
 
-      use MetReader
-      use netcdf
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         fill_value_sp,FoundFillVAttr,Met_dim_IsAvailable,Met_var_NC_names,MR_windfiles,&
+         nt_fullmet,Met_dim_names
+
       use projection
+
+      use netcdf
 
       implicit none
 
@@ -2517,7 +2556,20 @@
 
       subroutine MR_Read_MetP_Variable_netcdf(ivar,istep)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_debug1,&
+         MR_geoH_metP_next,MR_geoH_metP_last,levs_fullmet_sp,Met_var_zdim_idx,nlevs_fullmet,&
+         temp3d_sp,MR_MetStep_File,Met_var_NC_names,MR_MetStep_tindex,&
+         MR_MetStep_findex,Met_var_IsAvailable,wrapgrid,z_inverted,MR_MetStep_Hour_since_baseyear,&
+         y_inverted,MR_dum3d_metP,MR_EPS_SMALL,nx_submet,Met_var_conversion_factor,tmpsurf2d_short,&
+         temp2d_sp,nx_submet,ny_submet,iwf25_scale_facs,np_fullmet,MR_iwindformat,iwf25_offsets,&
+         MR_iwind,Met_var_NC_names,MR_iMetStep_Now,Met_var_NC_names,&
+         istart,ilhalf_nx,irhalf_nx,irhalf_fm_l,temp3d_short,temp2d_int,&
+         MR_dum2d_met_int,ilhalf_fm_l,jstart,fill_value_sp,Met_var_NC_names,MR_dum2d_met,&
+           MR_Temp_US_StdAtm,&
+           MR_Z_US_StdAtm,&
+           MR_QC_3dvar
+
       use netcdf
 
       implicit none
@@ -3218,7 +3270,8 @@
 
       subroutine MR_interp_iwf25_grid(imax,jmax,invar,outvar,scale_fac,offset)
 
-      use MetReader
+      use MetReader,       only : &
+         imap_iwf25,amap_iwf25
 
       implicit none
 
@@ -3273,7 +3326,9 @@
 
       subroutine MR_NC_check_status(nSTAT, errcode, operation)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,errlog,verbosity_error
+
       use netcdf
 
       implicit none

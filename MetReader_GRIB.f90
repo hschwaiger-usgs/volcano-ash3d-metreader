@@ -28,9 +28,22 @@
 
       subroutine MR_Read_Met_DimVars_GRIB
 
-      use MetReader
-      use eccodes
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         MR_MAXVARS,x_fullmet_sp,y_fullmet_sp,nx_fullmet,ny_fullmet,&
+         Met_var_zdim_idx,nlevs_fullmet,levs_code,levs_fullmet_sp,&
+         p_fullmet_sp,np_fullmet,z_approx,&
+         MR_dx_met,MR_dy_met,dx_met_const,dy_met_const,IsLatLon_MetGrid,IsRegular_MetGrid,&
+         Met_iprojflag,Met_k0,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_Re,MR_EPS_SMALL,&
+         MR_GRIB_Version,MR_iwind,MR_iwindformat,MR_Max_geoH_metP_predicted,&
+         x_inverted,y_inverted,z_inverted,MR_windfiles,Met_var_IsAvailable,&
+         nlev_coords_detected,nt_fullmet,Met_var_GRIB1_Param,Met_var_GRIB1_St,MR_GRIB_Version,&
+         Met_var_GRIB2_DPcPnSt,Met_var_GRIB_names,&
+           MR_Z_US_StdAtm        
+
       use projection
+
+      use eccodes
 
       implicit none
 
@@ -795,7 +808,12 @@
 
       subroutine MR_Read_Met_Times_GRIB
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         MR_windfile_starthour,MR_iwindfiles,MR_windfile_stephour,&
+         MR_BaseYear,MR_useLeap,MR_Comp_StartYear,MR_iwindformat,nt_fullmet,&
+         Met_dim_IsAvailable,MR_windfiles,MR_windfiles_nt_fullmet,MR_GRIB_Version
+
       use eccodes
 
       implicit none
@@ -1009,7 +1027,20 @@
 
       subroutine MR_Read_MetP_Variable_GRIB(ivar,istep)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_debug1,&
+         np_fullmet,levs_fullmet_sp,nlevs_fullmet,MR_MetStep_File,temp3d_sp,&
+         MR_dum3d_metP,temp2d_sp,MR_dum2d_met,MR_EPS_SMALL,MR_geoH_metP_last,&
+         fill_value_sp,ilhalf_fm_l,ilhalf_nx,irhalf_fm_l,irhalf_nx,istart,jstart,&
+         MR_GRIB_Version,MR_iMetStep_Now,MR_iwindformat,nx_fullmet,ny_fullmet,&
+         nx_submet,ny_submet,wrapgrid,Met_var_IsAvailable,Met_var_GRIB_names,&
+         Met_var_GRIB1_Param,Met_var_GRIB1_Table,Met_var_GRIB1_St,Met_var_GRIB2_DPcPnSt,&
+         y_inverted,MR_MetStep_findex,MR_MetStep_tindex,MR_iwind5_year,Met_var_zdim_idx,&
+         MR_geoH_metP_next,p_fullmet_sp,Met_var_conversion_factor,&
+           MR_Temp_US_StdAtm,&
+           MR_Z_US_StdAtm,&
+           MR_QC_3dvar
+
       use eccodes
 
       implicit none
@@ -2070,7 +2101,9 @@
 
       subroutine MR_GRIB_check_status(nSTAT, errcode, operation)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,errlog,verbosity_error
+
       use eccodes
 
       implicit none

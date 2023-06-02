@@ -21,9 +21,9 @@
       program MetRegrid
 
       use MetReader,       only : &
-         MR_nio,VB,verbosity_error,verbosity_info,&
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
          MR_Comp_StartHour,MR_Comp_Time_in_hours,MR_iMetStep_Now, &
-         outlog,errlog,x_submet_sp,y_submet_sp,p_fullmet_sp,&
+         x_submet_sp,y_submet_sp,p_fullmet_sp,&
          MR_MetStep_Interval,Met_var_GRIB_names,Met_var_NC_names,&
          Met_var_IsAvailable,&
          MR_dum3d_compH,MR_dum3d_compP,MR_dum3d_metH,MR_dum3d_metP,&

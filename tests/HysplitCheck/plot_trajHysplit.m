@@ -30,21 +30,28 @@ end
 
 figure;
 hold on;
-plot(hy1x,hy1y,'ro',hy1x,hy1y,'r-');
-plot(hy2x,hy2y,'go',hy2x,hy2y,'g-');
-plot(hy3x,hy3y,'bo',hy3x,hy3y,'b-');
-plot(hy4x,hy4y,'mo',hy4x,hy4y,'m-');
-plot(hy5x,hy5y,'co',hy5x,hy5y,'c-');
-plot(hy6x,hy6y,'yo',hy6x,hy6y,'y-');
-plot(hy7x,hy7y,'ko',hy7x,hy7y,'k-');
+plot(hy1x,hy1y,'ro-');
+plot(hy2x,hy2y,'go-');
+plot(hy3x,hy3y,'bo-');
+plot(hy4x,hy4y,'mo-');
+plot(hy5x,hy5y,'co-');
+plot(hy6x,hy6y,'yo-');
+plot(hy7x,hy7y,'ko-');
 
-plot(tj1x,tj1y,'r*',tj1x,tj1y,'r--');
-plot(tj2x,tj2y,'g*',tj2x,tj2y,'g--');
-plot(tj3x,tj3y,'b*',tj3x,tj3y,'b--');
-plot(tj4x,tj4y,'m*',tj4x,tj4y,'m--');
-plot(tj5x,tj5y,'c*',tj5x,tj5y,'c--');
-plot(tj6x,tj6y,'y*',tj6x,tj6y,'y--');
-plot(tj7x,tj7y,'k*',tj7x,tj7y,'k--');
+plot(tj1x,tj1y,'r*--');
+plot(tj2x,tj2y,'g*--');
+plot(tj3x,tj3y,'b*--');
+plot(tj4x,tj4y,'m*--');
+plot(tj5x,tj5y,'c*--');
+plot(tj6x,tj6y,'y*--');
+plot(tj7x,tj7y,'k*--');
+
+legend('Hy 5k','Hy 10k','Hy 15k','Hy 20k','Hy 30k','Hy 40k','Hy 50k','Trj 5k','Trj 10k','Trj 15k','Trj 20k','Trj 30k','Trj 40k','Trj 50k')
+xlabel('Longitude')
+ylabel('Latitude')
+title('Volc2')
+
+print -djpg volc1.jpg
 
 hold off;
 

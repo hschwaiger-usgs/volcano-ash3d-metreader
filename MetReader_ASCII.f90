@@ -80,7 +80,17 @@
 
       subroutine MR_Read_Met_DimVars_ASCII_1d
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         x_fullmet_sp,y_fullmet_sp,p_fullmet_sp,Snd_idx,MR_nSnd_Locs,MR_iwindfiles,MR_windfile_stephour,&
+         MR_windfiles_nt_fullmet,MR_windfile_starthour,Met_dim_IsAvailable,Met_var_IsAvailable,&
+         MR_SndVars_metP,MR_SndVarsID,MR_Snd_np_fullmet,np_fullmet,z_approx,MR_windfiles,&
+         Snd_Have_PT,nt_fullmet,MR_BaseYear,MR_useLeap,MR_Snd_nt_fullmet,MR_Snd_nvars,Snd_Have_Coord,&
+         MR_Max_geoH_metP_predicted,MR_iwind,MR_iwindformat,IsGlobal_MetGrid,IsLatLon_MetGrid,IsRegular_MetGrid,&
+         Met_iprojflag,Met_k0,Met_lam0,Met_lam1,Met_lam2,Met_phi0,Met_phi1,Met_phi2,Met_Re,&
+           MR_Z_US_StdAtm,&
+           MR_Temp_US_StdAtm,&
+           MR_Pres_US_StdAtm
 
       use projection
 
@@ -1445,7 +1455,14 @@
 
       subroutine MR_Set_MetComp_Grids_ASCII_1d
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_production,&
+         x_submet_sp,y_submet_sp,MR_dx_submet,MR_dy_submet,MR_dum3d_metP,MR_dum3d_metH,&
+         MR_dum2d_comp_int,MR_dum2d_comp,MR_dum3d_compH,MR_dum3d_compP,&
+         MR_geoH_metP_last,MR_geoH_metP_next,MR_Snd2Comp_map_wgt,MR_Snd2Comp_map_idx,&
+         MR_dum3d_metP,nx_submet,ny_submet,nx_comp,ny_comp,nz_comp,MR_iwind,MR_iwindformat,&
+         MR_pexp,MR_nstat,MR_nSnd_Locs,np_fullmet
+
       use projection
 
       implicit none
@@ -1594,7 +1611,10 @@
 
       subroutine MR_Read_MetP_Variable_ASCII_1d(ivar,istep)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,verbosity_info,&
+         Met_var_IsAvailable,MR_Snd_nvars,MR_SndVarsID,MR_dum3d_metP,nx_submet,ny_submet,&
+         MR_SndVars_metP,np_fullmet,MR_nSnd_Locs,MR_MetStep_findex
 
       implicit none
 
@@ -1658,7 +1678,8 @@
 
       subroutine MR_Regrid_MetSonde2Comp(nx1,ny1,wrk_met,nx2,ny2,wrk_comp)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_Snd2Comp_map_wgt,MR_nSnd_Locs
 
       implicit none
 
@@ -1670,7 +1691,6 @@
       real(kind=sp),dimension(nx2,ny2),intent(out) :: wrk_comp
 
       integer :: i,j,iloc
-      integer :: io                           ! Index for output streams
 
       wrk_comp = 0.0_sp
       do i = 1,nx2
@@ -1693,7 +1713,9 @@
 
       subroutine MR_Load_Radiosonde_Station_Data()
 
-      use MetReader
+      use MetReader,       only : &
+         MR_Snd_cd,MR_Snd_id,MR_Snd_lt,MR_Snd_ln,MR_Snd_el,MR_Snd_lnm,&
+         MR_Snd_st,MR_Snd_ct,num_RadSnd_Stat
 
       implicit none
 
@@ -1710,7 +1732,6 @@
       character(len=2 ),dimension(MAX_STAT_NUM) :: st   ! Station state
       character(len=2 ),dimension(MAX_STAT_NUM) :: ct   ! Station country
       integer :: i
-      integer :: io                           ! Index for output streams
 
       ! Load the station data.  This is from two files available on 
       ! https://ruc.noaa.gov/raobs/General_Information.html
@@ -2905,7 +2926,10 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
 
       subroutine MR_Get_Radiosonde_Station_Coord(StatID,StatIdx,Stat_lon,Stat_lat,Stat_elv)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,stdin,&
+         MR_Snd_cd,MR_Snd_lnm,MR_Snd_el,MR_Snd_lt,MR_Snd_ln,MR_Snd_id,&
+         num_RadSnd_Stat
 
       implicit none
 
@@ -3025,7 +3049,10 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
 
       subroutine MR_Get_Radiosonde_Stations_InDomain
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,verbosity_info,&
+         MR_Snd_ct,MR_Snd_st,MR_Snd_lnm,MR_Snd_id,MR_Snd_ln,MR_Snd_lt,Snd_idx,&
+         num_RadSnd_Stat,MR_nSnd_Locs,x_comp_sp,y_comp_sp,nx_comp,ny_comp
 
       implicit none
 
@@ -3096,7 +3123,9 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
 
       subroutine MR_Calc_Snd_Weights_NearNeigh
 
-      use MetReader
+      use MetReader,       only : &
+         nx_comp,ny_comp,MR_nSnd_Locs,x_comp_sp,y_comp_sp,MR_Snd_ln,MR_Snd_lt,&
+         MR_Snd2Comp_map_wgt,MR_Snd2Comp_map_idx,Snd_idx
 
       implicit none
 
@@ -3152,7 +3181,9 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
 
       subroutine MR_Calc_Snd_Weights_InvDistWeight(pexp,nstat)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_Snd_lt,y_comp_sp,x_comp_sp,nx_comp,ny_comp,MR_nSnd_Locs,MR_Snd2Comp_map_idx,&
+         Snd_idx,MR_Snd_ln,MR_Snd_lt,MR_Snd2Comp_map_wgt,MR_Snd2Comp_map_idx
 
       implicit none
 
@@ -3257,7 +3288,8 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
 
       function MR_Haversine(lon1,lat1,lon2,lat2)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_RAD_EARTH,MR_DEG2RAD
 
       implicit none
 
