@@ -92,7 +92,9 @@
            MR_Temp_US_StdAtm,&
            MR_Pres_US_StdAtm
 
-      use projection
+      use projection,      only : &
+         PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
+           PJ_Set_Proj_Params
 
       implicit none
 
@@ -527,7 +529,7 @@
                     IsRegular_MetGrid = .false.
                     Met_iprojflag = PJ_iprojflag
                     Met_k0        = PJ_k0
-                    Met_Re        = PJ_radius_earth
+                    Met_Re        = PJ_Re
                     Met_lam0      = PJ_lam0
                     Met_lam1      = PJ_lam1
                     Met_lam2      = PJ_lam2
@@ -1463,7 +1465,8 @@
          MR_dum3d_metP,nx_submet,ny_submet,nx_comp,ny_comp,nz_comp,MR_iwind,MR_iwindformat,&
          MR_pexp,MR_nstat,MR_nSnd_Locs,np_fullmet
 
-      use projection
+      use projection,      only : &
+           PJ_Set_Proj_Params
 
       implicit none
 

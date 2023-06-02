@@ -158,7 +158,8 @@
          MR_nio,VB,outlog,errlog,verbosity_info,verbosity_error,&
            MR_Set_CompProjection
 
-      use projection
+      use projection,      only : &
+           PJ_Set_Proj_Params
 
       implicit none
 

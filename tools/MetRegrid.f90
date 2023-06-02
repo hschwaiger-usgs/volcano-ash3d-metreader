@@ -691,8 +691,9 @@
            MR_Set_CompProjection,&
            MR_Allocate_FullMetFileList
 
-
-      use projection
+      use projection,      only : &
+         PJ_iprojflag,PJ_k0,PJ_lam0,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
+           PJ_Set_Proj_Params
 
       implicit none
 
@@ -839,7 +840,7 @@
       call PJ_Set_Proj_Params(Comp_projection_line)
       call MR_Set_CompProjection(IsLatLon,PJ_iprojflag,PJ_lam0, &
                              PJ_phi0,PJ_phi1,PJ_phi2,       &
-                             PJ_k0,PJ_radius_earth)
+                             PJ_k0,PJ_Re)
       ! Set up memory for windfiles
       call MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)
 

@@ -757,7 +757,10 @@
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
          MR_iwindformat,MR_useCompH,MR_useCompP,np_fullmet,nz_comp
 
-      use projection
+      use projection,      only : &
+           PJ_Set_Proj_Params,&
+           PJ_proj_for,&
+           PJ_proj_inv
 
       implicit none
 
@@ -1506,7 +1509,10 @@
          y_comp_sp,x_comp_sp,nx_comp,ny_comp,IsLatLon_MetGrid,IsLatLon_CompGrid,Map_Case
          
 
-      use projection
+      use projection,      only : &
+           PJ_Set_Proj_Params,&
+           PJ_proj_for,&
+           PJ_proj_inv
 
       implicit none
 
@@ -1965,7 +1971,9 @@
          IsLatLon_MetGrid,IsGlobal_MetGrid
 
 
-      use projection
+      use projection,      only : &
+         PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
+           PJ_Set_Proj_Params
 
       implicit none
 
@@ -2025,7 +2033,7 @@
       Met_phi1      = PJ_phi1
       Met_phi2      = PJ_phi2
       Met_k0        = PJ_k0
-      Met_Re        = PJ_radius_earth
+      Met_Re        = PJ_Re
 
       read(27,'(a130)')linebuffer130
       read(linebuffer130,*,iostat=ioerr)StepInterval,useLeap_str

@@ -57,7 +57,19 @@
 
       program probe_Met
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
+         Comp_iprojflag,&
+         Met_iprojflag,Met_k0,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_Re,&
+         dx_met_const,dy_met_const,IsLatLon_CompGrid,&
+         IsLatLon_MetGrid,MR_BaseYear,MR_useLeap,MR_useCompH,nx_fullmet,ny_fullmet,&
+         y_inverted,MR_windfiles,x_fullmet_sp,y_fullmet_sp,&
+         MR_windfile_starthour,MR_windfile_stephour,Met_var_NC_names,Met_var_IsAvailable,&
+           MR_Read_Met_DimVars,&
+           MR_Allocate_FullMetFileList,&
+           MR_Set_CompProjection,&
+           MR_Initialize_Met_Grids,&
+           MR_Set_Met_Times
 
       implicit none
 
@@ -468,7 +480,13 @@
 
       subroutine GetMetProfile(invars,invarlist)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,verbosity_info,&
+         MR_dum3d_compP,MR_dum3d_compP_2,np_fullmet,Map_Case,MR_iMetStep_Now,&
+         p_fullmet_sp,&
+           MR_Read_HGT_arrays,&
+           MR_Rotate_UV_GR2ER_Met,&
+           MR_Read_3d_Met_Variable_to_CompP
 
       implicit none
 

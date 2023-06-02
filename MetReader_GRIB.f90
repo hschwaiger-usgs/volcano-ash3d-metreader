@@ -41,7 +41,9 @@
          Met_var_GRIB2_DPcPnSt,Met_var_GRIB_names,&
            MR_Z_US_StdAtm        
 
-      use projection
+      use projection,      only : &
+           PJ_Set_Proj_Params,&
+           PJ_proj_for
 
       use eccodes
 

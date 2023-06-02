@@ -45,7 +45,10 @@
 
       program MetTraj
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         dx_met_const,dy_met_const,&
+         MR_Initialize_Met_Grids
 
       implicit none
 
@@ -350,8 +353,14 @@
                       iw,iwf,igrid,idf,iwfiles,&
                       autoflag,FC_freq,GFS_Archive_Days)
 
-      use MetReader
-      use projection
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
+         MR_BaseYear,MR_useLeap,MR_useCompH,&
+           MR_Set_CompProjection
+
+      use projection,      only : &
+         PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
+           PJ_Set_Proj_Params
 
       implicit none
 
@@ -528,7 +537,7 @@
         PJ_phi1      = 90.0_8
         PJ_phi2      = 90.0_8
         PJ_k0        = 0.933_8
-        PJ_radius_earth = 6371.229_8
+        PJ_Re        = 6371.229_8
 
       elseif(nargs.eq.1)then
         ! we're using a control file.  This is the most general case where non-
@@ -629,7 +638,7 @@
 
       call MR_Set_CompProjection(IsLatLon,PJ_iprojflag,PJ_lam0,&
                                  PJ_phi0,PJ_phi1,PJ_phi2,&
-                                 PJ_k0,PJ_radius_earth)
+                                 PJ_k0,PJ_Re)
 
       ! write out values of parameters defining the run
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
@@ -673,7 +682,8 @@
 
       subroutine write_usage
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,errlog,verbosity_error
 
       implicit none
 
@@ -712,7 +722,13 @@
                                 iw,iwf,igrid,idf,iwfiles,&
                                 autoflag,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
+         MR_windfiles,MR_BaseYear,MR_useLeap,&
+         MR_Comp_StartHour,MR_Comp_Time_in_hours,MR_iwindfiles,MR_iwind,&
+           MR_Allocate_FullMetFileList,&
+           MR_Read_Met_DimVars,&
+           MR_Set_Met_Times
 
       implicit none
 
@@ -1190,7 +1206,15 @@
       subroutine Integrate_ConstH_Traj(StreamFlag,IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj)
 
-      use MetReader
+      use MetReader,       only : &
+         MR_nio,VB,outlog,verbosity_info,&
+         MR_dum3d_CompH,nx_comp,ny_comp,dx_met_const,dy_met_const,&
+         IsRegular_MetGrid,MR_BaseYear,MR_useLeap,MR_iMetStep_Now,&
+         MR_MetSteps_Total,MR_MetStep_Interval,MR_MetStep_Hour_since_baseyear,&
+         x_comp_sp,y_comp_sp,&
+           MR_Allocate_FullMetFileList,&
+           MR_Read_HGT_arrays,&
+           MR_Read_3d_Met_Variable_to_CompH
 
       implicit none
 

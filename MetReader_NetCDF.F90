@@ -45,7 +45,8 @@
          Met_var_ndim,Met_var_NC_names,Met_dim_names,Met_var_zdim_ncid,&
            MR_Z_US_StdAtm
 
-      use projection
+      use projection,      only : &
+           PJ_Set_Proj_Params
 
       use netcdf
 
@@ -1037,7 +1038,9 @@
          nt_fullmet,x_inverted,y_inverted,z_inverted,MR_windfiles,Met_dim_names,&
            MR_Z_US_StdAtm
 
-      use projection
+      use projection,      only : &
+           PJ_Set_Proj_Params,&
+           PJ_proj_for
 
       use netcdf
 
@@ -2421,7 +2424,8 @@
          fill_value_sp,FoundFillVAttr,Met_dim_IsAvailable,Met_var_NC_names,MR_windfiles,&
          nt_fullmet,Met_dim_names
 
-      use projection
+      use projection,      only : &
+           PJ_Set_Proj_Params
 
       use netcdf
 
