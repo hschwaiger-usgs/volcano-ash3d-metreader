@@ -93,7 +93,7 @@
       integer, parameter,public       :: MR_MAXVARS    = 50 ! Maximum number of variables in fixed arrays
 
       real(kind=dp), parameter,public :: MR_EPS_SMALL  = 1.0e-7_dp  ! Small number
-      real(kind=dp), parameter :: MR_EPS_TINY   = 1.0e-12_dp ! Very small number
+      !real(kind=dp), parameter,public :: MR_EPS_TINY   = 1.0e-12_dp ! Very small number
 
       real(kind=sp), parameter,public :: MR_RAD_EARTH = 6371.229_sp ! Radius of Earth in km
       real(kind=sp), parameter,public :: MR_DEG2RAD   = 1.7453292519943295e-2_sp
@@ -103,9 +103,9 @@
       ! default verbosity is 3
       ! This will write everything from verbosity_log to verbosity_error to both stdout and stdlog
       integer,dimension(2),public :: VB = (/3,3/) ! Verbosity level for stdout and logfile, respectively
-      integer,public :: MR_VERB                = 3
+      integer,public              :: MR_VERB                = 3
       integer,public :: stdin         = 5
-      integer :: MR_global_log = 9
+      !integer :: MR_global_log = 9
 
       integer,public :: MR_nio = 1   ! Number of output streams to use: 1 for just stdout,stderr or 2 to include a logfile
       !integer,public :: io

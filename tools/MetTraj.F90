@@ -136,10 +136,9 @@
           integer         ,intent(in) :: GFS_Archive_Days
           integer         ,intent(in) :: GFS_FC_TotHours
         end subroutine GetWindFile
-        subroutine Integrate_ConstH_Traj(StreamFlag,IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
+        subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj)
           integer,parameter   :: dp        = 8 ! double precision
-          integer      , intent(in)      :: StreamFlag
           logical      , intent(in)      :: IsGlobal
           real(kind=dp), intent(in)      :: inlon
           real(kind=dp), intent(in)      :: inlat
@@ -301,7 +300,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Now integrating from start point"
       endif;enddo
-      call Integrate_ConstH_Traj(StreamFlag,IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
+      call Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
@@ -747,13 +746,6 @@
       integer        ,intent(in) :: FC_freq
       integer        ,intent(in) :: GFS_Archive_Days
       integer        ,intent(in) :: GFS_FC_TotHours
-
-!      character(len=13)  :: HS_yyyymmddhhmm_since   ! function that calculates date
-                                                    !  string given hours since MR_BaseYear
-!      integer            :: HS_YearOfEvent
-!      integer            :: HS_MonthOfEvent
-!      integer            :: HS_DayOfEvent
-!      real(kind=8)       :: HS_HourOfDay
 
       character(len=8)   :: date
       character(LEN=10)  :: time2       ! time argument used to get current
@@ -1203,7 +1195,7 @@
 !
 !##############################################################################
 
-      subroutine Integrate_ConstH_Traj(StreamFlag,IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
+      subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj)
 
       use MetReader,       only : &
@@ -1218,7 +1210,6 @@
 
       implicit none
 
-      integer     , intent(in)      :: StreamFlag
       logical     , intent(in)      :: IsGlobal
       real(kind=8), intent(in)      :: inlon
       real(kind=8), intent(in)      :: inlat
