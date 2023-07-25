@@ -37,9 +37,9 @@ SYSTEM = gfortran
 #      PROF  : includes profiling flags with some optimization
 #      OPT   : includes optimizations flags for fastest runtime
 #    This variable cannot be left blank
-RUN=DEBUG
+#RUN=DEBUG
 #RUN=PROF
-#RUN=OPT
+RUN=OPT
 #
 INSTALLDIR=/opt/USGS
 #INSTALLDIR=$(HOME)/intel
@@ -99,7 +99,7 @@ ifeq ($(SYSTEM), gfortran)
     FC = /usr/bin/gfortran
     #COMPINC = -I$(FCHOME)/local/include -I$(FCHOME)/include -I$(FCHOME)/lib64/gfortran/modules -I$(INSTALLDIR)/include
     #COMPLIBS = -L$(FCHOME)/local/lib -L$(FCHOME)/lib64 -L${INSTALLDIR}/lib 
-    COMPINC = -I./ -I$(FCHOME)/include -I$(FCHOME)/lib64/gfortran/modules -I$(INSTALLDIR)/include
+    COMPINC = -I./ -I$(FCHOME)/include -I$(FCHOME)/lib64/gfortran/modules -I$(FCHOME)/lib/x86_64-linux-gnu/fortran/gfortran-mod-15 -I$(INSTALLDIR)/include
     COMPLIBS = -L./ -L$(FCHOME)/lib64 -L${INSTALLDIR}/lib
 
     LIBS = $(COMPLIBS) $(COMPINC)
