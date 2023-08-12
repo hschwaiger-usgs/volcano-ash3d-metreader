@@ -1139,6 +1139,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Read_MetP_Variable_GRIB                  ----------"
+        write(outlog(io),*)ivar,istep
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 

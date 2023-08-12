@@ -2157,6 +2157,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Set_iwind5_filenames                     ----------"
+        write(outlog(io),*)inhour,ivar,infile
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 
@@ -2641,6 +2642,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Read_MetP_Variable_netcdf                ----------"
+        write(outlog(io),*)ivar,istep
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 

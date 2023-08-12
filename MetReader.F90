@@ -3644,6 +3644,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_HGT_arrays                                    ----------"
+        write(outlog(io),*)istep,reset_first_time
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 
@@ -3746,6 +3747,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_3d_MetP_Variable                              ----------"
+        write(outlog(io),*)ivar,istep
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 
@@ -3818,6 +3820,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_3d_MetH_Variable                              ----------"
+        write(outlog(io),*)ivar,istep
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 
@@ -3928,8 +3931,6 @@
 !##############################################################################
 !
 !     MR_Read_3d_Met_Variable_to_CompH
-!      Note: this should be named MR_Read_3d_Met_Variable_to_CompH since
-!            these is now an analogous subroutine mapping MetP to CompP
 !
 !     This subroutine extracts the variable Met_var_NC_names(ivar) from the
 !     windfile/timestep given by MetStep_File(istep),MetStep_tindex(istep).
@@ -3962,6 +3963,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_3d_Met_Variable_to_CompH                      ----------"
+        write(outlog(io),*)ivar,istep,IsNext
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 
@@ -4087,6 +4089,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_3d_Met_Variable_to_CompP                      ----------"
+        write(outlog(io),*)ivar,istep,IsNext
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 
@@ -4197,6 +4200,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_2d_Met_Variable                               ----------"
+        write(outlog(io),*)ivar,istep
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 
@@ -4267,6 +4271,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_2d_Met_Variable_to_CompGrid                   ----------"
+        write(outlog(io),*)ivar,istep
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 
@@ -4341,6 +4346,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Rotate_UV_GR2ER_Met                                ----------"
+        write(outlog(io),*)istep,SetComp
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 
@@ -4457,6 +4463,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Rotate_UV_ER2GR_Met                                ----------"
+        write(outlog(io),*)istep
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 
@@ -4548,6 +4555,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_MetP_to_CompH                               ----------"
+        write(outlog(io),*)istep
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 
@@ -4658,6 +4666,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_MetP_to_MetH                                ----------"
+        write(outlog(io),*)istep
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 

@@ -35,6 +35,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"--------------------------------------------------------------------------------"
         write(outlog(io),*)"----------                          MR_Set_Met_NCEPGeoGrid            ----------"
+        write(outlog(io),*)igrid
         write(outlog(io),*)"--------------------------------------------------------------------------------"
       endif;enddo
 
