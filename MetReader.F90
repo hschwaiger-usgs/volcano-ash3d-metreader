@@ -755,6 +755,16 @@
        if(allocated(MR_Snd_np_fullmet             ))deallocate(MR_Snd_np_fullmet)
        if(allocated(MR_Snd2Comp_map_wgt           ))deallocate(MR_Snd2Comp_map_wgt)
        if(allocated(MR_Snd2Comp_map_idx           ))deallocate(MR_Snd2Comp_map_idx)
+       if(allocated(Snd_idx                       ))deallocate(Snd_idx)
+
+       if(allocated(MR_Snd_cd                     ))deallocate(MR_Snd_cd)
+       if(allocated(MR_Snd_id                     ))deallocate(MR_Snd_id)
+       if(allocated(MR_Snd_lt                     ))deallocate(MR_Snd_lt)
+       if(allocated(MR_Snd_ln                     ))deallocate(MR_Snd_ln)
+       if(allocated(MR_Snd_el                     ))deallocate(MR_Snd_el)
+       if(allocated(MR_Snd_lnm                    ))deallocate(MR_Snd_lnm)
+       if(allocated(MR_Snd_st                     ))deallocate(MR_Snd_st)
+       if(allocated(MR_Snd_ct                     ))deallocate(MR_Snd_ct)
 
        nlev_coords_detected = 0
 
