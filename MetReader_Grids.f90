@@ -1981,6 +1981,8 @@
       integer, parameter :: sp        = 4 ! single precision
       !integer, parameter :: dp        = 8 ! double precision
 
+      integer, parameter :: fid       = 110
+
       logical      :: IsThere
       character(len=130) :: linebuffer130
       character(len=80)  :: Met_projection_line
@@ -2010,8 +2012,8 @@
         stop 1
       endif
 
-      open(unit=27,file=adjustl(trim(MR_iwf_template)),status='unknown')
-      read(27,'(a130)')linebuffer130
+      open(unit=fid,file=adjustl(trim(MR_iwf_template)),status='old',action='read')
+      read(fid,'(a130)')linebuffer130
       Met_projection_line = linebuffer130(1:80)
       call PJ_Set_Proj_Params(Met_projection_line)
 
@@ -2036,7 +2038,7 @@
       Met_k0        = PJ_k0
       Met_Re        = PJ_Re
 
-      read(27,'(a130)')linebuffer130
+      read(fid,'(a130)')linebuffer130
       read(linebuffer130,*,iostat=ioerr)StepInterval,useLeap_str
 
       if (ioerr.eq.0)then
@@ -2053,14 +2055,14 @@
         ! MetReader.f90 if the calling program doesn't specify
         read(linebuffer130,*,iostat=ioerr)StepInterval
       endif
-      read(27,'(a130)')linebuffer130
+      read(fid,'(a130)')linebuffer130
       read(linebuffer130,*,err=2002)ndims_custom,nvars_custom
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"  Reading dimensions: ",ndims_custom
       endif;enddo
       do i = 1,ndims_custom
-        read(27,'(a130)')linebuffer130
+        read(fid,'(a130)')linebuffer130
         read(linebuffer130,1501)dv_char,dimID,fac,dname
         if(dv_char.ne.'d')then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
@@ -2090,7 +2092,7 @@
         write(outlog(io),*)"  Reading variables: ",nvars_custom
       endif;enddo
       do i = 1,nvars_custom
-        read(27,'(a130)')linebuffer130
+        read(fid,'(a130)')linebuffer130
         read(linebuffer130,1511)dv_char,vndim,zindx,varID, &
                                 fac,vname_WMO,vname
         if(dv_char.ne.'v')then
@@ -2141,7 +2143,7 @@
         Met_var_conversion_factor(4) = Met_var_conversion_factor(7)
       endif
 
-      close(27)
+      close(fid)
 
       return
 

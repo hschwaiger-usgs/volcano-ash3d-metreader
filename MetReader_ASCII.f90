@@ -103,11 +103,11 @@
       real(kind=dp), parameter :: PI        = 3.141592653589793_dp
       real(kind=dp), parameter :: DEG2RAD   = 1.7453292519943295e-2_dp
       integer, parameter :: MAX_ROWS  = 300 ! maximum number of row of data
+      integer, parameter :: fid       = 120
 
       integer :: ioerr
       integer :: istr1,istr2,istr3
       integer :: ic,il,iil,iv
-      integer :: fid
 
       integer :: nlev,ulev
       integer :: iw_idx
@@ -359,8 +359,8 @@
               write(outlog(io),*)"Opening sonde file ",iw_idx,&
                                    adjustl(trim(MR_windfiles(iw_idx)))
             endif;enddo
-            fid = 127
-            open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))), status='unknown',err=1971)
+
+            open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))), status='old',action='read',err=1971)
             read(fid,*)!skip over first line
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! Reading L2: time(hr) nlev [ncol] [ivar(ncol)]
@@ -823,8 +823,8 @@
               write(outlog(io),*)"Opening sonde file ",iw_idx,&
                                      adjustl(trim(MR_windfiles(iw_idx)))
             endif;enddo
-            fid = 127
-            open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))), status='unknown',err=1971)
+
+            open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))),status='old',action='read',err=1971)
             if(iw_idx.eq.1)then
               MR_Snd_nvars = 5
               allocate(MR_SndVarsID(MR_Snd_nvars))    ! This is the storage order
