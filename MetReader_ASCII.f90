@@ -484,7 +484,9 @@
               Snd_Have_Coord = .true.
               ilatlonflag = ivalue1
             else
+              ! A third parameter is not present: assume met coordinates are Lon/Lat
               Snd_Have_Coord = .false.
+              ilatlonflag = 1
               IsLatLon_MetGrid = .true.
             endif
             if(Snd_Have_Coord)then
@@ -515,6 +517,9 @@
                     ! We know the projection flag will be 0 since this is the branch for
                     ! that so we know ' 0 ' will be in the string, but the first or
                     ! second coordinate could have this string too.  Need a better way.
+
+           ! HFS: compress repeated white spaces then look for then look for the second space
+
                     indx1 = index(linebuffer,' 0 ')
                     indx2 = index(linebuffer,'#')   ! Check for the comment marker
                     indx3 = len_trim(linebuffer)    ! get length of string
