@@ -325,7 +325,7 @@
       integer,public       :: nx_fullmet    ! length of x or lon of full met grid
       integer,public       :: ny_fullmet    ! length of y or lat of full met grid
       integer,public       :: np_fullmet    ! length of pressure of full met grid for H,U,V
-      integer       :: np_fullmet_pad = 1 ! We might need to pad the top of the pressure grid.
+      integer              :: np_fullmet_pad = 1 ! We might need to pad the top of the pressure grid.
       integer,public       :: neta_fullmet  ! Only used by WRF
       real(kind=sp),public :: Pressure_Conv_Fac = 100.0_sp  ! factor for converting from Met file units to Pa
 
