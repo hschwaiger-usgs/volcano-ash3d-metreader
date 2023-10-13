@@ -1,0 +1,126 @@
+<HTML>
+<TITLE>University of Wyoming - Radiosonde Data</TITLE>
+<BODY BGCOLOR="white">
+<H2>72694 SLE Salem Observations at 12Z 20 May 1980</H2>
+<PRE>
+-----------------------------------------------------------------------------
+   PRES   HGHT   TEMP   DWPT   RELH   MIXR   DRCT   SKNT   THTA   THTE   THTV
+    hPa     m      C      C      %    g/kg    deg   knot     K      K      K 
+-----------------------------------------------------------------------------
+ 1008.0     61    7.2    6.1     93   5.89    190      4  279.7  296.0  280.7
+ 1000.0    126   11.4    6.4     71   6.06    205      4  284.6  301.7  285.6
+  990.0    210   11.2    6.2     71   6.04    229      4  285.2  302.3  286.2
+  979.0    304   12.6    2.1     49   4.57    255      4  287.5  300.7  288.3
+  968.0    398   14.0   -2.0     33   3.43    249      4  289.8  300.0  290.4
+  944.0    609   13.0    1.1     44   4.40    235      4  290.9  303.9  291.7
+  910.3    914   11.6    5.5     67   6.28    215      7  292.5  310.8  293.6
+  893.0   1075   10.8    7.9     82   7.54    215      9  293.3  315.2  294.6
+  881.0   1187   11.4   -6.6     28   2.66    215     10  295.0  303.2  295.5
+  877.7   1219   11.4   -7.9     25   2.42    215     10  295.4  302.9  295.8
+  850.0   1486   11.4  -18.6     11   1.04    220     10  298.1  301.5  298.3
+  846.1   1524   11.1  -13.8     16   1.56    220     10  298.1  303.1  298.4
+  830.0   1684    9.6    6.4     80   7.31    233     12  298.2  319.9  299.5
+  815.7   1828    9.0    5.7     80   7.07    245     13  299.1  320.2  300.4
+  786.1   2133    7.8    4.1     78   6.57    240     18  300.9  320.7  302.1
+  757.7   2438    6.5    2.5     76   6.10    230     21  302.8  321.4  303.9
+  741.0   2622    5.8    1.6     74   5.83    227     22  303.9  321.8  305.0
+  730.1   2743    5.6   -0.8     63   4.95    225     23  305.0  320.4  305.9
+  700.0   3088    5.2   -7.8     39   3.05    230     24  308.2  318.1  308.8
+  652.6   3657    1.6   -3.8     67   4.44    250     25  310.4  324.6  311.2
+  642.0   3790    0.8   -2.9     76   4.84    249     26  310.9  326.3  311.8
+  616.0   4122   -0.9   -6.9     64   3.72    246     28  312.7  324.8  313.4
+  604.7   4267   -2.1   -7.7     66   3.56    245     29  312.9  324.5  313.6
+  559.5   4876   -7.4  -11.2     74   2.93    240     28  313.7  323.4  314.3
+  520.0   5450  -12.3  -14.4     84   2.42    240     33  314.4  322.5  314.9
+  511.0   5583  -12.1  -18.1     61   1.81    240     34  316.2  322.4  316.6
+  500.0   5750  -12.7  -17.7     66   1.91    240     36  317.5  324.1  317.9
+  490.0   5904  -12.9  -25.9     33   0.95    240     37  319.1  322.5  319.3
+  477.7   6096  -14.1  -26.7     34   0.91    240     38  319.9  323.2  320.1
+  436.0   6784  -18.5  -29.5     37   0.77    235     41  322.8  325.6  323.0
+  407.0   7293  -22.9  -25.1     82   1.23    231     43  323.5  328.0  323.8
+  400.0   7420  -23.5  -27.1     72   1.04    230     44  324.4  328.2  324.6
+  389.1   7620  -25.0  -27.4     80   1.04    235     45  324.9  328.7  325.1
+  376.0   7868  -26.9  -27.8     92   1.04    234     47  325.6  329.4  325.9
+  371.0   7965  -26.5  -31.5     63   0.74    234     48  327.4  330.2  327.6
+  345.0   8485  -30.1  -42.1     30   0.27    231     52  329.4  330.5  329.5
+  327.9   8839  -33.1  -44.4     31   0.23    230     55  330.1  331.1  330.2
+  313.9   9144  -35.6  -46.3     33   0.19    225     55  330.7  331.5  330.8
+  300.0   9460  -38.3  -48.3     34   0.16    225     55  331.3  331.9  331.3
+  250.8  10668  -47.5                         230     49  335.0         335.0
+  250.0  10690  -47.7                         235     49  335.0         335.0
+  200.0  12130  -59.5                         240     44  338.4         338.4
+  183.0  12685  -61.5                         245     40  343.8         343.8
+  179.7  12801  -58.2                         245     39  351.1         351.1
+  179.0  12824  -57.5                         244     39  352.6         352.6
+  163.1  13411  -58.2                         225     36  360.8         360.8
+  155.4  13716  -58.6                         250     35  365.2         365.2
+  150.0  13940  -58.9                         245     30  368.4         368.4
+  121.6  15240  -61.3                         230     22  386.8         386.8
+  110.2  15849  -62.4                         240     17  395.8         395.8
+  100.0  16450  -63.5                         240     15  404.8         404.8
+   70.0  18660  -58.7                         240     11  458.5         458.5
+   50.0  20780  -57.1                         245      6  508.5         508.5
+   39.0  22365  -54.1                         162      5  553.5         553.5
+   33.0  23431  -57.1                         107      4  572.6         572.6
+   30.0  24040  -53.3                          75      3  598.7         598.7
+   20.0  26670  -51.1                         360      6  679.0         679.0
+   13.0  29504  -45.7                                     786.6         786.6
+   10.5  30943  -40.1                                     856.7         856.7
+</PRE><H3>Station information and sounding indices</H3><PRE>
+                         Station identifier: SLE
+                             Station number: 72694
+                           Observation time: 800520/1200
+                           Station latitude: 44.90
+                          Station longitude: -123.00
+                          Station elevation: 61.0
+                            Showalter index: 15.23
+                               Lifted index: 15.78
+    LIFT computed using virtual temperature: 15.97
+                                SWEAT index: 56.00
+                                    K index: -7.50
+                         Cross totals index: -5.90
+                      Vertical totals index: 24.10
+                        Totals totals index: 18.20
+      Convective Available Potential Energy: 0.00
+             CAPE using virtual temperature: 0.00
+                      Convective Inhibition: 0.00
+             CINS using virtual temperature: 0.00
+                     Bulk Richardson Number: 0.00
+          Bulk Richardson Number using CAPV: 0.00
+  Temp [K] of the Lifted Condensation Level: 273.53
+Pres [hPa] of the Lifted Condensation Level: 843.52
+   Equivalent potential temp [K] of the LCL: 300.69
+     Mean mixed layer potential temperature: 287.18
+              Mean mixed layer mixing ratio: 4.80
+              1000 hPa to 500 hPa thickness: 5624.00
+Precipitable water [mm] for entire sounding: 24.30
+</PRE>
+<P>Description of the 
+<A HREF="/upperair/columns.html">data columns</A>
+or <A HREF="/upperair/indices.html">sounding indices</A>.
+
+<P>
+<FORM>
+<INPUT CLASS="button" TYPE="button" VALUE=" Close this window " 
+ onClick="window.close();">
+<INPUT CLASS="button" TYPE="button" VALUE=" Select another map " 
+ onClick="window.blur();">
+</FORM>
+<HR SIZE="1">
+<I>Interested in graduate studies in atmospheric science?
+Check out our program at the
+<a href="http://www.uwyo.edu/atsc/howtoapply/"
+target=_top>University of Wyoming
+</a></I>
+<HR SIZE="1"><FONT SIZE="-1">
+Questions about the weather data provided by this site can be
+addressed to <A HREF="mailto:ldoolman@uwyo.edu">
+Larry Oolman (ldoolman@uwyo.edu)</A></FONT>
+<HR SIZE="1">
+<SCRIPT TYPE="text/javascript">
+<!--
+window.focus();
+// -->
+</SCRIPT>
+</BODY>
+</HTML>

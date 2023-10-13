@@ -1,0 +1,121 @@
+<HTML>
+<TITLE>University of Wyoming - Radiosonde Data</TITLE>
+<BODY BGCOLOR="white">
+<H2>72768 GGW Glasgow Observations at 00Z 20 May 1980</H2>
+<PRE>
+-----------------------------------------------------------------------------
+   PRES   HGHT   TEMP   DWPT   RELH   MIXR   DRCT   SKNT   THTA   THTE   THTV
+    hPa     m      C      C      %    g/kg    deg   knot     K      K      K 
+-----------------------------------------------------------------------------
+ 1000.0     46                                                               
+  928.0    700   27.2    1.2     18   4.52    290     15  306.8  321.1  307.7
+  905.3    914   24.9    0.1     19   4.27    290     15  306.7  320.2  307.5
+  873.9   1219   21.7   -1.5     21   3.93    290     15  306.4  318.9  307.2
+  850.0   1458   19.2   -2.8     22   3.68    290     16  306.2  317.9  306.9
+  813.5   1828   15.5   -3.7     27   3.60    285     17  306.2  317.6  306.8
+  784.6   2133   12.4   -4.4     31   3.54    280     18  306.1  317.3  306.7
+  756.7   2438    9.3   -5.1     36   3.48    275     17  305.9  316.9  306.5
+  752.0   2491    8.8   -5.2     37   3.47    275     17  305.9  316.9  306.5
+  729.2   2743    6.3   -5.1     44   3.60    275     17  305.9  317.2  306.5
+  700.0   3078    3.0   -5.0     56   3.78    265     19  305.8  317.7  306.5
+  651.3   3657   -2.3   -7.7     66   3.31    255     15  306.2  316.7  306.8
+  644.0   3747   -3.1   -8.1     68   3.24    254     15  306.2  316.6  306.8
+  636.0   3846   -3.3  -15.3     39   1.84    253     15  307.1  313.2  307.4
+  602.5   4267   -5.9  -17.4     40   1.63    250     14  308.9  314.3  309.2
+  557.1   4876   -9.7  -20.4     41   1.36    280     13  311.4  316.1  311.7
+  519.0   5426  -13.1  -23.1     43   1.15    294     17  313.6  317.7  313.9
+  514.9   5486  -13.4  -23.6     42   1.11    295     17  314.0  317.9  314.2
+  500.0   5710  -14.5  -25.5     39   0.97    305     16  315.3  318.7  315.5
+  479.0   6034  -15.3  -45.3      6   0.14    330     13  318.2  318.8  318.2
+  475.1   6096  -15.6  -45.6      6   0.14    335     13  318.5  319.1  318.6
+  449.0   6520  -17.9  -47.9      5   0.11    330     19  320.9  321.3  320.9
+  420.1   7010  -22.2  -52.2      5   0.07    325     27  321.6  321.9  321.6
+  400.0   7370  -25.3  -55.3      4   0.05    330     29  322.0  322.2  322.0
+  386.2   7620  -27.4  -54.6      6   0.06    330     31  322.6  322.8  322.6
+  354.4   8229  -32.5  -52.9     11   0.08    345     27  323.7  324.1  323.7
+  331.0   8714  -36.5  -51.5     20   0.10    340     37  324.6  325.0  324.6
+  311.0   9144  -38.9  -45.6     49   0.21    335     47  327.0  327.8  327.0
+  305.0   9277  -39.7  -43.8     65   0.26    338     49  327.8  328.8  327.8
+  300.0   9390  -40.7                         340     50  327.9         327.9
+  250.0  10610  -50.3                         345     70  331.1         331.1
+  247.8  10668  -50.8                         345     72  331.3         331.3
+  225.3  11277  -55.7                         350     81  332.9         332.9
+  222.0  11372  -56.4                         350     81  333.2         333.2
+  220.0  11430  -56.9                         350     80  333.3         333.3
+  200.0  12030  -58.9                         355     68  339.3         339.3
+  185.7  12496  -59.9                         360     56  344.9         344.9
+  181.0  12656  -60.3                         355     49  346.9         346.9
+  172.0  12978  -56.9                         342     46  357.6         357.6
+  160.7  13411  -56.2                         325     41  365.8         365.8
+  150.0  13850  -55.5                         355     32  374.2         374.2
+  146.1  14020  -55.5                         360     31  377.0         377.0
+  132.7  14630  -55.7                         330     23  387.2         387.2
+  120.6  15240  -55.9                         320     21  397.6         397.6
+  104.4  16154  -56.2                         320     20  413.7         413.7
+  100.0  16430  -56.3                         320     21  418.7         418.7
+   85.0  17467  -53.9                         320     17  443.4         443.4
+   76.0  18180  -57.3                         320     15  450.7         450.7
+   70.0  18700  -56.7                         320     13  462.7         462.7
+   50.0  20850  -54.1                         305      6  515.5         515.5
+   30.0  24140  -52.7                         265      3  600.4         600.4
+   20.0  26780  -49.7                          10      9  683.3         683.3
+   10.0  31450  -37.9                          65     10  876.9         876.9
+    8.6  32496  -34.7                                     928.0         928.0
+</PRE><H3>Station information and sounding indices</H3><PRE>
+                         Station identifier: GGW
+                             Station number: 72768
+                           Observation time: 800520/0000
+                           Station latitude: 48.20
+                          Station longitude: -106.61
+                          Station elevation: 700.0
+                            Showalter index: 3.13
+                               Lifted index: 1.97
+    LIFT computed using virtual temperature: 1.79
+                                SWEAT index: 48.02
+                                    K index: 22.90
+                         Cross totals index: 11.70
+                      Vertical totals index: 33.70
+                        Totals totals index: 45.40
+      Convective Available Potential Energy: 0.00
+             CAPE using virtual temperature: 0.00
+                      Convective Inhibition: 0.00
+             CINS using virtual temperature: 0.00
+                     Bulk Richardson Number: 0.00
+          Bulk Richardson Number using CAPV: 0.00
+  Temp [K] of the Lifted Condensation Level: 268.06
+Pres [hPa] of the Lifted Condensation Level: 624.57
+   Equivalent potential temp [K] of the LCL: 319.91
+     Mean mixed layer potential temperature: 306.66
+              Mean mixed layer mixing ratio: 4.23
+              1000 hPa to 500 hPa thickness: 5664.00
+Precipitable water [mm] for entire sounding: 13.24
+</PRE>
+<P>Description of the 
+<A HREF="/upperair/columns.html">data columns</A>
+or <A HREF="/upperair/indices.html">sounding indices</A>.
+
+<P>
+<FORM>
+<INPUT CLASS="button" TYPE="button" VALUE=" Close this window " 
+ onClick="window.close();">
+<INPUT CLASS="button" TYPE="button" VALUE=" Select another map " 
+ onClick="window.blur();">
+</FORM>
+<HR SIZE="1">
+<I>Interested in graduate studies in atmospheric science?
+Check out our program at the
+<a href="http://www.uwyo.edu/atsc/howtoapply/"
+target=_top>University of Wyoming
+</a></I>
+<HR SIZE="1"><FONT SIZE="-1">
+Questions about the weather data provided by this site can be
+addressed to <A HREF="mailto:ldoolman@uwyo.edu">
+Larry Oolman (ldoolman@uwyo.edu)</A></FONT>
+<HR SIZE="1">
+<SCRIPT TYPE="text/javascript">
+<!--
+window.focus();
+// -->
+</SCRIPT>
+</BODY>
+</HTML>

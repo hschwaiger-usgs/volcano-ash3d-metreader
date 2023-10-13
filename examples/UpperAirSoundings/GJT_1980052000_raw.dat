@@ -1,0 +1,108 @@
+<HTML>
+<TITLE>University of Wyoming - Radiosonde Data</TITLE>
+<BODY BGCOLOR="white">
+<H2>72476 GJT Grand Junction Observations at 00Z 20 May 1980</H2>
+<PRE>
+-----------------------------------------------------------------------------
+   PRES   HGHT   TEMP   DWPT   RELH   MIXR   DRCT   SKNT   THTA   THTE   THTV
+    hPa     m      C      C      %    g/kg    deg   knot     K      K      K 
+-----------------------------------------------------------------------------
+ 1000.0                                                                      
+  853.0   1475   22.8    1.8     25   5.14                309.7  326.0  310.7
+  818.0   1828   19.4    0.6     28   4.91    305      9  309.8  325.4  310.7
+  788.9   2133   16.4   -0.4     32   4.73    300     12  309.9  324.9  310.8
+  760.8   2438   13.4   -1.4     36   4.54    290     13  309.9  324.4  310.7
+  733.7   2743   10.5   -2.5     40   4.36    285     14  309.9  323.8  310.7
+  681.0   3371    4.4   -4.6     52   4.01    305     12  309.8  322.6  310.5
+  657.1   3657    2.2   -6.0     55   3.74    315     11  310.4  322.5  311.1
+  609.0   4267   -2.6   -8.9     62   3.21    325     12  311.8  322.2  312.4
+  600.0   4387   -3.5   -9.5     63   3.12    321     13  312.0  322.2  312.6
+  563.6   4876   -6.8  -19.1     37   1.50    305     16  313.7  318.9  314.0
+  538.0   5240   -9.3  -26.3     24   0.84    305     21  315.0  317.9  315.1
+  508.0   5681  -12.3  -26.3     30   0.88    305     26  316.5  319.7  316.7
+  500.0   5802  -13.3  -16.6     76   2.10    305     28  316.8  323.9  317.2
+  484.0   6049  -14.1  -32.1     20   0.54    305     31  318.7  320.7  318.8
+  480.9   6096  -14.5  -32.3     20   0.53    305     32  318.9  320.8  319.0
+  442.2   6705  -19.4  -35.5     23   0.42    305     37  320.4  322.0  320.4
+  389.9   7620  -26.8  -40.2     27   0.30    310     36  322.4  323.6  322.5
+  333.0   8765  -36.1  -46.1     35   0.18    306     35  324.6  325.3  324.6
+  315.2   9144  -39.1  -43.9     61   0.25    305     35  325.5  326.5  325.6
+  314.0   9170  -39.3  -43.7     63   0.25    305     35  325.6  326.6  325.6
+  301.1   9448  -41.4                         300     33  326.5         326.5
+  250.4  10668  -50.8                         285     64  330.3         330.3
+  230.0  11229  -55.1                         292     54  331.8         331.8
+  200.0  12122  -54.5                         304     38  346.3         346.3
+  197.8  12192  -54.9                         305     37  346.8         346.8
+  179.0  12827  -58.1                         303     41  351.6         351.6
+  155.6  13716  -55.7                         300     46  370.0         370.0
+  150.0  13947  -55.1                         302     43  374.9         374.9
+  122.1  15240  -59.2                         310     24  390.1         390.1
+  106.0  16128  -62.1                         310     29  400.8         400.8
+  105.5  16154  -62.0                         310     29  401.4         401.4
+  100.0  16488  -61.1                                     409.4         409.4
+   92.0  17011  -56.9                                     427.6         427.6
+   80.0  17891  -59.3                                     440.1         440.1
+   70.0  18730  -57.7                         320      5  460.6         460.6
+   50.0  20850  -58.5                         315      9  505.2         505.2
+   30.0  24120  -51.1                         355      6  604.7         604.7
+   20.0  26780  -47.1                         320     10  691.2         691.2
+   16.5  28066  -43.1                         319     11  743.2         743.2
+   10.0  31450  -42.1                         315     15  861.3         861.3
+    7.0  33910  -33.5                                     989.1         989.1
+</PRE><H3>Station information and sounding indices</H3><PRE>
+                         Station identifier: GJT
+                             Station number: 72476
+                           Observation time: 800520/0000
+                           Station latitude: 39.11
+                          Station longitude: -108.52
+                          Station elevation: 1475.0
+                            Showalter index: 0.04
+                               Lifted index: 0.23
+    LIFT computed using virtual temperature: 0.14
+                                    K index: 27.05
+                         Cross totals index: 15.00
+                      Vertical totals index: 35.81
+                        Totals totals index: 50.81
+      Convective Available Potential Energy: 0.00
+             CAPE using virtual temperature: 0.00
+                      Convective Inhibition: 0.00
+             CINS using virtual temperature: 0.00
+                     Bulk Richardson Number: 0.00
+          Bulk Richardson Number using CAPV: 0.00
+  Temp [K] of the Lifted Condensation Level: 270.11
+Pres [hPa] of the Lifted Condensation Level: 619.20
+   Equivalent potential temp [K] of the LCL: 325.46
+     Mean mixed layer potential temperature: 309.78
+              Mean mixed layer mixing ratio: 4.98
+              1000 hPa to 500 hPa thickness: 15800.67
+Precipitable water [mm] for entire sounding: 13.31
+</PRE>
+<P>Description of the 
+<A HREF="/upperair/columns.html">data columns</A>
+or <A HREF="/upperair/indices.html">sounding indices</A>.
+
+<P>
+<FORM>
+<INPUT CLASS="button" TYPE="button" VALUE=" Close this window " 
+ onClick="window.close();">
+<INPUT CLASS="button" TYPE="button" VALUE=" Select another map " 
+ onClick="window.blur();">
+</FORM>
+<HR SIZE="1">
+<I>Interested in graduate studies in atmospheric science?
+Check out our program at the
+<a href="http://www.uwyo.edu/atsc/howtoapply/"
+target=_top>University of Wyoming
+</a></I>
+<HR SIZE="1"><FONT SIZE="-1">
+Questions about the weather data provided by this site can be
+addressed to <A HREF="mailto:ldoolman@uwyo.edu">
+Larry Oolman (ldoolman@uwyo.edu)</A></FONT>
+<HR SIZE="1">
+<SCRIPT TYPE="text/javascript">
+<!--
+window.focus();
+// -->
+</SCRIPT>
+</BODY>
+</HTML>

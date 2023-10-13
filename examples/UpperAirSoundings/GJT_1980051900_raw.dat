@@ -1,0 +1,114 @@
+<HTML>
+<TITLE>University of Wyoming - Radiosonde Data</TITLE>
+<BODY BGCOLOR="white">
+<H2>72476 GJT Grand Junction Observations at 00Z 19 May 1980</H2>
+<PRE>
+-----------------------------------------------------------------------------
+   PRES   HGHT   TEMP   DWPT   RELH   MIXR   DRCT   SKNT   THTA   THTE   THTV
+    hPa     m      C      C      %    g/kg    deg   knot     K      K      K 
+-----------------------------------------------------------------------------
+ 1000.0    112                                                               
+  854.0   1475   21.0    3.0     30   5.59    320      8  307.7  325.2  308.8
+  850.0   1507   19.4    1.4     30   5.01    315      8  306.4  322.1  307.4
+  818.1   1828   16.4    0.9     35   5.02    265      5  306.6  322.3  307.5
+  789.0   2133   13.5    0.4     41   5.02    230      2  306.7  322.4  307.6
+  760.9   2438   10.6   -0.1     48   5.03    285      1  306.8  322.5  307.7
+  733.8   2743    7.7   -0.6     56   5.04     40      3  306.8  322.6  307.8
+  720.0   2902    6.2   -0.8     61   5.04     42      3  306.8  322.6  307.8
+  700.0   3133    4.8   -5.2     48   3.73     45      3  307.8  319.6  308.5
+  656.0   3657    0.3   -8.0     53   3.20    325      3  308.5  318.8  309.1
+  646.0   3781   -0.7   -8.7     55   3.08    324      4  308.7  318.6  309.2
+  637.0   3893   -1.5  -16.5     31   1.66    323      4  309.0  314.6  309.3
+  607.4   4267   -4.2  -25.3     18   0.81    320      6  310.1  313.0  310.3
+  567.0   4808   -8.1  -38.1      7   0.25    249      4  311.7  312.6  311.8
+  562.0   4876   -8.7  -37.0      8   0.29    240      4  311.8  312.9  311.9
+  500.0   5770  -15.9  -21.9     60   1.33    255      5  313.6  318.2  313.8
+  478.6   6096  -18.0  -26.4     48   0.93    250      5  314.9  318.2  315.1
+  440.0   6725  -22.1  -35.1     30   0.44    276      6  317.4  319.1  317.5
+  400.0   7420  -27.5  -40.5     28   0.28    305      8  319.2  320.2  319.2
+  388.8   7620  -29.2  -41.7     29   0.25    300      8  319.5  320.5  319.5
+  372.4   7924  -31.9  -43.5     31   0.22    290     11  319.9  320.8  320.0
+  356.7   8229  -34.5  -45.3     33   0.19    290     11  320.4  321.1  320.4
+  342.0   8526  -37.1  -47.1     35   0.16    306     14  320.7  321.4  320.8
+  321.0   8961  -40.1  -45.0     59   0.22    330     17  322.4  323.3  322.5
+  312.5   9144  -41.4                         340     19  323.1         323.1
+  300.0   9420  -43.3                         340     25  324.2         324.2
+  260.3  10363  -49.1                         310     23  329.2         329.2
+  250.0  10630  -50.7                         310     22  330.6         330.6
+  248.5  10668  -50.9                         310     22  330.8         330.8
+  241.0  10868  -52.1                         315     21  331.9         331.9
+  205.8  11887  -53.0                         320     26  345.9         345.9
+  200.0  12070  -53.1                         315     24  348.5         348.5
+  154.8  13716  -53.5                         280     23  374.4         374.4
+  150.0  13920  -53.5                         280     23  377.7         377.7
+  143.0  14229  -52.1                         282     21  385.3         385.3
+  128.1  14935  -54.0                         285     16  394.3         394.3
+  122.1  15240  -54.8                         275     14  398.3         398.3
+  116.5  15544  -55.5                         265     15  402.2         402.2
+  101.0  16459  -57.9                         280     17  414.4         414.4
+  100.0  16520  -58.1                         280     17  415.2         415.2
+   70.0  18770  -57.5                         255      7  461.0         461.0
+   50.0  20910  -55.7                         325      3  511.8         511.8
+   33.0  23575  -52.3                                     585.3         585.3
+</PRE><H3>Station information and sounding indices</H3><PRE>
+                         Station identifier: GJT
+                             Station number: 72476
+                           Observation time: 800519/0000
+                           Station latitude: 39.11
+                          Station longitude: -108.52
+                          Station elevation: 1475.0
+                            Showalter index: -0.58
+                               Lifted index: -0.69
+    LIFT computed using virtual temperature: -0.85
+                                SWEAT index: 109.80
+                                    K index: 26.70
+                         Cross totals index: 17.30
+                      Vertical totals index: 35.30
+                        Totals totals index: 52.60
+      Convective Available Potential Energy: 17.38
+             CAPE using virtual temperature: 30.79
+                      Convective Inhibition: -92.66
+             CINS using virtual temperature: -60.85
+                           Equilibrum Level: 450.42
+ Equilibrum Level using virtual temperature: 441.92
+                   Level of Free Convection: 535.69
+             LFCT using virtual temperature: 559.41
+                     Bulk Richardson Number: 28.18
+          Bulk Richardson Number using CAPV: 49.92
+  Temp [K] of the Lifted Condensation Level: 270.89
+Pres [hPa] of the Lifted Condensation Level: 648.39
+   Equivalent potential temp [K] of the LCL: 322.27
+     Mean mixed layer potential temperature: 306.60
+              Mean mixed layer mixing ratio: 5.04
+              1000 hPa to 500 hPa thickness: 5658.00
+Precipitable water [mm] for entire sounding: 11.81
+</PRE>
+<P>Description of the 
+<A HREF="/upperair/columns.html">data columns</A>
+or <A HREF="/upperair/indices.html">sounding indices</A>.
+
+<P>
+<FORM>
+<INPUT CLASS="button" TYPE="button" VALUE=" Close this window " 
+ onClick="window.close();">
+<INPUT CLASS="button" TYPE="button" VALUE=" Select another map " 
+ onClick="window.blur();">
+</FORM>
+<HR SIZE="1">
+<I>Interested in graduate studies in atmospheric science?
+Check out our program at the
+<a href="http://www.uwyo.edu/atsc/howtoapply/"
+target=_top>University of Wyoming
+</a></I>
+<HR SIZE="1"><FONT SIZE="-1">
+Questions about the weather data provided by this site can be
+addressed to <A HREF="mailto:ldoolman@uwyo.edu">
+Larry Oolman (ldoolman@uwyo.edu)</A></FONT>
+<HR SIZE="1">
+<SCRIPT TYPE="text/javascript">
+<!--
+window.focus();
+// -->
+</SCRIPT>
+</BODY>
+</HTML>

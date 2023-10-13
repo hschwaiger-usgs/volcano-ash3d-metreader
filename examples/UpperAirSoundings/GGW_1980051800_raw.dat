@@ -1,0 +1,115 @@
+<HTML>
+<TITLE>University of Wyoming - Radiosonde Data</TITLE>
+<BODY BGCOLOR="white">
+<H2>72768 GGW Glasgow Observations at 00Z 18 May 1980</H2>
+<PRE>
+-----------------------------------------------------------------------------
+   PRES   HGHT   TEMP   DWPT   RELH   MIXR   DRCT   SKNT   THTA   THTE   THTV
+    hPa     m      C      C      %    g/kg    deg   knot     K      K      K 
+-----------------------------------------------------------------------------
+ 1000.0    117                                                               
+  935.0    700   25.0    2.0     22   4.75    160      6  303.9  318.7  304.8
+  929.0    756   22.8    1.8     25   4.71    151      6  302.2  316.8  303.1
+  912.0    914   21.1    1.2     27   4.59    125      6  302.1  316.3  303.0
+  880.0   1219   17.9   -0.0     30   4.36    125      7  301.9  315.4  302.7
+  850.0   1516   14.8   -1.2     33   4.14    120     10  301.6  314.4  302.4
+  849.2   1524   14.7   -1.2     33   4.14    125     11  301.6  314.4  302.4
+  818.8   1828   11.9   -2.1     37   4.01    120      8  301.8  314.3  302.6
+  789.5   2133    9.1   -3.0     42   3.89    100      4  302.0  314.1  302.7
+  772.0   2320    7.4   -3.6     46   3.81     79      3  302.1  313.9  302.8
+  760.9   2438    6.3   -3.7     49   3.84     65      2  302.1  314.1  302.9
+  732.9   2743    3.5   -3.9     58   3.92     60      4  302.3  314.5  303.0
+  700.0   3116    0.0   -4.2     73   4.02     65      8  302.4  314.9  303.2
+  678.0   3371   -2.7   -5.5     81   3.76     74      7  302.2  313.9  302.9
+  653.5   3657   -4.4   -7.8     77   3.28     85      5  303.5  313.8  304.1
+  604.2   4267   -8.0  -12.6     69   2.41     95      3  306.2  314.0  306.6
+  558.7   4876  -11.6  -17.5     62   1.75     50      4  308.9  314.7  309.2
+  520.0   5434  -14.9  -21.9     55   1.28     27      5  311.3  315.7  311.5
+  500.0   5730  -17.5  -21.1     73   1.43     15      5  311.6  316.5  311.9
+  486.0   5942  -19.1  -26.1     54   0.94      3      6  312.2  315.5  312.4
+  476.0   6096  -20.6  -26.2     60   0.95    355      6  312.3  315.6  312.4
+  471.0   6174  -21.3  -26.3     64   0.95    356      6  312.3  315.6  312.5
+  450.0   6509  -23.5  -53.5      5   0.06    360      7  313.6  313.9  313.6
+  400.0   7360  -29.3  -59.3      4   0.03     10      9  316.8  317.0  316.8
+  385.4   7620  -31.7  -57.8      6   0.04      5      7  317.0  317.2  317.0
+  341.0   8477  -39.7  -52.7     24   0.08    329      8  317.5  317.8  317.5
+  308.9   9144  -45.3                         300      8  318.8         318.8
+  300.0   9340  -46.9                         305     10  319.1         319.1
+  268.5  10058  -53.1                         285     12  320.4         320.4
+  250.0  10520  -57.1                         290     12  321.1         321.1
+  244.2  10668  -57.3                         295     12  322.9         322.9
+  237.0  10858  -57.5                         301     12  325.4         325.4
+  211.6  11582  -55.5                         325     11  339.2         339.2
+  200.0  11940  -54.5                         315     11  346.3         346.3
+  192.3  12192  -53.8                         305     13  351.4         351.4
+  170.0  12988  -51.5                         307     15  367.7         367.7
+  150.0  13800  -51.5                         310     17  381.1         381.1
+  131.8  14630  -52.3                         310     18  394.0         394.0
+  119.9  15240  -52.9                         300     17  403.6         403.6
+  104.1  16154  -53.8                         290     16  418.6         418.6
+  100.0  16410  -54.1                         295     16  422.9         422.9
+   70.0  18700  -53.9                         280     13  468.7         468.7
+   50.0  20870  -52.9                         305      4  518.4         518.4
+   30.0  24170  -51.7                         315      6  603.1         603.1
+   28.0  24618  -52.3                         337      6  613.4         613.4
+   25.0  25360  -48.1                          13      5  645.7         645.7
+   20.0  26840  -46.7                          85      4  692.5         692.5
+   14.0  29224  -42.9                                     779.6         779.6
+</PRE><H3>Station information and sounding indices</H3><PRE>
+                         Station identifier: GGW
+                             Station number: 72768
+                           Observation time: 800518/0000
+                           Station latitude: 48.20
+                          Station longitude: -106.61
+                          Station elevation: 700.0
+                            Showalter index: 2.15
+                               Lifted index: 1.08
+    LIFT computed using virtual temperature: 1.02
+                                SWEAT index: 25.00
+                                    K index: 26.90
+                         Cross totals index: 16.30
+                      Vertical totals index: 32.30
+                        Totals totals index: 48.60
+      Convective Available Potential Energy: 0.00
+             CAPE using virtual temperature: 0.00
+                      Convective Inhibition: 0.00
+             CINS using virtual temperature: 0.00
+                     Bulk Richardson Number: 0.00
+          Bulk Richardson Number using CAPV: 0.00
+  Temp [K] of the Lifted Condensation Level: 270.11
+Pres [hPa] of the Lifted Condensation Level: 675.21
+   Equivalent potential temp [K] of the LCL: 316.21
+     Mean mixed layer potential temperature: 302.20
+              Mean mixed layer mixing ratio: 4.56
+              1000 hPa to 500 hPa thickness: 5613.00
+Precipitable water [mm] for entire sounding: 15.39
+</PRE>
+<P>Description of the 
+<A HREF="/upperair/columns.html">data columns</A>
+or <A HREF="/upperair/indices.html">sounding indices</A>.
+
+<P>
+<FORM>
+<INPUT CLASS="button" TYPE="button" VALUE=" Close this window " 
+ onClick="window.close();">
+<INPUT CLASS="button" TYPE="button" VALUE=" Select another map " 
+ onClick="window.blur();">
+</FORM>
+<HR SIZE="1">
+<I>Interested in graduate studies in atmospheric science?
+Check out our program at the
+<a href="http://www.uwyo.edu/atsc/howtoapply/"
+target=_top>University of Wyoming
+</a></I>
+<HR SIZE="1"><FONT SIZE="-1">
+Questions about the weather data provided by this site can be
+addressed to <A HREF="mailto:ldoolman@uwyo.edu">
+Larry Oolman (ldoolman@uwyo.edu)</A></FONT>
+<HR SIZE="1">
+<SCRIPT TYPE="text/javascript">
+<!--
+window.focus();
+// -->
+</SCRIPT>
+</BODY>
+</HTML>

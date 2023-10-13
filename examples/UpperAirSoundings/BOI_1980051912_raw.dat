@@ -1,0 +1,119 @@
+<HTML>
+<TITLE>University of Wyoming - Radiosonde Data</TITLE>
+<BODY BGCOLOR="white">
+<H2>72681 BOI Boise Observations at 12Z 19 May 1980</H2>
+<PRE>
+-----------------------------------------------------------------------------
+   PRES   HGHT   TEMP   DWPT   RELH   MIXR   DRCT   SKNT   THTA   THTE   THTV
+    hPa     m      C      C      %    g/kg    deg   knot     K      K      K 
+-----------------------------------------------------------------------------
+ 1000.0     98                                                               
+  915.0    874   15.6    8.6     63   7.72    120      9  296.2  318.9  297.6
+  910.7    914   16.8    8.0     56   7.46    125     10  297.8  319.9  299.2
+  903.0    986   19.0    7.0     46   7.00    129     12  300.8  321.9  302.1
+  878.6   1219   18.0    5.1     43   6.30    140     17  302.1  321.3  303.3
+  850.0   1501   16.8    2.8     39   5.54    165     14  303.7  320.8  304.8
+  817.2   1828   14.2    0.6     39   4.91    170     12  304.4  319.6  305.3
+  787.9   2133   11.7   -1.5     40   4.37    185      9  304.9  318.6  305.8
+  759.5   2438    9.3   -3.6     40   3.88    220      6  305.5  317.8  306.2
+  732.2   2743    6.8   -5.7     41   3.44    260     10  306.0  317.0  306.7
+  705.8   3048    4.4   -7.7     41   3.04    270     12  306.6  316.3  307.1
+  700.0   3117    3.8   -8.2     41   2.96    270     12  306.7  316.2  307.2
+  654.0   3657   -0.7  -10.5     47   2.64    285     14  307.6  316.1  308.1
+  605.7   4267   -5.8  -13.1     56   2.31    305     15  308.5  316.0  308.9
+  582.9   4572   -8.4  -14.4     62   2.15    310     16  308.9  316.0  309.3
+  582.0   4584   -8.5  -14.5     62   2.15    310     16  308.9  316.0  309.3
+  565.0   4814   -9.9  -12.7     80   2.56    302     21  309.9  318.3  310.4
+  560.5   4876  -10.2  -13.0     80   2.52    300     22  310.2  318.5  310.7
+  538.6   5181  -11.7  -14.5     79   2.31    290     27  312.0  319.7  312.4
+  500.0   5750  -14.5  -17.4     79   1.96    285     27  315.3  322.0  315.7
+  477.5   6096  -17.1  -19.5     82   1.72    290     30  316.3  322.2  316.6
+  456.0   6441  -19.7  -21.6     85   1.50    287     32  317.2  322.4  317.5
+  400.0   7400  -26.7  -31.0     67   0.72    280     37  320.2  322.9  320.3
+  387.7   7620  -28.5  -32.9     66   0.62    280     39  320.7  323.0  320.8
+  328.0   8802  -38.3  -43.3     59   0.25    272     46  322.9  323.9  323.0
+  311.9   9144  -41.2                         270     48  323.5         323.5
+  300.0   9410  -43.5                         275     47  323.9         323.9
+  271.9  10058  -48.2                         300     32  326.3         326.3
+  250.0  10610  -52.3                         305     33  328.2         328.2
+  247.8  10668  -52.6                         305     33  328.6         328.6
+  227.0  11232  -55.5                         315     37  332.5         332.5
+  225.4  11277  -55.6                         320     37  333.0         333.0
+  200.0  12040  -56.9                         315     42  342.5         342.5
+  177.2  12801  -58.4                         325     39  352.1         352.1
+  167.0  13177  -59.1                         318     35  356.9         356.9
+  150.0  13850  -58.9                         305     28  368.4         368.4
+  139.1  14325  -58.9                         295     30  376.4         376.4
+  120.3  15240  -59.0                         305     25  392.2         392.2
+  104.0  16154  -59.1                         295     19  408.7         408.7
+  100.0  16400  -59.1                         295     19  413.3         413.3
+   90.0  17064  -57.1                         294     16  429.9         429.9
+   70.0  18650  -58.9                         290      9  458.0         458.0
+   50.0  20770  -56.5                         315      7  509.9         509.9
+   45.0  21438  -57.5                         338      7  523.0         523.0
+   30.0  24040  -51.3                          65      8  604.2         604.2
+   20.0  26690  -47.7                         345      6  689.4         689.4
+   12.5  29832  -41.9                                     808.8         808.8
+   10.5  31025  -36.7                                     869.2         869.2
+</PRE><H3>Station information and sounding indices</H3><PRE>
+                         Station identifier: BOI
+                             Station number: 72681
+                           Observation time: 800519/1200
+                           Station latitude: 43.56
+                          Station longitude: -116.20
+                          Station elevation: 874.0
+                            Showalter index: 1.55
+                               Lifted index: 1.37
+    LIFT computed using virtual temperature: 1.33
+                                SWEAT index: 88.61
+                                    K index: 22.10
+                         Cross totals index: 17.30
+                      Vertical totals index: 31.30
+                        Totals totals index: 48.60
+      Convective Available Potential Energy: 6.98
+             CAPE using virtual temperature: 12.07
+                      Convective Inhibition: -273.93
+             CINS using virtual temperature: -235.43
+                           Equilibrum Level: 549.13
+ Equilibrum Level using virtual temperature: 545.51
+                   Level of Free Convection: 598.09
+             LFCT using virtual temperature: 607.69
+                     Bulk Richardson Number: 0.10
+          Bulk Richardson Number using CAPV: 0.17
+  Temp [K] of the Lifted Condensation Level: 276.53
+Pres [hPa] of the Lifted Condensation Level: 742.49
+   Equivalent potential temp [K] of the LCL: 321.03
+     Mean mixed layer potential temperature: 301.11
+              Mean mixed layer mixing ratio: 6.64
+              1000 hPa to 500 hPa thickness: 5652.00
+Precipitable water [mm] for entire sounding: 17.41
+</PRE>
+<P>Description of the 
+<A HREF="/upperair/columns.html">data columns</A>
+or <A HREF="/upperair/indices.html">sounding indices</A>.
+
+<P>
+<FORM>
+<INPUT CLASS="button" TYPE="button" VALUE=" Close this window " 
+ onClick="window.close();">
+<INPUT CLASS="button" TYPE="button" VALUE=" Select another map " 
+ onClick="window.blur();">
+</FORM>
+<HR SIZE="1">
+<I>Interested in graduate studies in atmospheric science?
+Check out our program at the
+<a href="http://www.uwyo.edu/atsc/howtoapply/"
+target=_top>University of Wyoming
+</a></I>
+<HR SIZE="1"><FONT SIZE="-1">
+Questions about the weather data provided by this site can be
+addressed to <A HREF="mailto:ldoolman@uwyo.edu">
+Larry Oolman (ldoolman@uwyo.edu)</A></FONT>
+<HR SIZE="1">
+<SCRIPT TYPE="text/javascript">
+<!--
+window.focus();
+// -->
+</SCRIPT>
+</BODY>
+</HTML>

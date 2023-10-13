@@ -1,0 +1,109 @@
+<HTML>
+<TITLE>University of Wyoming - Radiosonde Data</TITLE>
+<BODY BGCOLOR="white">
+<H2>72797 UIL Quillayute Observations at 12Z 18 May 1980</H2>
+<PRE>
+-----------------------------------------------------------------------------
+   PRES   HGHT   TEMP   DWPT   RELH   MIXR   DRCT   SKNT   THTA   THTE   THTV
+    hPa     m      C      C      %    g/kg    deg   knot     K      K      K 
+-----------------------------------------------------------------------------
+ 1015.0     62   10.8    9.2     90   7.24                282.7  302.9  284.0
+ 1000.0    179    9.4    8.3     93   6.92                282.6  301.8  283.7
+  985.0    304    8.0    7.4     96   6.61     25      5  282.4  300.8  283.5
+  968.0    447    6.4    6.4    100   6.26     49      5  282.2  299.6  283.2
+  953.0    576    8.0   -2.0     49   3.48     70      5  285.0  295.2  285.6
+  949.2    609    8.2    1.4     62   4.48     75      5  285.6  298.5  286.4
+  947.0    628    8.4    3.4     71   5.18     76      5  286.0  300.8  286.9
+  920.0    868   10.2  -10.8     22   1.83     86      7  290.2  295.8  290.5
+  774.0   2283    1.6  -28.4      9   0.48    146     15  295.6  297.2  295.7
+  700.0   3092    0.8  -29.2      9   0.49    182     20  303.3  305.1  303.4
+  627.1   3962   -5.5  -35.5      7   0.30    220     26  305.8  306.9  305.9
+  606.0   4233   -7.5  -37.5      7   0.25    220     26  306.5  307.4  306.6
+  603.3   4267   -7.6  -36.6      8   0.28    220     26  306.8  307.8  306.8
+  575.0   4641   -8.9  -26.9     22   0.74    223     28  309.5  312.1  309.6
+  557.6   4876  -10.9  -26.5     26   0.79    225     30  309.9  312.7  310.0
+  526.0   5323  -14.7  -25.7     39   0.90    230     30  310.5  313.7  310.7
+  510.0   5556  -17.1  -18.4     90   1.77    233     30  310.4  316.3  310.7
+  474.3   6096  -20.1  -28.5     47   0.77    240     30  313.1  315.8  313.2
+  457.0   6373  -21.7  -33.7     33   0.49    240     29  314.5  316.3  314.6
+  436.4   6705  -24.4  -34.4     39   0.48    240     28  315.3  317.1  315.4
+  384.3   7620  -31.7  -36.3     64   0.45    225     42  317.3  319.0  317.4
+  370.0   7893  -33.9  -36.9     74   0.44    225     42  317.9  319.5  317.9
+  352.5   8229  -36.4  -40.3     67   0.33    225     41  318.9  320.1  318.9
+  331.0   8665  -39.7  -44.7     59   0.22    230     43  320.2  321.0  320.2
+  307.8   9144  -44.2                         235     46  320.6         320.6
+  255.8  10363  -55.7                         235     52  321.1         321.1
+  250.0  10514  -57.1                         235     57  321.1         321.1
+  243.9  10668  -57.7                         235     62  322.4         322.4
+  211.0  11577  -61.5                         240     78  330.1         330.1
+  210.8  11582  -61.4                         240     78  330.3         330.3
+  204.0  11789  -57.3                         245     67  339.9         339.9
+  191.5  12192  -56.8                         255     46  347.0         347.0
+  174.0  12801  -56.0                         240     43  357.9         357.9
+  150.0  13746  -54.7                         242     35  375.6         375.6
+  118.7  15240  -55.6                         245     23  399.9         399.9
+  102.8  16154  -56.2                         255     20  415.5         415.5
+  100.0  16334  -56.3                                     418.7         418.7
+   70.0  18600  -56.5                         270     12  463.2         463.2
+   50.0  20740  -55.7                         265      4  511.8         511.8
+   30.0  24020  -52.9                         315      6  599.8         599.8
+   20.0  26640  -51.5                         155      3  677.8         677.8
+   17.0  27701  -48.7                                     719.0         719.0
+</PRE><H3>Station information and sounding indices</H3><PRE>
+                         Station identifier: UIL
+                             Station number: 72797
+                           Observation time: 800518/1200
+                           Station latitude: 47.95
+                          Station longitude: -124.55
+                          Station elevation: 62.0
+                            Showalter index: 13.89
+                               Lifted index: 10.93
+    LIFT computed using virtual temperature: 11.04
+                                SWEAT index: 48.57
+                                    K index: -24.67
+                         Cross totals index: -0.93
+                      Vertical totals index: 24.19
+                        Totals totals index: 23.26
+      Convective Available Potential Energy: 0.00
+             CAPE using virtual temperature: 0.00
+                      Convective Inhibition: 0.00
+             CINS using virtual temperature: 0.00
+                     Bulk Richardson Number: 0.00
+          Bulk Richardson Number using CAPV: 0.00
+  Temp [K] of the Lifted Condensation Level: 279.46
+Pres [hPa] of the Lifted Condensation Level: 961.00
+   Equivalent potential temp [K] of the LCL: 300.17
+     Mean mixed layer potential temperature: 282.67
+              Mean mixed layer mixing ratio: 6.36
+              1000 hPa to 500 hPa thickness: 5524.86
+Precipitable water [mm] for entire sounding: 9.54
+</PRE>
+<P>Description of the 
+<A HREF="/upperair/columns.html">data columns</A>
+or <A HREF="/upperair/indices.html">sounding indices</A>.
+
+<P>
+<FORM>
+<INPUT CLASS="button" TYPE="button" VALUE=" Close this window " 
+ onClick="window.close();">
+<INPUT CLASS="button" TYPE="button" VALUE=" Select another map " 
+ onClick="window.blur();">
+</FORM>
+<HR SIZE="1">
+<I>Interested in graduate studies in atmospheric science?
+Check out our program at the
+<a href="http://www.uwyo.edu/atsc/howtoapply/"
+target=_top>University of Wyoming
+</a></I>
+<HR SIZE="1"><FONT SIZE="-1">
+Questions about the weather data provided by this site can be
+addressed to <A HREF="mailto:ldoolman@uwyo.edu">
+Larry Oolman (ldoolman@uwyo.edu)</A></FONT>
+<HR SIZE="1">
+<SCRIPT TYPE="text/javascript">
+<!--
+window.focus();
+// -->
+</SCRIPT>
+</BODY>
+</HTML>
