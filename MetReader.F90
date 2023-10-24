@@ -90,25 +90,22 @@
 !  echo -n "'" >> MR_version.h
 !    which sets the variable containing the git commit ID : MR_GitComID
 
-      integer, parameter,public       :: MR_MAXVARS    = 50 ! Maximum number of variables in fixed arrays
+      integer      ,parameter,public :: MR_MAXVARS   = 50 ! Maximum number of variables in fixed arrays
 
-      real(kind=dp), parameter,public :: MR_EPS_SMALL  = 1.0e-7_dp  ! Small number
-      !real(kind=dp), parameter,public :: MR_EPS_TINY   = 1.0e-12_dp ! Very small number
+      real(kind=dp),parameter,public :: MR_EPS_SMALL = 1.0e-7_dp  ! Small number
 
-      real(kind=sp), parameter,public :: MR_RAD_EARTH = 6371.229_sp ! Radius of Earth in km
-      real(kind=sp), parameter,public :: MR_DEG2RAD   = 1.7453292519943295e-2_sp
-      real(kind=sp), parameter :: MR_MIN_DZ     = 1.0e-4_sp   ! used in reassigning z for low-level negative GPH
+      real(kind=sp),parameter,public :: MR_RAD_EARTH = 6371.229_sp ! Radius of Earth in km
+      real(kind=sp),parameter,public :: MR_DEG2RAD   = 1.7453292519943295e-2_sp
+      real(kind=sp),parameter        :: MR_MIN_DZ    = 1.0e-4_sp   ! used in reassigning z for low-level negative GPH
 
       ! These output levels and stream IDs can be changed by the calling program
       ! default verbosity is 3
       ! This will write everything from verbosity_log to verbosity_error to both stdout and stdlog
       integer,dimension(2),public :: VB = (/3,3/) ! Verbosity level for stdout and logfile, respectively
-      integer,public              :: MR_VERB                = 3
-      integer,public :: stdin         = 5
-      !integer :: MR_global_log = 9
+      integer,public              :: MR_VERB   = 3
+      integer,public              :: stdin     = 5
 
       integer,public :: MR_nio = 1   ! Number of output streams to use: 1 for just stdout,stderr or 2 to include a logfile
-      !integer,public :: io
       integer,dimension(2),public :: outlog = (/6,9/) ! Assumes stdin=6, logfile=9
       integer,dimension(2),public :: errlog = (/0,9/) ! Assumes sterr=0, logfile=9
 
@@ -123,10 +120,10 @@
       integer,parameter,public :: verbosity_silent       = 9  ! No logging to stdout,stderr. Logfile written as normal
       integer,parameter,public :: verbosity_dark         = 10 ! No logging to stdout,stderr or logfile
 
-      logical       ,public :: MR_useCompGrid         = .true. ! Reset this to .false. if you only need the Met grid
-      logical       ,public :: MR_useCompTime         = .true. ! Reset this to .false. if you only need the time of the file
-      logical       ,public :: MR_useCompH            = .true.
-      logical       ,public :: MR_useCompP            = .true.
+      logical          ,public :: MR_useCompGrid         = .true. ! Reset this to .false. if you only need the Met grid
+      logical          ,public :: MR_useCompTime         = .true. ! Reset this to .false. if you only need the time of the file
+      logical          ,public :: MR_useCompH            = .true.
+      logical          ,public :: MR_useCompP            = .true.
 
       integer,public :: MR_iwind       !     MR_IWIND specifies the type of wind input to the model:
                              !   MR_IWIND=1 if a 1-D wind sounding is use, 
@@ -177,49 +174,63 @@
                                     !    =3 grib1 or grib2
 
         ! These variables describe the full list of windfiles read
-      integer                                       ,public :: MR_iwindfiles           ! number of files provided
-#ifdef USEPOINTERS
-!      character(len=130), allocatable,dimension(:)  ,public :: fc_windfilename
-      character(len=130), pointer    ,dimension(:)  ,public :: MR_windfiles            ! name of file
-#else
-      character(len=130), allocatable,dimension(:)  ,public :: MR_windfiles            ! name of file
-#endif
-      character(len=130)                            ,public :: MR_iw5_root
-      character(len=42)                             ,public :: MR_iw5_prefix
-      character(len=24)                             ,public :: MR_iw5_suffix1  ! e.g. 1912060100_1912063021.nc
-      character(len=24)                             ,public :: MR_iw5_suffix2
-      real(kind=dp)                                 ,public :: MR_iw5_hours_per_file
+      integer                                  ,public :: MR_iwindfiles           ! number of files provided
+      character(len=130)                       ,public :: MR_iw5_root
+      character(len=42)                        ,public :: MR_iw5_prefix
+      character(len=24)                        ,public :: MR_iw5_suffix1  ! e.g. 1912060100_1912063021.nc
+      character(len=24)                        ,public :: MR_iw5_suffix2
+      real(kind=dp)                            ,public :: MR_iw5_hours_per_file
 
 #if USEPOINTERS      
-      real(kind=dp)     , pointer,dimension(:)  ,    public :: MR_windfile_starthour
-      real(kind=dp)     , pointer,dimension(:,:),    public :: MR_windfile_stephour
+!      character(len=130),dimension(:)  ,pointer,public :: fc_windfilename
+      character(len=130),dimension(:)  ,pointer,public :: MR_windfiles                 => null() ! name of file
+      real(kind=dp)     ,dimension(:)  ,pointer,public :: MR_windfile_starthour        => null()
+      real(kind=dp)     ,dimension(:,:),pointer,public :: MR_windfile_stephour         => null()
+      integer           ,dimension(:)  ,pointer,public :: MR_windfiles_nt_fullmet      => null() ! number of steps in files
+      logical           ,dimension(:)  ,pointer,public :: MR_windfiles_Have_GRIB_index => null()
+      character(len=130),dimension(:)  ,pointer,public :: MR_windfiles_GRIB_index      => null() ! name of grib index file`
 #else
-      real(kind=dp)     , allocatable,dimension(:)  ,public :: MR_windfile_starthour   ! start hour of the file
-      real(kind=dp)     , allocatable,dimension(:,:),public :: MR_windfile_stephour    ! offset hours of step
+!      character(len=130), allocatable,dimension(:)  ,public :: fc_windfilename
+      character(len=130),dimension(:)  ,allocatable,public :: MR_windfiles            ! name of file
+      real(kind=dp)     ,dimension(:)  ,allocatable,public :: MR_windfile_starthour   ! start hour of the file
+      real(kind=dp)     ,dimension(:,:),allocatable,public :: MR_windfile_stephour    ! offset hours of step
+      integer           ,dimension(:)  ,allocatable,public :: MR_windfiles_nt_fullmet ! number of steps in files
+      logical           ,dimension(:)  ,allocatable,public :: MR_windfiles_Have_GRIB_index
+      character(len=130),dimension(:)  ,allocatable,public :: MR_windfiles_GRIB_index ! name of grib index file
 #endif
-
-      integer           , allocatable,dimension(:)  ,public :: MR_windfiles_nt_fullmet ! number of steps in files
-      character(len=80)                             ,public :: MR_iwf_template         ! name of the template file
-      logical           , allocatable,dimension(:)  ,public :: MR_windfiles_Have_GRIB_index
-      character(len=130), allocatable,dimension(:)  ,public :: MR_windfiles_GRIB_index ! name of grib index file
+      character(len=80)                           ,public :: MR_iwf_template         ! name of the template file
+      logical                                     ,public :: MR_Reannalysis     = .false.
+      logical                                     ,public :: MR_Save_Velocities = .false.
 
         ! These variables are a list of the same data above, but specific to the simulation
         ! duration
       integer                                     ,public :: MR_MetSteps_Total
       integer                                     ,public :: MR_iMetStep_Now
-      character(len=130), allocatable,dimension(:),public :: MR_MetStep_File
-      integer           , allocatable,dimension(:),public :: MR_MetStep_findex
-      integer           , allocatable,dimension(:),public :: MR_MetStep_tindex
-      real(kind=dp)     , allocatable,dimension(:),public :: MR_MetStep_Hour_since_baseyear
-      real(kind=dp)     , allocatable,dimension(:),public :: MR_MetStep_Interval
-      integer           , allocatable,dimension(:),public :: MR_MetStep_year
-      integer           , allocatable,dimension(:),public :: MR_MetStep_month
-      integer           , allocatable,dimension(:),public :: MR_MetStep_day
-      integer           , allocatable,dimension(:),public :: MR_MetStep_DOY
-      real(kind=dp)     , allocatable,dimension(:),public :: MR_MetStep_Hour_Of_Day
-
-      logical                                     ,public :: MR_Reannalysis   = .false.
-      integer           ,dimension(:), allocatable,public :: MR_iwind5_year
+#ifdef USEPOINTERS
+      character(len=130),dimension(:),pointer,public :: MR_MetStep_File                => null()
+      integer           ,dimension(:),pointer,public :: MR_MetStep_findex              => null()
+      integer           ,dimension(:),pointer,public :: MR_MetStep_tindex              => null()
+      real(kind=dp)     ,dimension(:),pointer,public :: MR_MetStep_Hour_since_baseyear => null()
+      real(kind=dp)     ,dimension(:),pointer,public :: MR_MetStep_Interval            => null()
+      integer           ,dimension(:),pointer,public :: MR_MetStep_year                => null()
+      integer           ,dimension(:),pointer,public :: MR_MetStep_month               => null()
+      integer           ,dimension(:),pointer,public :: MR_MetStep_day                 => null()
+      integer           ,dimension(:),pointer,public :: MR_MetStep_DOY                 => null()
+      real(kind=dp)     ,dimension(:),pointer,public :: MR_MetStep_Hour_Of_Day         => null()
+      integer           ,dimension(:),pointer,public :: MR_iwind5_year                 => null()
+#else
+      character(len=130),dimension(:),allocatable,public :: MR_MetStep_File
+      integer           ,dimension(:),allocatable,public :: MR_MetStep_findex
+      integer           ,dimension(:),allocatable,public :: MR_MetStep_tindex
+      real(kind=dp)     ,dimension(:),allocatable,public :: MR_MetStep_Hour_since_baseyear
+      real(kind=dp)     ,dimension(:),allocatable,public :: MR_MetStep_Interval
+      integer           ,dimension(:),allocatable,public :: MR_MetStep_year
+      integer           ,dimension(:),allocatable,public :: MR_MetStep_month
+      integer           ,dimension(:),allocatable,public :: MR_MetStep_day
+      integer           ,dimension(:),allocatable,public :: MR_MetStep_DOY
+      real(kind=dp)     ,dimension(:),allocatable,public :: MR_MetStep_Hour_Of_Day
+      integer           ,dimension(:),allocatable,public :: MR_iwind5_year
+#endif
 
       !    Native grid of Met file using Pressure as vertical coordinate
 #ifdef USEPOINTERS
@@ -229,11 +240,10 @@
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d2_metP     => null()
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_geoH_metP_last  => null() ! These are needed for compH interpolation
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_geoH_metP_next  => null() 
-
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vx_metP_last  => null() !These might need to be stored to avoid a 
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vx_metP_next  => null() !second reading
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vy_metP_last  => null() 
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vy_metP_next  => null() 
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vx_metP_last    => null() !These might need to be stored to avoid a 
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vx_metP_next    => null() !second reading
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vy_metP_last    => null() 
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vy_metP_next    => null() 
 #else
       integer      ,dimension(:,:)  ,allocatable, public :: MR_dum2d_met_int   ! Used for categorical variables
       real(kind=sp),dimension(:,:)  ,allocatable, public :: MR_dum2d_met       ! Used for surface variables
@@ -241,19 +251,17 @@
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_dum3d2_metP
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_geoH_metP_last  ! These are needed for compH interpolation
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_geoH_metP_next
-
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vx_metP_last  !These might need to be stored to avoid a 
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vx_metP_next  !second reading
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vy_metP_last
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vy_metP_next
 #endif
-      logical, public :: MR_Save_Velocities = .false.
 
       real(kind=sp), public :: MR_Max_geoH_metP_predicted   ! Highest expected height in Met file, based on pressure
-      real(kind=sp) :: Max_geoH_metP_last
-      real(kind=sp) :: Max_geoH_metP_next
-      real(kind=sp) :: Max_geoH_metP
-      real(kind=sp) :: Suppl_H
+      real(kind=sp)         :: Max_geoH_metP_last
+      real(kind=sp)         :: Max_geoH_metP_next
+      real(kind=sp)         :: Max_geoH_metP
+      real(kind=sp)         :: Suppl_H
       !Parameter iHeightHandler specifies what to do if the maximum height
       !of the simulation region exceeds the maximum height in the wind files.
       !If iHeightHandler = 1, stop the program if the plume height exceeds mesoscale height
@@ -266,41 +274,61 @@
 
         ! The following are used for sonde data
       integer                                   ,public :: num_RadSnd_Stat
-      character(len=4 ),dimension(:),allocatable,public :: MR_Snd_cd   ! Station code
-      integer          ,dimension(:),allocatable,public :: MR_Snd_id   ! WMO station ID
-      real(kind=dp)    ,dimension(:),allocatable,public :: MR_Snd_lt   ! Station latitude
-      real(kind=dp)    ,dimension(:),allocatable,public :: MR_Snd_ln   ! Station longitude
-      real(kind=dp)    ,dimension(:),allocatable,public :: MR_Snd_el   ! Station elevation
-      character(len=25),dimension(:),allocatable,public :: MR_Snd_lnm  ! Station long name
-      character(len=2 ),dimension(:),allocatable,public :: MR_Snd_st   ! Station state
-      character(len=2 ),dimension(:),allocatable,public :: MR_Snd_ct   ! Station country
+#ifdef USEPOINTERS
+      character(len=4 ),dimension(:)      ,pointer,public :: MR_Snd_cd          => null() ! Station code
+      integer          ,dimension(:)      ,pointer,public :: MR_Snd_id          => null() ! WMO station ID
+      real(kind=dp)    ,dimension(:)      ,pointer,public :: MR_Snd_lt          => null() ! Station latitude
+      real(kind=dp)    ,dimension(:)      ,pointer,public :: MR_Snd_ln          => null() ! Station longitude
+      real(kind=dp)    ,dimension(:)      ,pointer,public :: MR_Snd_el          => null() ! Station elevation
+      character(len=25),dimension(:)      ,pointer,public :: MR_Snd_lnm         => null() ! Station long name
+      character(len=2 ),dimension(:)      ,pointer,public :: MR_Snd_st          => null() ! Station state
+      character(len=2 ),dimension(:)      ,pointer,public :: MR_Snd_ct          => null() ! Station country
+      integer          ,dimension(:)      ,pointer,public :: Snd_idx            => null() ! Index of radiosonde in master list
+      real(kind=sp)    ,dimension(:,:,:,:),pointer,public :: MR_SndVars_metP    => null() ! (MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,300)
+      integer          ,dimension(:,:)    ,pointer,public :: MR_Snd_np_fullmet  => null() ! Number of pressure values for each location/time
+      integer          ,dimension(:)      ,pointer,public :: MR_SndVarsID       => null() ! Lists which vars are in which columns of MR_SndVars_metP
+      real(kind=sp)    ,dimension(:,:,:)  ,pointer,public :: MR_Snd2Comp_map_wgt=> null() ! weights of nearby sondes for every comp point
+      integer          ,dimension(:,:,:)  ,pointer,public :: MR_Snd2Comp_map_idx=> null() ! sonde index of weights
+#else
+      character(len=4 ),dimension(:)      ,allocatable,public :: MR_Snd_cd         ! Station code
+      integer          ,dimension(:)      ,allocatable,public :: MR_Snd_id         ! WMO station ID
+      real(kind=dp)    ,dimension(:)      ,allocatable,public :: MR_Snd_lt         ! Station latitude
+      real(kind=dp)    ,dimension(:)      ,allocatable,public :: MR_Snd_ln         ! Station longitude
+      real(kind=dp)    ,dimension(:)      ,allocatable,public :: MR_Snd_el         ! Station elevation
+      character(len=25),dimension(:)      ,allocatable,public :: MR_Snd_lnm        ! Station long name
+      character(len=2 ),dimension(:)      ,allocatable,public :: MR_Snd_st         ! Station state
+      character(len=2 ),dimension(:)      ,allocatable,public :: MR_Snd_ct         ! Station country
+      integer          ,dimension(:)      ,allocatable,public :: Snd_idx           ! Index of radiosonde in master list
+      real(kind=sp)    ,dimension(:,:,:,:),allocatable,public :: MR_SndVars_metP   ! (MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,300)
+      integer          ,dimension(:,:)    ,allocatable,public :: MR_Snd_np_fullmet ! Number of pressure values for each location/time
+      integer          ,dimension(:)      ,allocatable,public :: MR_SndVarsID      ! Lists which vars are in which columns of MR_SndVars_metP
+      real(kind=sp)    ,dimension(:,:,:)  ,allocatable,public :: MR_Snd2Comp_map_wgt ! weights of nearby sondes for every comp point
+      integer          ,dimension(:,:,:)  ,allocatable,public :: MR_Snd2Comp_map_idx ! sonde index of weights
+#endif
 
-      integer,public :: MR_nSnd_Locs      = 1     ! Number of Sonde locations
-      integer,public :: MR_Snd_nt_fullmet = 1     ! Number of times at the Sonde locations
-      integer,public :: MR_Snd_nvars      = 5     ! Number of Sonde variables (P,H,U,V,T,+user-specified)
-      logical,public :: Snd_Have_PT    = .false.  ! 3-col ASCII input do not have pres and temp
-      logical,public :: Snd_Have_Coord = .false.  ! If the 1-d data have the optional projection params
+      integer,public :: MR_nSnd_Locs      = 1        ! Number of Sonde locations
+      integer,public :: MR_Snd_nt_fullmet = 1        ! Number of times at the Sonde locations
+      integer,public :: MR_Snd_nvars      = 5        ! Number of Sonde variables (P,H,U,V,T,+user-specified)
+      logical,public :: Snd_Have_PT       = .false.  ! 3-col ASCII input do not have pres and temp
+      logical,public :: Snd_Have_Coord    = .false.  ! If the 1-d data have the optional projection params
                                            ! then it will be used, otherwise vel will be relative
                                            ! to comp grid.
-      integer      ,dimension(:)      ,allocatable, public :: Snd_idx           ! Index of radiosonde in master list
-      real(kind=sp),dimension(:,:,:,:),allocatable, public :: MR_SndVars_metP   ! (MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,300)
-      integer      ,dimension(:,:)    ,allocatable, public :: MR_Snd_np_fullmet ! Number of pressure values for each location/time
-      integer      ,dimension(:)      ,allocatable, public :: MR_SndVarsID      ! Lists which vars are in which columns of MR_SndVars_metP
-      real(kind=sp),dimension(:,:,:)  ,allocatable, public :: MR_Snd2Comp_map_wgt ! weights of nearby sondes for every comp point
-      integer      ,dimension(:,:,:)  ,allocatable, public :: MR_Snd2Comp_map_idx ! sonde index of weights
       integer                                     , public :: MR_nstat = 4      ! number of stations to consider (0 for all)
       real(kind=dp)                               , public :: MR_pexp  = 4.0_dp ! exponent for inverse distance calculation
 
       !    Native grid of Met file using Height as vertical coordinate
       !    (resampled onto z-gridpoints of computational grid)
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:,:,:),    pointer, public :: MR_dum3d_metH => null()
+      real(kind=sp),dimension(:,:,:),pointer,public :: MR_dum3d_metH => null()
+      real(kind=sp),dimension(:,:,:),pointer,public :: MR_u_ER_metP  => null()! For the cases where Met is proj and comp
+      real(kind=sp),dimension(:,:,:),pointer,public :: MR_v_ER_metP  => null()!  different we need to rotate so these
+                                                                              !  store Earth-Relative velocities on MetP
 #else
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_dum3d_metH
-#endif
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_u_ER_metP ! For the cases where Met is proj and comp
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_v_ER_metP !  different we need to rotate so these
                                                                          !  store Earth-Relative velocities on MetP
+#endif
 
       !    Computations grid
 #ifdef USEPOINTERS
@@ -363,12 +391,12 @@
                                                                          !   4 = more levels than GPH grid
 #endif
 
-      logical,public       :: IsLatLon_MetGrid
-      logical,public       :: IsGlobal_MetGrid     = .false.  ! Not all Lon/Lat grids are periodic
-      logical,public       :: IsLatLon_CompGrid
-      logical,public       :: IsPeriodic_CompGrid  = .false.
-      logical,public       :: UseFullMetGrid       = .false.  ! This is the special case where the comp grid
-                                                       ! equals the Met grid
+      logical,public :: IsLatLon_MetGrid
+      logical,public :: IsGlobal_MetGrid     = .false.  ! Not all Lon/Lat grids are periodic
+      logical,public :: IsLatLon_CompGrid
+      logical,public :: IsPeriodic_CompGrid  = .false.
+      logical,public :: UseFullMetGrid       = .false.  ! This is the special case where the comp grid
+                                                        ! equals the Met grid
       logical,public :: isGridRelative = .true.  ! Most windfiles, whether Lat/Lon or projected, give
                                           ! velocities relative to the grid of the file.  Some (NARR)
                                           ! give velocities relative to earth coordinates and need to
@@ -382,13 +410,17 @@
       integer,public       :: nx_submet ! length of x or lon of sub-grid
       integer,public       :: ny_submet ! length of y or lat of sub-grid
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:), pointer,public :: x_submet_sp => null() ! x-coordinates of met sub-grid
-      real(kind=sp),dimension(:), pointer,public :: y_submet_sp => null() ! y-coordinates of met sub-grid
-      real(kind=sp),dimension(:), pointer,public :: z_approx    => null() ! approximate altidue from STD Atmos and press (in km)
+      real(kind=sp),dimension(:),  pointer,public :: x_submet_sp => null() ! x-coordinates of met sub-grid
+      real(kind=sp),dimension(:),  pointer,public :: y_submet_sp => null() ! y-coordinates of met sub-grid
+      real(kind=sp),dimension(:),  pointer,public :: z_approx    => null() ! approximate altidue from STD Atmos and press (in km)
+      real(kind=dp),dimension(:,:),pointer,public :: theta_Met   => null() ! Earth to grid
+      real(kind=dp),dimension(:,:),pointer,public :: theta_Comp  => null() ! Earth to grid
 #else
-      real(kind=sp),dimension(:), allocatable,public :: x_submet_sp ! x-coordinates of met sub-grid
-      real(kind=sp),dimension(:), allocatable,public :: y_submet_sp ! y-coordinates of met sub-grid
-      real(kind=sp),dimension(:), allocatable,public :: z_approx ! approximate altitude from STD Atmos and press (in km)
+      real(kind=sp),dimension(:)  ,allocatable,public :: x_submet_sp ! x-coordinates of met sub-grid
+      real(kind=sp),dimension(:)  ,allocatable,public :: y_submet_sp ! y-coordinates of met sub-grid
+      real(kind=sp),dimension(:)  ,allocatable,public :: z_approx ! approximate altitude from STD Atmos and press (in km)
+      real(kind=dp),dimension(:,:),allocatable,public :: theta_Met  ! Earth to grid
+      real(kind=dp),dimension(:,:),allocatable,public :: theta_Comp ! Earth to grid
 #endif
 
       logical,public :: x_inverted     = .false.
@@ -396,8 +428,6 @@
       logical,public :: z_inverted     = .false. ! Some grids give top pressure first
       logical,public :: y_pad_North    = .false. ! Some computational grids will require values above the top met point
       logical,public :: y_pad_South    = .false. !   
-      real(kind=dp),dimension(:,:) ,allocatable,public :: theta_Met  ! Earth to grid
-      real(kind=dp),dimension(:,:) ,allocatable,public :: theta_Comp ! Earth to grid
 
       ! Met copies of projection variables, used for proj call on Met Grid
       integer     ,public :: Met_iprojflag
@@ -424,15 +454,15 @@
 
       ! Some geometry terms
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:,:)     ,pointer :: rdphi_MetP_sp           => null()
-      real(kind=sp),dimension(:,:,:)   ,pointer :: rdlambda_MetP_sp        => null()
-      real(kind=sp),dimension(:)       ,pointer,public :: MR_dx_met               => null()
-      real(kind=sp),dimension(:)       ,pointer,public :: MR_dx_submet            => null()
-      real(kind=sp),dimension(:)       ,pointer,public :: MR_dy_met               => null()
-      real(kind=sp),dimension(:)       ,pointer,public :: MR_dy_submet            => null()
+      real(kind=sp),dimension(:,:)     ,pointer        :: rdphi_MetP_sp    => null()
+      real(kind=sp),dimension(:,:,:)   ,pointer        :: rdlambda_MetP_sp => null()
+      real(kind=sp),dimension(:)       ,pointer,public :: MR_dx_met        => null()
+      real(kind=sp),dimension(:)       ,pointer,public :: MR_dx_submet     => null()
+      real(kind=sp),dimension(:)       ,pointer,public :: MR_dy_met        => null()
+      real(kind=sp),dimension(:)       ,pointer,public :: MR_dy_submet     => null()
 #else
-      real(kind=sp),dimension(:,:)     ,allocatable :: rdphi_MetP_sp
-      real(kind=sp),dimension(:,:,:)   ,allocatable :: rdlambda_MetP_sp
+      real(kind=sp),dimension(:,:)     ,allocatable        :: rdphi_MetP_sp
+      real(kind=sp),dimension(:,:,:)   ,allocatable        :: rdlambda_MetP_sp
       real(kind=sp),dimension(:)       ,allocatable,public :: MR_dx_met
       real(kind=sp),dimension(:)       ,allocatable,public :: MR_dx_submet
       real(kind=sp),dimension(:)       ,allocatable,public :: MR_dy_met
@@ -453,17 +483,17 @@
       real(kind=sp) :: dx_comp,dy_comp
       real(kind=sp) :: MaxZ_comp_sp
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:),    pointer,public :: x_comp_sp => null() ! x-coordinates of computational grid
-      real(kind=sp),dimension(:),    pointer,public :: y_comp_sp => null() ! y-coordinates of computational grid
-      real(kind=sp),dimension(:),    pointer,public :: z_comp_sp => null() ! z-coordinates of computational grid
+      real(kind=sp),dimension(:),    pointer,public :: x_comp_sp               => null() ! x-coordinates of computational grid
+      real(kind=sp),dimension(:),    pointer,public :: y_comp_sp               => null() ! y-coordinates of computational grid
+      real(kind=sp),dimension(:),    pointer,public :: z_comp_sp               => null() ! z-coordinates of computational grid
       real(kind=sp),dimension(:,:),  pointer,public :: CompPoint_X_on_Met_sp   => null() ! x-coord (on Met grid) of comp point
       real(kind=sp),dimension(:,:),  pointer,public :: CompPoint_Y_on_Met_sp   => null() ! y-coord (on Met grid) of comp point
       integer      ,dimension(:,:,:),pointer,public :: CompPoint_on_subMet_idx => null() ! index on met sub-grid of comp point
-      real(kind=sp),dimension(:,:,:),pointer,public :: bilin_map_wgt => null()
+      real(kind=sp),dimension(:,:,:),pointer,public :: bilin_map_wgt           => null()
 #else
-      real(kind=sp),dimension(:),    allocatable,public :: x_comp_sp ! x-coordinates of computational grid
-      real(kind=sp),dimension(:),    allocatable,public :: y_comp_sp ! y-coordinates of computational grid
-      real(kind=sp),dimension(:),    allocatable,public :: z_comp_sp ! z-coordinates of computational grid
+      real(kind=sp),dimension(:),    allocatable,public :: x_comp_sp               ! x-coordinates of computational grid
+      real(kind=sp),dimension(:),    allocatable,public :: y_comp_sp               ! y-coordinates of computational grid
+      real(kind=sp),dimension(:),    allocatable,public :: z_comp_sp               ! z-coordinates of computational grid
       real(kind=sp),dimension(:,:),  allocatable,public :: CompPoint_X_on_Met_sp   ! x-coord (on Met grid) of comp point
       real(kind=sp),dimension(:,:),  allocatable,public :: CompPoint_Y_on_Met_sp   ! y-coord (on Met grid) of comp point
       integer      ,dimension(:,:,:),allocatable,public :: CompPoint_on_subMet_idx ! index on met sub-grid of comp point
@@ -549,7 +579,7 @@
 
       real(kind=sp)    ,dimension(MR_MAXVARS),public   :: Met_var_conversion_factor
 
-      integer          ,dimension(MR_MAXVARS)   :: Met_var_nlevs
+      integer          ,dimension(MR_MAXVARS)          :: Met_var_nlevs
 
         ! Variables needed by netcdf reader
       real(kind=sp),public :: iwf25_scale_facs(MR_MAXVARS)
@@ -559,13 +589,14 @@
         ! Here is the mapping for bilinear weighting coefficients (amap) and
         ! indices (imap) from the 1.875-deg 2d grid to the 2.5-deg 
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:,:,:)   ,pointer,public :: amap_iwf25 => null()
-      integer      ,dimension(:,:,:)   ,pointer,public :: imap_iwf25 => null()
+      real(kind=sp)   ,dimension(:,:,:),pointer,public :: amap_iwf25      => null()
+      integer         ,dimension(:,:,:),pointer,public :: imap_iwf25      => null()
+      integer(kind=sp),dimension(:,:,:),pointer,public :: tmpsurf2d_short => null()
 #else
-      real(kind=sp),dimension(:,:,:)   ,allocatable,public :: amap_iwf25
-      integer      ,dimension(:,:,:)   ,allocatable,public :: imap_iwf25
-#endif
+      real(kind=sp)   ,dimension(:,:,:),allocatable,public :: amap_iwf25
+      integer         ,dimension(:,:,:),allocatable,public :: imap_iwf25
       integer(kind=sp),dimension(:,:,:),allocatable,public :: tmpsurf2d_short
+#endif
 
       integer,public :: istart
       integer,public :: iend
@@ -579,15 +610,25 @@
       integer,public :: irhalf_nx
       logical,public :: wrapgrid
 
-      real(kind=sp)   ,dimension(:)       ,allocatable :: temp1d_sp
+#ifdef USEPOINTERS
+      real(kind=sp)   ,dimension(:)       ,pointer        :: temp1d_sp     => null()
+      real(kind=sp)   ,dimension(:,:,:)   ,pointer,public :: temp2d_sp     => null()
+      real(kind=sp)   ,dimension(:,:,:,:) ,pointer,public :: temp3d_sp     => null()
+      integer(kind=sp),dimension(:,:,:)   ,pointer,public :: temp2d_int    => null()
+      integer(kind=sp),dimension(:,:,:)   ,pointer        :: temp2d_short  => null()
+      integer(kind=sp),dimension(:,:,:,:) ,pointer,public :: temp3d_short  => null()
+      real(kind=4)    ,dimension(:,:)     ,pointer,public :: Met_Proj_lat  => null()
+      real(kind=4)    ,dimension(:,:)     ,pointer,public :: Met_Proj_lon  => null()
+#else
+      real(kind=sp)   ,dimension(:)       ,allocatable        :: temp1d_sp
       real(kind=sp)   ,dimension(:,:,:)   ,allocatable,public :: temp2d_sp
       real(kind=sp)   ,dimension(:,:,:,:) ,allocatable,public :: temp3d_sp
       integer(kind=sp),dimension(:,:,:)   ,allocatable,public :: temp2d_int
-      integer(kind=sp),dimension(:,:,:)   ,allocatable :: temp2d_short
+      integer(kind=sp),dimension(:,:,:)   ,allocatable        :: temp2d_short
       integer(kind=sp),dimension(:,:,:,:) ,allocatable,public :: temp3d_short
-
-      real(kind=4),dimension(:,:),allocatable,public :: Met_Proj_lat
-      real(kind=4),dimension(:,:),allocatable,public :: Met_Proj_lon
+      real(kind=4)    ,dimension(:,:)     ,allocatable,public :: Met_Proj_lat
+      real(kind=4)    ,dimension(:,:)     ,allocatable,public :: Met_Proj_lon
+#endif
 
       ! Status variables for error-checking
       logical :: Check_prereq_conditions            = .true.
@@ -624,26 +665,23 @@
         write(outlog(io),*)"-------------------------------------------------------"
       endif;enddo
 
-#ifndef USEPOINTERS
-       if(allocated(MR_windfile_starthour         ))deallocate(MR_windfile_starthour)
-       if(allocated(MR_windfile_stephour          ))deallocate(MR_windfile_stephour)
-#endif       
-       if(allocated(MR_windfiles_nt_fullmet       ))deallocate(MR_windfiles_nt_fullmet)
-       if(allocated(MR_windfiles_Have_GRIB_index  ))deallocate(MR_windfiles_Have_GRIB_index)
-       if(allocated(MR_windfiles_GRIB_index       ))deallocate(MR_windfiles_GRIB_index)
-       if(allocated(MR_MetStep_File               ))deallocate(MR_MetStep_File)
-       if(allocated(MR_MetStep_findex             ))deallocate(MR_MetStep_findex)
-       if(allocated(MR_MetStep_tindex             ))deallocate(MR_MetStep_tindex)
-       if(allocated(MR_MetStep_Hour_since_baseyear))deallocate(MR_MetStep_Hour_since_baseyear)
-       if(allocated(MR_MetStep_Interval           ))deallocate(MR_MetStep_Interval)
-       if(allocated(MR_MetStep_year               ))deallocate(MR_MetStep_year)
-       if(allocated(MR_MetStep_month              ))deallocate(MR_MetStep_month)
-       if(allocated(MR_MetStep_day                ))deallocate(MR_MetStep_day)
-       if(allocated(MR_MetStep_DOY                ))deallocate(MR_MetStep_DOY)
-       if(allocated(MR_MetStep_Hour_Of_Day        ))deallocate(MR_MetStep_Hour_Of_Day)
-       if(allocated(MR_iwind5_year                ))deallocate(MR_iwind5_year)
-
 #ifdef USEPOINTERS
+       if(associated(MR_windfile_starthour         ))deallocate(MR_windfile_starthour)
+       if(associated(MR_windfile_stephour          ))deallocate(MR_windfile_stephour)
+       if(associated(MR_windfiles_nt_fullmet       ))deallocate(MR_windfiles_nt_fullmet)
+       if(associated(MR_windfiles_Have_GRIB_index  ))deallocate(MR_windfiles_Have_GRIB_index)
+       if(associated(MR_windfiles_GRIB_index       ))deallocate(MR_windfiles_GRIB_index)
+       if(associated(MR_MetStep_File               ))deallocate(MR_MetStep_File)
+       if(associated(MR_MetStep_findex             ))deallocate(MR_MetStep_findex)
+       if(associated(MR_MetStep_tindex             ))deallocate(MR_MetStep_tindex)
+       if(associated(MR_MetStep_Hour_since_baseyear))deallocate(MR_MetStep_Hour_since_baseyear)
+       if(associated(MR_MetStep_Interval           ))deallocate(MR_MetStep_Interval)
+       if(associated(MR_MetStep_year               ))deallocate(MR_MetStep_year)
+       if(associated(MR_MetStep_month              ))deallocate(MR_MetStep_month)
+       if(associated(MR_MetStep_day                ))deallocate(MR_MetStep_day)
+       if(associated(MR_MetStep_DOY                ))deallocate(MR_MetStep_DOY)
+       if(associated(MR_MetStep_Hour_Of_Day        ))deallocate(MR_MetStep_Hour_Of_Day)
+       if(associated(MR_iwind5_year                ))deallocate(MR_iwind5_year)
        if(associated(MR_windfiles                  ))deallocate(MR_windfiles)
        if(associated(MR_dum2d_met_int              ))deallocate(MR_dum2d_met_int)
        if(associated(MR_dum2d_met                  ))deallocate(MR_dum2d_met)
@@ -689,7 +727,50 @@
        if(associated(s_comp_sp                     ))deallocate(s_comp_sp)
        if(associated(MR_zsurf                      ))deallocate(MR_zsurf)
        if(associated(MR_jacob                      ))deallocate(MR_jacob)
+       if(associated(MR_u_ER_metP                  ))deallocate(MR_u_ER_metP)
+       if(associated(MR_v_ER_metP                  ))deallocate(MR_v_ER_metP)
+       if(associated(theta_Met                     ))deallocate(theta_Met)
+       if(associated(theta_Comp                    ))deallocate(theta_Comp)
+       if(associated(tmpsurf2d_short               ))deallocate(tmpsurf2d_short)
+       if(associated(temp1d_sp                     ))deallocate(temp1d_sp)
+       if(associated(temp2d_sp                     ))deallocate(temp2d_sp)
+       if(associated(temp3d_sp                     ))deallocate(temp3d_sp)
+       if(associated(temp2d_int                    ))deallocate(temp2d_int)
+       if(associated(temp2d_short                  ))deallocate(temp2d_short)
+       if(associated(temp3d_short                  ))deallocate(temp3d_short)
+       if(associated(Met_Proj_lat                  ))deallocate(Met_Proj_lat)
+       if(associated(Met_Proj_lon                  ))deallocate(Met_Proj_lon)
+       if(associated(MR_SndVars_metP               ))deallocate(MR_SndVars_metP)
+       if(associated(MR_SndVarsID                  ))deallocate(MR_SndVarsID)
+       if(associated(MR_Snd_np_fullmet             ))deallocate(MR_Snd_np_fullmet)
+       if(associated(MR_Snd2Comp_map_wgt           ))deallocate(MR_Snd2Comp_map_wgt)
+       if(associated(MR_Snd2Comp_map_idx           ))deallocate(MR_Snd2Comp_map_idx)
+       if(associated(Snd_idx                       ))deallocate(Snd_idx)
+       if(associated(MR_Snd_cd                     ))deallocate(MR_Snd_cd)
+       if(associated(MR_Snd_id                     ))deallocate(MR_Snd_id)
+       if(associated(MR_Snd_lt                     ))deallocate(MR_Snd_lt)
+       if(associated(MR_Snd_ln                     ))deallocate(MR_Snd_ln)
+       if(associated(MR_Snd_el                     ))deallocate(MR_Snd_el)
+       if(associated(MR_Snd_lnm                    ))deallocate(MR_Snd_lnm)
+       if(associated(MR_Snd_st                     ))deallocate(MR_Snd_st)
+       if(associated(MR_Snd_ct                     ))deallocate(MR_Snd_ct)
 #else
+       if(allocated(MR_windfile_starthour         ))deallocate(MR_windfile_starthour)
+       if(allocated(MR_windfile_stephour          ))deallocate(MR_windfile_stephour)
+       if(allocated(MR_windfiles_nt_fullmet       ))deallocate(MR_windfiles_nt_fullmet)
+       if(allocated(MR_windfiles_Have_GRIB_index  ))deallocate(MR_windfiles_Have_GRIB_index)
+       if(allocated(MR_windfiles_GRIB_index       ))deallocate(MR_windfiles_GRIB_index)
+       if(allocated(MR_MetStep_File               ))deallocate(MR_MetStep_File)
+       if(allocated(MR_MetStep_findex             ))deallocate(MR_MetStep_findex)
+       if(allocated(MR_MetStep_tindex             ))deallocate(MR_MetStep_tindex)
+       if(allocated(MR_MetStep_Hour_since_baseyear))deallocate(MR_MetStep_Hour_since_baseyear)
+       if(allocated(MR_MetStep_Interval           ))deallocate(MR_MetStep_Interval)
+       if(allocated(MR_MetStep_year               ))deallocate(MR_MetStep_year)
+       if(allocated(MR_MetStep_month              ))deallocate(MR_MetStep_month)
+       if(allocated(MR_MetStep_day                ))deallocate(MR_MetStep_day)
+       if(allocated(MR_MetStep_DOY                ))deallocate(MR_MetStep_DOY)
+       if(allocated(MR_MetStep_Hour_Of_Day        ))deallocate(MR_MetStep_Hour_Of_Day)
+       if(allocated(MR_iwind5_year                ))deallocate(MR_iwind5_year)
        if(allocated(MR_windfiles                  ))deallocate(MR_windfiles)
        if(allocated(MR_dum2d_met_int              ))deallocate(MR_dum2d_met_int)
        if(allocated(MR_dum2d_met                  ))deallocate(MR_dum2d_met)
@@ -735,7 +816,6 @@
        if(allocated(s_comp_sp                     ))deallocate(s_comp_sp)
        if(allocated(MR_zsurf                      ))deallocate(MR_zsurf)
        if(allocated(MR_jacob                      ))deallocate(MR_jacob)
-#endif
        if(allocated(MR_u_ER_metP                  ))deallocate(MR_u_ER_metP)
        if(allocated(MR_v_ER_metP                  ))deallocate(MR_v_ER_metP)
        if(allocated(theta_Met                     ))deallocate(theta_Met)
@@ -749,14 +829,12 @@
        if(allocated(temp3d_short                  ))deallocate(temp3d_short)
        if(allocated(Met_Proj_lat                  ))deallocate(Met_Proj_lat)
        if(allocated(Met_Proj_lon                  ))deallocate(Met_Proj_lon)
-
        if(allocated(MR_SndVars_metP               ))deallocate(MR_SndVars_metP)
        if(allocated(MR_SndVarsID                  ))deallocate(MR_SndVarsID)
        if(allocated(MR_Snd_np_fullmet             ))deallocate(MR_Snd_np_fullmet)
        if(allocated(MR_Snd2Comp_map_wgt           ))deallocate(MR_Snd2Comp_map_wgt)
        if(allocated(MR_Snd2Comp_map_idx           ))deallocate(MR_Snd2Comp_map_idx)
        if(allocated(Snd_idx                       ))deallocate(Snd_idx)
-
        if(allocated(MR_Snd_cd                     ))deallocate(MR_Snd_cd)
        if(allocated(MR_Snd_id                     ))deallocate(MR_Snd_id)
        if(allocated(MR_Snd_lt                     ))deallocate(MR_Snd_lt)
@@ -765,6 +843,7 @@
        if(allocated(MR_Snd_lnm                    ))deallocate(MR_Snd_lnm)
        if(allocated(MR_Snd_st                     ))deallocate(MR_Snd_st)
        if(allocated(MR_Snd_ct                     ))deallocate(MR_Snd_ct)
+#endif
 
        nlev_coords_detected = 0
 
@@ -3459,7 +3538,11 @@
           if(poststep)write(outlog(io),*)"             1 poststep"
         endif;enddo
       endif
+#ifdef USEPOINTERS
+      if (.not. associated(MR_MetStep_File)) then
+#else
       if (.not. allocated(MR_MetStep_File)) then
+#endif
         allocate(MR_MetStep_File(MR_MetSteps_Total))               ;MR_MetStep_File(:)=''
         allocate(MR_MetStep_findex(MR_MetSteps_Total))             ;MR_MetStep_findex(:)=0
         allocate(MR_MetStep_tindex(MR_MetSteps_Total))             ;MR_MetStep_tindex(:)=0
