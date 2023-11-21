@@ -96,11 +96,12 @@ USGSLIB = $(USGSINC) $(USGSLIBDIR) -lhourssince -lprojection
 ##########  GNU Fortran Compiler  #############################################
 ifeq ($(SYSTEM), gfortran)
     FCHOME=/usr
-    FC = /usr/bin/gfortran
+    FC = $(FCHOME)/bin/gfortran
     #COMPINC = -I$(FCHOME)/local/include -I$(FCHOME)/include -I$(FCHOME)/lib64/gfortran/modules -I$(INSTALLDIR)/include
     #COMPLIBS = -L$(FCHOME)/local/lib -L$(FCHOME)/lib64 -L${INSTALLDIR}/lib 
-    COMPINC = -I./ -I$(FCHOME)/include -I$(FCHOME)/lib64/gfortran/modules -I$(FCHOME)/lib/x86_64-linux-gnu/fortran/gfortran-mod-15 -I$(INSTALLDIR)/include
-    COMPLIBS = -L./ -L$(FCHOME)/lib64 -L${INSTALLDIR}/lib
+    COMPINC = -I./ -I$(FCHOME)/include -I$(FCHOME)/lib64/gfortran/modules -I$(INSTALLDIR)/include
+    #  -I$(FCHOME)/lib/x86_64-linux-gnu/fortran/gfortran-mod-15
+    COMPLIBS = -L./ -L$(FCHOME)/lib -L$(FCHOME)/lib64 -L${INSTALLDIR}/lib
 
     LIBS = $(COMPLIBS) $(COMPINC)
     # -lefence 
@@ -154,7 +155,7 @@ endif
 LIB = libMetReader.a
 
 ifeq ($(USEGRIB), T)
-  GRIBTOOL = gen_GRIB_index
+  GRIBTOOL = bin/gen_GRIB_index
 else
   GRIBTOOL =
 endif
@@ -165,9 +166,8 @@ EXEC = \
  bin/MetTraj_F \
  bin/MetTraj_B \
  bin/MetCheck  \
- bin/probe_Met \
- bin/makegfsncml \
- bin/$(GRIBTOOL)
+ bin/MetProbe  \
+ bin/makegfsncml $(GRIBTOOL)
 
 AUTOSCRIPTS = \
  autorun_scripts/autorun_gfs.sh \
@@ -195,7 +195,7 @@ libMetReader.a: MetReader.F90 MetReader.o $(ncOBJS) $(grbOBJS) MetReader_Grids.o
 	ar rcs libMetReader.a MetReader.o $(ncOBJS) $(grbOBJS) MetReader_Grids.o MetReader_ASCII.o
 
 MetReader.o: MetReader.F90 makefile
-	./get_version.sh
+	sh get_version.sh
 	$(FC) $(FPPFLAGS) $(EXFLAGS) -c MetReader.F90
 MetReader_Grids.o: MetReader_Grids.f90 MetReader.o makefile
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(USGSLIB) -c MetReader_Grids.f90
@@ -235,14 +235,17 @@ bin/MetCheck: tools/MetCheck.f90 makefile libMetReader.a
 	mkdir -p bin
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(nclib) $(grblib) -c tools/MetCheck.f90
 	$(FC) $(FFLAGS) $(EXFLAGS) MetCheck.o -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB) -o bin/MetCheck
-bin/probe_Met: tools/probe_Met.f90 makefile libMetReader.a
+bin/MetProbe: tools/MetProbe.f90 makefile libMetReader.a
 	mkdir -p bin
-	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(nclib) $(grblib) -c tools/probe_Met.f90
-	$(FC) $(FFLAGS) $(EXFLAGS) probe_Met.o -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB) -o bin/probe_Met
+	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(nclib) $(grblib) -c tools/MetProbe.f90
+	$(FC) $(FFLAGS) $(EXFLAGS) MetProbe.o -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB) -o bin/MetProbe
 bin/makegfsncml: tools/makegfsncml.f90 makefile
 	mkdir -p bin
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(nclib) -c tools/makegfsncml.f90
 	$(FC) $(FFLAGS) $(EXFLAGS) makegfsncml.o  $(LIBS) $(nclib) -o bin/makegfsncml
+
+check: $(EXEC)
+	sh run_tests.sh
 
 clean:
 	rm -f *.o *__genmod.f90 *__genmod.mod
@@ -272,7 +275,7 @@ uninstall:
 	rm -f $(INSTALLDIR)/bin/MetCheck
 	rm -f $(INSTALLDIR)/bin/makegfsncml
 	rm -f $(INSTALLDIR)/bin/gen_GRIB_index
-	rm -f $(INSTALLDIR)/bin/probe_Met
+	rm -f $(INSTALLDIR)/bin/MetProbe
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/autorun_gfs.sh
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/autorun_nam.sh
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/autorun_NCEP_50YearReanalysis.sh
