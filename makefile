@@ -126,10 +126,10 @@ endif
 ###############################################################################
 ##########  Intel Fortran Compiler  #############################################
 ifeq ($(SYSTEM), ifort)
-    FCHOME = /opt/intel/oneapi/compiler/latest/linux/
+    FCHOME = /opt/intel/oneapi/compiler/latest/linux
     FC = $(FCHOME)/bin/intel64/ifort
     COMPINC = -I./ -I$(FCHOME)/include
-    COMPLIBS = -L./ -L$(FCHOME)/lib
+    COMPLIBS = -L./ -L$(FCHOME)/lib -L$(FCHOME)/compiler/lib/intel64_lin
     LIBS = $(COMPLIBS) $(COMPINC)
 
 # Debugging flags
