@@ -61,7 +61,7 @@
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
          Comp_iprojflag,&
          Met_iprojflag,Met_k0,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_Re,&
-         dx_met_const,dy_met_const,IsLatLon_CompGrid,&
+         dx_met_const,dy_met_const,IsLatLon_CompGrid,MR_Comp_StartHour,&
          IsLatLon_MetGrid,MR_BaseYear,MR_useLeap,MR_useCompH,nx_fullmet,ny_fullmet,&
          y_inverted,MR_windfiles,x_fullmet_sp,y_fullmet_sp,&
          MR_windfile_starthour,MR_windfile_stephour,Met_var_NC_names,Met_var_IsAvailable,&
@@ -130,6 +130,14 @@
           integer               :: byear
           logical               :: useLeaps
         end function HS_DayOfYear
+        real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
+          integer            :: iyear
+          integer            :: imonth
+          integer            :: iday
+          real(kind=8)       :: hours
+          integer            :: byear
+          logical            :: useLeaps
+        end function HS_hours_since_baseyear
 
         subroutine GetMetProfile(invars,invarlist)
           integer,parameter   :: sp        = 4 ! single precision
@@ -323,6 +331,8 @@
             write(outlog(io),*)"This will overwrite the requested timestep above"
             write(outlog(io),*)"only when using iw=5"
           endif;enddo
+          MR_Comp_StartHour = HS_hours_since_baseyear(inyear,inmonth,inday,inhour,&
+                                                MR_BaseYear,MR_useLeap)
         else
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
             write(outlog(io),*)"Optional arguments for date/hour not provided"

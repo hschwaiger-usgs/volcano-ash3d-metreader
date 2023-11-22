@@ -16,7 +16,12 @@ else
   echo "Downloading file: ${filename}"
 fi
 
-WINDROOT="/data/WindFiles"
+if [ -z ${WINDROOT} ];then
+ # Standard Linux location
+ WINDROOT="/data/WindFiles"
+ # Mac
+ #WINDROOT="/opt/data/WindFiles"
+fi
 NASADATAHOME="${WINDROOT}/NASA/GEOS"
 #name of directory containing current files
 FC_day=${NASADATAHOME}/${yearmonthday}

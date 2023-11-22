@@ -71,7 +71,7 @@ or for Ubuntu
 \begin{verbatim}
      sudo apt-get install libnetcdf* libgrib-api*
 \end{verbatim}
-To compile MetReader as a library, simple type:
+To compile MetReader as a library, simply type:
 \begin{verbatim}
      make lib
 \end{verbatim}
@@ -93,7 +93,7 @@ and writes a file with temperature vs height from GFS or NCEP data.
 are within the expected ranges.
 \item \texttt{gen\_GRIB\_index} : This tool builds a grib index to facilitate reading of grib
 files.
-\item \texttt{probe\_Met} : This is a more general version of \texttt{MetSonde} controled by
+\item \texttt{MetProbe} : This is a more general version of \texttt{MetSonde} controled by
 an input file that can handle more NWP data types.
 \item \texttt{MetTraj\_F} : This tool will generate foreward trajectories from based on the
 time-series NWP data.
@@ -103,6 +103,17 @@ time-series NWP data.
 grib to netCDF using the download scripts.
 \end{itemize}
 
+To test the build, type:
+\begin{verbatim}
+     make check
+\end{verbatim}
+This will run three tests using the radiosonde data (found in \texttt{examples/UpperAirSoundings}),
+followed by three tests using the NCEP 50-year reanalysis data.  The three test for
+each wind data type are: \texttt{MetProbe}, \texttt{MetTraj\_F}, and \texttt{MetRegri}.
+Output data file are compared with saved datafiles in \texttt{tests/output*}. Note that
+the files are only compared using the unix \texttt{cmp} command and small differences
+can be present in output files depending on if \texttt{OPT} or \texttt{DEBUG} was used
+when building the tools.
 
 To install the library, module files and tools, edit the \texttt{INSTALLDIR} variable of
 the makefile (the default is \texttt{/opt/USGS}) and type:
@@ -134,7 +145,7 @@ directory structure:
 |   |-- MetSonde
 |   |-- MetTraj_B
 |   |-- MetTraj_F
-|   |-- probe_Met
+|   |-- MetProbe
 |   |-- project_for
 |   |-- project_inv
 |   `-- yyyymmddhh_since_1900
@@ -934,7 +945,7 @@ onto the requested point and time and are written to a file (\texttt{GFS\_prof.d
 the current working directory.  This 3-column file contains the height (in $\mathrm{km}$),
 pressure (in $\mathrm{Pa}$) and temperature (in $^{\circ}\mathrm{C}$).
 
-\subsection{\texttt{probe\_Met}}
+\subsection{\texttt{MetProbe}}
 This program is a more general version of \texttt{MetSonde}, requiring 15 or more command-line
 arguments.  The command-line arguments are as follows.
 \\
@@ -959,7 +970,7 @@ hour          & real      & only needed for iw = 5 files \\
 For example, the following command will probe a GFS file and write out
 GPH, U, V, and T.
 
-\verb| probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 4 1 2 3 5 4 20 2 |
+\verb| MetProbe 2020061000_5.f006.nc 1 0 190.055 52.8222 T 4 1 2 3 5 4 20 2 |
 
 This will write output data to the file \texttt{NWP\_prof.dat}.
 If the truncation flag is set to \texttt{T}, then data are not interpolated onto

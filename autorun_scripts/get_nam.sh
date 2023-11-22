@@ -54,7 +54,12 @@ case ${NAM} in
 esac
 
 rc=0
-WINDROOT="/data/WindFiles"
+if [ -z ${WINDROOT} ];then
+ # Standard Linux location
+ WINDROOT="/data/WindFiles"
+ # Mac
+ #WINDROOT="/opt/data/WindFiles"
+fi
 NAMDATAHOME="${WINDROOT}/nam/${NAM}"
 install -d ${NAMDATAHOME}
 if [[ $? -ne 0 ]] ; then
