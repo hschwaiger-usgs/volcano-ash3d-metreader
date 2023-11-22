@@ -34,7 +34,12 @@ t0=`date`
 HourMax=36
 HourStep=1
 
-WINDROOT="/data/WindFiles"
+if [ -z ${WINDROOT} ];then
+ # Standard Linux location
+ WINDROOT="/data/WindFiles"
+ # Mac
+ #WINDROOT="/opt/data/WindFiles"
+fi
 NAMDATAHOME="${WINDROOT}/nam/091"
 
 #name of directory containing current files

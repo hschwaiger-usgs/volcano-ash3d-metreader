@@ -30,6 +30,12 @@
 
 # Please edit the line below to be consistant with the install directory specified in
 # the makefile
+if [ -z ${WINDROOT} ];then
+ # Standard Linux location
+ WINDROOT="/data/WindFiles"
+ # Mac
+ #WINDROOT="/opt/data/WindFiles"
+fi
 INSTALLDIR="/opt/USGS"
 VOLCFILE="${INSTALLDIR}/share/volc_NOVAC.txt"
 
@@ -103,7 +109,7 @@ echo "------------------------------------------------------------"
 SCRIPTDIR="${INSTALLDIR}/bin/autorun_scripts"
 
 #####  This is where the output files will be written
-SONDEDIR="/data/WindFiles/sonde"
+SONDEDIR="${WINDROOT}/sonde"
 SONDEDIR="/data/www/vsc-ash.wr.usgs.gov/sonde"
 mkdir -p ${SONDEDIR}
 # First, we copy the master list from /opt/USGS/share/ to the sonde directory
@@ -141,14 +147,14 @@ do
     case ${PROD} in
      gfs0p50)
       ARGS="1 0 $lon $lat T 4 1 2 3 5 4 20 2"
-      WINDPATH=/data/WindFiles/gfs/gfs.${yearmonthday}${FChour}
+      WINDPATH=${WINDROOT}/gfs/gfs.${yearmonthday}${FChour}
       WINDFILE=${yearmonthday}${FChour}.f${hour}.nc
       CLOUD="ncks -C -d lon,${lon} -d lat,${lat} -H -Q -s '%f ' -v Total_cloud_cover_isobaric ${WINDFILE} > Cloud.dat"
       ;;
      nam091)
       hour=`echo "${hour}" | cut -c2-3`
       ARGS="1 1 $lon $lat F 4 1 2 3 5 4 13 3"
-      WINDPATH=/data/WindFiles/nam/091/${yearmonthday}_${FChour}
+      WINDPATH=${WINDROOT}/nam/091/${yearmonthday}_${FChour}
       WINDFILE=nam.t00z.alaskanest.hiresf${hour}.tm00.loc.grib2
       CLOUD="touch Cloud.dat"
       ;;

@@ -24,7 +24,12 @@
 
 # This is the location where the downloaded windfiles will be placed.
 # Please edit this to suit your system.
-WINDROOT="/data/WindFiles"
+if [ -z ${WINDROOT} ];then
+ # Standard Linux location
+ WINDROOT="/data/WindFiles"
+ # Mac
+ #WINDROOT="/opt/data/WindFiles"
+fi
 
 yearmonthday=$1
 FChour=$2

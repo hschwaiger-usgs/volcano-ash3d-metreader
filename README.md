@@ -7,7 +7,7 @@ data, such as radiosonde or other 1-d data.
 
 This library was originally written as a component of the USGS volcanic ash
 transport and dispersion model, Ash3d.  However, since it is useful for
-other programs other than Ash3d, this interface to NWP files is provided
+other programs in addition to Ash3d, this interface to NWP files is provided
 as a separate repository that can either be compiled as a library or simply
 compiled directly with other source code.
 
@@ -21,8 +21,9 @@ program.  Projection and interpolation of NWP data to the required grid, along
 with any rotation of velocity vectors to grid-relative, is calculated internally by 
 MetReader.
 
-For details on usage, please see the User's Guide and look through the example
-programs.
+For details on usage, please see the [User's Guide](doc/MetReader_manual.pdf).
+The various tools, such as `MetRegrid` or `MetTraj_F` can provide useful
+examples on how to include MetReader into a program.
 
 This library requires two additional libraries made available on GitHub and USGS GitLab:
 
@@ -33,7 +34,7 @@ Additionally, the default makefile will build MetReader with both NetCDF and GRI
 enabled.  If either of these libraries are unavailable on your system, you can
 deactivate those options by setting the corresponding flags to 'F' in the makefile.
 
-To compile as a library, simple type:
+To compile as a library, simply type:
 
   `make all`
 
@@ -44,6 +45,14 @@ it is recommended to also build the GRIB2 indexer:
 
 This is a tool that generates an index file of the GRIB records which speeds
 access time to individual records substantially.
+
+To test the build, you can run:
+
+  `make check`
+
+This will run several of the tools with example control files using two
+sets of wind files: a network of radiosonde files, and the NCEP 50-year
+Reanalysis data (if available).
 
 To install the library, module files and tools, edit the `INSTALLDIR` variable of
 the makefile (the default is `/opt/USGS`) and type:
