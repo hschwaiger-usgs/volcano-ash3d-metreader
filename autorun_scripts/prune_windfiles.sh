@@ -25,16 +25,23 @@ echo "running prune_windfiles.sh"
 echo `date`
 echo "------------------------------------------------------------"
 
+# This is the location where the downloaded windfiles will be placed.
+# Please edit this to suit your system or ensure WINDROOT is set as an environment variable
+# in ~/.bash_profile or ~/.bashrc
+if [ -z ${WINDROOT} ];then
+ # Standard Linux location
+ WINDROOT="/data/WindFiles"
+ # Mac
+ #WINDROOT="/opt/data/WindFiles"
+fi
+
 GFS_retain=17
-PUFF_retain=2
 NAM196_retain=0
 NAM091_retain=0
 MetProf_retain=30
 Hysplit_retain=7
 
-WINDROOT="/data/WindFiles"
 GFSDATAHOME="${WINDROOT}/gfs"
-PUFFDATAHOME="${WINDROOT}/puff/gfs"
 NAM196DATAHOME="${WINDROOT}/nam/196"
 NAM091DATAHOME="${WINDROOT}/nam/091"
 METPROFDATAHOME="${WINDROOT}/MetProfiles"
@@ -45,8 +52,6 @@ HYSPLITDATAHOME="${WINDROOT}/Hysplit_traj"
 echo "Deleting all GFS windfiles older than ${GFS_retain} days"
 find ${GFSDATAHOME} -type f -mtime +${GFS_retain} -exec rm '{}' \;
 find ${GFSDATAHOME} -type d -empty -exec rmdir '{}' \;
-echo "Deleting all Puff windfiles older than ${PUFF_retain} days"
-find ${PUFFDATAHOME} -type f -mtime +${PUFF_retain} -exec rm '{}' \;
 echo "Deleting all nam-HI windfiles older than ${NAM196_retain} days"
 find ${NAM196DATAHOME} -type f -mtime +${NAM196_retain} -exec rm '{}' \;
 find ${NAM196DATAHOME} -type d -empty -exec rmdir '{}' \;
@@ -64,13 +69,10 @@ echo `date`
 echo "GFS directories remaining:"
 echo `ls -l ${GFSDATAHOME}`
 echo "------------------------------------------------------------"
-echo "Puff files remaining:"
-echo `ls -l ${PUFFDATAHOME}`
-echo "------------------------------------------------------------"
 echo "NAM196 directories remaining:"
 echo `ls -l ${NAM196DATAHOME}`
 echo "------------------------------------------------------------"
-echo "NAM1091 directories remaining:"
+echo "NAM091 directories remaining:"
 echo `ls -l ${NAM091DATAHOME}`
 echo "------------------------------------------------------------"
 

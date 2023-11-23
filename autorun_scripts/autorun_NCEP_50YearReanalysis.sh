@@ -24,8 +24,14 @@
 # the makefile
 INSTALLDIR="/opt/USGS"
 # This is the location where the downloaded windfiles will be placed.
-# Please edit this to suit your system.
-WINDROOT="/data/WindFiles"
+# Please edit this to suit your system or ensure WINDROOT is set as an environment variable
+# in ~/.bash_profile or ~/.bashrc
+if [ -z ${WINDROOT} ];then
+ # Standard Linux location
+ WINDROOT="/data/WindFiles"
+ # Mac
+ #WINDROOT="/opt/data/WindFiles"
+fi
 
 echo "------------------------------------------------------------"
 echo "running NCEP_50year_Reanalysis.sh"

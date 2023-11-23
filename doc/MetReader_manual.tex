@@ -28,7 +28,7 @@ data, such as radiosonde or other 1-D data.
 
 This library was originally written as a component of the USGS volcanic ash
 transport and dispersion model, Ash3d.  However, since it is useful for
-programs other than Ash3d, this interface to NWP files is provided
+programs in addition to Ash3d, this interface to NWP files is provided
 as a separate repository that can either be compiled as a library or simply
 compiled directly with other source code.
 
@@ -49,17 +49,19 @@ This library requires two additional libraries made available on GitHub and USGS
 \item HoursSince \\
 This is a library that takes a date and time, and calculates the number of hours
 since January 1, 1900 (or any arbitrary base year).\\
-(https://github.com/DOI-USGS/volcano-ash3d-hourssince)
+https://github.com/DOI-USGS/volcano-ash3d-hourssince\\
+https://code.usgs.gov/vsc/ash3d/volcano-ash3d-hourssince
 \item projection \\
 This is a library that calculates commonly-used projected coordinates.\\
-(https://github.com/DOI-USGS/volcano-ash3d-projection)
+https://github.com/DOI-USGS/volcano-ash3d-projection\\
+https://code.usgs.gov/vsc/ash3d/volcano-ash3d-projection
 \end{itemize}
 
 These libraries are installed by default into \texttt{/opt/USGS}.  If they are
 installed elsewhere, then you will need to edit the \texttt{makefile}
 to point to your installation.
 Additionally, the default \texttt{makefile} will build MetReader with both NetCDF and GRIB
-interfaces enabled.  If either of these libraries are unavailable on your system, you can
+interfaces enabled.  If either of these libraries are unavailable on your system, you will need to
 deactivate those options by setting the corresponding flags to \texttt{F} in the makefile.
 On a Redhat systems (Fedora, RHEL, CentOS, Rocky), you can install the data
 format libraries by typing
@@ -119,7 +121,8 @@ To install the library, module files and tools, edit the \texttt{INSTALLDIR} var
 the makefile (the default is \texttt{/opt/USGS}) and type:
 \begin{verbatim}
      make all
-     make install
+     make check
+     sudo make install
 \end{verbatim}
 This will also install scripts that can be used to download the $0.5^{\circ}$ GFS
 forecast files and the NCEP $2.5^{\circ}$ Reanalysis files.
@@ -175,6 +178,11 @@ Logical flag to build GRIB2 interface.
 Logical flag to define public work arrays as pointer or allocatable space. There is no
 real proformance impact for either choice. Older \texttt{gfortran} compilers
 required allocatable arrays, but pointers facilitate access from \texttt{C} programs.
+
+Once installed, the download scripts will copy NWP data to the default location:
+\texttt{WINDROOT=/data/WindFiles}.  If you would like to have data copied to another
+location, please ensure that the environment variable \texttt{WINDROOT} is set via
+your \texttt{.bash\_profile} or \texttt{.bashrc} files.
 \end{itemize}
 
 \clearpage
@@ -719,7 +727,7 @@ NASA GEOS-5.  These products generally require NetCDF version 4.  Most of the NC
 forecast products are provided in GRIB format.  To convert these forecast products
 to NetCDF format, MetReader relies on the NetCDF java package\\
 (\texttt{https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/}).  The
-conversion script in the \texttt{autorun\_scripts} folder are linked to \texttt{netcdfAll-4.5}
+conversion script in the \texttt{autorun\_scripts} folder are linked to \texttt{netcdfAll-5.4}
 however any recent version should work.  Older versions create NetCDF files with
 different variable names.
 
@@ -886,7 +894,7 @@ should be populated using the top-most data of the NWP file (\texttt{iHeightHand
 Line 6 specifies the year, month, day and hour of the output.
 Line 7 contains an integer flag specifing the output grid type (CompH,CompP,MetH,MetP).
 Line 8 contains the integer specifying the variable to regrid and export (see Table \ref{ApVar}).
-Line 9 specifies the output dimension (0,1,2,or 3)
+Line 9 specifies the output dimension (0,1,2,or 3).
 Line 10 contains 3 integers specifying the nodes used in the output. 0 should be given for indexes of unused
 dimensions.  In the example above, the output dimension is 2 indicating a slice of the grid will be
 exported.  We need to specify only one index to indicate the location of the cutting plane.  The $i=0$

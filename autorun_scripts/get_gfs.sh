@@ -90,7 +90,6 @@ esac
 
 
 rc=0
-WINDROOT="/data/WindFiles"
 GFSDATAHOME="${WINDROOT}/gfs"
 install -d ${GFSDATAHOME}
 if [[ $? -ne 0 ]] ; then
