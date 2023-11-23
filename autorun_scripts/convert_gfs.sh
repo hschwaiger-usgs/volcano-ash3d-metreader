@@ -22,6 +22,16 @@
 # This script is called from autorun_gfs.sh and takes three command-line arguments
 #   convert_gfs.sh GFSres YYYYMMDD HR
 
+# This is the location where the downloaded windfiles will be placed.
+# Please edit this to suit your system or ensure WINDROOT is set as an environment variable
+# in ~/.bash_profile or ~/.bashrc
+if [ -z ${WINDROOT} ];then
+ # Standard Linux location
+ WINDROOT="/data/WindFiles"
+ # Mac
+ #WINDROOT="/opt/data/WindFiles"
+fi
+
 # Select the netcdf version to write
 #NCv=3
 NCv=4
@@ -63,7 +73,6 @@ fi
 JAVA=`which java`
 echo "Found ${JAVA}"
 
-WINDROOT="/data/WindFiles"
 INSTALLDIR="/opt/USGS"
 
 GFS=$1

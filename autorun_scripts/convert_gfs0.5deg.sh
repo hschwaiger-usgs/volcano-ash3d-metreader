@@ -22,6 +22,16 @@
 # This script is called from autorun_gfs0.5deg.sh and takes two command-line arguments
 #   get_gfs0.5deg.sh YYYYMMDD HR
 
+# This is the location where the downloaded windfiles will be placed.
+# Please edit this to suit your system or ensure WINDROOT is set as an environment variable
+# in ~/.bash_profile or ~/.bashrc
+if [ -z ${WINDROOT} ];then
+ # Standard Linux location
+ WINDROOT="/data/WindFiles"
+ # Mac
+ #WINDROOT="/opt/data/WindFiles"
+fi
+
 # Please edit these variables to match your system and location of netcdf-java
 #JAVA="/usr/local/bin/"
 #NCJv="~/ncj/netcdfAll-4.5.jar"
@@ -48,8 +58,6 @@ if [[ "$rc" -gt 0 ]] ; then
 fi
 JAVA=`which java`
 echo "Found ${JAVA}"
-
-WINDROOT="/data/WindFiles"
 
 yearmonthday=$1
 FChour=$2

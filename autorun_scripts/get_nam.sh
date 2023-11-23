@@ -18,6 +18,16 @@
 #      and its documentation for any purpose.  We assume no responsibility to provide
 #      technical support to users of this software.
 
+# This is the location where the downloaded windfiles will be placed.
+# Please edit this to suit your system or ensure WINDROOT is set as an environment variable
+# in ~/.bash_profile or ~/.bashrc
+if [ -z ${WINDROOT} ];then
+ # Standard Linux location
+ WINDROOT="/data/WindFiles"
+ # Mac
+ #WINDROOT="/opt/data/WindFiles"
+fi
+
 NAM=$1
 yearmonthday=$2
 FChour=$3
@@ -53,13 +63,6 @@ case ${NAM} in
   exit
 esac
 
-rc=0
-if [ -z ${WINDROOT} ];then
- # Standard Linux location
- WINDROOT="/data/WindFiles"
- # Mac
- #WINDROOT="/opt/data/WindFiles"
-fi
 NAMDATAHOME="${WINDROOT}/nam/${NAM}"
 install -d ${NAMDATAHOME}
 if [[ $? -ne 0 ]] ; then
