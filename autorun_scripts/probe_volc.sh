@@ -111,6 +111,7 @@ SCRIPTDIR="${INSTALLDIR}/bin/autorun_scripts"
 #####  This is where the output files will be written
 SONDEDIR="${WINDROOT}/sonde"
 SONDEDIR="/data/www/vsc-ash.wr.usgs.gov/sonde"
+SONDEDIR="/var/www/html/sonde"
 mkdir -p ${SONDEDIR}
 # First, we copy the master list from /opt/USGS/share/ to the sonde directory
 vfile=${SONDEDIR}/volcs.dat
