@@ -62,7 +62,7 @@ FPPFLAGS =
 ifeq ($(USENETCDF), T)
  ncFPPFLAG = -DUSENETCDF
  ncOBJS = MetReader_NetCDF.o
- nclib = -lnetcdf -lnetcdff
+ nclib = -lnetcdf -lnetcdff 
 else
  ncFPPFLAG =
  ncOBJS =
@@ -95,59 +95,13 @@ USGSLIB = $(USGSINC) $(USGSLIBDIR) -lhourssince -lprojection
 ###############################################################################
 ##########  GNU Fortran Compiler  #############################################
 ifeq ($(SYSTEM), gfortran)
-    FCHOME=/usr
-    FC = $(FCHOME)/bin/gfortran
-    #COMPINC = -I$(FCHOME)/local/include -I$(FCHOME)/include -I$(FCHOME)/lib64/gfortran/modules -I$(INSTALLDIR)/include
-    #COMPLIBS = -L$(FCHOME)/local/lib -L$(FCHOME)/lib64 -L${INSTALLDIR}/lib 
-    COMPINC = -I./ -I$(FCHOME)/include -I$(FCHOME)/lib64/gfortran/modules -I$(INSTALLDIR)/include
-    #  -I$(FCHOME)/lib/x86_64-linux-gnu/fortran/gfortran-mod-15
-    COMPLIBS = -L./ -L$(FCHOME)/lib -L$(FCHOME)/lib64 -L${INSTALLDIR}/lib
-
-    LIBS = $(COMPLIBS) $(COMPINC)
-    # -lefence 
-
-# Debugging flags
-ifeq ($(RUN), DEBUG)
-    FFLAGS = -O0 -g3 -Wall -Wextra -fimplicit-none  -Wall  -Wline-truncation  -Wcharacter-truncation  -Wsurprising  -Waliasing  -Wimplicit-interface  -Wunused-parameter  -fwhole-file  -fcheck=all  -std=f2008  -pedantic  -fbacktrace -Wunderflow -ffpe-trap=invalid,zero,overflow -fdefault-real-8
-endif
-# Profiling flags
-ifeq ($(RUN), PROF)
-    FFLAGS = -g -pg -w -fno-math-errno -funsafe-math-optimizations -fno-trapping-math -fno-signaling-nans -fcx-limited-range -fno-rounding-math -fdefault-real-8
-endif
-# Production run flags
-ifeq ($(RUN), OPT)
-    FFLAGS = -O3 -w -fno-math-errno -funsafe-math-optimizations -fno-trapping-math -fno-signaling-nans -fcx-limited-range -fno-rounding-math -fdefault-real-8
-endif
-      # Preprocessing flags
-    FPPFLAGS = -x f95-cpp-input $(ncFPPFLAG) $(grbFPPFLAG) $(memFPPFLAG)
-      # Extra flags
-    EXFLAGS =
+  include make_gfortran.inc
 endif
 ###############################################################################
-##########  Intel Fortran Compiler  #############################################
-ifeq ($(SYSTEM), ifort)
-    FCHOME = /opt/intel/oneapi/compiler/latest/linux
-    FC = $(FCHOME)/bin/intel64/ifort
-    COMPINC = -I./ -I$(FCHOME)/include
-    COMPLIBS = -L./ -L$(FCHOME)/lib -L$(FCHOME)/compiler/lib/intel64_lin
-    LIBS = $(COMPLIBS) $(COMPINC)
 
-# Debugging flags
-ifeq ($(RUN), DEBUG)
-    FFLAGS = -g2 -pg -warn all -check all -real-size 64 -check uninit -traceback -ftrapuv -debug all
-endif
-# Profiling flags
-ifeq ($(RUN), PROF)
-    FFLAGS = -g2 -pg
-endif
-# Production run flags
-ifeq ($(RUN), OPT)
-    FFLAGS = -O3 -ftz -w -ipo
-endif
-      # Preprocessing flags
-    FPPFLAGS =  -fpp $(ncFPPFLAG) $(grbFPPFLAG) $(memFPPFLAG)
-      # Extra flags
-    EXFLAGS =
+##########  Intel Fortran Compiler  ###########################################
+ifeq ($(SYSTEM), ifort)
+  include make_ifort.inc
 endif
 ###############################################################################
 
