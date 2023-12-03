@@ -2,14 +2,10 @@
 ##########  GNU Fortran Compiler  #############################################
 FCHOME=/usr
 FC = $(FCHOME)/bin/gfortran
-#COMPINC = -I$(FCHOME)/local/include -I$(FCHOME)/include -I$(FCHOME)/lib64/gfortran/modules -I$(INSTALLDIR)/include
-#COMPLIBS = -L$(FCHOME)/local/lib -L$(FCHOME)/lib64 -L${INSTALLDIR}/lib 
 COMPINC = -I./ -I$(FCHOME)/include -I$(FCHOME)/lib64/gfortran/modules -I$(INSTALLDIR)/include
-#  -I$(FCHOME)/lib/x86_64-linux-gnu/fortran/gfortran-mod-15
-COMPLIBS = -L./ -L$(FCHOME)/lib -L$(FCHOME)/lib64 -L${INSTALLDIR}/lib
+COMPLIBS = -L./ -L$(FCHOME)/lib64 -L${INSTALLDIR}/lib
 
 LIBS = $(COMPLIBS) $(COMPINC)
-# -lefence 
 
 # Debugging flags
 ifeq ($(RUN), DEBUG)
@@ -28,4 +24,3 @@ FPPFLAGS = -x f95-cpp-input $(ncFPPFLAG) $(grbFPPFLAG) $(memFPPFLAG)
   # Extra flags
 EXFLAGS =
 ###############################################################################
-

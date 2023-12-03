@@ -25,30 +25,33 @@
 
 #  SYSTEM specifies which compiler to use
 #    Current available options are:
-#      gfortran , ifort
+#      gfortran , ifort , aocc
 #    This variable cannot be left blank
 #      
 SYSTEM = gfortran
 #SYSTEM = ifort
-#
+#SYSTEM = aocc
+
 #  RUN specifies which collection of compilation flags that should be run
 #    Current available options are:
 #      DEBUG : includes debugging info and issues warnings
 #      PROF  : includes profiling flags with some optimization
 #      OPT   : includes optimizations flags for fastest runtime
 #    This variable cannot be left blank
-#RUN=DEBUG
+RUN=DEBUG
 #RUN=PROF
-RUN=OPT
+#RUN=OPT
 #
 INSTALLDIR=/opt/USGS
 #INSTALLDIR=$(HOME)/intel
+#INSTALLDIR=$(HOME)/aocc
+
 #
 # DATA FORMATS
 #  For each data format you want to include in the library, set the corresponding
 #  variable below to 'T'.  Set to 'F' any you do not want compiled or any unavailable
-USENETCDF = T
-USEGRIB   = T
+USENETCDF = F
+USEGRIB   = F
 
 # MEMORY
 # If you need pointer arrays instead of allocatable arrays, set this to 'T'
@@ -98,13 +101,16 @@ ifeq ($(SYSTEM), gfortran)
   include make_gfortran.inc
 endif
 ###############################################################################
-
 ##########  Intel Fortran Compiler  ###########################################
 ifeq ($(SYSTEM), ifort)
   include make_ifort.inc
 endif
 ###############################################################################
-
+##########  AMD Optimizing C/C++/Fortran Compiler (aocc) ######################
+ifeq ($(SYSTEM), aocc)
+  include make_aocc.inc
+endif
+###############################################################################
 
 LIB = libMetReader.a
 
