@@ -187,9 +187,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                MR_Read_Met_DimVars_ASCII_1d                ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                MR_Read_Met_DimVars_ASCII_1d       ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
 !------------------------------------------------------------------------------
@@ -1196,7 +1196,7 @@
                        '        Vx (m/s)','        Vy (m/s)', &
                        '       Temp. (C)','  Wind Vel (m/s)','       Wind Dir.')
                 do iil=1,16
-                  write(outlog(io),*)MR_SndVars_metP(iloc,itime,1,iil),&
+                  write(outlog(io),141)MR_SndVars_metP(iloc,itime,1,iil),&
                             MR_SndVars_metP(iloc,itime,2,iil),&
                             MR_SndVars_metP(iloc,itime,3,iil),&
                             MR_SndVars_metP(iloc,itime,4,iil),&
@@ -1204,6 +1204,7 @@
                             WindVelocity(iil),&
                             WindDirection(iil)
                 enddo
+   141          format(3x,7f10.3)
                 write(outlog(io),*)"==================================================================="
               endif;enddo
             else
@@ -1421,7 +1422,7 @@
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)&
-           "--------------------------------------------------------------------------------"
+           "-----------------------------------------------------------------------"
       endif;enddo
 
       return
@@ -1493,9 +1494,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                          MR_Set_MetComp_Grids_ASCII_1d     ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                          MR_Set_MetComp_Grids_ASCII_1d -----"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(MR_iwind.eq.1.and.MR_iwindformat.eq.1.or.&
@@ -1549,7 +1550,7 @@
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)&
-           "--------------------------------------------------------------------------------"
+           "-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Set_MetComp_Grids_ASCII_1d

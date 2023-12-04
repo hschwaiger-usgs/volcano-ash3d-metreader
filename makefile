@@ -29,9 +29,8 @@
 #    This variable cannot be left blank
 #      
 SYSTEM = gfortran
-#SYSTEM = ifort
-#SYSTEM = aocc
-
+SYSINC = make_gfortran.inc
+#
 #  RUN specifies which collection of compilation flags that should be run
 #    Current available options are:
 #      DEBUG : includes debugging info and issues warnings
@@ -43,8 +42,6 @@ RUN=DEBUG
 #RUN=OPT
 #
 INSTALLDIR=/opt/USGS
-#INSTALLDIR=$(HOME)/intel
-#INSTALLDIR=$(HOME)/aocc
 
 #
 # DATA FORMATS
@@ -96,20 +93,11 @@ USGSLIB = $(USGSINC) $(USGSLIBDIR) -lhourssince -lprojection
 ###############################################################################
 
 ###############################################################################
-##########  GNU Fortran Compiler  #############################################
-ifeq ($(SYSTEM), gfortran)
-  include make_gfortran.inc
-endif
-###############################################################################
-##########  Intel Fortran Compiler  ###########################################
-ifeq ($(SYSTEM), ifort)
-  include make_ifort.inc
-endif
-###############################################################################
-##########  AMD Optimizing C/C++/Fortran Compiler (aocc) ######################
-ifeq ($(SYSTEM), aocc)
-  include make_aocc.inc
-endif
+# Import the compiler-specific include file.  Currently one of:
+#  GNU Fortran Compiler
+#  Intel Fortran Compiler
+#  AMD Optimizing C/C++/Fortran Compiler (aocc)
+include $(SYSINC)
 ###############################################################################
 
 LIB = libMetReader.a
@@ -151,55 +139,55 @@ lib: $(LIB)
 
 tools: $(EXEC)
 
-libMetReader.a: MetReader.F90 MetReader.o $(ncOBJS) $(grbOBJS) MetReader_Grids.o MetReader_ASCII.o makefile
+libMetReader.a: MetReader.F90 MetReader.o $(ncOBJS) $(grbOBJS) MetReader_Grids.o MetReader_ASCII.o makefile $(SYSINC)
 	ar rcs libMetReader.a MetReader.o $(ncOBJS) $(grbOBJS) MetReader_Grids.o MetReader_ASCII.o
 
-MetReader.o: MetReader.F90 makefile
+MetReader.o: MetReader.F90 makefile $(SYSINC)
 	sh get_version.sh
 	$(FC) $(FPPFLAGS) $(EXFLAGS) -c MetReader.F90
-MetReader_Grids.o: MetReader_Grids.f90 MetReader.o makefile
+MetReader_Grids.o: MetReader_Grids.f90 MetReader.o makefile $(SYSINC)
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(USGSLIB) -c MetReader_Grids.f90
-MetReader_ASCII.o: MetReader_ASCII.f90 MetReader.o makefile
+MetReader_ASCII.o: MetReader_ASCII.f90 MetReader.o makefile $(SYSINC)
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(USGSLIB) -c MetReader_ASCII.f90
 
 ifeq ($(USENETCDF), T)
-MetReader_NetCDF.o: MetReader_NetCDF.F90 MetReader.o makefile
+MetReader_NetCDF.o: MetReader_NetCDF.F90 MetReader.o makefile $(SYSINC)
 	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) $(nclib) $(USGSLIB) -c MetReader_NetCDF.F90
 endif
 ifeq ($(USEGRIB), T)
-MetReader_GRIB_index.o: MetReader_GRIB_index.f90 makefile
+MetReader_GRIB_index.o: MetReader_GRIB_index.f90 makefile $(SYSINC)
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(grblib) $(USGSLIB) -c MetReader_GRIB_index.f90
-MetReader_GRIB.o: MetReader_GRIB.f90 MetReader_GRIB_index.o MetReader.o makefile
+MetReader_GRIB.o: MetReader_GRIB.f90 MetReader_GRIB_index.o MetReader.o makefile $(SYSINC)
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(grblib) -c MetReader_GRIB.f90
-bin/gen_GRIB_index: gen_GRIB_index.f90 MetReader_GRIB_index.o makefile libMetReader.a
+bin/gen_GRIB_index: gen_GRIB_index.f90 MetReader_GRIB_index.o makefile $(SYSINC) libMetReader.a
 	mkdir -p bin
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(grblib) -c gen_GRIB_index.f90
 	$(FC) $(FFLAGS) $(EXFLAGS) MetReader_GRIB_index.o gen_GRIB_index.o $(LIBS) $(grblib) -o bin/gen_GRIB_index
 endif
 
-bin/MetRegrid: tools/MetRegrid.f90 makefile libMetReader.a
+bin/MetRegrid: tools/MetRegrid.f90 makefile $(SYSINC) libMetReader.a
 	mkdir -p bin
 	$(FC)  $(FFLAGS) $(EXFLAGS) tools/MetRegrid.f90 -o bin/MetRegrid -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB)
 
-bin/MetSonde: tools/MetSonde.f90 makefile libMetReader.a
+bin/MetSonde: tools/MetSonde.f90 makefile $(SYSINC) libMetReader.a
 	mkdir -p bin
 	$(FC) $(FFLAGS) $(EXFLAGS) -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB) -c tools/MetSonde.f90
 	$(FC) $(FFLAGS) $(EXFLAGS) MetSonde.o  -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB) -o bin/MetSonde
-bin/MetTraj_F: tools/MetTraj.F90 makefile libMetReader.a
+bin/MetTraj_F: tools/MetTraj.F90 makefile $(SYSINC) libMetReader.a
 	mkdir -p bin
 	$(FC) $(FPPFLAGS) -DFORWARD  $(FFLAGS) $(EXFLAGS) tools/MetTraj.F90 -o bin/MetTraj_F -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB)
-bin/MetTraj_B: tools/MetTraj.F90 makefile libMetReader.a
+bin/MetTraj_B: tools/MetTraj.F90 makefile $(SYSINC) libMetReader.a
 	mkdir -p bin
 	$(FC) $(FPPFLAGS) -DBACKWARD $(FFLAGS) $(EXFLAGS) tools/MetTraj.F90 -o bin/MetTraj_B -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB)
-bin/MetCheck: tools/MetCheck.f90 makefile libMetReader.a
+bin/MetCheck: tools/MetCheck.f90 makefile $(SYSINC) libMetReader.a
 	mkdir -p bin
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(nclib) $(grblib) -c tools/MetCheck.f90
 	$(FC) $(FFLAGS) $(EXFLAGS) MetCheck.o -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB) -o bin/MetCheck
-bin/MetProbe: tools/MetProbe.f90 makefile libMetReader.a
+bin/MetProbe: tools/MetProbe.f90 makefile $(SYSINC) libMetReader.a
 	mkdir -p bin
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(nclib) $(grblib) -c tools/MetProbe.f90
 	$(FC) $(FFLAGS) $(EXFLAGS) MetProbe.o -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB) -o bin/MetProbe
-bin/makegfsncml: tools/makegfsncml.f90 makefile
+bin/makegfsncml: tools/makegfsncml.f90 makefile $(SYSINC)
 	mkdir -p bin
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(nclib) -c tools/makegfsncml.f90
 	$(FC) $(FFLAGS) $(EXFLAGS) makegfsncml.o  $(LIBS) $(nclib) -o bin/makegfsncml

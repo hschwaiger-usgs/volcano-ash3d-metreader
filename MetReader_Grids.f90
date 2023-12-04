@@ -33,10 +33,10 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                          MR_Set_Met_NCEPGeoGrid            ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                          MR_Set_Met_NCEPGeoGrid   ----------"
         write(outlog(io),*)igrid
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(igrid.eq.1227)then
@@ -709,7 +709,7 @@
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Set_Met_NCEPGeoGrid
@@ -795,9 +795,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                 MR_Set_MetComp_Grids                       ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                 MR_Set_MetComp_Grids              ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       call MR_Set_Comp2Met_Map
@@ -1475,7 +1475,7 @@
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Set_MetComp_Grids
@@ -1529,9 +1529,9 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                          MR_Set_Comp2Met_Map               ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                          MR_Set_Comp2Met_Map      ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! We now have the full definition of the Met grid and the Comp grid
@@ -1753,7 +1753,7 @@
       endif ! Map_Case
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Set_Comp2Met_Map
@@ -1795,9 +1795,9 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Regrid_Met2Comp                                    ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Regrid_Met2Comp                           ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(IsPeriodic_CompGrid)then
@@ -1905,9 +1905,9 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Regrid_P2H_linear                                  ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Regrid_P2H_linear                         ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       var_comp = -9999.0_sp

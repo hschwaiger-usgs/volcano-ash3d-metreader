@@ -97,9 +97,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                MR_Read_Met_DimVars_netcdf                  ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                MR_Read_Met_DimVars_netcdf         ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(MR_iwind.eq.5)then
@@ -461,7 +461,7 @@
         p_fullmet_sp(1:nlevs_fullmet(idx)) = levs_fullmet_sp(idx,1:nlevs_fullmet(idx))
 
       else  ! MR_iwind not equal to 5
-        !-----------------------------------------------------------------------------------
+        !--------------------------------------------------------------------------
         !  Start of all non-iwind=5 cases
         if(MR_iwindformat.eq.50)then
           ! WRF files have a special reader, but we still need to set up 
@@ -469,7 +469,7 @@
           call MR_Get_WRF_grid
 
         else  ! MR_iwindformat .ne. 50
-          !---------------------------------------------------------------------------------
+          !------------------------------------------------------------------------
           ! Start of block for all non-iwind=5 and non-iwf=50
           ! This is where the Netcdf and Grib subroutines can be compared
           !
@@ -950,7 +950,7 @@
         p_fullmet_sp(1:nlevs_fullmet(idx)) = levs_fullmet_sp(idx,1:nlevs_fullmet(idx))
   
       endif ! else part of (MR_iwind.eq.5)
-      !---------------------------------------------------------------------------------
+      !------------------------------------------------------------------------
 
       if(MR_iwindformat.eq.0)then
         ! Template windfile (example for nam198)
@@ -996,7 +996,7 @@
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Read_Met_DimVars_netcdf
@@ -1090,9 +1090,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                MR_Get_WRF_grid                             ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                MR_Get_WRF_grid                    ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
         ! MAP_PROJ - Model projection  1 = Lambert
@@ -1495,7 +1495,7 @@
       !Met_var_zdim_ncid(ivar) = var_dimIDs(i_dim)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Get_WRF_grid
@@ -1620,9 +1620,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                MR_Read_Met_Times_netcdf                    ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                MR_Read_Met_Times_netcdf           ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(.not.Met_dim_IsAvailable(1))then
@@ -2092,7 +2092,7 @@
  800  format(i7,i7,3f12.2)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Read_Met_Times_netcdf
@@ -2155,10 +2155,10 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                MR_Set_iwind5_filenames                     ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                MR_Set_iwind5_filenames            ----------"
         write(outlog(io),*)inhour,ivar,infile
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(ivar.ne.1.and. &
@@ -2398,7 +2398,7 @@
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Set_iwind5_filenames
@@ -2461,9 +2461,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                MR_Set_Met_Dims_Template_netcdf             ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                MR_Set_Met_Dims_Template_netcdf    ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! To set up the grid, we assume that the grid is the same for all
@@ -2544,7 +2544,7 @@
       call MR_NC_check_status(nSTAT,0,"nf90_close")
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Set_Met_Dims_Template_netcdf
@@ -2640,10 +2640,10 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                MR_Read_MetP_Variable_netcdf                ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                MR_Read_MetP_Variable_netcdf       ----------"
         write(outlog(io),*)ivar,istep
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(.not.Met_var_IsAvailable(ivar))then
@@ -3267,7 +3267,7 @@
       MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_met_loc) * Met_var_conversion_factor(ivar)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Read_MetP_Variable_netcdf

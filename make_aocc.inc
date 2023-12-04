@@ -1,6 +1,6 @@
 ###############################################################################
 ##########  AMD Optimizing C/C++/Fortran Compiler (aocc) ######################
-FCHOME = /opt/AMD/aocc-compiler-4.1.0
+FCHOME = /opt/AMD/aocc-compiler-4.0.0
 FC = $(FCHOME)/bin/flang
 COMPINC = -I$(FCHOME)/include
 COMPLIBS = -L./ -L$(FCHOME)/lib
