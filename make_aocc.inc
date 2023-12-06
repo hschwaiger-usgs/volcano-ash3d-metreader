@@ -1,5 +1,6 @@
 ###############################################################################
 ##########  AMD Optimizing C/C++/Fortran Compiler (aocc) ######################
+
 FCHOME = /opt/AMD/aocc-compiler-4.0.0
 FC = $(FCHOME)/bin/flang
 COMPINC = -I$(FCHOME)/include
@@ -17,11 +18,11 @@ endif
 # Production run flags
 ifeq ($(RUN), OPT)
     #FFLAGS = -O3 -zopt -ftz -w -ipo
-    FFLAGS = -O3 -fPIC -mavx -fplugin-arg-dragonegg-llvm-codegen-optimize=3 -fplugin-arg-dragonegg-llvm-ir-optimize=3
+    FFLAGS = -Ofast -fPIC -mavx -fplugin-arg-dragonegg-llvm-codegen-optimize=3 -fplugin-arg-dragonegg-llvm-ir-optimize=3
 endif
 
   # Preprocessing flags
-FPPFLAGS =  -Mpreprocess
+FPPFLAGS =  -Mpreprocess $(ncFPPFLAG) $(grbFPPFLAG) $(memFPPFLAG)
   # Extra flags
 EXFLAGS =
 ###############################################################################

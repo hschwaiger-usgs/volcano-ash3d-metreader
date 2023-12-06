@@ -1437,6 +1437,8 @@
 
         do ilon = 1,nx_submet
           x_loc = max(0.0_sp,x_submet_sp(ilon))
+          xfrac_sp = -1.0_sp
+          xc_sp    = -1.0_sp
           do i = 1,191
             if(max(0.0_sp,x_in_iwf25_sp(i)).le.x_loc.and.x_in_iwf25_sp(i+1).gt.x_loc)then
               ix1 = i
@@ -1446,9 +1448,17 @@
               exit ! leave do loop
             endif
           enddo
+          if(xfrac_sp.lt.0.0_sp.or.xc_sp.lt.0.0_sp)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR: i maps out of grid: ",i
+            endif;enddo
+            stop 1
+          endif
 
           do ilat = 1,ny_submet
             y_loc = y_submet_sp(ilat)
+            yfrac_sp = -1.0_sp
+            yc_sp    = -1.0_sp
             do j = 94,2,-1
               if(y_in_iwf25_sp(j).le.y_loc.and.y_in_iwf25_sp(j-1).gt.y_loc)then
                 iy1 = j
@@ -1459,6 +1469,12 @@
                 exit ! leave do loop
               endif
             enddo
+            if(yfrac_sp.lt.0.0_sp.or.yc_sp.lt.0.0_sp)then
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                write(errlog(io),*)"MR ERROR: i maps out of grid: ",i
+              endif;enddo
+              stop 1
+            endif
 
             imap_iwf25(ilon,ilat,1)=ix1
             imap_iwf25(ilon,ilat,2)=ix2

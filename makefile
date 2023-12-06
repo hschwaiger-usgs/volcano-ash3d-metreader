@@ -23,6 +23,13 @@
 #      and its documentation for any purpose.  We assume no responsibility to provide
 #      technical support to users of this software.
 
+#      Sequence of commands:
+#      "make"  compiles the libmetreader.a library
+#      "make all" builds the library, the tools executables and copies to bin
+#      "make check" runs the test cases in /tests
+#      "make install" copies the contents of volcano-ash3d-metreader/bin to the install location
+#                        e.g. /opt/USGS
+#
 #  SYSTEM specifies which compiler to use
 #    Current available options are:
 #      gfortran , ifort , aocc
@@ -37,12 +44,11 @@ SYSINC = make_gfortran.inc
 #      PROF  : includes profiling flags with some optimization
 #      OPT   : includes optimizations flags for fastest runtime
 #    This variable cannot be left blank
-RUN=DEBUG
+#RUN=DEBUG
 #RUN=PROF
-#RUN=OPT
+RUN=OPT
 #
 INSTALLDIR=/opt/USGS
-
 #
 # DATA FORMATS
 #  For each data format you want to include in the library, set the corresponding

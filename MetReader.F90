@@ -3433,8 +3433,8 @@
       ! Once we know the number of steps needed, we will allocate space, then fill the variables
       ! with just the step info needed.
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-        write(outlog(io),*)&
-           '    File num  | Step in file  |  stephour   |   SimStartHour   | nMetStep | Note'
+        write(outlog(io),'(a80)')&
+         '    File num  | Step in file  |  stephour   |   SimStartHour   | nMetStep | Note'
       endif;enddo
       if(prestep)then
         Found_First_Step = .true.
@@ -3643,8 +3643,8 @@
       MR_MetStep_Interval(MR_MetSteps_Total)=MR_MetStep_Interval(MR_MetSteps_Total-1)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then  
-        write(outlog(io),*)"Comp start = ",real(MR_Comp_StartHour,kind=4)
-        write(outlog(io),*)"Comp end   = ",real(MR_Comp_StartHour+MR_Comp_Time_in_hours,kind=4)
+        write(outlog(io),'(a12,f13.2)')"Comp start = ",MR_Comp_StartHour
+        write(outlog(io),'(a12,f13.2)')"Comp end   = ",MR_Comp_StartHour+MR_Comp_Time_in_hours
       endif;enddo
 
       do istep = 1,MR_MetSteps_Total

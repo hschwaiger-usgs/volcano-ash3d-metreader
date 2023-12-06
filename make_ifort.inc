@@ -1,5 +1,6 @@
 ###############################################################################
 ##########  Intel Fortran Compiler  #############################################
+
 FCHOME = /opt/intel/oneapi/compiler/latest/linux/
 FC = $(FCHOME)/bin/intel64/ifort
 COMPINC = -I./ -I$(FCHOME)/include
@@ -8,7 +9,7 @@ LIBS = $(COMPLIBS) $(COMPINC)
 
 # Debugging flags
 ifeq ($(RUN), DEBUG)
-    FFLAGS = -g2 -pg -warn all -check all -real-size 64 -check uninit -traceback -ftrapuv -debug all 
+    FFLAGS = -debug full -g3 -O0 -CB -init:snan,arrays -warn all -gen-interfaces -traceback -check all -check bounds -ftrapuv
 endif
 # Profiling flags
 ifeq ($(RUN), PROF)
@@ -16,7 +17,7 @@ ifeq ($(RUN), PROF)
 endif
 # Production run flags
 ifeq ($(RUN), OPT)
-    FFLAGS = -O3 -ftz -w -ipo
+    FFLAGS = -O3 -unroll -unroll-aggressive -ftz -inline-forceinline -finline-functions -ipo -ip
 endif
 
   # Preprocessing flags
