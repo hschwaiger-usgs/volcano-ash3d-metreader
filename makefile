@@ -53,8 +53,8 @@ INSTALLDIR=/opt/USGS
 # DATA FORMATS
 #  For each data format you want to include in the library, set the corresponding
 #  variable below to 'T'.  Set to 'F' any you do not want compiled or any unavailable
-USENETCDF = F
-USEGRIB   = F
+USENETCDF = T
+USEGRIB   = T
 
 # MEMORY
 # If you need pointer arrays instead of allocatable arrays, set this to 'T'
