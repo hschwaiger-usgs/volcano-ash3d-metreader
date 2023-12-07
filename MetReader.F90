@@ -3799,13 +3799,18 @@
         ! otherwise use the height from the met files to determine padding
         Suppl_H = real(ceiling(Max_geoH_metP/5.0_sp),kind=sp) * 5.0_sp
       endif
-      if(MR_iHeightHandler.eq.1)then
-        if(z_comp_sp(nz_comp).gt.Max_geoH_metP)then
+      if(z_comp_sp(nz_comp).gt.Max_geoH_metP)then
+        if(MR_iHeightHandler.eq.1)then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Computational grid extends higher than met grid"
             write(errlog(io),*)"           iHeightHandler = 1:  exiting"
           endif;enddo
           stop 1
+        else ! MR_iHeightHandler.eq.2
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"MR WARNING : Computational grid extends higher than met grid"
+            write(outlog(io),*)"             iHeightHandler = 2:  continuing values upward."
+          endif;enddo
         endif
       endif
 
