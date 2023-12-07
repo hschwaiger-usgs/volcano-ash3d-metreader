@@ -893,9 +893,9 @@
       VB(1:2) = (/MR_VERB,MR_VERB/)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Allocate_FullMetFileList                           ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Allocate_FullMetFileList                  ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
       if ((MR_iwind.ne.1).and.(MR_iwind.ne.2).and. &
           (MR_iwind.ne.3).and.(MR_iwind.ne.4).and. &
@@ -2654,7 +2654,7 @@
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       CALLED_MR_Allocate_FullMetFileList = .true.
@@ -2721,9 +2721,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Read_Met_DimVars                                   ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_Met_DimVars                          ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -2880,7 +2880,7 @@
       CALLED_MR_Read_Met_DimVars = .true.
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Read_Met_DimVars
@@ -2915,9 +2915,9 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Set_CompProjection                                 ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Set_CompProjection                        ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       isLatLon_CompGrid = LL_flag
@@ -2971,7 +2971,7 @@
       CALLED_MR_Set_CompProjection = .true.
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       return
@@ -3024,9 +3024,9 @@
       !                          *_comp_H for data regridded to computational grid
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Initialize_Met_Grids                               ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Initialize_Met_Grids                      ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -3151,7 +3151,7 @@
       CALLED_MR_Initialize_Met_Grids = .true.
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Initialize_Met_Grids
@@ -3175,9 +3175,9 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Set_SigmaAlt_Scaling                               ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Set_SigmaAlt_Scaling                      ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       MR_use_SigmaAlt   = .true.
@@ -3193,7 +3193,7 @@
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Set_SigmaAlt_Scaling
@@ -3275,9 +3275,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Set_Met_Times                                      ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Set_Met_Times                             ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -3433,8 +3433,8 @@
       ! Once we know the number of steps needed, we will allocate space, then fill the variables
       ! with just the step info needed.
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-        write(outlog(io),*)&
-           '    File num  | Step in file  |  stephour   |   SimStartHour   | nMetStep | Note'
+        write(outlog(io),'(a80)')&
+         '    File num  | Step in file  |  stephour   |   SimStartHour   | nMetStep | Note'
       endif;enddo
       if(prestep)then
         Found_First_Step = .true.
@@ -3643,8 +3643,8 @@
       MR_MetStep_Interval(MR_MetSteps_Total)=MR_MetStep_Interval(MR_MetSteps_Total-1)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then  
-        write(outlog(io),*)"Comp start = ",real(MR_Comp_StartHour,kind=4)
-        write(outlog(io),*)"Comp end   = ",real(MR_Comp_StartHour+MR_Comp_Time_in_hours,kind=4)
+        write(outlog(io),'(a12,f13.2)')"Comp start = ",MR_Comp_StartHour
+        write(outlog(io),'(a12,f13.2)')"Comp end   = ",MR_Comp_StartHour+MR_Comp_Time_in_hours
       endif;enddo
 
       do istep = 1,MR_MetSteps_Total
@@ -3693,7 +3693,7 @@
       CALLED_MR_Set_Met_Times = .true.
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Set_Met_Times
@@ -3735,10 +3735,10 @@
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Read_HGT_arrays                                    ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_HGT_arrays                           ----------"
         write(outlog(io),*)istep,reset_first_time
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
@@ -3799,18 +3799,23 @@
         ! otherwise use the height from the met files to determine padding
         Suppl_H = real(ceiling(Max_geoH_metP/5.0_sp),kind=sp) * 5.0_sp
       endif
-      if(MR_iHeightHandler.eq.1)then
-        if(z_comp_sp(nz_comp).gt.Max_geoH_metP)then
+      if(z_comp_sp(nz_comp).gt.Max_geoH_metP)then
+        if(MR_iHeightHandler.eq.1)then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Computational grid extends higher than met grid"
             write(errlog(io),*)"           iHeightHandler = 1:  exiting"
           endif;enddo
           stop 1
+        else ! MR_iHeightHandler.eq.2
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"MR WARNING : Computational grid extends higher than met grid"
+            write(outlog(io),*)"             iHeightHandler = 2:  continuing values upward."
+          endif;enddo
         endif
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Read_HGT_arrays
@@ -3838,10 +3843,10 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Read_3d_MetP_Variable                              ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_3d_MetP_Variable                     ----------"
         write(outlog(io),*)ivar,istep
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -3873,7 +3878,7 @@
       end select
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Read_3d_MetP_Variable
@@ -3911,10 +3916,10 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Read_3d_MetH_Variable                              ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_3d_MetH_Variable                     ----------"
         write(outlog(io),*)ivar,istep
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -4014,7 +4019,7 @@
       enddo  ! i
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       return
@@ -4054,10 +4059,10 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Read_3d_Met_Variable_to_CompH                      ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_3d_Met_Variable_to_CompH             ----------"
         write(outlog(io),*)ivar,istep,IsNext
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -4138,7 +4143,7 @@
       deallocate(tmp_regrid2d_sp)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       return
@@ -4180,10 +4185,10 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Read_3d_Met_Variable_to_CompP                      ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_3d_Met_Variable_to_CompP             ----------"
         write(outlog(io),*)ivar,istep,IsNext
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -4260,7 +4265,7 @@
       deallocate(tmp_regrid2d_sp)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       return
@@ -4291,10 +4296,10 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Read_2d_Met_Variable                               ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_2d_Met_Variable                      ----------"
         write(outlog(io),*)ivar,istep
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -4325,7 +4330,7 @@
       end select
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Read_2d_Met_Variable
@@ -4362,10 +4367,10 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Read_2d_Met_Variable_to_CompGrid                   ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Read_2d_Met_Variable_to_CompGrid          ----------"
         write(outlog(io),*)ivar,istep
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -4402,7 +4407,7 @@
       deallocate(tmp_regrid2d_sp)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       return
@@ -4437,10 +4442,10 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Rotate_UV_GR2ER_Met                                ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Rotate_UV_GR2ER_Met                       ----------"
         write(outlog(io),*)istep,SetComp
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -4515,7 +4520,7 @@
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Rotate_UV_GR2ER_Met
@@ -4554,10 +4559,10 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Rotate_UV_ER2GR_Met                                ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Rotate_UV_ER2GR_Met                       ----------"
         write(outlog(io),*)istep
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -4618,7 +4623,7 @@
       enddo
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Rotate_UV_ER2GR_Comp
@@ -4646,10 +4651,10 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Regrid_MetP_to_CompH                               ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Regrid_MetP_to_CompH                      ----------"
         write(outlog(io),*)istep
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -4723,7 +4728,7 @@
       deallocate(tmp_regrid2d_sp)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       return
@@ -4757,10 +4762,10 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Regrid_MetP_to_MetH                                ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Regrid_MetP_to_MetH                       ----------"
         write(outlog(io),*)istep
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -4837,7 +4842,7 @@
       enddo  ! i
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       return
@@ -4865,9 +4870,9 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------      MR_Regrid_Met2d_to_Comp2d                             ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------      MR_Regrid_Met2d_to_Comp2d                    ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       ! Check prerequisites
@@ -4894,7 +4899,7 @@
       deallocate(tmp_regrid2d_sp)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       return

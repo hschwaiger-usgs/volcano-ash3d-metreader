@@ -125,9 +125,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                MR_Read_Met_DimVars_GRIB                    ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                MR_Read_Met_DimVars_GRIB           ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(MR_iwind.eq.5)then
@@ -138,7 +138,7 @@
         endif;enddo
         stop 1
       else
-          !---------------------------------------------------------------------------------
+          !------------------------------------------------------------------------
           ! Start of block for all non-iwind=5 and non-iwf=50
           ! This is where the Netcdf and Grib subroutines can be compared
           !
@@ -166,7 +166,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Grib version = ",MR_GRIB_Version
       endif;enddo
-      !---------------------------------------------------------------------------------
+      !------------------------------------------------------------------------
       ! Checking for dimension length and values for x,y,t,p
       !   Assume all files have the same format
       maxdimlen = 0
@@ -783,7 +783,7 @@
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Read_Met_DimVars_GRIB
@@ -861,9 +861,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                MR_Read_Met_Times_GRIB                      ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                MR_Read_Met_Times_GRIB             ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(.not.Met_dim_IsAvailable(1))then
@@ -1011,7 +1011,7 @@
  800  format(i7,i7,3f12.2)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Read_Met_Times_GRIB
@@ -1137,10 +1137,10 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                MR_Read_MetP_Variable_GRIB                  ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                MR_Read_MetP_Variable_GRIB         ----------"
         write(outlog(io),*)ivar,istep
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(.not.Met_var_IsAvailable(ivar))then
@@ -2083,7 +2083,7 @@
       MR_dum3d_metP = MR_dum3d_metP * Met_var_conversion_factor(ivar)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Read_MetP_Variable_GRIB

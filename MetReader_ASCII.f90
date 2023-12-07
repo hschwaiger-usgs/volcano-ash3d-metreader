@@ -187,9 +187,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                MR_Read_Met_DimVars_ASCII_1d                ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                MR_Read_Met_DimVars_ASCII_1d       ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
 !------------------------------------------------------------------------------
@@ -731,7 +731,7 @@
               endif
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                 write(outlog(io),204)il,real(MR_SndVars_metP(iloc,itime,1:5,il),kind=4),&
-                                        WindVelocity(il),WindDirection(il)
+                                       WindVelocity(il),WindDirection(il)
               endif;enddo
  203          format(3x,'Level',6x,a3,'(Pa)', &
                                 7x,a3,'(km)', &
@@ -1196,7 +1196,7 @@
                        '        Vx (m/s)','        Vy (m/s)', &
                        '       Temp. (C)','  Wind Vel (m/s)','       Wind Dir.')
                 do iil=1,16
-                  write(outlog(io),*)MR_SndVars_metP(iloc,itime,1,iil),&
+                  write(outlog(io),141)MR_SndVars_metP(iloc,itime,1,iil),&
                             MR_SndVars_metP(iloc,itime,2,iil),&
                             MR_SndVars_metP(iloc,itime,3,iil),&
                             MR_SndVars_metP(iloc,itime,4,iil),&
@@ -1204,6 +1204,7 @@
                             WindVelocity(iil),&
                             WindDirection(iil)
                 enddo
+   141          format(3x,7f10.3)
                 write(outlog(io),*)"==================================================================="
               endif;enddo
             else
@@ -1265,7 +1266,7 @@
                   MR_SndVars_metP(iloc,itime,4,iil) = &
                   real(WindVelocity(iil)*cos(pi + DEG2RAD*WindDirection(iil)),kind=sp)
                   do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-                    write(outlog(io),*)&
+                    write(outlog(io),'(7f13.5)')&
                             MR_SndVars_metP(iloc,itime,1,iil),&
                             MR_SndVars_metP(iloc,itime,2,iil),&
                             MR_SndVars_metP(iloc,itime,3,iil),&
@@ -1412,16 +1413,17 @@
         write(outlog(io),*)"File, step, Ref, Offset, HoursSince"
         do iw = 1,MR_iwindfiles
           do iws = 1,nt_fullmet
-            write(outlog(io),*)iw,iws,real(MR_windfile_starthour(iw),kind=4),&
-                             real(MR_windfile_stephour(iw,iws),kind=4),&
-                             real(MR_windfile_starthour(iw)+MR_windfile_stephour(iw,iws),kind=4)
+            write(outlog(io),'(2x,i3,5x,i3,3f13.2)')iw,iws,&
+                             MR_windfile_starthour(iw),&
+                             MR_windfile_stephour(iw,iws),&
+                             MR_windfile_starthour(iw)+MR_windfile_stephour(iw,iws)
           enddo
         enddo
       endif;enddo
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)&
-           "--------------------------------------------------------------------------------"
+           "-----------------------------------------------------------------------"
       endif;enddo
 
       return
@@ -1493,9 +1495,9 @@
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
-        write(outlog(io),*)"----------                          MR_Set_MetComp_Grids_ASCII_1d     ----------"
-        write(outlog(io),*)"--------------------------------------------------------------------------------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                          MR_Set_MetComp_Grids_ASCII_1d -----"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(MR_iwind.eq.1.and.MR_iwindformat.eq.1.or.&
@@ -1549,7 +1551,7 @@
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)&
-           "--------------------------------------------------------------------------------"
+           "-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Set_MetComp_Grids_ASCII_1d
@@ -2966,9 +2968,9 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           StatIdx = i
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
             write(outlog(io),*)" Radiosonde station: ",MR_Snd_cd(i),StatID,MR_Snd_lnm(i)
-            write(outlog(io),*)"  longitude = ",Stat_lon
-            write(outlog(io),*)"  latitude  = ",Stat_lat
-            write(outlog(io),*)"  elevation = ",Stat_elv
+            write(outlog(io),'(a14,f10.3)')"  longitude = ",Stat_lon
+            write(outlog(io),'(a14,f10.3)')"  latitude  = ",Stat_lat
+            write(outlog(io),'(a14,f10.3)')"  elevation = ",Stat_elv
           endif;enddo
           exit
         endif
