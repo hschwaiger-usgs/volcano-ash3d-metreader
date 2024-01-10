@@ -1900,13 +1900,28 @@
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension level")
               ! It may be worth checking subsequent iw to make sure the
               ! names are the same (isobaric1 vs isobaric2 or something)
-            if(iw.eq.1)Met_dim_names(2)= trim(adjustl(indim))
+            if(iw.eq.1)then
+              Met_dim_names(2)= trim(adjustl(indim))
+            else
+              if(trim(adjustl(Met_dim_names(2))).ne.trim(adjustl(indim)))then
+                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  write(outlog(io),*)" MR WARNING: level dimension name changed from first file."
+                endif;enddo
+              endif
+            endif
             nSTAT = nf90_inquire_dimension(ncid,gph_DimIDs(4),indim)
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Time")
               ! Same comment as above but for time1 vs time.
-            if(iw.eq.1)Met_dim_names(1)= trim(adjustl(indim))
-
-            nSTAT = nf90_inq_dimid(ncid,trim(adjustl(Met_dim_names(1))),t_dim_id)
+            if(iw.eq.1)then
+              Met_dim_names(1)= trim(adjustl(indim))
+            else
+              if(trim(adjustl(Met_dim_names(1))).ne.trim(adjustl(indim)))then
+                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  write(outlog(io),*)" MR WARNING: time dimension name changed from first file."
+                endif;enddo
+              endif
+            endif
+            nSTAT = nf90_inq_dimid(ncid,trim(adjustl(indim)),t_dim_id)
             call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid Time")
             if(iw.eq.1)then
               ! Get length of time dimension and allocate MR_windfile_stephour
@@ -1921,7 +1936,7 @@
             endif
 
             ! get variable id for time
-            nSTAT = nf90_inq_varid(ncid,trim(adjustl(Met_dim_names(1))),time_var_id)
+            nSTAT = nf90_inq_varid(ncid,trim(adjustl(indim)),time_var_id)
             call MR_NC_check_status(nSTAT,1,"nf90_inq_varid Time")
             ! We need the reftime for this file, check time variable for 'units'
             nSTAT = nf90_Inquire_Attribute(ncid, time_var_id,&
@@ -2089,6 +2104,7 @@
           enddo
         endif
       endif;enddo
+
  800  format(i7,i7,3f12.2)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
@@ -3347,14 +3363,14 @@
       integer, intent(in) :: errcode
       character(len=*), intent(in) :: operation
 
-      character(len=9) :: severity
+      character(len=12) :: severity
 
       integer :: io                           ! Index for output streams
 
       if (errcode.eq.0)then
-        severity = "WARNING: "
+        severity = "MR WARNING: "
        else
-        severity = "ERROR:   "
+        severity = "MR ERROR:   "
       endif
 
       if (nSTAT == nf90_noerr) return

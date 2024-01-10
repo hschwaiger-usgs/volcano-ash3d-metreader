@@ -939,7 +939,7 @@
       Met_var_NC_names(1)          = "Geopotential_height_isobaric"
       Met_var_GRIB_names(1)        = "gh"
       Met_var_WMO_names(1)         = "HGT"
-      Met_var_GRIB2_DPcPnSt(1,1:4) = (/0, 3, 5, 100/)
+      Met_var_GRIB2_DPcPnSt(1,1:4) = (/0, 3, 5, 100/) ! discpln,param_cat,param_num,surf_class
       Met_var_GRIB1_Param(1)       = 7
       Met_var_GRIB1_St(1)          = "pl"
       Met_var_ndim(1)              = 4
@@ -1181,6 +1181,8 @@
       Met_var_ndim(44)              = 3
         ! Convective liquid precipitation rate at surface  (kg/m2/s)
       Met_var_NC_names(45)          = "Precip.rate convective  (liquid)"
+      Met_var_GRIB_names(45)        = "cprat"
+      Met_var_GRIB2_DPcPnSt(45,1:4) = (/0, 1, 196, 1/)
       Met_var_WMO_names(45)         = "CPRAT"
       Met_var_GRIB1_Param(45)       = 0
       Met_var_GRIB1_St(45)          = "cprat"
@@ -2294,17 +2296,18 @@
         Met_dim_IsAvailable(5)=.true.; Met_dim_names(5) = "ncl_strlen_0"
 
         ! Momentum / State variables
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z_GDS0_ISBL" ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
-        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_GDS0_ISBL" ! e5.oper.an.pl.128_129_u.ll025uv.1991061500_1991061523.nc
-        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_GDS0_ISBL" ! e5.oper.an.pl.128_129_v.ll025uv.1991061500_1991061523.nc
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W_GDS0_ISBL" ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
-        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T_GDS0_ISBL" ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W_GDS0_ISBL" ! e5.oper.an.pl.128_129_w.ll025sc.19910
-        !Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z" ! e5.oper.an.pl.128_129_z.regn320sc.2018062000_2018062023.nc
-        !Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U" ! e5.oper.an.pl.128_131_u.regn320uv.2018062000_2018062023.nc
-        !Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V" ! e5.oper.an.pl.128_132_v.regn320uv.2018062000_2018062023.nc
-        !Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W" ! e5.oper.an.pl.128_135_w.regn320sc.2018062000_2018062023.nc
-        !Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T" ! e5.oper.an.pl.128_130_t.regn320sc.2018062000_2018062023.nc
+        !Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z_GDS0_ISBL" ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
+        !Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_GDS0_ISBL" ! e5.oper.an.pl.128_129_u.ll025uv.1991061500_1991061523.nc
+        !Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_GDS0_ISBL" ! e5.oper.an.pl.128_129_v.ll025uv.1991061500_1991061523.nc
+        !Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W_GDS0_ISBL" ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
+        !Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T_GDS0_ISBL" ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
+        !Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W_GDS0_ISBL" ! e5.oper.an.pl.128_129_w.ll025sc.19910
+        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z" ! e5.oper.an.pl.128_129_z.regn320sc.2018062000_2018062023.nc
+        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U" ! e5.oper.an.pl.128_131_u.regn320uv.2018062000_2018062023.nc
+        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V" ! e5.oper.an.pl.128_132_v.regn320uv.2018062000_2018062023.nc
+        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W" ! e5.oper.an.pl.128_135_w.regn320sc.2018062000_2018062023.nc
+        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T" ! e5.oper.an.pl.128_130_t.regn320sc.2018062000_2018062023.nc
+
         ! Atmospheric Structure
         !Met_var_IsAvailable(23)=.true.; Met_var_NC_names(23)="CC" ! e5.oper.an.pl.128_248_cc.regn320sc.2018062000_2018062023.nc
         ! Moisture
@@ -2337,18 +2340,30 @@
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 128
 
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g4_lat_2"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g4_lon_3"
+        !Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
+        !Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
+        !Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g4_lat_2"
+        !Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g4_lon_3"
+        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"       ! initial_time0_hours
+        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"   ! level, lv_ISBL1
+        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"        ! latitude, g0_lat_2
+        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"        ! longitude, g0_lon_3
 
         ! Momentum / State variables
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z_GDS4_ISBL" ! e5.oper.an.pl.128_129_z.regn320sc.2018062000_2018062023.nc
-        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_GDS4_ISBL" ! e5.oper.an.pl.128_131_u.regn320uv.2018062000_2018062023.nc
-        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_GDS4_ISBL" ! e5.oper.an.pl.128_132_v.regn320uv.2018062000_2018062023.nc
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W_GDS4_ISBL" ! e5.oper.an.pl.128_135_w.regn320sc.2018062000_2018062023.nc
-        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T_GDS4_ISBL" ! e5.oper.an.pl.128_130_t.regn320sc.2018062000_2018062023.nc
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W_GDS4_ISBL" ! e5.oper.an.pl.128_135_w.regn320sc.201
+        !Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z_GDS4_ISBL" ! e5.oper.an.pl.128_129_z.regn320sc.2018062000_2018062023.nc
+        !Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_GDS4_ISBL" ! e5.oper.an.pl.128_131_u.regn320uv.2018062000_2018062023.nc
+        !Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_GDS4_ISBL" ! e5.oper.an.pl.128_132_v.regn320uv.2018062000_2018062023.nc
+        !Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W_GDS4_ISBL" ! e5.oper.an.pl.128_135_w.regn320sc.2018062000_2018062023.nc
+        !Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T_GDS4_ISBL" ! e5.oper.an.pl.128_130_t.regn320sc.2018062000_2018062023.nc
+        !Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W_GDS4_ISBL" ! e5.oper.an.pl.128_135_w.regn320sc.201
+
+        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric" ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
+        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_u.ll025uv.1991061500_1991061523.nc
+        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_v.ll025uv.1991061500_1991061523.nc
+        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric" ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
+        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric" ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
+        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric" ! e5.oper.an.pl.128_129_w.ll025sc.19910
+
 
         fill_value_sp = -9999.0_sp
 

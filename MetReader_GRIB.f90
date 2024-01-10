@@ -2116,14 +2116,14 @@
       character(len=*), intent(in) :: operation
 
       character(len=50) :: err_message
-      character(len=9) :: severity
+      character(len=12) :: severity
 
       integer :: io                           ! Index for output streams
 
       if (errcode.eq.0)then
-        severity = "WARNING: "
+        severity = "MR WARNING: "
        else
-        severity = "ERROR:   "
+        severity = "MR ERROR:   "
       endif
 
       if (nSTAT == CODES_SUCCESS) return
