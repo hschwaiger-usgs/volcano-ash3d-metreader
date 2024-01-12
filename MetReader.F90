@@ -4935,8 +4935,6 @@
 
       subroutine MR_DelMetP_Dx
 
-      !integer, parameter :: sp        = 4 ! single precision
-
       integer :: i
       integer :: lside,rside
       real(kind=sp) :: dx_fac
@@ -4979,20 +4977,20 @@
         endif
         if(IsLatLon_MetGrid)then
           if(IsRegular_MetGrid)then
-            MR_dum3d2_metP(i,:,:) = (MR_dum3d_metP(lside,:,:)  + &
-                                     MR_dum3d_metP(rside,:,:)) / &
+            MR_dum3d2_metP(i,:,:) = (MR_dum3d_metP(rside,:,:)  - &
+                                     MR_dum3d_metP(lside,:,:)) / &
                                     (rdlambda_MetP_sp(i,:,:)   * &
                                     dx_fac*KM_2_M)
           else
-            MR_dum3d2_metP(i,:,:) = (MR_dum3d_metP(lside,:,:)  + &
-                                     MR_dum3d_metP(rside,:,:)) / &
+            MR_dum3d2_metP(i,:,:) = (MR_dum3d_metP(rside,:,:)  - &
+                                     MR_dum3d_metP(lside,:,:)) / &
                                     (0.5_sp*(rdlambda_MetP_sp(i,:,:)+rdlambda_MetP_sp(rside,:,:)) * &
                                     dx_fac*KM_2_M)
           endif
         else
           if(IsRegular_MetGrid)then
-            MR_dum3d2_metP(i,:,:) = (MR_dum3d_metP(lside,:,:)  + &
-                                     MR_dum3d_metP(rside,:,:)) / &
+            MR_dum3d2_metP(i,:,:) = (MR_dum3d_metP(rside,:,:)  - &
+                                     MR_dum3d_metP(lside,:,:)) / &
                                     (dx_fac*MR_dx_submet(i)*KM_2_M)
           else
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
@@ -5001,8 +4999,8 @@
             stop 1
           endif
         endif
-      enddo
 
+      enddo
 
       end subroutine MR_DelMetP_Dx
 
@@ -5019,8 +5017,6 @@
 !##############################################################################
 
       subroutine MR_DelMetP_Dy
-
-      !integer, parameter :: sp        = 4 ! single precision
 
       integer :: i,j
       integer :: lside,rside
@@ -5051,23 +5047,23 @@
         if(IsLatLon_MetGrid)then
           if(IsRegular_MetGrid)then
             do i=1,nx_submet
-              MR_dum3d2_metP(i,j,:) = (MR_dum3d_metP(i,lside,:)  + &
-                                       MR_dum3d_metP(i,rside,:)) / &
+              MR_dum3d2_metP(i,j,:) = (MR_dum3d_metP(i,rside,:)  - &
+                                       MR_dum3d_metP(i,lside,:)) / &
                                       (rdphi_MetP_sp(j,:)   * &
                                        dy_fac*KM_2_M)
             enddo
           else
             do i=1,nx_submet
-              MR_dum3d2_metP(i,j,:) = (MR_dum3d_metP(i,lside,:)  + &
-                                       MR_dum3d_metP(i,rside,:)) / &
+              MR_dum3d2_metP(i,j,:) = (MR_dum3d_metP(i,rside,:)  - &
+                                       MR_dum3d_metP(i,lside,:)) / &
                                       (0.5_sp*(rdphi_MetP_sp(j,:)+rdphi_MetP_sp(rside,:))   * &
                                        dy_fac*KM_2_M)
             enddo
           endif
         else
           if(IsRegular_MetGrid)then
-            MR_dum3d2_metP(:,j,:) = (MR_dum3d_metP(:,lside,:)  + &
-                                     MR_dum3d_metP(:,rside,:)) / &
+            MR_dum3d2_metP(:,j,:) = (MR_dum3d_metP(:,rside,:)  - &
+                                     MR_dum3d_metP(:,lside,:)) / &
                                     (dy_fac*MR_dy_submet(j)*KM_2_M)
           else
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
