@@ -4873,7 +4873,7 @@
 !     MR_dum2d_met is then regridded onto MR_dum2d_comp
 !
 !     Takes as input :: istep :: specified the met step
-!     Sets  : MR_dum3d_compH
+!     Sets  : MR_dum2d_comp
 !
 !##############################################################################
 
