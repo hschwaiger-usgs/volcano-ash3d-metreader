@@ -992,7 +992,7 @@
       endif;enddo
 
       !SEE IF THE MODEL DOMAIN EXTENDS NORTH OR SOUTH OF THE MESOSCALE DOMAIN
-      If(UseFullMetGrid)then
+      if(UseFullMetGrid)then
           ! This is the special case where the comp grid equals the Met grid
         jstart = 1
         jend = ny_fullmet

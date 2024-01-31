@@ -89,7 +89,10 @@
 !  git log -n 1 | grep commit | cut -f 2 -d' ' | tr -d $'\n' >> MR_version.h
 !  echo -n "'" >> MR_version.h
 !    which sets the variable containing the git commit ID : MR_GitComID
-
+#ifdef USENETCDF
+      integer          ,public :: NCv_datafile
+      character(len=80),public :: NCv_lib
+#endif
       integer      ,parameter,public :: MR_MAXVARS   = 50 ! Maximum number of variables in fixed arrays
 
       real(kind=dp),parameter,public :: MR_EPS_SMALL = 1.0e-7_dp  ! Small number
@@ -611,20 +614,32 @@
       logical,public :: wrapgrid
 
 #ifdef USEPOINTERS
-      real(kind=sp)   ,dimension(:)       ,pointer        :: temp1d_sp     => null()
+      character       ,dimension(:)       ,pointer,public :: temp1d_byte   => null()
+      character       ,dimension(:)       ,pointer,public :: temp1d_char   => null()
+      integer(kind=2) ,dimension(:)       ,pointer,public :: temp1d_intS   => null()
+      integer(kind=4) ,dimension(:)       ,pointer,public :: temp1d_intL   => null()
+      real(kind=sp)   ,dimension(:)       ,pointer,public :: temp1d_sp     => null()
+      real(kind=dp)   ,dimension(:)       ,pointer,public :: temp1d_dp     => null()
       real(kind=sp)   ,dimension(:,:,:)   ,pointer,public :: temp2d_sp     => null()
       real(kind=sp)   ,dimension(:,:,:,:) ,pointer,public :: temp3d_sp     => null()
       integer(kind=sp),dimension(:,:,:)   ,pointer,public :: temp2d_int    => null()
       integer(kind=sp),dimension(:,:,:)   ,pointer        :: temp2d_short  => null()
       integer(kind=sp),dimension(:,:,:,:) ,pointer,public :: temp3d_short  => null()
+      real(kind=dp)   ,dimension(:,:,:,:) ,pointer,public :: temp3d_dp     => null()
       real(kind=4)    ,dimension(:,:)     ,pointer,public :: Met_Proj_lat  => null()
       real(kind=4)    ,dimension(:,:)     ,pointer,public :: Met_Proj_lon  => null()
 #else
-      real(kind=sp)   ,dimension(:)       ,allocatable        :: temp1d_sp
+      character       ,dimension(:)       ,allocatable,public :: temp1d_byte
+      character       ,dimension(:)       ,allocatable,public :: temp1d_char
+      integer(kind=2) ,dimension(:)       ,allocatable,public :: temp1d_intS
+      integer(kind=4) ,dimension(:)       ,allocatable,public :: temp1d_intL
+      real(kind=sp)   ,dimension(:)       ,allocatable,public :: temp1d_sp
+      real(kind=dp)   ,dimension(:)       ,allocatable,public :: temp1d_dp
       real(kind=sp)   ,dimension(:,:,:)   ,allocatable,public :: temp2d_sp
       real(kind=sp)   ,dimension(:,:,:,:) ,allocatable,public :: temp3d_sp
       integer(kind=sp),dimension(:,:,:)   ,allocatable,public :: temp2d_int
       integer(kind=sp),dimension(:,:,:)   ,allocatable        :: temp2d_short
+      real(kind=dp)   ,dimension(:,:,:,:) ,allocatable,public :: temp3d_dp
       integer(kind=sp),dimension(:,:,:,:) ,allocatable,public :: temp3d_short
       real(kind=4)    ,dimension(:,:)     ,allocatable,public :: Met_Proj_lat
       real(kind=4)    ,dimension(:,:)     ,allocatable,public :: Met_Proj_lon
@@ -3471,8 +3486,11 @@
         files_per_tstep = 1
       endif
       do iw = 1,MR_iwindfiles,files_per_tstep
+        write(*,*)"MR_iwindfiles,files_per_tstep",iw,MR_iwindfiles,files_per_tstep
         do iwstep = 1,MR_windfiles_nt_fullmet(iw)
           stephour = MR_windfile_starthour(iw) + MR_windfile_stephour(iw,iwstep)
+          write(*,*)"  MR_windfiles_nt_fullmet(iw) ",iwstep,MR_windfiles_nt_fullmet(iw),stephour
+
           ! Unless the start time is before this step hour, reset the index istep to 1
           !  Otherwise, increment index
           if(stephour.lt.MR_Comp_StartHour)then
