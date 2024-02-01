@@ -361,13 +361,31 @@
             endif;enddo
 
             open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))), status='old',action='read',err=1971)
-            read(fid,*)!skip over first line
+            read(fid,*,iostat=ioerr) ! skip over first line
+            if(iostat.ne.0)then
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                if(iostat.lt.0)write(errlog(io),*)'MR ERROR READING FROM FILE:  EOF encountered'
+                if(iostat.gt.0)write(errlog(io),*)'MR ERROR READING FROM LINE OF FILE:  input line format error'
+                write(errlog(io),*)linebuffer
+              endif;enddo
+              stop 1
+            endif
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! Reading L2: time(hr) nlev [ncol] [ivar(ncol)]
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             read(fid,'(a80)')linebuffer
             ! Assume we can read at least two values (a real and an integer)
-            read(linebuffer,*) rvalue1, ivalue1
+            read(linebuffer,*,iostat=ioerr) rvalue1, ivalue1
+            if(iostat.ne.0)then
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                if(iostat.lt.0)write(errlog(io),*)'MR ERROR:  EOF encountered'
+                write(errlog(io),*)'MR ERROR:  Error reading line 2 of ASCII windfile'
+                write(errlog(io),*)'           Expecting to read: rvalue1, ivalue1'
+                write(errlog(io),*)'           From the follwing line from the file: '
+                write(errlog(io),*)linebuffer
+              endif;enddo
+              stop 1
+            endif
             WindTime = rvalue1
             MR_windfile_starthour(iw_idx) = WindTime
             nlev     = ivalue1

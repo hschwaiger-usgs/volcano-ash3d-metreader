@@ -107,9 +107,6 @@
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
-      ! Write the version of the linked netcdf library
-      !print *, trim(nf90_inq_libvers())
-
       if(MR_iwind.eq.5)then
         ! For the case where variables are in different files, we will just hard-code the
         ! grid geometry
@@ -1772,7 +1769,6 @@
       character(len=NF90_MAX_NAME) :: indim
       integer            :: xtype, length, attnum
       character(len=31)  :: tstring2
-      !real(kind=8)       :: HS_hours_since_baseyear !,HS_HourOfDay
       real(kind=8)       :: iwf_int,iwf_tot
       integer            :: iwstep
       logical            :: TimeHasUnitsAttr = .false.
@@ -1783,10 +1779,6 @@
       integer,dimension(8)  :: values
       integer               :: Current_Year,nt_tst
       character(len=130)    :: Z_infile
-      !character(len=1)      :: answer          !for debugging
-      !integer               :: HS_YearOfEvent
-      !integer               :: HS_MonthOfEvent
-      !integer               :: HS_DayOfEvent
 
       integer :: io                           ! Index for output streams
 
@@ -1849,7 +1841,6 @@
 
         ! Here the branch for when MR_iwindformat = 25, 26, 27, 29, or 30
         ! First copy path read in to slot 2
-        !MR_iw5_root = MR_windfiles(1)
  110    format(a50,a1,i4,a1)
         write(MR_windfiles(1),110)trim(adjustl(MR_iw5_root)),MR_DirDelim, &
                                    MR_Comp_StartYear,MR_DirDelim
@@ -2352,7 +2343,6 @@
       endif  ! MR_iwind = 5 v.s. 3/4
       ! Finished setting up the start time of each wind file in HoursSince : MR_windfile_starthour(iw)
       !  and the forecast (offset from start of file) for each step        : MR_windfile_stephour(iw,iwstep)
-
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         if (MR_iwind.ne.5)then
           write(outlog(io),*)"  File,  step,        Ref,     Offset,  HoursSince"
@@ -2680,7 +2670,6 @@
 
       end subroutine MR_Set_iwind5_filenames
 
-
 !##############################################################################
 
 
@@ -2710,8 +2699,6 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
-      !real(kind=sp), parameter :: tol = 1.0e-7_sp
 
       integer :: iw,i
 
@@ -2857,7 +2844,6 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
 
       integer,intent(in) :: ivar
       integer,intent(in) :: istep
@@ -2886,8 +2872,6 @@
       integer :: var_xtype
       real(kind=sp) :: var_scale_fac = 0.0_sp
       real(kind=sp) :: var_offset    = 0.0_sp
-      !integer :: NC_version
-
       real(kind=sp) :: dum_sp
 
       real(kind=sp),dimension(:,:,:,:),allocatable :: dum3d_metP_aux
@@ -3059,13 +3043,6 @@
                 xtype = var_xtype)
       call MR_NC_check_status(nSTAT,0,"nf90_inquire_variable")
 
-      ! Test for version 3 vs 4 NCEP files
-      !if(var_xtype.eq.NF90_FLOAT)then
-      !  NC_version = 4
-      !elseif(var_xtype.eq.NF90_SHORT)then
-      !  NC_version = 3
-      !endif
-
       if(Dimension_of_Variable.eq.3)then
         MR_dum3d_metP = 0.0_sp
         if(MR_iwindformat.ne.50)then
@@ -3109,25 +3086,9 @@
         endif ! MR_iwindformat.ne.50
 
         do i=1,ict        !read subgrid at current time step
-          ! Branch on four cases: (1) iw=5, NCEP with NetCDFv3
-          !                       (2) All other iw=5
-          !                       (3) WRF iwf=50
-          !                       (4) All other iw=3/4
-!          if(MR_iwind.eq.5.and.MR_iwindformat.eq.25.and.var_xtype.eq.NF90_SHORT)then
-!            ! NCEP reanalysis files are now NCv4 (stored as float), but the
-!            ! older version, NCv3 (stored as short) might still be around.
-!            if(i.eq.1)allocate(temp3d_short(nx_submet,ny_submet,np_met_loc,1))
-!            nSTAT = nf90_get_var(ncid,in_var_id,temp3d_short(ileft(i):iright(i),:,:,:), &
-!                     start = (/iistart(i),jstart,1,iwstep/),       &
-!                     count = (/iicount(i),ny_submet,np_met_loc,1/))
-!            call MR_NC_check_status(nSTAT,0,"nf90_get_var iw5 wf25 short")
-!          elseif(MR_iwind.eq.5.and.(MR_iwindformat.eq.25.or.&
-!                                    MR_iwindformat.eq.26.or.&
-!                                    MR_iwindformat.eq.27.or.&
-!                                    MR_iwindformat.eq.29.or.&
-!                                    MR_iwindformat.eq.30))then
-
-
+          ! Branch on three cases: (1) iw=5
+          !                        (2) WRF iwf=50
+          !                        (3) All other iw=3/4
           if(MR_iwind.eq.5)then
             ! Double-check that the iwindformat is one of the supported iw=5 types
             if(MR_iwindformat.ne.25.and.&
@@ -3143,12 +3104,10 @@
               endif;enddo
               stop 1
             endif
-
             ! Note that most variables will be NF90_FLOAT, but some older NCEP reanlysis
             ! files are NF90_SHORT
             if(var_xtype.eq.NF90_SHORT)then
               ! For SHORT values, expect that values use scale/offset
-!              if(i.eq.1)allocate(temp3d_short(nx_submet,ny_submet,np_met_loc,1))
               nSTAT = nf90_get_var(ncid,in_var_id,temp3d_short(ileft(i):iright(i),:,:,:), &
                        start = (/iistart(i),jstart,1,iwstep/),       &
                        count = (/iicount(i),ny_submet,np_met_loc,1/))
@@ -3164,7 +3123,7 @@
                        count = (/iicount(i),ny_submet,np_met_loc,1/))
               call MR_NC_check_status(nSTAT,0,"nf90_get_var iw5")
             !elseif(var_xtype.eq.NF90_DOUBLE)then
-
+            !  This is a place-holder for a NWP file that stores variables as doubles
             else
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: Cannot recognize variable type for x'
@@ -3308,8 +3267,8 @@
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                 write(outlog(io),*)istep,"Reading ","ivar"," from file : ",trim(adjustl(infile))
               endif;enddo
-!              varname = 
-!              nSTAT = nf90_inq_varid(ncid,varname,in_var_id1)
+              !varname = 
+              !nSTAT = nf90_inq_varid(ncid,varname,in_var_id1)
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: Need varname for WRF variable > ivar=6'
               endif;enddo
@@ -3349,6 +3308,7 @@
                 stop 1
               endif
             !elseif(var_xtype.eq.NF90_DOUBLE)then
+            !  This is a place-holder for a NWP file that stores variables as doubles
             else
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: Cannot recognize variable type for x'
@@ -3378,19 +3338,6 @@
             !reverse the j indices (since they increment from N to S)
 
             if(var_xtype.eq.NF90_SHORT)then
-              if(MR_iwindformat.eq.25.and.abs(var_scale_fac).lt.1.0e-10)then
-                ! If there was a problem reading the scale/offset values above,
-                ! then default to the hard-wired values
-                var_scale_fac = iwf25_scale_facs(ivar)
-                var_offset    = iwf25_offsets(ivar)
-              endif
-!            if(MR_iwindformat.eq.25)then
-!              if(var_xtype.eq.NF90_FLOAT)then
-!                  ! No scaling/offset needed
-!                MR_dum3d_metP(1:nx_submet,j,1:np_met_loc) = &
-!                                      real(temp3d_sp(:,itmp,:,1),kind=sp)
-!              elseif(var_xtype.eq.NF90_SHORT)then
-!                  ! NC_version = 3 :: need to scale and offset shorts to get float
               if(y_inverted)then
                 MR_dum3d_metP(1:nx_submet,j,1:np_met_loc) = &
                                       real(temp3d_short(1:nx_submet,itmp,1:np_met_loc,1),kind=sp) * &
@@ -3433,15 +3380,6 @@
                 if(var_xtype.eq.NF90_STRING)write(errlog(io),*)"NF90_STRING = ",NF90_STRING
               endif;enddo
               stop 1
-
-
-!              endif
-!            else
-!              if(y_inverted)then
-!                MR_dum3d_metP(1:nx_submet,j,1:np_met_loc)  = temp3d_sp(1:nx_submet,itmp,1:np_met_loc,1)
-!              else
-!                MR_dum3d_metP(1:nx_submet,j,1:np_met_loc)  = temp3d_sp(1:nx_submet,j,1:np_met_loc,1)
-!              endif
             endif
           enddo
           if(z_inverted)then ! reverse the vertical coordinate
@@ -3499,7 +3437,7 @@
             if(MR_iwindformat.eq.25)then
               allocate(tmpsurf2d_short(192,94,1))
               if(NCv_datafile.eq.1)then
-                ! This if for nf90_format_classic old-style NCEP files
+                ! This is for nf90_format_classic old-style NCEP files
                 nSTAT = nf90_get_var(ncid,in_var_id,tmpsurf2d_short(:,:,1), &
                          start = (/1,1,iwstep/),       &
                          count = (/192,94,1/))
@@ -3721,7 +3659,6 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
 
       integer         ,intent(in)  :: imax,jmax
       integer(kind=sp),intent(in)  :: invar(192,94,1)

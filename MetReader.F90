@@ -3249,7 +3249,7 @@
       integer, parameter :: sp        = 4 ! single precision
       integer, parameter :: dp        = 8 ! double precision
 
-      integer, parameter :: NT_MAXOUT = 40
+      integer, parameter :: NT_MAXOUT = 100
 
       real(kind=8),intent(in) :: eStartHour
       real(kind=8),intent(in) :: Duration
@@ -3486,11 +3486,8 @@
         files_per_tstep = 1
       endif
       do iw = 1,MR_iwindfiles,files_per_tstep
-        write(*,*)"MR_iwindfiles,files_per_tstep",iw,MR_iwindfiles,files_per_tstep
         do iwstep = 1,MR_windfiles_nt_fullmet(iw)
           stephour = MR_windfile_starthour(iw) + MR_windfile_stephour(iw,iwstep)
-          write(*,*)"  MR_windfiles_nt_fullmet(iw) ",iwstep,MR_windfiles_nt_fullmet(iw),stephour
-
           ! Unless the start time is before this step hour, reset the index istep to 1
           !  Otherwise, increment index
           if(stephour.lt.MR_Comp_StartHour)then
@@ -4317,6 +4314,7 @@
 !     Takes as input :: ivar  :: specifies which variable to read
 !                       istep :: specified the met step
 !     Sets  : MR_dum2d_met or MR_dum2d_met_int
+!
 !##############################################################################
 
       subroutine MR_Read_2d_Met_Variable(ivar,istep)
