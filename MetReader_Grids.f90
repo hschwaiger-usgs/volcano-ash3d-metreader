@@ -1985,8 +1985,8 @@
          Met_var_zdim_idx,Met_var_conversion_factor,Met_dim_names,Met_dim_fac,&
          Met_dim_IsAvailable,MR_useLeap,MR_MAXVARS,MR_iwf_template,&
          Met_iprojflag,Met_lam0,Met_lam1,Met_lam2,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         IsLatLon_MetGrid,IsGlobal_MetGrid
-
+         IsLatLon_MetGrid,IsGlobal_MetGrid,&
+           MR_FileIO_Error_Handler
 
       use projection,      only : &
          PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
@@ -1999,14 +1999,17 @@
 
       integer, parameter :: fid       = 110
 
-      logical      :: IsThere
-      character(len=130) :: linebuffer130
+      integer :: iostatus
+      character(len=120) :: iomessage
+
+      logical            :: IsThere
+      character(len=130) :: linebuffer130       ! We need to accommodate very long variable names
       character(len=80)  :: Met_projection_line
 
-      integer :: ioerr
       character(len=3)   :: useLeap_str
       integer :: ndims_custom, nvars_custom
       integer :: i
+      integer :: idx
       character     :: dv_char
       integer       :: dimID,varID,zindx,vndim
       real(kind=sp) :: fac
@@ -2029,7 +2032,9 @@
       endif
 
       open(unit=fid,file=adjustl(trim(MR_iwf_template)),status='old',action='read')
-      read(fid,'(a130)')linebuffer130
+      read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+
       Met_projection_line = linebuffer130(1:80)
       call PJ_Set_Proj_Params(Met_projection_line)
 
@@ -2054,10 +2059,23 @@
       Met_k0        = PJ_k0
       Met_Re        = PJ_Re
 
-      read(fid,'(a130)')linebuffer130
-      read(linebuffer130,*,iostat=ioerr)StepInterval,useLeap_str
-
-      if (ioerr.eq.0)then
+      read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+      read(linebuffer130,*,iostat=iostatus,iomsg=iomessage)StepInterval
+      if(iostatus.ne.0)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)'MR ERROR:  Error reading time step interval from template'
+          write(errlog(io),*)'           Expecting to read: StepInterval (real*8)'
+          write(errlog(io),*)'           with format: *'
+          write(errlog(io),*)'           From the following string: '
+          write(errlog(io),*)linebuffer130
+          write(errlog(io),*)'MR System Message: '
+          write(errlog(io),*)iomessage
+        endif;enddo
+        stop 1
+      endif
+      read(linebuffer130,*,iostat=iostatus,iomsg=iomessage)StepInterval,useLeap_str
+      if (iostatus.eq.0)then
         ! Two values read, process useLeap_str to determine T or F
         if(useLeap_str(1:1).eq.'F'.or.useLeap_str(1:1).eq.'f')then
           MR_useLeap = .false.
@@ -2066,23 +2084,45 @@
             write(outlog(io),*)"be used.  Resetting MR_useLeap = .false."
           endif;enddo
         endif
-      else
-        ! default will be whatever is set in the host program or in
-        ! MetReader.f90 if the calling program doesn't specify
-        read(linebuffer130,*,iostat=ioerr)StepInterval
       endif
-      read(fid,'(a130)')linebuffer130
-      read(linebuffer130,*,err=2002)ndims_custom,nvars_custom
-
+      read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+      read(linebuffer130,*,iostat=iostatus,iomsg=iomessage)ndims_custom,nvars_custom
+      if(iostatus.ne.0)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)'MR ERROR:  Error reading number of dims and vars from template'
+          write(errlog(io),*)'           Expecting to read: ndims_custom,nvars_custom'
+          write(errlog(io),*)'           with format: *'
+          write(errlog(io),*)'           From the following string: '
+          write(errlog(io),*)linebuffer130
+          write(errlog(io),*)'MR System Message: '
+          write(errlog(io),*)iomessage
+        endif;enddo
+        stop 1
+      endif
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"  Reading dimensions: ",ndims_custom
       endif;enddo
       do i = 1,ndims_custom
-        read(fid,'(a130)')linebuffer130
-        read(linebuffer130,1501)dv_char,dimID,fac,dname
+        read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+        read(linebuffer130,1501,iostat=iostatus,iomsg=iomessage)dv_char,dimID,fac,dname
+1501    format(a1,i9,f9.2,a30)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)'MR ERROR:  Error reading dimension specifiers from template'
+            write(errlog(io),*)'           Expecting to read: dv_char,dimID,fac,dname'
+            write(errlog(io),*)'           with format: a1,i9,f9.2,a30'
+            write(errlog(io),*)'           From the following string: '
+            write(errlog(io),*)linebuffer130
+            write(errlog(io),*)'MR System Message: '
+            write(errlog(io),*)iomessage
+          endif;enddo
+          stop 1
+        endif
         if(dv_char.ne.'d')then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-            write(errlog(io),*)"MR ERROR : Trying to read variable into dimension"
+            write(errlog(io),*)"MR ERROR : Expecting to read dimension, but dimension identifier not found."
             write(errlog(io),*)"dv_char = ",dv_char
             write(errlog(io),*)"dimID   = ",dimID
             write(errlog(io),*)"fac     = ",fac
@@ -2092,7 +2132,12 @@
         endif
         if(dimID.le.9)then
           Met_dim_IsAvailable(dimID) = .true.
-          Met_dim_names(dimID)       = adjustl(trim(dname))
+          Met_dim_names(dimID)       = trim(adjustl(dname))
+          idx=index(Met_dim_names(dimID),' ')
+          if(idx.gt.1)then
+            linebuffer130 = Met_dim_names(dimID)
+            Met_dim_names(dimID)       = linebuffer130(1:idx)
+          endif
           Met_dim_fac(i)             = fac
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
             write(outlog(io),*)dimID,' ',Met_dim_names(dimID)
@@ -2108,12 +2153,27 @@
         write(outlog(io),*)"  Reading variables: ",nvars_custom
       endif;enddo
       do i = 1,nvars_custom
-        read(fid,'(a130)')linebuffer130
-        read(linebuffer130,1511)dv_char,vndim,zindx,varID, &
+        read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+        read(linebuffer130,1511,iostat=iostatus,iomsg=iomessage)&
+                                dv_char,vndim,zindx,varID, &
                                 fac,vname_WMO,vname
+1511    format(a1,i3,i3,i3,f9.2,a7,a71)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)'MR ERROR:  Error reading variable specifiers from template'
+            write(errlog(io),*)'           Expecting to read: dv_char,vndim,zindx,varID,fac,vname_WMO,vname'
+            write(errlog(io),*)'           with format: a1,i3,i3,i3,f9.2,a7,a71'
+            write(errlog(io),*)'           From the following string: '
+            write(errlog(io),*)linebuffer130
+            write(errlog(io),*)'MR System Message: '
+            write(errlog(io),*)iomessage
+          endif;enddo
+          stop 1
+        endif
         if(dv_char.ne.'v')then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-            write(errlog(io),*)"MR ERROR : Trying to read dimension into variable"
+            write(errlog(io),*)"MR ERROR : Expecting to read variable, but variable identifier not found."
             write(errlog(io),*)"dv_char   = ",dv_char
             write(errlog(io),*)"vndim     = ",vndim
             write(errlog(io),*)"zindx     = ",zindx
@@ -2129,6 +2189,11 @@
           Met_var_IsAvailable(varID)       = .true.
           Met_var_NC_names(varID)          = adjustl(trim(vname))
           Met_var_WMO_names(varID)         = adjustl(trim(vname_WMO))
+          idx=index(Met_var_NC_names(varID),' ')
+          if(idx.gt.1)then
+            linebuffer130 = Met_var_NC_names(varID)
+            Met_var_NC_names(varID)          = linebuffer130(1:idx)
+          endif
           Met_var_ndim(varID)              = vndim
           Met_var_zdim_idx(varID)          = zindx
           Met_var_conversion_factor(varID) = fac
@@ -2142,7 +2207,7 @@
           stop 1
         endif
       enddo
-      ! copy availibility of VVEL and W
+      ! copy availability of VVEL and W
       if(Met_var_IsAvailable(4))then
         Met_var_IsAvailable(7)       = Met_var_IsAvailable(4)
         Met_var_NC_names(7)          = Met_var_NC_names(4)
@@ -2163,17 +2228,4 @@
 
       return
 
-1501  format(a1,i9     ,f9.2,a30)
-1511  format(a1,i3,i3,i3,f9.2,a7,a71)
-
-!2001  write(outlog(io),*)  'error reading ForecastInterval'
-!      write(outlog(io),*)linebuffer130
-!      stop 1
-2002  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io),*)  'error reading number of custom dims and vars.'
-        write(errlog(io),*)linebuffer130
-      endif;enddo
-      stop 1
-
       end subroutine MR_Read_Met_Template
-

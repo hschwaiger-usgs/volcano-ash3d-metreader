@@ -470,7 +470,6 @@
         !  Start of all non-iwind=5 cases
         if(MR_iwindformat.eq.50)then
           ! WRF files have a special reader, but we still need to set up 
-
           call MR_Get_WRF_grid
 
         else  ! MR_iwindformat .ne. 50
@@ -1744,6 +1743,8 @@
       integer :: itstart_hour,itstart_min,itstart_sec
 
       integer :: nSTAT
+      integer :: iostatus
+      character(len=120) :: iomessage
       integer :: ncid
       integer :: time_var_id = 0
       integer :: gph_var_id  = 0
@@ -2061,8 +2062,21 @@
             nSTAT = nf90_close(ncid)
             call MR_NC_check_status(nSTAT,1,"nf90_close WRF")
 
-            read(Timestr_WRF,121)itstart_year,itstart_month,itstart_day, &
+            read(Timestr_WRF,121,iostat=iostatus,iomsg=iomessage)&
+                              itstart_year,itstart_month,itstart_day, &
                               itstart_hour,itstart_min,itstart_sec
+            if(iostatus.ne.0)then
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                write(errlog(io),*)'MR ERROR:  Error reading time string from WRF file'
+                write(errlog(io),*)'           Expecting to read: iy,im,id,ih,imm,is'
+                write(errlog(io),*)'           with format: i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x'
+                write(errlog(io),*)'           From the following string: '
+                write(errlog(io),*)Timestr_WRF
+                write(errlog(io),*)'MR System Message: '
+                write(errlog(io),*)iomessage
+              endif;enddo
+              stop 1
+            endif
             filestart_hour = real(itstart_hour,kind=sp) + &
                              real(itstart_min,kind=sp)/60.0_sp      + &
                              real(itstart_sec,kind=sp)/3600.0_sp
@@ -2207,8 +2221,21 @@
                   !  time:units = "days since 0001-01-01 00:00:00" ;
                   if(tstring2(i:i+5).eq.'since ')then
                     ii = i+6
-                    read(tstring2(ii:31),103)itstart_year,itstart_month,itstart_day, &
+                    read(tstring2(ii:31),103,iostat=iostatus,iomsg=iomessage)&
+                                      itstart_year,itstart_month,itstart_day, &
                                       itstart_hour,itstart_min,itstart_sec
+                    if(iostatus.ne.0)then
+                      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                        write(errlog(io),*)'MR ERROR:  Error reading time string from NetCDF file'
+                        write(errlog(io),*)'           Expecting to read: iy,im,id,ih,imm,is'
+                        write(errlog(io),*)'           with format: i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2'
+                        write(errlog(io),*)'           From the following string: '
+                        write(errlog(io),*)tstring2(ii:31)
+                        write(errlog(io),*)'MR System Message: '
+                        write(errlog(io),*)iomessage
+                      endif;enddo
+                      stop 1
+                    endif
                     do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                       write(outlog(io),2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
                                                itstart_hour,itstart_min,itstart_sec
@@ -2259,8 +2286,21 @@
                     do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                       write(outlog(io),*)"Found reference time: ",tstring2(i:reftimedimlen)
                     endif;enddo
-                    read(tstring2(i:reftimedimlen),103)itstart_year,itstart_month,itstart_day, &
+                    read(tstring2(i:reftimedimlen),103,iostat=iostatus,iomsg=iomessage)&
+                                      itstart_year,itstart_month,itstart_day, &
                                       itstart_hour,itstart_min,itstart_sec
+                    if(iostatus.ne.0)then
+                      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                        write(errlog(io),*)'MR ERROR:  Error reading time string from NetCDF file'
+                        write(errlog(io),*)'           Expecting to read: iy,im,id,ih,imm,is'
+                        write(errlog(io),*)'           with format: i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2'
+                        write(errlog(io),*)'           From the following string: '
+                        write(errlog(io),*)tstring2(i:reftimedimlen)
+                        write(errlog(io),*)'MR System Message: '
+                        write(errlog(io),*)iomessage
+                      endif;enddo
+                      stop 1
+                    endif
                     do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                       write(outlog(io),2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
                                                itstart_hour,itstart_min,itstart_sec

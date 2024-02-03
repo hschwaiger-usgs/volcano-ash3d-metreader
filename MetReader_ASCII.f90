@@ -90,7 +90,8 @@
          Met_iprojflag,Met_k0,Met_lam0,Met_lam1,Met_lam2,Met_phi0,Met_phi1,Met_phi2,Met_Re,&
            MR_Z_US_StdAtm,&
            MR_Temp_US_StdAtm,&
-           MR_Pres_US_StdAtm
+           MR_Pres_US_StdAtm, &
+           MR_FileIO_Error_Handler
 
       use projection,      only : &
          PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
@@ -106,6 +107,7 @@
       integer, parameter :: fid       = 120
 
       integer :: iostatus
+      character(len=120) :: iomessage
       integer :: istr1,istr2,istr3
       integer :: ic,il,iil,iv
 
@@ -364,38 +366,28 @@
             endif;enddo
 
             open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))), status='old',action='read',err=1971)
-            read(fid,*,iostat=iostatus) ! skip over first line (Comment line, maybe the location name)
-            if(iostatus.ne.0)then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-                if(iostatus.lt.0)write(errlog(io),*)'MR ERROR READING FROM FILE:  EOF encountered'
-                if(iostatus.gt.0)write(errlog(io),*)'MR ERROR READING FROM LINE OF FILE:  input line format error'
-                write(errlog(io),*)linebuffer080
-              endif;enddo
-              stop 1
-            endif
+            ! skip over first line (Comment line, maybe the location name)
+            read(fid,*,iostat=iostatus,iomsg=iomessage)linebuffer080
+            if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! Reading L2: time(hr) nlev [ncol] [ivar(ncol)]
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            read(fid,'(a80)',iostat=iostatus)linebuffer080
-            if(iostatus.ne.0)then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-                if(iostatus.lt.0)write(errlog(io),*)'MR ERROR READING FROM FILE:  EOF encountered'
-                if(iostatus.gt.0)write(errlog(io),*)'MR ERROR READING FROM LINE OF FILE:  input line format error'
-                write(errlog(io),*)linebuffer080
-              endif;enddo
-              stop 1
-            endif
+            read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+            if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
             ! Assume we can read at least two values (a real and an integer)
-            read(linebuffer080,*,iostat=iostatus) rvalue1, ivalue1
+            read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) rvalue1, ivalue1
             if(iostatus.ne.0)then
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                 if(iostatus.lt.0)then
-                  write(errlog(io),*)'MR ERROR:  EOF encountered'
+                  write(errlog(io),*)'MR ERROR:  EOR encountered'
                 else
                   write(errlog(io),*)'MR ERROR:  Error reading line 2 of ASCII windfile'
                   write(errlog(io),*)'           Expecting to read: rvalue1, ivalue1'
-                  write(errlog(io),*)'           From the follwing line from the file: '
+                  write(errlog(io),*)'           From the following line from the file: '
                   write(errlog(io),*)linebuffer080
+                  write(errlog(io),*)'MR System Message: '
+                  write(errlog(io),*)iomessage
                 endif
               endif;enddo
               stop 1
@@ -404,7 +396,7 @@
             MR_windfile_starthour(iw_idx) = WindTime
             nlev     = ivalue1
             ! Try for three values [ncol]
-            read(linebuffer080,*,iostat=iostatus) rvalue1,ivalue1, ivalue2
+            read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) rvalue1, ivalue1, ivalue2
             if(iostatus.eq.0)then
               ! Success: third value is the number of variables
               !    Note: We need at least 5 variables for P,H,U,V,T
@@ -421,7 +413,8 @@
                                     ! There might be more columns to map
                 allocate(SndColReadOrder(MR_Snd_nvars)) ! This is the read oder
               endif
-              read(linebuffer080,*,iostat=iostatus) rvalue1,ivalue1, ivalue2, SndColReadOrder(1:MR_Snd_nvars)
+              read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) &
+                    rvalue1,ivalue1, ivalue2, SndColReadOrder(1:MR_Snd_nvars)
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                 write(outlog(io),*)" Parsing sonde info line as:"
                 write(outlog(io),*)"  wind time: ",rvalue1
@@ -505,12 +498,27 @@
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! Reading L3: x/lon y/lat [LLflag] [proj flags]
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            read(fid,'(a80)',iostat=iostatus)linebuffer080
-            read(linebuffer080,*,iostat=iostatus)  rvalue1,rvalue2  ! These are the coordinates of the sonde point
+            read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+            if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+            read(linebuffer080,*,iostat=iostatus,iomsg=iomessage)&
+                   rvalue1, rvalue2  ! These are the coordinates of the sonde point
+            if(iostatus.ne.0)then
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                if(iostatus.lt.0)then
+                  write(errlog(io),*)'MR ERROR:  EOF encountered'
+                else
+                  write(errlog(io),*)'MR ERROR:  Error reading line 3 of ASCII windfile'
+                  write(errlog(io),*)'           Expecting to read: rvalue1, rvalue2'
+                  write(errlog(io),*)'           From the follwing line from the file: '
+                  write(errlog(io),*)linebuffer080
+                endif
+              endif;enddo
+              stop 1
+            endif
             x_fullmet_sp(iloc) = rvalue1
             y_fullmet_sp(iloc) = rvalue2
             ! Try for three values
-            read(linebuffer080,*,iostat=iostatus) rvalue1,rvalue2, ivalue1
+            read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) rvalue1,rvalue2, ivalue1
             if(iostatus.eq.0)then
               ! A third parameter is present: first value of projection line
               Snd_Have_Coord = .true.
@@ -539,7 +547,7 @@
               else
                 ! Grid in not Lon/Lat
                 ! First try to read the projection code
-                read(linebuffer080,*,iostat=iostatus) rvalue1,rvalue2, &
+                read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) rvalue1,rvalue2, &
                                                 ivalue1, ivalue2
                 if(iostatus.eq.0)then
                   Met_iprojflag = ivalue2
@@ -550,7 +558,7 @@
                     ! that so we know ' 0 ' will be in the string, but the first or
                     ! second coordinate could have this string too.  Need a better way.
 
-           ! HFS: compress repeated white spaces then look for then look for the second space
+           ! HFS: compress repeated white spaces then look for the second space
 
                     indx1 = index(linebuffer080,' 0 ')
                     indx2 = index(linebuffer080,'#')   ! Check for the comment marker
@@ -598,40 +606,41 @@
             ! Reading L4-EOF: ncols of data in nlev rows
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             do il=1,nlev
-              read(fid,'(a80)',iostat=iostatus)linebuffer080
+              read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+              if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
               ! For the first line, we need to determine the number of columns.
               if (il.eq.1)then
                 ! Verify we can at least read 3
                 ncols = 0
-                read(linebuffer080,*,iostat=iostatus)rvalues(1:3)
+                read(linebuffer080,*,iostat=iostatus,iomsg=iomessage)rvalues(1:3)
                 if(iostatus.eq.0)then
                   ncols=3
                   ! Now try 4
-                  read(linebuffer080,*,iostat=iostatus)rvalues(1:4)
+                  read(linebuffer080,*,iostat=iostatus,iomsg=iomessage)rvalues(1:4)
                   if(iostatus.eq.0)then
                     ncols=4
                     ! Now try 5
-                    read(linebuffer080,*,iostat=iostatus)rvalues(1:5)
+                    read(linebuffer080,*,iostat=iostatus,iomsg=iomessage)rvalues(1:5)
                     if(iostatus.eq.0)then
                       ncols=5
                       ! Now try 6
-                      read(linebuffer080,*,iostat=iostatus)rvalues(1:6)
+                      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage)rvalues(1:6)
                       if(iostatus.eq.0)then
                         ncols=6
                         ! Now try 7
-                        read(linebuffer080,*,iostat=iostatus)rvalues(1:7)
+                        read(linebuffer080,*,iostat=iostatus,iomsg=iomessage)rvalues(1:7)
                         if(iostatus.eq.0)then
                           ncols=7
                           ! Now try 8
-                          read(linebuffer080,*,iostat=iostatus)rvalues(1:8)
+                          read(linebuffer080,*,iostat=iostatus,iomsg=iomessage)rvalues(1:8)
                           if(iostatus.eq.0)then
                             ncols=8
                             ! Now try 9
-                            read(linebuffer080,*,iostat=iostatus)rvalues(1:9)
+                            read(linebuffer080,*,iostat=iostatus,iomsg=iomessage)rvalues(1:9)
                             if(iostatus.eq.0)then
                               ncols=9
                               ! Now try 10
-                              read(linebuffer080,*,iostat=iostatus)rvalues(1:10)
+                              read(linebuffer080,*,iostat=iostatus,iomsg=iomessage)rvalues(1:10)
                               if(iostatus.eq.0)then
                                 ncols=10
                               endif
@@ -651,7 +660,7 @@
               endif ! il.eq.1
               rvalues(:) = -1.99_sp
               ! read ncols of data on this row
-              read(linebuffer080,*,iostat=iostatus) rvalues(1:ncols)
+              read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) rvalues(1:ncols)
 
               if(.not.IsCustVarOrder.and.ncols.eq.3)then
                 ! If this is a 3-column file without the custom ordering, read as
@@ -896,7 +905,8 @@
             idx   = 0
             iostatus = 0
             do while (iostatus.ge.0)
-              read(fid,'(a80)',iostat=iostatus)linebuffer080
+              read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+              ! No aborting on read-error here since we will read this file until there is an error
               idx =index(linebuffer080,"TTAA")
               idx2=index(linebuffer080,"TTCC")
               if (idx.gt.0) then
@@ -919,63 +929,254 @@
               ! which it is
               GTSstr(1:53)="//////"
               rewind(fid)
-              read(fid,'(a80)',iostat=iostatus)linebuffer080
+              read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+              if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
               idx =index(linebuffer080,"TTAA")
               if(idx.gt.0)then
                 ! 'TTAA' is in the first line, this is a file from Uni. Wyoming
                 IsRUCNOAA = .false.
                 ! the format for the TTAA block is 3 lines of 13 6-char strings
-                read(fid,'(a80)',iostat=iostatus)linebuffer080_2
-                read(fid,'(a80)',iostat=iostatus)linebuffer080_3
-                read(linebuffer080  ,155,iostat=iostatus)dumstr1,GTSstr(1:12) ! the dumstr accommodates the 'TTAA'
-                read(linebuffer080_2,155,iostat=iostatus)GTSstr(13:25)
-                read(linebuffer080_3,155,iostat=iostatus)GTSstr(26:38)
+                read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080_2
+                if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080_2,iomessage)
+                read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080_3
+                if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080_3,iomessage)
+                 ! the dumstr accommodates the 'TTAA'
+                read(linebuffer080  ,155,iostat=iostatus,iomsg=iomessage)dumstr1,GTSstr(1:12)
+                if(iostatus.ne.0)then
+                  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                    if(iostatus.lt.0)then
+                      write(errlog(io),*)'MR ERROR:  EOR encountered'
+                    else
+                      write(errlog(io),*)'MR ERROR:  Error reading GTS format sonde file'
+                      write(errlog(io),*)'           Expecting to read: dumstr1,GTSstr(1:12)'
+                      write(errlog(io),*)'           with format: 13a6'
+                      write(errlog(io),*)'           From the following line from the file: '
+                      write(errlog(io),*)linebuffer080
+                      write(errlog(io),*)'MR System Message: '
+                      write(errlog(io),*)iomessage
+                    endif
+                  endif;enddo
+                  stop 1
+                endif
+                read(linebuffer080_2,155,iostat=iostatus,iomsg=iomessage)GTSstr(13:25)
+                if(iostatus.ne.0)then
+                  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                    if(iostatus.lt.0)then
+                      write(errlog(io),*)'MR ERROR:  EOR encountered'
+                    else
+                      write(errlog(io),*)'MR ERROR:  Error reading GTS format sonde file'
+                      write(errlog(io),*)'           Expecting to read: GTSstr(13:25)'
+                      write(errlog(io),*)'           with format: 13a6'
+                      write(errlog(io),*)'           From the following line from the file: '
+                      write(errlog(io),*)linebuffer080
+                      write(errlog(io),*)'MR System Message: '
+                      write(errlog(io),*)iomessage
+                    endif
+                  endif;enddo
+                  stop 1
+                endif
+                read(linebuffer080_3,155,iostat=iostatus,iomsg=iomessage)GTSstr(26:38)
+                if(iostatus.ne.0)then
+                  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                    if(iostatus.lt.0)then
+                      write(errlog(io),*)'MR ERROR:  EOR encountered'
+                    else
+                      write(errlog(io),*)'MR ERROR:  Error reading GTS format sonde file'
+                      write(errlog(io),*)'           Expecting to read: GTSstr(26:38)'
+                      write(errlog(io),*)'           with format: 13a6'
+                      write(errlog(io),*)'           From the following line from the file: '
+                      write(errlog(io),*)linebuffer080
+                      write(errlog(io),*)'MR System Message: '
+                      write(errlog(io),*)iomessage
+                    endif
+                  endif;enddo
+                  stop 1
+                endif
 
                 ! Now we need to load the TTCC string blocks if the sonde went high enough
                 if(HasTTCC)then
                   idx2=0
                   do while (idx2.eq.0.and.iostatus.ge.0)
-                    read(fid,'(a80)',iostat=iostatus)linebuffer080
+                    read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+                    ! No aborting on read-error here since we will read this file until there is an error
                     idx2=index(linebuffer080,"TTCC")
                     if (idx2.gt.0) then
                       exit
                     endif
                   enddo
-                  read(fid,'(a80)',iostat=iostatus)linebuffer080_2
-                  read(linebuffer080  ,155,iostat=iostatus)dumstr1,dumstr2,dumstr3,GTSstr(39:48) ! the dumstr accommodate the first
-                  read(linebuffer080_2,155,iostat=iostatus)GTSstr(49:53)                         !   three blocks
+                  read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080_2
+                  if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080_2,iomessage)
+                  read(linebuffer080  ,155,iostat=iostatus,iomsg=iomessage)&
+                        dumstr1,dumstr2,dumstr3,GTSstr(39:48) ! the dumstr accommodate the first
+                  if(iostatus.ne.0)then
+                    do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                      if(iostatus.lt.0)then
+                        write(errlog(io),*)'MR ERROR:  EOR encountered'
+                      else
+                        write(errlog(io),*)'MR ERROR:  Error reading GTS format sonde file'
+                        write(errlog(io),*)'           Expecting to read: dumstr1,dumstr2,dumstr3,GTSstr(39:48)'
+                        write(errlog(io),*)'           with format: 13a6'
+                        write(errlog(io),*)'           From the following line from the file: '
+                        write(errlog(io),*)linebuffer080
+                        write(errlog(io),*)'MR System Message: '
+                        write(errlog(io),*)iomessage
+                      endif
+                    endif;enddo
+                    stop 1
+                  endif
+
+                  read(linebuffer080_2,155,iostat=iostatus,iomsg=iomessage)&
+                        GTSstr(49:53)                         !   three blocks
+                  if(iostatus.ne.0)then
+                    do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                      if(iostatus.lt.0)then
+                        write(errlog(io),*)'MR ERROR:  EOR encountered'
+                      else
+                        write(errlog(io),*)'MR ERROR:  Error reading GTS format sonde file'
+                        write(errlog(io),*)'           Expecting to read: GTSstr(49:53)'
+                        write(errlog(io),*)'           with format: 13a6'
+                        write(errlog(io),*)'           From the following line from the file: '
+                        write(errlog(io),*)linebuffer080_2
+                        write(errlog(io),*)'MR System Message: '
+                        write(errlog(io),*)iomessage
+                      endif
+                    endif;enddo
+                    stop 1
+                  endif
                 endif
 
               else
                 ! TTAA not in the first line, try the second
-                read(fid,'(a80)',iostat=iostatus)linebuffer080
+                read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
                 idx =index(linebuffer080,"TTAA")
                 if(idx.gt.0)then
                   ! this is a file from NOAA Rapid Update Cycle ruc.noaa.gov
                   IsRUCNOAA = .true.
                   ! the format for the TTAA block is 4 lines of 10 6-char strings
-                  read(fid,'(a80)',iostat=iostatus)linebuffer080_2
-                  read(fid,'(a80)',iostat=iostatus)linebuffer080_3
-                  read(fid,'(a80)',iostat=iostatus)linebuffer080_4
-                  read(linebuffer080  ,154,iostat=iostatus)dumstr1,dumstr2,GTSstr(1:8) ! here we need the space 
-                                                                 ! for the repeat StatID and TTAA
-                  read(linebuffer080_2,154,iostat=iostatus)GTSstr( 9:18)
-                  read(linebuffer080_3,154,iostat=iostatus)GTSstr(19:28)
-                  read(linebuffer080_4,154,iostat=iostatus)GTSstr(29:38)
+                  read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080_2
+                  if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080_2,iomessage)
+                  read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080_3
+                  if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080_3,iomessage)
+                  read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080_4
+                  if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080_4,iomessage)
+
+                                      ! here we need the space for the repeat StatID and TTAA
+                  read(linebuffer080  ,154,iostat=iostatus,iomsg=iomessage)dumstr1,dumstr2,GTSstr(1:8)
+                  if(iostatus.ne.0)then
+                    do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                      if(iostatus.lt.0)then
+                        write(errlog(io),*)'MR ERROR:  EOR encountered'
+                      else
+                        write(errlog(io),*)'MR ERROR:  Error reading NOAA Rapid Update Cycle format sonde file'
+                        write(errlog(io),*)'           Expecting to read: dumstr1,dumstr2,GTSstr(1:8)'
+                        write(errlog(io),*)'           with format: 10a6'
+                        write(errlog(io),*)'           From the following line from the file: '
+                        write(errlog(io),*)linebuffer080
+                        write(errlog(io),*)'MR System Message: '
+                        write(errlog(io),*)iomessage
+                      endif
+                    endif;enddo
+                    stop 1
+                  endif
+                  read(linebuffer080_2,154,iostat=iostatus,iomsg=iomessage)GTSstr( 9:18)
+                  if(iostatus.ne.0)then
+                    do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                      if(iostatus.lt.0)then
+                        write(errlog(io),*)'MR ERROR:  EOR encountered'
+                      else
+                        write(errlog(io),*)'MR ERROR:  Error reading NOAA Rapid Update Cycle format sonde file'
+                        write(errlog(io),*)'           Expecting to read: GTSstr( 9:18)'
+                        write(errlog(io),*)'           with format: 10a6'
+                        write(errlog(io),*)'           From the following line from the file: '
+                        write(errlog(io),*)linebuffer080_2
+                        write(errlog(io),*)'MR System Message: '
+                        write(errlog(io),*)iomessage
+                      endif
+                    endif;enddo
+                    stop 1
+                  endif
+                  read(linebuffer080_3,154,iostat=iostatus,iomsg=iomessage)GTSstr(19:28)
+                  if(iostatus.ne.0)then
+                    do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                      if(iostatus.lt.0)then
+                        write(errlog(io),*)'MR ERROR:  EOR encountered'
+                      else
+                        write(errlog(io),*)'MR ERROR:  Error reading NOAA Rapid Update Cycle format sonde file'
+                        write(errlog(io),*)'           Expecting to read: GTSstr(19:28)'
+                        write(errlog(io),*)'           with format: 10a6'
+                        write(errlog(io),*)'           From the following line from the file: '
+                        write(errlog(io),*)linebuffer080_3
+                        write(errlog(io),*)'MR System Message: '
+                        write(errlog(io),*)iomessage
+                      endif
+                    endif;enddo
+                    stop 1
+                  endif
+                  read(linebuffer080_4,154,iostat=iostatus,iomsg=iomessage)GTSstr(29:38)
+                  if(iostatus.ne.0)then
+                    do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                      if(iostatus.lt.0)then
+                        write(errlog(io),*)'MR ERROR:  EOR encountered'
+                      else
+                        write(errlog(io),*)'MR ERROR:  Error reading NOAA Rapid Update Cycle format sonde file'
+                        write(errlog(io),*)'           Expecting to read: dumstr1,dumstr2,GTSstr(1:8)'
+                        write(errlog(io),*)'           with format: 10a6'
+                        write(errlog(io),*)'           From the following line from the file: '
+                        write(errlog(io),*)linebuffer080_4
+                        write(errlog(io),*)'MR System Message: '
+                        write(errlog(io),*)iomessage
+                      endif
+                    endif;enddo
+                    stop 1
+                  endif
 
                   ! Now we need to load the TTCC string blocks if the sonde went high enough
                   if(HasTTCC)then
                     idx2=0
                     do while (idx2.eq.0.and.iostatus.ge.0)
-                      read(fid,'(a80)',iostat=iostatus)linebuffer080
+                      read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+                      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
                       idx2=index(linebuffer080,"TTCC")
                       if (idx2.gt.0) then
                         exit
                       endif
                     enddo
-                    read(fid,'(a80)',iostat=iostatus)linebuffer080_2
-                    read(linebuffer080  ,154,iostat=iostatus)dumstr1,dumstr2,dumstr3,dumstr4,GTSstr(39:44) 
-                    read(linebuffer080_2,154,iostat=iostatus)GTSstr(45:53)                         
+                    read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080_2
+                    if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080_2,iomessage)
+                    read(linebuffer080  ,154,iostat=iostatus,iomsg=iomessage)dumstr1,dumstr2,dumstr3,dumstr4,GTSstr(39:44) 
+                    if(iostatus.ne.0)then
+                      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                        if(iostatus.lt.0)then
+                          write(errlog(io),*)'MR ERROR:  EOR encountered'
+                        else
+                          write(errlog(io),*)'MR ERROR:  Error reading NOAA Rapid Update Cycle format sonde file'
+                          write(errlog(io),*)'           Expecting to read: dumstr1,dumstr2,dumstr3,dumstr4,GTSstr(39:44)'
+                          write(errlog(io),*)'           with format: 10a6'
+                          write(errlog(io),*)'           From the following line from the file: '
+                          write(errlog(io),*)linebuffer080
+                          write(errlog(io),*)'MR System Message: '
+                          write(errlog(io),*)iomessage
+                        endif
+                      endif;enddo
+                      stop 1
+                    endif
+                    read(linebuffer080_2,154,iostat=iostatus,iomsg=iomessage)GTSstr(45:53)                         
+                    if(iostatus.ne.0)then
+                      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                        if(iostatus.lt.0)then
+                          write(errlog(io),*)'MR ERROR:  EOR encountered'
+                        else
+                          write(errlog(io),*)'MR ERROR:  Error reading NOAA Rapid Update Cycle format sonde file'
+                          write(errlog(io),*)'           Expecting to read: GTSstr(45:53)'
+                          write(errlog(io),*)'           with format: 10a6'
+                          write(errlog(io),*)'           From the following line from the file: '
+                          write(errlog(io),*)linebuffer080_2
+                          write(errlog(io),*)'MR System Message: '
+                          write(errlog(io),*)iomessage
+                        endif
+                      endif;enddo
+                      stop 1
+                    endif
                   endif
                 else
                   ! This file has a 'TTAA' in it, but is not one of the expected
@@ -989,15 +1190,15 @@
               endif
               ! Now interpret the strings
               ! Block B: day/time
-              read(GTSstr(1)(1:2),*,iostat=iostatus)DayOfMonth
+              read(GTSstr(1)(1:2),*,iostat=iostatus,iomsg=iomessage)DayOfMonth
               DayOfMonth = DayOfMonth-50
-              read(GTSstr(1)(3:4),*,iostat=iostatus)SndHour
-              ! HFS Fix this
+              read(GTSstr(1)(3:4),*,iostat=iostatus,iomsg=iomessage)SndHour
+              ! HFS Fix this: There is no year in this file, so assume runtime year.
               MR_windfile_starthour(iw_idx) = HS_hours_since_baseyear(2023,2,DayOfMonth,&
                                               real(SndHour,kind=dp),MR_BaseYear,MR_useLeap)
 
               ! Block A: station identifier
-              read(GTSstr(2),*,iostat=iostatus)Stat_ID
+              read(GTSstr(2),*,iostat=iostatus,iomsg=iomessage)Stat_ID
               !call MR_Load_Radiosonde_Station_Data
               call MR_Get_Radiosonde_Station_Coord(Stat_ID, Stat_idx,&
                                        y_fullmet_sp(iloc),x_fullmet_sp(iloc),&
@@ -1005,12 +1206,12 @@
               Snd_idx(iloc) = Stat_idx
               ! Block C: surface pressure
               if(GTSstr(3)(1:1).ne.'/')then
-                read(GTSstr(3)(1:2),*,iostat=iostatus)dum_int ! should be 99 indicating surface
+                read(GTSstr(3)(1:2),*,iostat=iostatus,iomsg=iomessage)dum_int ! should be 99 indicating surface
               else
                 dum_int = -9999
               endif
               if(GTSstr(3)(3:3).ne.'/')then
-                read(GTSstr(3)(3:5),*,iostat=iostatus)dum_int ! surface pressure in mb
+                read(GTSstr(3)(3:5),*,iostat=iostatus,iomsg=iomessage)dum_int ! surface pressure in mb
               else
                 dum_int = -9999
               endif
@@ -1018,7 +1219,7 @@
 
               ! Block D: temperature/dew-point for last pressure
               if(GTSstr(4)(1:1).ne.'/')then
-                read(GTSstr(4)(1:3),*,iostat=iostatus)SurfTemp_int  ! temperature is characters 1-3, dew-point 4-5
+                read(GTSstr(4)(1:3),*,iostat=iostatus,iomsg=iomessage)SurfTemp_int  ! temperature is characters 1-3, dew-point 4-5
               else
                 SurfTemp_int = -9999
               endif
@@ -1029,7 +1230,7 @@
               endif
               SurfTemp = SurfTemp 
               if(GTSstr(4)(4:4).ne.'/')then
-                read(GTSstr(4)(4:5),*,iostat=iostatus)dum_int
+                read(GTSstr(4)(4:5),*,iostat=iostatus,iomsg=iomessage)dum_int
               else
                 dum_int = -9999
               endif
@@ -1037,13 +1238,13 @@
 
               ! Block E: Wind direction and speed for last pressure
               if(GTSstr(5)(1:1).ne.'/')then
-                read(GTSstr(5)(1:3),*,iostat=iostatus)dum_int  ! Wind direction is char 1-3
+                read(GTSstr(5)(1:3),*,iostat=iostatus,iomsg=iomessage)dum_int  ! Wind direction is char 1-3
               else
                 dum_int = -9999
               endif
               SurfWindDir = real(dum_int,kind=sp)
               if(GTSstr(5)(4:4).ne.'/')then
-                read(GTSstr(5)(4:5),*,iostat=iostatus)dum_int  ! Wind speed (knts) is char 4-5
+                read(GTSstr(5)(4:5),*,iostat=iostatus,iomsg=iomessage)dum_int  ! Wind speed (knts) is char 4-5
               else
                 dum_int = -9999
               endif
@@ -1062,31 +1263,31 @@
 
                 !  Block 1 of the 3-block level data (pressure, height)
                 if(GTSstr(istr1)(1:1).ne.'/')then
-                  read(GTSstr(istr1)(1:2),*,iostat=iostatus)dum_int ! this is a pressure indicator that we could double-check
+                  read(GTSstr(istr1)(1:2),*,iostat=iostatus,iomsg=iomessage)dum_int ! this is a pressure indicator that we could double-check
                 else
                   dum_int = -9999
                 endif
                 MR_SndVars_metP(iloc,itime,1,il) = pres_Snd_tmp(il)
                 if(GTSstr(istr1)(3:3).ne.'/')then
-                  read(GTSstr(istr1)(3:5),*,iostat=iostatus)H_tmp(il) ! height a.s.l
+                  read(GTSstr(istr1)(3:5),*,iostat=iostatus,iomsg=iomessage)H_tmp(il) ! height a.s.l
                 else
                   H_tmp(il) = -9999
                 endif
                 !  Block 2 of the 3-block level data (temperature, dew point (not read))
                 if(GTSstr(istr2)(1:1).ne.'/')then
-                  read(GTSstr(istr2)(1:3),*,iostat=iostatus)T_tmp(il)  ! temperature in C is characters 1-3, dew-point 4-5
+                  read(GTSstr(istr2)(1:3),*,iostat=iostatus,iomsg=iomessage)T_tmp(il)  ! temperature in C is characters 1-3, dew-point 4-5
                 else
                   T_tmp(il) = -9999
                 endif
                 !  Block 3 of the 3-block level data (wind direction, wind speed)
                 if(GTSstr(istr3)(1:1).ne.'/')then
-                  read(GTSstr(istr3)(1:3),*,iostat=iostatus)dum_int  ! Wind direction is char 1-3
+                  read(GTSstr(istr3)(1:3),*,iostat=iostatus,iomsg=iomessage)dum_int  ! Wind direction is char 1-3
                 else
                   dum_int = -9999
                 endif
                 WindDirection(il) = real(dum_int,kind=sp)
                 if(GTSstr(istr3)(4:4).ne.'/')then
-                  read(GTSstr(istr3)(4:5),*,iostat=iostatus)dum_int  ! Wind speed (knts) is char 4-5
+                  read(GTSstr(istr3)(4:5),*,iostat=iostatus,iomsg=iomessage)dum_int  ! Wind speed (knts) is char 4-5
                 else
                   dum_int = -9999
                 endif
@@ -1243,11 +1444,16 @@
               ! Now start reading the sonde file
               ! First we read the lines until we get a valid number
               rewind(fid)
-              read(fid,'(a80)',iostat=iostatus)linebuffer080
-              read(linebuffer080,150,iostat=iostatus)rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
+              read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+              if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+              read(linebuffer080,150,iostat=iostatus,iomsg=iomessage)rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
               do while (iostatus.ne.0)
-                read(fid,'(a80)',iostat=iostatus)linebuffer080
-                read(linebuffer080,150,iostat=iostatus)rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
+                read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+                ! This first check on iostatus is because we need to read a line from the file
+                if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+                ! This second iostatus is reading from the linebuffer and will be an error until
+                ! the five values are successfully read
+                read(linebuffer080,150,iostat=iostatus,iomsg=iomessage)rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
               enddo
               ! Initialize old values to the values we just read
               rvalue1_o = rvalue1
@@ -1315,7 +1521,8 @@
                   rvalue3_o = rvalue3
                   ivalue4_o = ivalue4
                   ivalue5_o = ivalue5
-                  read(fid,'(a80)',iostat=iostatus)linebuffer080
+                  read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+                  if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
                   il = il + 1
                   ! Check if we've read past the data and are in the Station footer
                   substr_pos1 = index(linebuffer080,'Station')
@@ -1329,9 +1536,27 @@
                     do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                       write(outlog(io),*)"             Resetting nlev to : ",nlev
                     endif;enddo
+                    cycle
                   endif
                   ! First try to read the five expected values: pres, height, temp, direc, speed
-                  read(linebuffer080,150,iostat=iostatus)rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
+                  read(linebuffer080,150,iostat=iostatus,iomsg=iomessage)rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
+                  if(iostatus.ne.0)then
+                    do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                      if(iostatus.lt.0)then
+                        write(errlog(io),*)'MR ERROR:  EOR encountered'
+                      else
+                        write(errlog(io),*)'MR ERROR:  Error reading sonde in textlist format UWYO'
+                        write(errlog(io),*)'           Expecting to read: rvalue1, ivalue2, rvalue3, ivalue4, ivalue5'
+                        write(errlog(io),*)'           with format: 1x,f7.1,i7,f7.1,21x,i7,i7'
+                        write(errlog(io),*)'           From the following line from the file: '
+                        write(errlog(io),*)linebuffer080
+                        write(errlog(io),*)'MR System Message: '
+                        write(errlog(io),*)iomessage
+                      endif
+                    endif;enddo
+                    stop 1
+                  endif
+
                 endif
               enddo
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
@@ -1343,26 +1568,61 @@
    153  format(45x,i5)
    154  format(10a6)
    155  format(13a6)
-   !154  format(1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5)
-   !155  format(1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5,1x,a5)
+
               ! Now look for the station ID from the beginning of the file
               rewind(fid)
-              read(fid,'(a80)',iostat=iostatus)linebuffer080
+              read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+              if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
               do while (index(linebuffer080,"Station number").eq.0)
-                read(fid,'(a80)',iostat=iostatus)linebuffer080
+                read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+                if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
               enddo
-              read(linebuffer080,153,iostat=iostatus)Stat_ID
+              read(linebuffer080,153,iostat=iostatus,iomsg=iomessage)Stat_ID
+              if(iostatus.ne.0)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  if(iostatus.lt.0)then
+                    write(errlog(io),*)'MR ERROR:  EOR encountered'
+                  else
+                    write(errlog(io),*)'MR ERROR:  Error reading sonde in textlist format UWYO'
+                    write(errlog(io),*)'           Expecting to read: Stat_ID'
+                    write(errlog(io),*)'           with format: 45x,i5'
+                    write(errlog(io),*)'           From the following line from the file: '
+                    write(errlog(io),*)linebuffer080
+                    write(errlog(io),*)'MR System Message: '
+                    write(errlog(io),*)iomessage
+                  endif
+                endif;enddo
+                stop 1
+              endif
               call MR_Get_Radiosonde_Station_Coord(Stat_ID, Stat_idx, &
                                        y_fullmet_sp(iloc),x_fullmet_sp(iloc),&
                                        Stat_elev)
               Snd_idx(iloc) = Stat_idx
               ! Now look for the observation time from the beginning of the file
               rewind(fid)
-              read(fid,'(a80)',iostat=iostatus)linebuffer080
+              read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+              if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
               do while (index(linebuffer080,"Observation time").eq.0)
-                read(fid,'(a80)',iostat=iostatus)linebuffer080
+                read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+                if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
               enddo
-              read(linebuffer080,151,iostat=iostatus)ivalue1,ivalue2,ivalue3,ivalue4
+              read(linebuffer080,151,iostat=iostatus,iomsg=iomessage)ivalue1,ivalue2,ivalue3,ivalue4
+              if(iostatus.ne.0)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  if(iostatus.lt.0)then
+                    write(errlog(io),*)'MR ERROR:  EOR encountered'
+                  else
+                    write(errlog(io),*)'MR ERROR:  Error reading sonde in textlist format UWYO'
+                    write(errlog(io),*)'           Expecting to read Observation time: ivalue1,ivalue2,ivalue3,ivalue4'
+                    write(errlog(io),*)'           with format: 45x,i2,i2,i2,1x,i2'
+                    write(errlog(io),*)'           From the following line from the file: '
+                    write(errlog(io),*)linebuffer080
+                    write(errlog(io),*)'MR System Message: '
+                    write(errlog(io),*)iomessage
+                  endif
+                endif;enddo
+                stop 1
+              endif
               ! Need to find out if the 2-digit year is for the current century
               call date_and_time(date,time2,zone,values)
               if(2000+ivalue1.gt.values(1))then
@@ -1406,14 +1666,8 @@
           enddo
         enddo
         np_fullmet = MR_Snd_np_fullmet(p_lidx,p_tidx)
-        !np_fullmet_Vz = np_fullmet
-        !np_fullmet_RH = np_fullmet
         allocate(p_fullmet_sp(np_fullmet))
-        !allocate(p_fullmet_Vz_sp(np_fullmet_Vz))
-        !allocate(p_fullmet_RH_sp(np_fullmet_RH))
         p_fullmet_sp(1:np_fullmet)=MR_SndVars_metP(p_lidx,p_tidx,1,1:np_fullmet)
-        !p_fullmet_Vz_sp = p_fullmet_sp
-        !p_fullmet_RH_sp = p_fullmet_sp
         MR_Max_geoH_metP_predicted = MR_Z_US_StdAtm(p_fullmet_sp(np_fullmet)/100.0_sp)
         allocate(z_approx(np_fullmet))
         do k=1,np_fullmet
@@ -1475,7 +1729,7 @@
 !     This subroutine sets the mapping between the network of sonde points and
 !     the computational grid
 !
-!     Allocated the dummy arrays for storing met data on met and computational
+!     Allocates the dummy arrays for storing met data on met and computational grids
 !
 !     Sets: 
 !           n[t,x,y,p]_met     :: sets the size of the dimensions of the sub-met grid
@@ -1508,7 +1762,6 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
 
       integer :: io                           ! Index for output streams
 
@@ -1659,7 +1912,6 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
 
       integer,intent(in) :: ivar
       integer,intent(in) :: istep
@@ -1698,7 +1950,7 @@
       else
         ! W is typically not provided
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-          write(outlog(io),*)"Attempting to read unavailalble variable: ",ivar
+          write(outlog(io),*)"Attempting to read unavailable variable: ",ivar
         endif;enddo
         MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_fullmet) = 0.0_sp
       endif
@@ -2955,7 +3207,6 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
 
       end subroutine MR_Load_Radiosonde_Station_Data
 
-
 !##############################################################################
 !
 !     MR_Get_Radiosonde_Station_Coord
@@ -2971,6 +3222,10 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
          MR_Snd_cd,MR_Snd_lnm,MR_Snd_el,MR_Snd_lt,MR_Snd_ln,MR_Snd_id,&
          num_RadSnd_Stat
 
+      ! This module requires Fortran 2003 or later
+      use iso_fortran_env, only : &
+         input_unit
+
       implicit none
 
       integer, parameter :: sp             = 4
@@ -2982,6 +3237,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       integer :: i
       logical :: FoundStation
       integer :: iostatus
+      character(len=120) :: iomessage
       character(len=80) :: linebuffer080
       real(kind=sp)     :: tmp_sp
 
@@ -3011,12 +3267,14 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           write(outlog(io),*)"Radiosonde stations not found for ID ",StatID
           write(outlog(io),*)"  Please enter the station longitude (degrees) : "
         endif;enddo
-        read(5,*,iostat=iostatus) linebuffer080
-        read(linebuffer080,*,iostat=iostatus) tmp_sp
+        read(input_unit,*,iostat=iostatus,iomsg=iomessage) linebuffer080
+        read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) tmp_sp
         if(iostatus.ne.0)then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Expecting a real value for station longitude"
             write(errlog(io),*)"          You entered :",linebuffer080
+            write(errlog(io),*)'MR System Message: '
+            write(errlog(io),*)iomessage
           endif;enddo
           stop 1
         endif
@@ -3033,12 +3291,14 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           write(outlog(io),*)&
              "  Please enter the station latitude  (degrees) : "
         endif;enddo
-        read(stdin,*,iostat=iostatus) linebuffer080
-        read(linebuffer080,*,iostat=iostatus) tmp_sp
+        read(stdin,*,iostat=iostatus,iomsg=iomessage) linebuffer080
+        read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) tmp_sp
         if(iostatus.ne.0)then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then          
             write(errlog(io),*)"MR ERROR: Expecting a real value for station latitude"
             write(errlog(io),*)"          You entered :",linebuffer080
+            write(errlog(io),*)'MR System Message: '
+            write(errlog(io),*)iomessage
           endif;enddo
           stop 1
         endif
@@ -3055,12 +3315,14 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           write(outlog(io),*)&
             "  Please enter the station elevation (m a.s.l.): "
         endif;enddo
-        read(stdin,*,iostat=iostatus) linebuffer080
-        read(linebuffer080,*,iostat=iostatus) tmp_sp
+        read(stdin,*,iostat=iostatus,iomsg=iomessage) linebuffer080
+        read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) tmp_sp
         if(iostatus.ne.0)then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then                    
             write(errlog(io),*)"MR ERROR: Expecting a real value for station elevation"
             write(errlog(io),*)"          You entered :",linebuffer080
+            write(errlog(io),*)'MR System Message: '
+            write(errlog(io),*)iomessage
           endif;enddo
           stop 1
         endif
@@ -3268,13 +3530,13 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
 
       ! Loop over all nodes on the computational grid
       do i=1,nx_comp
-        lon1 = real(x_comp_sp(i),kind=8)
+        lon1 = real(x_comp_sp(i),kind=dp)
         do j=1,ny_comp
-          lat1 = real(y_comp_sp(j),kind=8)
+          lat1 = real(y_comp_sp(j),kind=dp)
           ! Loop over all the sonde locations and get distances to the comp node
           do k=1,MR_nSnd_Locs
-            lon2 = real(MR_Snd_ln(Snd_idx(k)),kind=8)+360.0_dp
-            lat2 = real(MR_Snd_lt(Snd_idx(k)),kind=8)
+            lon2 = real(MR_Snd_ln(Snd_idx(k)),kind=dp)+360.0_dp
+            lat2 = real(MR_Snd_lt(Snd_idx(k)),kind=dp)
             MR_Snd2Comp_dist(i,j,k) = MR_Haversine(lon1,lat1,lon2,lat2)
             MR_Snd2Comp_map_wgt(i,j,k) = real(1.0_dp/(MR_Snd2Comp_dist(i,j,k)**pexp),kind=sp)
             !norm = norm + MR_Snd2Comp_map_wgt(i,j,k)
@@ -3355,3 +3617,5 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       MR_Haversine = MR_RAD_EARTH * c
 
       end function MR_Haversine
+
+!##############################################################################

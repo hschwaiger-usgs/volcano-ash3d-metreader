@@ -52,6 +52,7 @@
 !                               dum_array_sp,fill_val_sp,bc_low_sp, bc_high_sp)
 !        subroutine MR_Check_Prerequsites(test_allocate,test_dimvars,test_compproj,&
 !                                         test_initmetgrid,test_setmettimes)
+!        subroutine MR_FileIO_Error_Handler(ios,linebuffer080)
 !        function MR_Temp_US_StdAtm(zin)
 !        function MR_Z_US_StdAtm(pin)
 !        function MR_Pres_US_StdAtm(zin)
@@ -75,7 +76,7 @@
              MR_Regrid_MetP_to_CompH,MR_Regrid_MetP_to_MetH,MR_Regrid_Met2d_to_Comp2d,&
              MR_DelMetP_Dx,MR_DelMetP_Dy,&
              MR_Temp_US_StdAtm,MR_Z_US_StdAtm,MR_Pres_US_StdAtm,&
-             MR_QC_3dvar
+             MR_QC_3dvar,MR_FileIO_Error_Handler
 
       integer, parameter,private :: sp = selected_real_kind( 6,   37) ! single precision
       integer, parameter,private :: dp = selected_real_kind(15,  307) ! double precision
@@ -5598,6 +5599,36 @@
       endif
 
       end subroutine MR_Check_Prerequsites
+
+!##############################################################################
+!
+!    MR_FileIO_Error_Handler
+!
+!    Subroutine called whenever a line from a file is read with a non-zero
+!    iostat.
+!
+!##############################################################################
+
+      subroutine MR_FileIO_Error_Handler(ios,linebuffer080,iomessage)
+
+      integer           ,intent(in) :: ios
+      character(len= 80),intent(in) :: linebuffer080
+      character(len=120),intent(in) :: iomessage
+
+      integer :: io
+
+      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        if(ios.lt.0)then
+          write(errlog(io),*)'MR ERROR Reading from file:  EOF encountered',ios
+        else
+          write(errlog(io),*)'MR ERROR Reading line from file:  input line format error',ios
+          write(errlog(io),*)linebuffer080
+        endif
+        write(errlog(io),*)'MR System Message: ',trim(adjustl(iomessage))
+      endif;enddo
+      stop 1
+
+      end subroutine MR_FileIO_Error_Handler
 
 !##############################################################################
 
