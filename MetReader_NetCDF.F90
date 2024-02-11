@@ -174,14 +174,15 @@
           enddo
           MR_dy_met(ny_fullmet)    = MR_dy_met(ny_fullmet-1)
 
-          iwf25_scale_facs = 0.0_sp
-          iwf25_offsets    = 0.0_sp
+          iwf25_scale_facs = -9999.0_sp
+          iwf25_offsets    = -9999.0_sp
           iwf25_scale_facs(1)  = 1.0_sp    ; iwf25_offsets(1)  = 32066.0_sp   ! hgt
           iwf25_scale_facs(2)  = 0.01_sp   ; iwf25_offsets(2)  = 202.66_sp    ! uwnd
           iwf25_scale_facs(3)  = 0.01_sp   ; iwf25_offsets(3)  = 202.66_sp    ! vwnd
           iwf25_scale_facs(4)  = 0.001_sp  ; iwf25_offsets(4)  = 29.765_sp    ! omega
           iwf25_scale_facs(5)  = 0.01_sp   ; iwf25_offsets(5)  = 477.66_sp    ! air (temperature)
           iwf25_scale_facs(6)  = 1.0_sp    ; iwf25_offsets(6)  = 0.0_sp       ! level
+          iwf25_scale_facs(7)  = 1.0_sp    ; iwf25_offsets(7)  = 0.0_sp       ! level
           iwf25_scale_facs(20) = 10.0_sp   ; iwf25_offsets(20) = 327650.0_sp  ! pres (lcb)
           iwf25_scale_facs(21) = 10.0_sp   ; iwf25_offsets(21) = 327650.0_sp  ! pres (lct)
           iwf25_scale_facs(30) = 0.01_sp   ; iwf25_offsets(30) = 302.66_sp    ! rhum

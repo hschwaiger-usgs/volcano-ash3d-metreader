@@ -28,6 +28,7 @@
          Met_var_IsAvailable,&
          MR_dum3d_compH,MR_dum3d_compP,MR_dum3d_metH,MR_dum3d_metP,&
          np_fullmet,nx_submet,ny_submet,&
+         MR_geoH_metP_next,MR_geoH_metP_last,MR_Snd2Comp_map_wgt,&
            MR_Read_Met_DimVars,&
            MR_Set_Met_Times,&
            MR_Initialize_Met_Grids,&

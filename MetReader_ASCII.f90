@@ -386,8 +386,7 @@
                   write(errlog(io),*)'           Expecting to read: rvalue1, ivalue1'
                   write(errlog(io),*)'           From the following line from the file: '
                   write(errlog(io),*)linebuffer080
-                  write(errlog(io),*)'MR System Message: '
-                  write(errlog(io),*)iomessage
+                  write(errlog(io),*)'MR System Message: ',trim(adjustl(iomessage))
                 endif
               endif;enddo
               stop 1
@@ -1977,7 +1976,7 @@
 
       integer, parameter :: sp        = 4 ! single precision
 
-      integer                         ,intent(in)  :: nx1,ny1
+      integer                         ,intent(in)  :: nx1,ny1 ! for sondes, nx1=nloc, ny1=1
       real(kind=sp),dimension(nx1,ny1),intent(in)  :: wrk_met
       integer                         ,intent(in)  :: nx2,ny2
       real(kind=sp),dimension(nx2,ny2),intent(out) :: wrk_comp

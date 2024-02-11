@@ -3746,7 +3746,7 @@
 !
 !     Takes as input :: istep :: specified the met step
 !
-!     Sets: geoH_metP_last, geoH_metP_next
+!     Sets: MR_geoH_metP_last, MR_geoH_metP_next
 !
 !##############################################################################
 
@@ -4157,7 +4157,6 @@
         enddo
         MR_dum3d_compH(:,:,k) = tmp_regrid2d_sp(:,:)
       enddo
-
       if (MR_use_SigmaAlt) then
         ! If we are using sigma-altitude coordinates, then MR_dum3d_compH is returned on the
         ! s-grid, but we might need to scale the variable
@@ -4280,6 +4279,7 @@
           ! ASCII profile data with multiple locations
           call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
                                        nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+          !stop 3
         else
           ! All other cases
           call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
@@ -4424,6 +4424,7 @@
         ! ASCII profile data with multiple locations
         call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum2d_met(1:nx_submet,1:ny_submet),       &
                                      nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+        !stop 4
       else
         ! All other cases
         call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum2d_met(1:nx_submet,1:ny_submet),       &
@@ -4718,6 +4719,7 @@
             ! ASCII profile data with multiple locations
             call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metH(1:nx_submet,1:ny_submet,k),       &
                                          nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+            !stop 5
           else
             ! All other cases
             call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metH(1:nx_submet,1:ny_submet,k),       &
@@ -4743,6 +4745,7 @@
             ! ASCII profile data with multiple locations
             call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
                                          nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+            !stop 6
           else
             ! All other cases
             call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
