@@ -96,7 +96,7 @@
 #endif
       integer      ,parameter,public :: MR_MAXVARS   = 50 ! Maximum number of variables in fixed arrays
 
-      real(kind=dp),parameter,public :: MR_EPS_SMALL = 1.0e-7_dp  ! Small number
+      real(kind=sp),parameter,public :: MR_EPS_SMALL = 1.0e-7_sp  ! Small number
 
       real(kind=sp),parameter,public :: MR_RAD_EARTH = 6371.229_sp ! Radius of Earth in km
       real(kind=sp),parameter,public :: MR_DEG2RAD   = 1.7453292519943295e-2_sp
@@ -3805,7 +3805,7 @@
         Max_geoH_metP_next = maxval(MR_geoH_metP_next(:,:,np_fullmet))
       endif
       if(MR_idataFormat.eq.1)then
-          call MR_Read_MetP_Variable_ASCII_1d(ivar,istep+1)
+        call MR_Read_MetP_Variable_ASCII_1d(ivar,istep+1)
       elseif(MR_idataFormat.eq.2)then
 #ifdef USENETCDF
         call MR_Read_MetP_Variable_netcdf(ivar,istep+1)

@@ -38,7 +38,8 @@
            MR_Read_3d_MetH_Variable,&
            MR_Read_HGT_arrays,&
            MR_Allocate_FullMetFileList,&
-           MR_MetStep_Hour_since_baseyear
+           MR_MetStep_Hour_since_baseyear,&
+           MR_Reset_Memory
 
       implicit none
 
@@ -240,6 +241,25 @@
         call MR_Read_3d_Met_Variable_to_CompH(outvar_ID,MR_iMetStep_Now+1)
         out3d_t2(1:nx,1:ny,1:nz) = MR_dum3d_compH(1:nx,1:ny,1:nz)
         out3d = out3d_t1 + (out3d_t2-out3d_t1)*real(tfrac,kind=4)
+!        write(*,*)nx_submet,ny_submet,nz
+!        do i=1,nx_submet
+!          do j=1,ny_submet
+!            !do k=1,np_fullmet
+!            !  write(*,*)i,j,k,MR_geoH_metP_last(i,j,k) , MR_geoH_metP_next(i,j,k)
+!            do k=1,nz
+!              write(*,*)i,j,k,MR_dum3d_metH(i,j,k)
+!            enddo
+!          enddo
+!        enddo
+!        write(*,*)nx,ny,nz
+!        do i=1,nx
+!          do j=1,ny
+!            do k=1,nz
+!              write(*,*)i,j,k,out3d(i,j,k)
+!            enddo
+!          enddo
+!        enddo
+!      stop 5
       elseif(outgrid_ID.eq.2)then
         ! We need CompP grids
         nx = nxmax
@@ -642,6 +662,8 @@
         stop 1
       endif
       close(20)
+
+      call MR_Reset_Memory
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Program ended normally."

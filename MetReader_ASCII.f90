@@ -87,7 +87,7 @@
          MR_SndVars_metP,MR_SndVarsID,MR_Snd_np_fullmet,np_fullmet,z_approx,MR_windfiles,&
          Snd_Have_PT,nt_fullmet,MR_BaseYear,MR_useLeap,MR_Snd_nt_fullmet,MR_Snd_nvars,Snd_Have_Coord,&
          MR_Max_geoH_metP_predicted,MR_iwind,MR_iwindformat,IsGlobal_MetGrid,IsLatLon_MetGrid,IsRegular_MetGrid,&
-         Met_iprojflag,Met_k0,Met_lam0,Met_lam1,Met_lam2,Met_phi0,Met_phi1,Met_phi2,Met_Re,&
+         Met_iprojflag,Met_k0,Met_lam0,Met_lam1,Met_lam2,Met_phi0,Met_phi1,Met_phi2,Met_Re,MR_EPS_SMALL,&
            MR_Z_US_StdAtm,&
            MR_Temp_US_StdAtm,&
            MR_Pres_US_StdAtm, &
@@ -107,9 +107,10 @@
       integer, parameter :: fid       = 120
 
       integer :: iostatus
+      integer :: ioerr
       character(len=120) :: iomessage
       integer :: istr1,istr2,istr3
-      integer :: ic,il,iil,iv
+      integer :: ic,il,iil,iv,ii
 
       integer :: nlev,ulev
       integer :: iw_idx
@@ -134,6 +135,7 @@
       character(len=80)  :: linebuffer080_2
       character(len=80)  :: linebuffer080_3
       character(len=80)  :: linebuffer080_4
+      character(len=7)   :: field_str
       character(len=6),dimension(53) :: GTSstr
       character(len=6)   :: dumstr1,dumstr2,dumstr3,dumstr4
       integer :: dum_int
@@ -244,7 +246,7 @@
 !471// 05510 10145 339// 07017 88999 77999 31313 58208 82326
 !
 !  If the string 'TTAA' is present, then this coded format is assumed, otherwise
-!  the'list' format is assumed.
+!  the 'list' format is assumed.
 !  The header is read line by line until a valid row of numbers is read with
 !  columns expected in the order below.
 !
@@ -880,7 +882,7 @@
               MR_SndVarsID(5) = 5 ! T
               ! We only allocate 16 rows here because we will only read the TTAA and TTCC mandatory levels
               ! If you want to use the other information in the radiosonde, shape the data into iwindformat=1
-              ! Note that this might be reduced from 16 if any of the data files does not extend up to 10 mb.
+              ! Note that this might be reduced from 16 if any of the data files do not extend up to 10 mb.
               nlev = 16
               allocate(MR_SndVars_metP(MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,nlev))
               allocate(MR_Snd_np_fullmet(MR_nSnd_Locs,MR_Snd_nt_fullmet))
@@ -905,7 +907,7 @@
             iostatus = 0
             do while (iostatus.ge.0)
               read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-              ! No aborting on read-error here since we will read this file until there is an error
+              ! No aborting on read-error here since we will read this file until the EOF
               idx =index(linebuffer080,"TTAA")
               idx2=index(linebuffer080,"TTCC")
               if (idx.gt.0) then
@@ -1142,7 +1144,8 @@
                     enddo
                     read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080_2
                     if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080_2,iomessage)
-                    read(linebuffer080  ,154,iostat=iostatus,iomsg=iomessage)dumstr1,dumstr2,dumstr3,dumstr4,GTSstr(39:44) 
+                    read(linebuffer080  ,154,iostat=iostatus,iomsg=iomessage) &
+                         dumstr1,dumstr2,dumstr3,dumstr4,GTSstr(39:44) 
                     if(iostatus.ne.0)then
                       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                         if(iostatus.lt.0)then
@@ -1437,7 +1440,7 @@
    141          format(3x,7f10.3)
                 write(outlog(io),*)"==================================================================="
               endif;enddo
-            else
+            else  ! end of GTS format section
               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
               !  Reading data Textlist format from http://weather.uwyo.edu/
               ! Now start reading the sonde file
@@ -1445,21 +1448,47 @@
               rewind(fid)
               read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
               if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
-              read(linebuffer080,150,iostat=iostatus,iomsg=iomessage)rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
+              read(linebuffer080,150,iostat=iostatus,iomsg=iomessage) &
+                   rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
               do while (iostatus.ne.0)
                 read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-                ! This first check on iostatus is because we need to read a line from the file
                 if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
-                ! This second iostatus is reading from the linebuffer and will be an error until
-                ! the five values are successfully read
-                read(linebuffer080,150,iostat=iostatus,iomsg=iomessage)rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
+                ! Sometimes the bottom pressure levels have only pressure and HGHT if p is below
+                ! the ground surface. Formatted read of blank columns will fill the variable
+                ! with a zero, unfortunately.  Here we initialize Fill_Value then only read
+                ! those columns that have something other than 7-spaces.
+                !   PRES   HGHT   TEMP   DRCT   SKNT
+                !    hPa     m      C     deg   knot
+                rvalue1 = -9999.0_sp
+                ivalue2 = -9999
+                rvalue3 = -9999.0_sp
+                ivalue4 = -9999
+                ivalue5 = -9999
+                field_str(1:7) = linebuffer080(1:7)
+                if(len(trim(adjustl(field_str))).gt.0)&
+                  read(field_str,*,iostat=iostatus,iomsg=iomessage)rvalue1
+                if(iostatus.eq.0)then
+                  field_str(1:7) = linebuffer080(8:14)
+                  if(len(trim(adjustl(field_str))).gt.0)&
+                    read(field_str,*,iostat=ioerr,iomsg=iomessage)ivalue2
+                  field_str(1:7) = linebuffer080(15:21)
+                  if(len(trim(adjustl(field_str))).gt.0)&
+                    read(field_str,*,iostat=ioerr,iomsg=iomessage)rvalue3
+                  field_str(1:7) = linebuffer080(43:49)
+                  if(len(trim(adjustl(field_str))).gt.0)&
+                    read(field_str,*,iostat=ioerr,iomsg=iomessage)ivalue4
+                  field_str(1:7) = linebuffer080(50:56)
+                  if(len(trim(adjustl(field_str))).gt.0)&
+                    read(field_str,*,iostat=ioerr,iomsg=iomessage)ivalue5
+                endif
               enddo
+              ! We should be at the first pressure level here.
               ! Initialize old values to the values we just read
               rvalue1_o = rvalue1
               ivalue2_o = ivalue2
-              rvalue3_o = rvalue3
-              ivalue4_o = ivalue4
-              ivalue5_o = ivalue5
+              rvalue3_o = rvalue3 ! Might be 0.0/Fill_Value if pres level is lower surface
+              ivalue4_o = ivalue4 !  ditto
+              ivalue5_o = ivalue5 !  ditto
 
               ! The line buffer contains numeric values.  Assume the first value is pressure and
               ! compare with the mandatory levels
@@ -1473,43 +1502,75 @@
                    "==================================================================="
               endif;enddo
               do while (il.ne.MAX_ROWS.and. &  ! Assume there are no more than MAX_ROWS of data
-                        iil.le.nlev)             ! Do not bother reading past 10 hPa
-                ! HFS Check if we've skipped the mandatory pressure level.  If so, interpolate
+                        iil.le.nlev)           ! Do not bother reading past 10 hPa (nlev=16)
+
+                if(iil.ge.2)then
+                  ! If the last manditory level has NaN's, copy this level to the last
+                  if(MR_SndVars_metP(iloc,itime,1,iil-1).lt.-9990.0_sp)&
+                     MR_SndVars_metP(iloc,itime,1,iil-1) = rvalue1
+                  if(MR_SndVars_metP(iloc,itime,2,iil-1).lt.-9990.0_sp)&
+                     MR_SndVars_metP(iloc,itime,2,iil-1) = real(ivalue2,kind=4)
+                  if(MR_SndVars_metP(iloc,itime,3,iil-1).lt.-9990.0_sp)&
+                     MR_SndVars_metP(iloc,itime,3,iil-1) = real(ivalue4,kind=4)
+                  if(MR_SndVars_metP(iloc,itime,4,iil-1).lt.-9990.0_sp)&
+                     MR_SndVars_metP(iloc,itime,4,iil-1) = real(ivalue5,kind=4)
+                  if(MR_SndVars_metP(iloc,itime,5,iil-1).lt.-9990.0_sp)&
+                     MR_SndVars_metP(iloc,itime,5,iil-1) = rvalue3
+                endif
+
+                ! Check if we've skipped the mandatory pressure level.  If so, interpolate
                 ! Check if the pressure level we are looking for is greater than what we just read
-                if(il.gt.1.and.pres_Snd_tmp(iil)-rvalue1.gt.0.0_dp)then
+                if(il.gt.1.and.pres_Snd_tmp(iil)-rvalue1.gt.MR_EPS_SMALL)then
                   ! The level we need is missing. Find the pressure step and interpolate
                   ! Note: we are doing a linear interpolation in pressure where it should be logarithmic
                   !       HFS Fix this
                   ! Should be log interpolation in pressure to get the best altitude, then linear
                   ! interpolation between altitude levels
                   fac = (rvalue1_o-pres_Snd_tmp(iil))/(rvalue1_o-rvalue1)
-                  rvalue1 = pres_Snd_tmp(iil)
-                  ivalue2 = ivalue2_o - int(fac*(ivalue2_o - ivalue2))
-                  rvalue3 = rvalue3_o -     fac*(rvalue3_o - rvalue3)
-                  ivalue4 = ivalue4_o - int(fac*(ivalue4_o - ivalue4))
-                  ivalue5 = ivalue5_o - int(fac*(ivalue5_o - ivalue5))
+                  rvalue1 = pres_Snd_tmp(iil)                          ! PRES
+                  ivalue2 = -9999
+                  rvalue3 = -9999.0_sp
+                  ivalue4 = -9999
+                  ivalue5 = -9999
+!                  ivalue2 = ivalue2_o - int(fac*(ivalue2_o - ivalue2)) ! HGHT
+!                  rvalue3 = rvalue3_o -     fac*(rvalue3_o - rvalue3)  ! TEMP
+!                  ivalue4 = ivalue4_o - int(fac*(ivalue4_o - ivalue4)) ! DRCT
+!                  ivalue5 = ivalue5_o - int(fac*(ivalue5_o - ivalue5)) ! SKNT
                 endif
                 if (abs(pres_Snd_tmp(iil)-rvalue1).lt.1.0_sp) then ! Sometimes the last level is 10.5
                   ! found the next mandatory level
-                  MR_SndVars_metP(iloc,itime,1,iil) = rvalue1 * 100.0_sp
-                  MR_SndVars_metP(iloc,itime,2,iil) = real(ivalue2,kind=4)*1.0e-3_sp  ! convert to km
-                  MR_SndVars_metP(iloc,itime,5,iil) = rvalue3 + 273.0_sp   ! convert to K
-                  WindVelocity(iil)   = real(ivalue5,kind=4)*0.514444444_sp
-                  WindDirection(iil)  = real(ivalue4,kind=4)
-                  MR_SndVars_metP(iloc,itime,3,iil) = &
-                    real(WindVelocity(iil)*sin(pi + DEG2RAD*WindDirection(iil)),kind=sp)
-                  MR_SndVars_metP(iloc,itime,4,iil) = &
-                  real(WindVelocity(iil)*cos(pi + DEG2RAD*WindDirection(iil)),kind=sp)
-                  do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-                    write(outlog(io),'(7f13.5)')&
-                            MR_SndVars_metP(iloc,itime,1,iil),&
-                            MR_SndVars_metP(iloc,itime,2,iil),&
-                            MR_SndVars_metP(iloc,itime,3,iil),&
-                            MR_SndVars_metP(iloc,itime,4,iil),&
-                            MR_SndVars_metP(iloc,itime,5,iil),&
-                            WindVelocity(iil),&
-                            WindDirection(iil)
-                  endif;enddo
+                  MR_SndVars_metP(iloc,itime,1,iil) = rvalue1
+                  MR_SndVars_metP(iloc,itime,2,iil) = real(ivalue2,kind=4)
+                  if(rvalue3.lt.-9990.0_sp)then
+                     MR_SndVars_metP(iloc,itime,5,iil) = rvalue3_o
+                  else
+                    MR_SndVars_metP(iloc,itime,5,iil) = rvalue3
+                  endif
+                  WindVelocity(iil)                 = real(ivalue5,kind=4)
+                  WindDirection(iil)                = real(ivalue4,kind=4)
+                  ! Just put velocity and direction in the vx,vy slots for now until we clean the list
+                  if(ivalue4.lt.-9990)then
+                    MR_SndVars_metP(iloc,itime,3,iil) = real(ivalue4_o,kind=4)
+                  else
+                    MR_SndVars_metP(iloc,itime,3,iil) = real(ivalue4,kind=4)
+                  endif
+
+                  if(ivalue5.lt.-9990)then
+                    MR_SndVars_metP(iloc,itime,4,iil) = real(ivalue5_o,kind=4)
+                  else
+                    MR_SndVars_metP(iloc,itime,4,iil) = real(ivalue5,kind=4)
+                  endif
+   
+                  !do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  !  write(outlog(io),'(7f13.5)')&
+                  !          MR_SndVars_metP(iloc,itime,1,iil),& ! PRES
+                  !          MR_SndVars_metP(iloc,itime,2,iil),& ! HGHT
+                  !          MR_SndVars_metP(iloc,itime,3,iil),& ! TEMP
+                  !          MR_SndVars_metP(iloc,itime,4,iil),& ! DRCT
+                  !          MR_SndVars_metP(iloc,itime,5,iil),& ! SKNT
+                  !          WindVelocity(iil),&
+                  !          WindDirection(iil)
+                  !endif;enddo
                   MR_Snd_np_fullmet(iloc,itime) = iil  ! This keeps getting reassigned with each
                                                        ! successful read
                   iil = iil + 1
@@ -1537,8 +1598,27 @@
                     endif;enddo
                     cycle
                   endif
-                  ! First try to read the five expected values: pres, height, temp, direc, speed
-                  read(linebuffer080,150,iostat=iostatus,iomsg=iomessage)rvalue1, ivalue2, rvalue3, ivalue4, ivalue5
+
+                  rvalue1 = -9999.0_sp
+                  ivalue2 = -9999
+                  rvalue3 = -9999.0_sp
+                  ivalue4 = -9999
+                  ivalue5 = -9999
+                  field_str(1:7) = linebuffer080(1:7)
+                  if(len(trim(adjustl(field_str))).gt.0)&
+                    read(field_str,*,iostat=iostatus,iomsg=iomessage)rvalue1
+                  field_str(1:7) = linebuffer080(8:14)
+                  if(len(trim(adjustl(field_str))).gt.0)&
+                    read(field_str,*,iostat=iostatus,iomsg=iomessage)ivalue2
+                  field_str(1:7) = linebuffer080(15:21)
+                  if(len(trim(adjustl(field_str))).gt.0)&
+                    read(field_str,*,iostat=iostatus,iomsg=iomessage)rvalue3
+                  field_str(1:7) = linebuffer080(43:49)
+                  if(len(trim(adjustl(field_str))).gt.0)&
+                    read(field_str,*,iostat=iostatus,iomsg=iomessage)ivalue4
+                  field_str(1:7) = linebuffer080(50:56)
+                  if(len(trim(adjustl(field_str))).gt.0)&
+                    read(field_str,*,iostat=iostatus,iomsg=iomessage)ivalue5
                   if(iostatus.ne.0)then
                     do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                       if(iostatus.lt.0)then
@@ -1556,7 +1636,33 @@
                     stop 1
                   endif
 
-                endif
+                endif ! manditory level or not
+              enddo  ! while (il.ne.MAX_ROWS.and.iil.le.nlev)
+              ! Now we have read all the data from this file and hopefully filled
+              ! any empty values
+
+              ! Now convert to the expected units
+              do iil=1,nlev
+                  MR_SndVars_metP(iloc,itime,1,iil) = MR_SndVars_metP(iloc,itime,1,iil) * 100.0_sp  ! mb->Ppa
+                  MR_SndVars_metP(iloc,itime,2,iil) = MR_SndVars_metP(iloc,itime,2,iil) *1.0e-3_sp  !  m->km
+                  MR_SndVars_metP(iloc,itime,5,iil) = MR_SndVars_metP(iloc,itime,5,iil) + 273.0_sp  !  C->K
+                  WindVelocity(iil)   = MR_SndVars_metP(iloc,itime,3,iil)*0.514444444_sp            ! knt->m/s
+                  WindDirection(iil)  = MR_SndVars_metP(iloc,itime,4,iil)                           ! deg
+                  MR_SndVars_metP(iloc,itime,3,iil) = &
+                    real(WindVelocity(iil)*sin(pi + DEG2RAD*WindDirection(iil)),kind=sp)            ! Vx in m/s
+                  MR_SndVars_metP(iloc,itime,4,iil) = &
+                    real(WindVelocity(iil)*cos(pi + DEG2RAD*WindDirection(iil)),kind=sp)            ! Vy in m/s
+
+                  do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                    write(outlog(io),'(7f13.5)')&
+                            MR_SndVars_metP(iloc,itime,1,iil),& ! PRES Pa
+                            MR_SndVars_metP(iloc,itime,2,iil),& ! HGHT km
+                            MR_SndVars_metP(iloc,itime,3,iil),& ! Vx   m/s
+                            MR_SndVars_metP(iloc,itime,4,iil),& ! Vy   m/s
+                            MR_SndVars_metP(iloc,itime,5,iil),& ! TEMP C
+                            WindVelocity(iil),&
+                            WindDirection(iil)
+                  endif;enddo
               enddo
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                 write(outlog(io),*)&
@@ -1904,7 +2010,7 @@
       subroutine MR_Read_MetP_Variable_ASCII_1d(ivar,istep)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,verbosity_info,&
+         MR_nio,VB,outlog,errlog,verbosity_info,verbosity_error,&
          Met_var_IsAvailable,MR_Snd_nvars,MR_SndVarsID,MR_dum3d_metP,nx_submet,ny_submet,&
          MR_SndVars_metP,np_fullmet,MR_nSnd_Locs,MR_MetStep_findex
 
@@ -1925,17 +2031,25 @@
             ! these variables are set in MR_Read_Met_DimVars_ASCII_1d
       !  P,H,U,V,T
       if(Met_var_IsAvailable(ivar))then
+        icol = 0
         do i=1,MR_Snd_nvars
           if(ivar.eq.MR_SndVarsID(i))then
+            icol = i ! Found the column with the variable we want
             exit
           endif
         enddo
-        icol  = i
+        if(icol.eq.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: Could not find variable"
+          endif;enddo
+          stop 1
+        endif
 
         ! Now loop over all the submet points and build the value needed by multiplying by the
         ! weights determined in MR_Set_MetComp_Grids_ASCII_1d
         ! Recall that in contrast to the other data types, ASCII files are fully loaded into memory
-        ! in var (MR_SndVars_metP) in the initial reading of the files above in MR_Read_Met_DimVars_ASCII_1d.
+        ! in var (MR_SndVars_metP) in the initial reading of the files above in
+        ! MR_Read_Met_DimVars_ASCII_1d.
         MR_dum3d_metP(:,:,:) = 0.0_sp
         do i = 1,nx_submet
           do j = 1,ny_submet

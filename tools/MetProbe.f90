@@ -69,7 +69,8 @@
            MR_Allocate_FullMetFileList,&
            MR_Set_CompProjection,&
            MR_Initialize_Met_Grids,&
-           MR_Set_Met_Times
+           MR_Set_Met_Times,&
+           MR_Reset_Memory
 
       implicit none
 
@@ -463,6 +464,8 @@
       enddo
       
       call GetMetProfile(invars,invarlist)
+
+      call MR_Reset_Memory
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Program ended normally."
