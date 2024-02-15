@@ -2129,7 +2129,7 @@
       if (nSTAT == CODES_SUCCESS) return
       call codes_get_error_string(nSTAT,err_message)
       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io) ,*)severity,errcode,operation,err_message
+        write(errlog(io) ,*)severity,errcode,operation,' ',adjustl(trim(err_message))
       endif;enddo
 
       ! If user-supplied error code is 0, then consider this a warning,
