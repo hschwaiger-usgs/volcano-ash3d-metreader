@@ -88,6 +88,7 @@
          Snd_Have_PT,nt_fullmet,MR_BaseYear,MR_useLeap,MR_Snd_nt_fullmet,MR_Snd_nvars,Snd_Have_Coord,&
          MR_Max_geoH_metP_predicted,MR_iwind,MR_iwindformat,IsGlobal_MetGrid,IsLatLon_MetGrid,IsRegular_MetGrid,&
          Met_iprojflag,Met_k0,Met_lam0,Met_lam1,Met_lam2,Met_phi0,Met_phi1,Met_phi2,Met_Re,MR_EPS_SMALL,&
+         MR_Comp_StartYear,MR_Comp_StartMonth,&
            MR_Z_US_StdAtm,&
            MR_Temp_US_StdAtm,&
            MR_Pres_US_StdAtm, &
@@ -1195,9 +1196,22 @@
               read(GTSstr(1)(1:2),*,iostat=iostatus,iomsg=iomessage)DayOfMonth
               DayOfMonth = DayOfMonth-50
               read(GTSstr(1)(3:4),*,iostat=iostatus,iomsg=iomessage)SndHour
-              ! HFS Fix this: There is no year in this file, so assume runtime year.
-              MR_windfile_starthour(iw_idx) = HS_hours_since_baseyear(2023,2,DayOfMonth,&
-                                              real(SndHour,kind=dp),MR_BaseYear,MR_useLeap)
+              ! There is no year in this file, so assume year for requested
+              ! event.  Needs to be set by calling program prio to this point.
+              if(MR_Comp_StartYear.lt.1900)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)"MR ERROR: Trying to use sonde data in raw format"
+                  write(errlog(io),*)"          with an unknown year."
+                endif;enddo
+                stop 1
+                ! This is for the windfile tests with all windfile formats for 2018/06/20
+                !MR_Comp_StartYear  = 2018
+                !MR_Comp_StartMonth = 6
+              endif
+
+              MR_windfile_starthour(iw_idx) = &
+                 HS_hours_since_baseyear(MR_Comp_StartYear,MR_Comp_StartMonth,DayOfMonth,&
+                                         real(SndHour,kind=dp),MR_BaseYear,MR_useLeap)
 
               ! Block A: station identifier
               read(GTSstr(2),*,iostat=iostatus,iomsg=iomessage)Stat_ID
