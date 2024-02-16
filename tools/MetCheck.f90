@@ -37,7 +37,8 @@
            MR_Set_CompProjection,&
            MR_Initialize_Met_Grids,&
            MR_Read_HGT_arrays,&
-           MR_Read_3d_MetP_Variable
+           MR_Read_3d_MetP_Variable,&
+           MR_Reset_Memory
 
       implicit none
 
@@ -336,6 +337,8 @@
       enddo
 
       close(19)
+
+      call MR_Reset_Memory
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"Program ended normally."

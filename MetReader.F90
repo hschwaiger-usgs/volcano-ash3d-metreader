@@ -52,6 +52,7 @@
 !                               dum_array_sp,fill_val_sp,bc_low_sp, bc_high_sp)
 !        subroutine MR_Check_Prerequsites(test_allocate,test_dimvars,test_compproj,&
 !                                         test_initmetgrid,test_setmettimes)
+!        subroutine MR_FileIO_Error_Handler(ios,linebuffer080)
 !        function MR_Temp_US_StdAtm(zin)
 !        function MR_Z_US_StdAtm(pin)
 !        function MR_Pres_US_StdAtm(zin)
@@ -75,7 +76,7 @@
              MR_Regrid_MetP_to_CompH,MR_Regrid_MetP_to_MetH,MR_Regrid_Met2d_to_Comp2d,&
              MR_DelMetP_Dx,MR_DelMetP_Dy,&
              MR_Temp_US_StdAtm,MR_Z_US_StdAtm,MR_Pres_US_StdAtm,&
-             MR_QC_3dvar
+             MR_QC_3dvar,MR_FileIO_Error_Handler
 
       integer, parameter,private :: sp = selected_real_kind( 6,   37) ! single precision
       integer, parameter,private :: dp = selected_real_kind(15,  307) ! double precision
@@ -89,10 +90,13 @@
 !  git log -n 1 | grep commit | cut -f 2 -d' ' | tr -d $'\n' >> MR_version.h
 !  echo -n "'" >> MR_version.h
 !    which sets the variable containing the git commit ID : MR_GitComID
-
+#ifdef USENETCDF
+      integer          ,public :: NCv_datafile
+      character(len=80),public :: NCv_lib
+#endif
       integer      ,parameter,public :: MR_MAXVARS   = 50 ! Maximum number of variables in fixed arrays
 
-      real(kind=dp),parameter,public :: MR_EPS_SMALL = 1.0e-7_dp  ! Small number
+      real(kind=sp),parameter,public :: MR_EPS_SMALL = 1.0e-7_sp  ! Small number
 
       real(kind=sp),parameter,public :: MR_RAD_EARTH = 6371.229_sp ! Radius of Earth in km
       real(kind=sp),parameter,public :: MR_DEG2RAD   = 1.7453292519943295e-2_sp
@@ -611,20 +615,32 @@
       logical,public :: wrapgrid
 
 #ifdef USEPOINTERS
-      real(kind=sp)   ,dimension(:)       ,pointer        :: temp1d_sp     => null()
+      character       ,dimension(:)       ,pointer,public :: temp1d_byte   => null()
+      character       ,dimension(:)       ,pointer,public :: temp1d_char   => null()
+      integer(kind=2) ,dimension(:)       ,pointer,public :: temp1d_intS   => null()
+      integer(kind=4) ,dimension(:)       ,pointer,public :: temp1d_intL   => null()
+      real(kind=sp)   ,dimension(:)       ,pointer,public :: temp1d_sp     => null()
+      real(kind=dp)   ,dimension(:)       ,pointer,public :: temp1d_dp     => null()
       real(kind=sp)   ,dimension(:,:,:)   ,pointer,public :: temp2d_sp     => null()
       real(kind=sp)   ,dimension(:,:,:,:) ,pointer,public :: temp3d_sp     => null()
       integer(kind=sp),dimension(:,:,:)   ,pointer,public :: temp2d_int    => null()
       integer(kind=sp),dimension(:,:,:)   ,pointer        :: temp2d_short  => null()
       integer(kind=sp),dimension(:,:,:,:) ,pointer,public :: temp3d_short  => null()
+      real(kind=dp)   ,dimension(:,:,:,:) ,pointer,public :: temp3d_dp     => null()
       real(kind=4)    ,dimension(:,:)     ,pointer,public :: Met_Proj_lat  => null()
       real(kind=4)    ,dimension(:,:)     ,pointer,public :: Met_Proj_lon  => null()
 #else
-      real(kind=sp)   ,dimension(:)       ,allocatable        :: temp1d_sp
+      character       ,dimension(:)       ,allocatable,public :: temp1d_byte
+      character       ,dimension(:)       ,allocatable,public :: temp1d_char
+      integer(kind=2) ,dimension(:)       ,allocatable,public :: temp1d_intS
+      integer(kind=4) ,dimension(:)       ,allocatable,public :: temp1d_intL
+      real(kind=sp)   ,dimension(:)       ,allocatable,public :: temp1d_sp
+      real(kind=dp)   ,dimension(:)       ,allocatable,public :: temp1d_dp
       real(kind=sp)   ,dimension(:,:,:)   ,allocatable,public :: temp2d_sp
       real(kind=sp)   ,dimension(:,:,:,:) ,allocatable,public :: temp3d_sp
       integer(kind=sp),dimension(:,:,:)   ,allocatable,public :: temp2d_int
       integer(kind=sp),dimension(:,:,:)   ,allocatable        :: temp2d_short
+      real(kind=dp)   ,dimension(:,:,:,:) ,allocatable,public :: temp3d_dp
       integer(kind=sp),dimension(:,:,:,:) ,allocatable,public :: temp3d_short
       real(kind=4)    ,dimension(:,:)     ,allocatable,public :: Met_Proj_lat
       real(kind=4)    ,dimension(:,:)     ,allocatable,public :: Met_Proj_lon
@@ -2269,6 +2285,8 @@
          ! ECMWF ERA5
          ! https://rda.ucar.edu/datasets/ds630.0
          ! Note: files are provided as one variable per file
+         ! https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-pressure-levels?tab=form
+
 
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
@@ -2282,18 +2300,25 @@
 
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 128
 
-        !Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        !Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "level"
-        !Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "latitude"
-        !Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "longitude"
+        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
+        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "level"
+        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "latitude"
+        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "longitude"
 
-        !Modified for ERA5 windfiles downloaded from ds633.0 ERA5 files
+        !Modified for ERA5 windfiles downloaded from ds630.0 ERA5 files
         !downloaded from https://rda.ucar.edu on May 13, 2020
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g0_lat_2"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g0_lon_3"
-        Met_dim_IsAvailable(5)=.true.; Met_dim_names(5) = "ncl_strlen_0"
+        !Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
+        !Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
+        !Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g0_lat_2"
+        !Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g0_lon_3"
+        !Met_dim_IsAvailable(5)=.true.; Met_dim_names(5) = "ncl_strlen_0"
+        !Modified for ERA5 windfiles downloaded from ds633.0 ERA5 files
+        !downloaded from https://rda.ucar.edu on Feb. 15, 2024
+        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
+        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
+        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
+        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
+
 
         ! Momentum / State variables
         !Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z_GDS0_ISBL" ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
@@ -2302,11 +2327,23 @@
         !Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W_GDS0_ISBL" ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
         !Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T_GDS0_ISBL" ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
         !Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W_GDS0_ISBL" ! e5.oper.an.pl.128_129_w.ll025sc.19910
+
+        !Modified for ERA5 windfiles downloaded from ds630.0 ERA5 files
+        !downloaded from https://rda.ucar.edu on May 13, 2020
         Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z" ! e5.oper.an.pl.128_129_z.regn320sc.2018062000_2018062023.nc
         Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U" ! e5.oper.an.pl.128_131_u.regn320uv.2018062000_2018062023.nc
         Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V" ! e5.oper.an.pl.128_132_v.regn320uv.2018062000_2018062023.nc
         Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W" ! e5.oper.an.pl.128_135_w.regn320sc.2018062000_2018062023.nc
         Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T" ! e5.oper.an.pl.128_130_t.regn320sc.2018062000_2018062023.nc
+        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W" ! e5.oper.an.pl.128_135_w.regn320sc.2018062000_2018062023.nc
+        !Modified for ERA5 windfiles downloaded from ds633.0 ERA5 files
+        !downloaded from https://rda.ucar.edu on Feb. 15, 2024
+        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"        ! e5.oper.an.pl.128_129_z.ll025sc.2018062000_2018062023.grb.nc
+        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric" ! e5.oper.an.pl.128_131_u.ll025uv.2018062000_2018062023.grb.nc
+        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric" ! e5.oper.an.pl.128_132_v.ll025uv.2018062000_2018062023.grb.nc
+        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_135_w.ll025sc.2018062000_2018062023.grb.nc
+        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric"         ! e5.oper.an.pl.128_130_t.ll025sc.2018062000_2018062023.grb.nc
+        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_135_w.ll025sc.2018062000_2018062023.grb.nc
 
         ! Atmospheric Structure
         !Met_var_IsAvailable(23)=.true.; Met_var_NC_names(23)="CC" ! e5.oper.an.pl.128_248_cc.regn320sc.2018062000_2018062023.nc
@@ -3234,7 +3271,7 @@
       integer, parameter :: sp        = 4 ! single precision
       integer, parameter :: dp        = 8 ! double precision
 
-      integer, parameter :: NT_MAXOUT = 40
+      integer, parameter :: NT_MAXOUT = 100
 
       real(kind=8),intent(in) :: eStartHour
       real(kind=8),intent(in) :: Duration
@@ -3730,7 +3767,7 @@
 !
 !     Takes as input :: istep :: specified the met step
 !
-!     Sets: geoH_metP_last, geoH_metP_next
+!     Sets: MR_geoH_metP_last, MR_geoH_metP_next
 !
 !##############################################################################
 
@@ -3789,7 +3826,7 @@
         Max_geoH_metP_next = maxval(MR_geoH_metP_next(:,:,np_fullmet))
       endif
       if(MR_idataFormat.eq.1)then
-          call MR_Read_MetP_Variable_ASCII_1d(ivar,istep+1)
+        call MR_Read_MetP_Variable_ASCII_1d(ivar,istep+1)
       elseif(MR_idataFormat.eq.2)then
 #ifdef USENETCDF
         call MR_Read_MetP_Variable_netcdf(ivar,istep+1)
@@ -4141,7 +4178,6 @@
         enddo
         MR_dum3d_compH(:,:,k) = tmp_regrid2d_sp(:,:)
       enddo
-
       if (MR_use_SigmaAlt) then
         ! If we are using sigma-altitude coordinates, then MR_dum3d_compH is returned on the
         ! s-grid, but we might need to scale the variable
@@ -4264,6 +4300,7 @@
           ! ASCII profile data with multiple locations
           call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
                                        nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+          !stop 3
         else
           ! All other cases
           call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
@@ -4299,6 +4336,7 @@
 !     Takes as input :: ivar  :: specifies which variable to read
 !                       istep :: specified the met step
 !     Sets  : MR_dum2d_met or MR_dum2d_met_int
+!
 !##############################################################################
 
       subroutine MR_Read_2d_Met_Variable(ivar,istep)
@@ -4407,6 +4445,7 @@
         ! ASCII profile data with multiple locations
         call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum2d_met(1:nx_submet,1:ny_submet),       &
                                      nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+        !stop 4
       else
         ! All other cases
         call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum2d_met(1:nx_submet,1:ny_submet),       &
@@ -4701,6 +4740,7 @@
             ! ASCII profile data with multiple locations
             call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metH(1:nx_submet,1:ny_submet,k),       &
                                          nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+            !stop 5
           else
             ! All other cases
             call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metH(1:nx_submet,1:ny_submet,k),       &
@@ -4726,6 +4766,7 @@
             ! ASCII profile data with multiple locations
             call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
                                          nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
+            !stop 6
           else
             ! All other cases
             call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
@@ -5582,6 +5623,36 @@
       endif
 
       end subroutine MR_Check_Prerequsites
+
+!##############################################################################
+!
+!    MR_FileIO_Error_Handler
+!
+!    Subroutine called whenever a line from a file is read with a non-zero
+!    iostat.
+!
+!##############################################################################
+
+      subroutine MR_FileIO_Error_Handler(ios,linebuffer080,iomessage)
+
+      integer           ,intent(in) :: ios
+      character(len= 80),intent(in) :: linebuffer080
+      character(len=120),intent(in) :: iomessage
+
+      integer :: io
+
+      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        if(ios.lt.0)then
+          write(errlog(io),*)'MR ERROR Reading from file:  EOF encountered',ios
+        else
+          write(errlog(io),*)'MR ERROR Reading line from file:  input line format error',ios
+          write(errlog(io),*)linebuffer080
+        endif
+        write(errlog(io),*)'MR System Message: ',trim(adjustl(iomessage))
+      endif;enddo
+      stop 1
+
+      end subroutine MR_FileIO_Error_Handler
 
 !##############################################################################
 

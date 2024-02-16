@@ -48,7 +48,8 @@
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
          dx_met_const,dy_met_const,&
-         MR_Initialize_Met_Grids
+           MR_Initialize_Met_Grids,&
+           MR_Reset_Memory
 
       implicit none
 
@@ -302,6 +303,8 @@
       endif;enddo
       call Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj)
+
+      call MR_Reset_Memory
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Program ended normally."

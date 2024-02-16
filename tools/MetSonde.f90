@@ -30,7 +30,8 @@
       use MetReader,       only : &
          MR_nio,VB,outlog,verbosity_info,&
          MR_BaseYear,MR_useLeap,&
-           MR_Initialize_Met_Grids
+           MR_Initialize_Met_Grids,&
+           MR_Reset_Memory
 
       implicit none
 
@@ -129,6 +130,8 @@
         write(outlog(io),*)"Interpolating profile onto ",inlon,inlat
       endif;enddo
       call GetMetProfile(inlon,inlat,inyear,inmonth,inday,inhour)
+
+      call MR_Reset_Memory
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Program ended normally."

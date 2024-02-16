@@ -184,7 +184,7 @@
       call codes_new_from_file(ifile,igribv(count1),CODES_PRODUCT_GRIB,nSTAT)
       if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
 
-      do while (nSTAT/=GRIB_END_OF_FILE)
+      do while (nSTAT.eq.CODES_SUCCESS)
         count1=count1+1
         if (count1.gt.MAXGRIBREC) then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
@@ -224,7 +224,7 @@
           ! inverted
           call codes_get(igribv(ir),'latitudeOfLastGridPointInDegrees',dum_dp,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)then
-            call MR_GRIB_check_status(nSTAT,0,"codes_get latitudeOfLastGridPointInDegrees ")
+            !call MR_GRIB_check_status(nSTAT,0,"codes_get latitudeOfLastGridPointInDegrees ")
             ! assume it is not inverted
             y_inverted = .false.
           else
@@ -237,7 +237,7 @@
           endif
           call codes_get(igribv(ir),'longitudeOfLastGridPointInDegrees',dum_dp,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)then
-            call MR_GRIB_check_status(nSTAT,0,"codes_get longitudeOfLastGridPointInDegrees ")
+            !call MR_GRIB_check_status(nSTAT,0,"codes_get longitudeOfLastGridPointInDegrees ")
             ! assume it is not inverted
             x_inverted = .false.
           else
@@ -1563,9 +1563,10 @@
 
           ! Loop on all the messages in a file.
           call codes_new_from_file(ifile,igrib,nSTAT)
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
           count1=0
 
-          do while (nSTAT/=GRIB_END_OF_FILE)
+          do while (nSTAT.eq.CODES_SUCCESS.and.igrib.gt.0)
             count1=count1+1
 
             call codes_get(igrib,'indicatorOfParameter',grb_parameterNumber,nSTAT)
@@ -1625,6 +1626,7 @@
             call codes_release(igrib,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
             call codes_new_from_file(ifile,igrib,nSTAT)
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
 
           enddo
           call codes_close_file(ifile,nSTAT)
@@ -1792,7 +1794,7 @@
           ! Loop on all the messages in a file.
           call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
           count1=0
-          do while (nSTAT/=GRIB_END_OF_FILE)
+          do while (nSTAT.eq.CODES_SUCCESS.and.igrib.gt.0)
             count1=count1+1
             call codes_get(igrib,'discipline',              grb_discipline,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get discipline ")
@@ -2129,7 +2131,7 @@
       if (nSTAT == CODES_SUCCESS) return
       call codes_get_error_string(nSTAT,err_message)
       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io) ,*)severity,errcode,operation,err_message
+        write(errlog(io) ,*)severity,errcode,operation,' ',adjustl(trim(err_message))
       endif;enddo
 
       ! If user-supplied error code is 0, then consider this a warning,

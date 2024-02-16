@@ -1,5 +1,6 @@
 *.o
 *.mod
+MR_version.h
 libMetReader.a
 tools/gen_GRIB_index
 tools/makegfsncml
@@ -10,4 +11,4 @@ tools/MetTraj_F
 tools/probe_Met
 doc/MetReader_manual.aux
 doc/MetReader_manual.log
-version.h
+tests/UpperAirSoundings
