@@ -224,7 +224,7 @@
           ! inverted
           call codes_get(igribv(ir),'latitudeOfLastGridPointInDegrees',dum_dp,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)then
-            call MR_GRIB_check_status(nSTAT,0,"codes_get latitudeOfLastGridPointInDegrees ")
+            !call MR_GRIB_check_status(nSTAT,0,"codes_get latitudeOfLastGridPointInDegrees ")
             ! assume it is not inverted
             y_inverted = .false.
           else
@@ -237,7 +237,7 @@
           endif
           call codes_get(igribv(ir),'longitudeOfLastGridPointInDegrees',dum_dp,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)then
-            call MR_GRIB_check_status(nSTAT,0,"codes_get longitudeOfLastGridPointInDegrees ")
+            !call MR_GRIB_check_status(nSTAT,0,"codes_get longitudeOfLastGridPointInDegrees ")
             ! assume it is not inverted
             x_inverted = .false.
           else

@@ -973,6 +973,7 @@
                 ! copy to local variable
                 levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_dp(1:nlevs_fullmet(idx)),kind=sp)
                 deallocate(temp1d_dp)
+              else
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: Cannot recognize variable type for level'
                   if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
@@ -3750,7 +3751,7 @@
       subroutine MR_NC_check_status(nSTAT, errcode, operation)
 
       use MetReader,       only : &
-         MR_nio,VB,errlog,verbosity_error
+         MR_nio,VB,outlog,errlog,verbosity_error
 
       use netcdf
 
@@ -3772,7 +3773,11 @@
 
       if (nSTAT == nf90_noerr) return
       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io) ,*)severity,errcode,operation,' ',adjustl(trim(nf90_strerror(nSTAT)))
+        if (errcode.eq.0)then
+          write(outlog(io) ,*)severity,errcode,operation,' ',adjustl(trim(nf90_strerror(nSTAT)))
+        else
+          write(errlog(io) ,*)severity,errcode,operation,' ',adjustl(trim(nf90_strerror(nSTAT)))
+        endif
       endif;enddo
 
       ! If user-supplied error code is 0, then consider this a warning,
