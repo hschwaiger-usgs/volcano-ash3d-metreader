@@ -172,7 +172,7 @@
       maxdimlen = 0
 
       ! Loop through all the grib messages,
-      ! If we find a message that matches a variable criteria, then log the level to 
+      ! If we find a message that matches a variable criterion, then log the level to 
       !  a dummy array.
       ! Finally sort the pressure values and evaluate the distinct pressure coordinates
       grib_file_path  = adjustl(trim(MR_windfiles(1)))
@@ -188,8 +188,8 @@
         count1=count1+1
         if (count1.gt.MAXGRIBREC) then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-            write(errlog(io),*)"ERROR: too many grib messages"
-            write(errlog(io),*)"       current limit set to ",MAXGRIBREC
+            write(errlog(io),*)"MR ERROR: too many grib messages"
+            write(errlog(io),*)"          current limit set to ",MAXGRIBREC
           endif;enddo
           stop 1
         endif

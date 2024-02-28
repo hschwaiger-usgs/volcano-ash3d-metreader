@@ -39,9 +39,12 @@
            MR_Read_HGT_arrays,&
            MR_Allocate_FullMetFileList,&
            MR_MetStep_Hour_since_baseyear,&
-           MR_Reset_Memory
+           MR_Reset_Memory,&
+           MR_FileIO_Error_Handler
 
       implicit none
+
+      integer,parameter :: fid_outfile = 20
 
       ! These are the variables that must be set in the input file or command line
       logical             :: IsPeriodic
@@ -122,8 +125,8 @@
       if(IsLatLon)then
         if(xLL.lt.-360.0_4)then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-            write(errlog(io),*)"ERROR: xLL must be >-360 and <360"
-            write(errlog(io),*)"       From control file, xLL = ",xLL
+            write(errlog(io),*)"MR ERROR: xLL must be >-360 and <360"
+            write(errlog(io),*)"          From control file, xLL = ",xLL
           endif;enddo
           stop 1
         elseif(xLL.lt.0.0_4)then
@@ -210,8 +213,8 @@
         IsH = .false.
       else
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"ERROR: outgrid_ID not recognized; expecting 1-4"
-          write(errlog(io),*)"       outgrid_ID = ",outgrid_ID
+          write(errlog(io),*)"MR ERROR: outgrid_ID not recognized; expecting 1-4"
+          write(errlog(io),*)"          outgrid_ID = ",outgrid_ID
         endif;enddo
         stop 1
       endif
@@ -311,8 +314,8 @@
         out3d = out3d_t1 + (out3d_t2-out3d_t1)*real(tfrac,kind=4)
       else
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"ERROR: outgrid_ID not recognized; expecting 1-4"
-          write(errlog(io),*)"       outgrid_ID = ",outgrid_ID
+          write(errlog(io),*)"MR ERROR: outgrid_ID not recognized; expecting 1-4"
+          write(errlog(io),*)"          outgrid_ID = ",outgrid_ID
         endif;enddo
         stop 1
       endif
@@ -321,11 +324,11 @@
 200   format(a3,i0.2,a1,i1,a1,i1,a4)
 
       write(outfilename,200) 'out',outvar_ID,'_',outgrid_ID,'_',outdim_ID,'.dat'
-      open(unit=20,file=outfilename)
+      open(unit=fid_outfile,file=outfilename)
       ! First check the indexes for validity
       if(iidx.lt.0.or.jidx.lt.0.or.kidx.lt.0)then
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"ERROR: Output index must be non-negative"
+          write(errlog(io),*)"MR ERROR: Output index must be non-negative"
           write(errlog(io),*)"   iidx = ", iidx
           write(errlog(io),*)"   jidx = ", jidx 
           write(errlog(io),*)"   kidx = ", kidx
@@ -333,21 +336,21 @@
         stop 1
       elseif(iidx.gt.nx)then
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"ERROR: Output index must not be greater than output array."
+          write(errlog(io),*)"MR ERROR: Output index must not be greater than output array."
           write(errlog(io),*)"   nx   = ", nx
           write(errlog(io),*)"   iidx = ", iidx
         endif;enddo
         stop 1
       elseif(jidx.gt.ny)then
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"ERROR: Output index must not be greater than output array."
+          write(errlog(io),*)"MR ERROR: Output index must not be greater than output array."
           write(errlog(io),*)"   ny   = ", ny
           write(errlog(io),*)"   jidx = ", kidx
         endif;enddo
         stop 1
       elseif(kidx.gt.nz)then
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"ERROR: Output index must not be greater than output array."
+          write(errlog(io),*)"MR ERROR: Output index must not be greater than output array."
           write(errlog(io),*)"   nz   = ", nz
           write(errlog(io),*)"   kidx = ", kidx
         endif;enddo
@@ -371,16 +374,16 @@
         endif;enddo
         if(outgrid_ID.eq.1)then
           ! CompH
-          write(20,210)iidx,jidx,kidx,x_cc(iidx),y_cc(jidx),z_cc(kidx),out3d(iidx,jidx,kidx)
+          write(fid_outfile,210)iidx,jidx,kidx,x_cc(iidx),y_cc(jidx),z_cc(kidx),out3d(iidx,jidx,kidx)
         elseif(outgrid_ID.eq.1)then
           ! CompP
-          write(20,210)iidx,jidx,kidx,x_cc(iidx),y_cc(jidx),p_fullmet_sp(kidx),out3d(iidx,jidx,kidx)
+          write(fid_outfile,210)iidx,jidx,kidx,x_cc(iidx),y_cc(jidx),p_fullmet_sp(kidx),out3d(iidx,jidx,kidx)
         elseif(outgrid_ID.eq.3)then
           ! MetH
-          write(20,210)iidx,jidx,kidx,x_submet_sp(iidx),y_submet_sp(jidx),z_cc(kidx),out3d(iidx,jidx,kidx)
+          write(fid_outfile,210)iidx,jidx,kidx,x_submet_sp(iidx),y_submet_sp(jidx),z_cc(kidx),out3d(iidx,jidx,kidx)
         elseif(outgrid_ID.eq.4)then
           ! MetP
-          write(20,210)iidx,jidx,kidx,x_submet_sp(iidx),y_submet_sp(jidx),p_fullmet_sp(kidx),out3d(iidx,jidx,kidx)
+          write(fid_outfile,210)iidx,jidx,kidx,x_submet_sp(iidx),y_submet_sp(jidx),p_fullmet_sp(kidx),out3d(iidx,jidx,kidx)
         endif
       elseif(outdim_ID.eq.1)then
         ! We need two of three indexes to be non-zero for line output
@@ -421,16 +424,16 @@
           do i=1,nx
             if(outgrid_ID.eq.1)then
               ! CompH
-              write(20,210)i,jidx,kidx,x_cc(i),y_cc(jidx),z_cc(kidx),out3d(i,jidx,kidx)
+              write(fid_outfile,210)i,jidx,kidx,x_cc(i),y_cc(jidx),z_cc(kidx),out3d(i,jidx,kidx)
             elseif(outgrid_ID.eq.2)then
               ! CompP
-              write(20,210)i,jidx,kidx,x_cc(i),y_cc(jidx),p_fullmet_sp(kidx),out3d(i,jidx,kidx)
+              write(fid_outfile,210)i,jidx,kidx,x_cc(i),y_cc(jidx),p_fullmet_sp(kidx),out3d(i,jidx,kidx)
             elseif(outgrid_ID.eq.3)then
               ! MetH
-              write(20,210)i,jidx,kidx,x_submet_sp(i),y_submet_sp(jidx),z_cc(kidx),out3d(i,jidx,kidx)
+              write(fid_outfile,210)i,jidx,kidx,x_submet_sp(i),y_submet_sp(jidx),z_cc(kidx),out3d(i,jidx,kidx)
             elseif(outgrid_ID.eq.4)then
               ! MetP
-              write(20,210)i,jidx,kidx,x_submet_sp(i),y_submet_sp(jidx),p_fullmet_sp(kidx),out3d(i,jidx,kidx)
+              write(fid_outfile,210)i,jidx,kidx,x_submet_sp(i),y_submet_sp(jidx),p_fullmet_sp(kidx),out3d(i,jidx,kidx)
             endif
           enddo
         elseif(jidx.eq.0)then
@@ -458,16 +461,16 @@
           do j=1,ny
             if(outgrid_ID.eq.1)then
               ! CompH
-              write(20,210)iidx,j,kidx,x_cc(iidx),y_cc(j),z_cc(kidx),out3d(iidx,j,kidx)
+              write(fid_outfile,210)iidx,j,kidx,x_cc(iidx),y_cc(j),z_cc(kidx),out3d(iidx,j,kidx)
             elseif(outgrid_ID.eq.2)then
               ! CompP
-              write(20,210)iidx,j,kidx,x_cc(iidx),y_cc(j),p_fullmet_sp(kidx),out3d(iidx,j,kidx)
+              write(fid_outfile,210)iidx,j,kidx,x_cc(iidx),y_cc(j),p_fullmet_sp(kidx),out3d(iidx,j,kidx)
             elseif(outgrid_ID.eq.3)then
               ! MetH
-              write(20,210)iidx,j,kidx,x_submet_sp(iidx),y_submet_sp(j),z_cc(kidx),out3d(iidx,j,kidx)
+              write(fid_outfile,210)iidx,j,kidx,x_submet_sp(iidx),y_submet_sp(j),z_cc(kidx),out3d(iidx,j,kidx)
             elseif(outgrid_ID.eq.4)then
               ! MetP
-              write(20,210)iidx,j,kidx,x_submet_sp(iidx),y_submet_sp(j),p_fullmet_sp(kidx),out3d(iidx,j,kidx)
+              write(fid_outfile,210)iidx,j,kidx,x_submet_sp(iidx),y_submet_sp(j),p_fullmet_sp(kidx),out3d(iidx,j,kidx)
             endif
           enddo
         elseif(kidx.eq.0)then
@@ -495,16 +498,16 @@
           do k=1,nz
             if(outgrid_ID.eq.1)then
               ! CompH
-              write(20,210)iidx,jidx,k,x_cc(iidx),y_cc(jidx),z_cc(k),out3d(iidx,jidx,k)
+              write(fid_outfile,210)iidx,jidx,k,x_cc(iidx),y_cc(jidx),z_cc(k),out3d(iidx,jidx,k)
             elseif(outgrid_ID.eq.2)then
               ! CompP
-              write(20,210)iidx,jidx,k,x_cc(iidx),y_cc(jidx),p_fullmet_sp(k),out3d(iidx,jidx,k)
+              write(fid_outfile,210)iidx,jidx,k,x_cc(iidx),y_cc(jidx),p_fullmet_sp(k),out3d(iidx,jidx,k)
             elseif(outgrid_ID.eq.3)then
               ! MetH
-              write(20,210)iidx,jidx,k,x_submet_sp(iidx),y_submet_sp(jidx),z_cc(k),out3d(iidx,jidx,k)
+              write(fid_outfile,210)iidx,jidx,k,x_submet_sp(iidx),y_submet_sp(jidx),z_cc(k),out3d(iidx,jidx,k)
             elseif(outgrid_ID.eq.4)then
               ! MetP
-              write(20,210)iidx,jidx,k,x_submet_sp(iidx),y_submet_sp(jidx),p_fullmet_sp(k),out3d(iidx,jidx,k)
+              write(fid_outfile,210)iidx,jidx,k,x_submet_sp(iidx),y_submet_sp(jidx),p_fullmet_sp(k),out3d(iidx,jidx,k)
             endif
           enddo
         else
@@ -547,7 +550,7 @@
             ! Horz Coords are Met
             do i=1,nx
               do j=1,ny
-                write(20,210)i,j,kidx,x_submet_sp(i),y_submet_sp(j),zout,out3d(i,j,kidx)
+                write(fid_outfile,210)i,j,kidx,x_submet_sp(i),y_submet_sp(j),zout,out3d(i,j,kidx)
               enddo
             enddo
           endif
@@ -560,7 +563,7 @@
             endif;enddo
             do i=1,nx
               do k=1,nz
-                write(20,210)i,jidx,k,x_cc(i),y_cc(jidx),z_cc(k),out3d(i,jidx,k)
+                write(fid_outfile,210)i,jidx,k,x_cc(i),y_cc(jidx),z_cc(k),out3d(i,jidx,k)
               enddo
             enddo
           elseif(outgrid_ID.eq.2)then
@@ -570,7 +573,7 @@
             endif;enddo
             do i=1,nx
               do k=1,nz
-                write(20,210)i,jidx,k,x_cc(i),y_cc(jidx),p_fullmet_sp(k),out3d(i,jidx,k)
+                write(fid_outfile,210)i,jidx,k,x_cc(i),y_cc(jidx),p_fullmet_sp(k),out3d(i,jidx,k)
               enddo
             enddo
           elseif(outgrid_ID.eq.3)then
@@ -580,7 +583,7 @@
             endif;enddo
             do i=1,nx
               do k=1,nz
-                write(20,210)i,jidx,k,x_submet_sp(i),y_submet_sp(jidx),z_cc(k),out3d(i,jidx,k)
+                write(fid_outfile,210)i,jidx,k,x_submet_sp(i),y_submet_sp(jidx),z_cc(k),out3d(i,jidx,k)
               enddo
             enddo
           elseif(outgrid_ID.eq.4)then
@@ -590,7 +593,7 @@
             endif;enddo
             do i=1,nx
               do k=1,nz
-                write(20,210)i,jidx,k,x_submet_sp(i),y_submet_sp(jidx),p_fullmet_sp(k),out3d(i,jidx,k)
+                write(fid_outfile,210)i,jidx,k,x_submet_sp(i),y_submet_sp(jidx),p_fullmet_sp(k),out3d(i,jidx,k)
               enddo
             enddo
           endif
@@ -603,7 +606,7 @@
             endif;enddo
             do j=1,ny
               do k=1,nz
-                write(20,210)iidx,j,k,x_cc(iidx),y_cc(j),z_cc(k),out3d(iidx,j,k)
+                write(fid_outfile,210)iidx,j,k,x_cc(iidx),y_cc(j),z_cc(k),out3d(iidx,j,k)
               enddo
             enddo
           elseif(outgrid_ID.eq.2)then
@@ -613,7 +616,7 @@
             endif;enddo
             do j=1,ny
               do k=1,nz
-                write(20,210)iidx,j,k,x_cc(iidx),y_cc(j),p_fullmet_sp(k),out3d(iidx,j,k)
+                write(fid_outfile,210)iidx,j,k,x_cc(iidx),y_cc(j),p_fullmet_sp(k),out3d(iidx,j,k)
               enddo
             enddo
           elseif(outgrid_ID.eq.3)then
@@ -623,7 +626,7 @@
             endif;enddo
             do j=1,ny
               do k=1,nz
-                write(20,210)iidx,j,k,x_submet_sp(iidx),y_submet_sp(j),z_cc(k),out3d(iidx,j,k)
+                write(fid_outfile,210)iidx,j,k,x_submet_sp(iidx),y_submet_sp(j),z_cc(k),out3d(iidx,j,k)
               enddo
             enddo
           elseif(outgrid_ID.eq.4)then
@@ -633,7 +636,7 @@
             endif;enddo
             do j=1,ny
               do k=1,nz
-                write(20,210)iidx,j,k,x_submet_sp(iidx),y_submet_sp(j),p_fullmet_sp(k),out3d(iidx,j,k)
+                write(fid_outfile,210)iidx,j,k,x_submet_sp(iidx),y_submet_sp(j),p_fullmet_sp(k),out3d(iidx,j,k)
               enddo
             enddo
           endif
@@ -651,7 +654,7 @@
         do i=1,nx
           do j=1,ny
             do k=1,nz
-              write(20,210)i,j,k,x_submet_sp(i),y_submet_sp(j),p_fullmet_sp(k),out3d(i,j,k)
+              write(fid_outfile,210)i,j,k,x_submet_sp(i),y_submet_sp(j),p_fullmet_sp(k),out3d(i,j,k)
             enddo
           enddo
         enddo
@@ -661,7 +664,8 @@
         endif;enddo
         stop 1
       endif
-      close(20)
+
+      close(fid_outfile)
 
       call MR_Reset_Memory
 
@@ -710,15 +714,18 @@
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_info,verbosity_error,&
          MR_windfiles,MR_BaseYear,MR_useLeap,MR_Comp_StartHour,MR_Comp_Time_in_hours,&
-         MR_iHeightHandler,&
+         MR_iHeightHandler,MR_MAXVARS,&
            MR_Set_CompProjection,&
-           MR_Allocate_FullMetFileList
+           MR_Allocate_FullMetFileList,&
+           MR_FileIO_Error_Handler
 
       use projection,      only : &
          PJ_iprojflag,PJ_k0,PJ_lam0,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
            PJ_Set_Proj_Params
 
       implicit none
+
+      integer,parameter :: fid_ctrlfile = 10
 
       ! These are the variables that must be set in the input file or command line
 
@@ -748,7 +755,9 @@
       integer             :: iwfiles
 
       integer             :: nargs
-      integer             :: status
+      integer             :: iostatus
+      integer             :: inlen
+      character(len=120)  :: iomessage
       character (len=100) :: arg
 
       integer :: i
@@ -763,8 +772,8 @@
       integer :: io                           ! Index for output streams
 
       INTERFACE
-        subroutine write_usage
-        end subroutine write_usage
+        subroutine Print_Usage
+        end subroutine Print_Usage
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
           integer     ,intent(in) :: iyear
           integer     ,intent(in) :: imonth
@@ -780,28 +789,41 @@
       if (nargs.ne.1) then
         ! We need one command-line argument (input file name)
         ! Write usage to stdout and exit
-        call write_usage
+        call Print_Usage
       endif
 
       ! we're using a control file.
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Reading control file"
       endif;enddo
-      call get_command_argument(1, arg, status)
-      read(arg,*) infile
+      call get_command_argument(1, arg, length=inlen, status=iostatus)
+      if(iostatus.ne.0)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"MR ERROR : Could not read first command-line argument"
+          write(errlog(io),*)" arg = ",arg
+        endif;enddo
+        call Print_Usage
+      endif
+
+      read(arg,*,iostat=iostatus,iomsg=iomessage) infile
+      linebuffer080(1:inlen) = arg
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+      ! Error-check infile
       inquire( file=infile, exist=IsThere )
       if(.not.IsThere)then
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"ERROR: Cannot find input file"
+          write(errlog(io),*)"MR ERROR: Cannot find input file"
         endif;enddo
         stop 1
       endif
-      open(unit=10,file=infile,status='old',err=1900)
+      open(unit=fid_ctrlfile,file=infile,status='old',err=1900)
 
       ! Line 1: projection parameters for computational grid
-      read(10,'(a80)') linebuffer080
+      read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage) linebuffer080
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
       Comp_projection_line = linebuffer080
-      read(Comp_projection_line,*)ilatlonflag
+      read(Comp_projection_line,*,iostat=iostatus,iomsg=iomessage)ilatlonflag
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
       if (ilatlonflag.eq.0) then
         ! expecting input variables to be in the same projection as
         ! specified by iprojflag and parameters
@@ -812,48 +834,175 @@
       endif
 
       ! Line 2: Lower-left coordinate of computational grid (x,y,z)
-      read(10,'(a80)') linebuffer080
-      read(linebuffer080,*,err=1901) xLL, yLL, zbot
+      read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage) linebuffer080
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) xLL, yLL, zbot
+      if(iostatus.ne.0)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)  'error reading xLL, yLL, zbot.'
+          write(errlog(io),*)  'You entered: ',linebuffer080
+          write(errlog(io),*)  'Program stopped.'
+        endif;enddo
+        call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        stop 1
+      endif
 
       ! Line 3: Widths of computational grid
-      read(10,'(a80)') linebuffer080
-      read(linebuffer080,*,err=1902) gridwidth_x, gridwidth_y, gridwidth_z
+      read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage) linebuffer080
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) gridwidth_x, gridwidth_y, gridwidth_z
+      if(iostatus.ne.0.or.&
+         gridwidth_x.lt.0.0_8.or.gridwidth_y.lt.0.0_8.or.gridwidth_z.lt.0.0_8)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)  'error reading length, width and height of model domain.'
+          write(errlog(io),*)  'You entered: ', linebuffer080
+          write(errlog(io),*)  'Program stopped'
+        endif;enddo
+        call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        stop 1
+      endif
 
       ! Line 4: dx, dy, dz of computational grid
-      read(10,'(a80)') linebuffer080
-      read(linebuffer080,*,err=1904) dx, dy, dz_const
+      read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage) linebuffer080
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) dx, dy, dz_const
+      if(iostatus.ne.0.or.&
+         dx.lt.0.0_8.or.dy.lt.0.0_8.or.dz_const.lt.0.0_8)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)  'error reading dx, dy, or dz.'
+          write(errlog(io),*)  'You entered: ',linebuffer080
+          write(errlog(io),*)  'Program stopped.'
+        endif;enddo
+        call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        stop 1
+      endif
 
       ! Line 5: iHeightHandler
-      read(10,'(a80)') linebuffer080
-      read(linebuffer080,*,err=1905) MR_iHeightHandler
+      read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage) linebuffer080
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) MR_iHeightHandler
+      if(iostatus.ne.0.or.&
+         MR_iHeightHandler.lt.1.or.MR_iHeightHandler.gt.2)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)  'error reading iHeightHandler.'
+          write(errlog(io),*)  'You gave: ', linebuffer080
+          write(errlog(io),*)  'Program stopped.'
+        endif;enddo
+        call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        stop 1
+      endif
 
       ! Line 6: YYYY MM DD HH.H
-      read(10,'(a80)')linebuffer080
-      read(linebuffer080,*) inyear,inmonth,inday,inhour
+      read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) inyear,inmonth,inday,inhour
+      if(iostatus.ne.0.or.&
+         inmonth.lt.1.or.inmonth.gt.12.or.&
+         inday.lt.1.or.inday.gt.31.or.&
+         inhour.lt.0.0_8.or.inhour.gt.24.0_8)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)  'error reading inyear,inmonth,inday,inhour.'
+          write(errlog(io),*)  'You gave: ', linebuffer080
+          write(errlog(io),*)  'Program stopped.'
+        endif;enddo
+        call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        stop 1
+      endif
 
       ! Line 7: Output grid code (1=CompH,2=CompP,3=MetH,4=MetP)
-      read(10,'(a80)')linebuffer080
-      read(linebuffer080,*) outgrid_ID
+      read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) outgrid_ID
+      if(iostatus.ne.0.or.&
+         outgrid_ID.lt.1.or.outgrid_ID.gt.4)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)  'error reading outgrid_ID.'
+          write(errlog(io),*)  'You gave: ', linebuffer080
+          write(errlog(io),*)  'Program stopped.'
+        endif;enddo
+        call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        stop 1
+      endif
 
       ! Line 8: Output var ID
-      read(10,'(a80)')linebuffer080
-      read(linebuffer080,*) outvar_ID
+      read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) outvar_ID
+      if(iostatus.ne.0.or.&
+         outvar_ID.lt.1.or.outvar_ID.gt.MR_MAXVARS)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)  'error reading outvar_ID.'
+          write(errlog(io),*)  'You gave: ', linebuffer080
+          write(errlog(io),*)  'Program stopped.'
+        endif;enddo
+        call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        stop 1
+      endif
 
       ! Line 9: Output dim ID
-      read(10,'(a80)')linebuffer080
-      read(linebuffer080,*) outdim_ID
+      read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) outdim_ID
+      if(iostatus.ne.0.or.&
+         outdim_ID.lt.1.or.outdim_ID.gt.3)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)  'error reading outdim_ID.'
+          write(errlog(io),*)  'You gave: ', linebuffer080
+          write(errlog(io),*)  'Program stopped.'
+        endif;enddo
+        call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        stop 1
+      endif
 
       ! Line 10: i,j,k index with 0's for unused dimensions
-      read(10,'(a80)')linebuffer080
-      read(linebuffer080,*) iidx,jidx,kidx
+      read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) iidx,jidx,kidx
+      if(iostatus.ne.0.or.&
+         iidx.lt.0.or.jidx.lt.0.or.kidx.lt.0)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)  'error reading iidx,jidx,kidx.'
+          write(errlog(io),*)  'You gave: ', linebuffer080
+          write(errlog(io),*)  'Program stopped.'
+        endif;enddo
+        call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        stop 1
+      endif
 
       ! Line 11: Met specification=> iw, iwf, igrid, idf
-      read(10,'(a80)')linebuffer080
-      read(linebuffer080,*) iw,iwf,igrid,idf
+      read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) iw,iwf,igrid,idf
+      if(iostatus.ne.0.or.&
+         iw.lt.1.or.iw.gt.5.or.&
+         iwf.lt.0.or.iwf.gt.50.or.&
+         idf.lt.1.or.idf.gt.5)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)  'error reading iw,iwf,igrid,idf.'
+          write(errlog(io),*)  'You gave: ', linebuffer080
+          write(errlog(io),*)  'wind format must be one of 1,2,3,4, or 5'
+          write(errlog(io),*)  'wind product must be in range 1-50'
+          write(errlog(io),*)  'wind data format must be one of 1,2, or 3'
+          write(errlog(io),*)  'Program stopped.'
+        endif;enddo
+        call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        stop 1
+      endif
 
       ! Line 12: number of met files
-      read(10,'(a80)')linebuffer080
-      read(linebuffer080,*) iwfiles
+      read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) iwfiles
+      if(iostatus.ne.0.or.&
+         iwfiles.lt.1)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)  'error reading iwfiles.'
+          write(errlog(io),*)  'You gave: ', linebuffer080
+          write(errlog(io),*)  'Program stopped.'
+        endif;enddo
+        call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        stop 1
+      endif
 
       MR_Comp_StartHour = HS_hours_since_baseyear(inyear,inmonth,inday,inhour,&
                                                 MR_BaseYear,MR_useLeap)
@@ -869,50 +1018,37 @@
 
       ! Line 13: starting to read the windfiles
       do i=1,iwfiles
-        read(10,'(a130)')linebuffer130
-        read(linebuffer130,'(a130)')MR_windfiles(i)
+        read(fid_ctrlfile,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+        read(linebuffer130,'(a130)',iostat=iostatus,iomsg=iomessage)MR_windfiles(i)
+        inquire( file=infile, exist=IsThere )
+        if(iostatus.ne.0.or.&
+           .not.IsThere)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)  'error reading MR_windfiles(i)'
+            write(errlog(io),*)  'You gave: ', i, linebuffer080
+            write(errlog(io),*)  'Inquire test= ',IsThere
+            write(errlog(io),*)  'Program stopped.'
+          endif;enddo
+          call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+          stop 1
+        endif
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
           write(outlog(io),*)i,trim(adjustl(MR_windfiles(i)))
         endif;enddo
       enddo
+
+      ! Successfully read control file; closing it
+      close(fid_ctrlfile)
 
       return
 
 !******************************************************************************
 !     ERROR TRAPS
 
-      !ERROR TRAPS TO STDIN
 1900  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
         write(errlog(io),*)  'error: cannot find input file: ',infile
         write(errlog(io),*)  'Program stopped'
-      endif;enddo
-      stop 1
-
-1901  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io),*)  'error reading xLL or yLL.'
-        write(errlog(io),*)  'You entered: ',linebuffer080
-        write(errlog(io),*)  'Program stopped.'
-      endif;enddo
-      stop 1
-
-1902  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io),*)  'error reading width and height of model domain.'
-        write(errlog(io),*)  'You entered: ', linebuffer080
-        write(errlog(io),*)  'Program stopped'
-      endif;enddo
-      stop 1
-
-1904  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io),*)  'error reading dx or dy.'
-        write(errlog(io),*)  'You entered: ',linebuffer080
-        write(errlog(io),*)  'Program stopped.'
-      endif;enddo
-      stop 1
-
-1905  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io),*)  'error reading iHeightHandler.'
-        write(errlog(io),*)  'You gave: ', linebuffer080
-        write(errlog(io),*)  'Program stopped.'
       endif;enddo
       stop 1
 
@@ -920,14 +1056,15 @@
 
 !##############################################################################
 !##############################################################################
-!  write_usage
+!
+!  Print_Usage
 !
 !  This subroutine is called if there is an error reading the command-line.
 !  Expected usage is written to stdout and the program exits.
 !
 !##############################################################################
 
-      subroutine write_usage
+      subroutine Print_Usage
 
       use MetReader,       only : &
          MR_nio,VB,errlog,verbosity_error
@@ -958,7 +1095,7 @@
       endif;enddo
       stop 1
 
-      end subroutine write_usage
+      end subroutine Print_Usage
 
 !##############################################################################
 !##############################################################################

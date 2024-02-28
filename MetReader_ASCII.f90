@@ -111,7 +111,7 @@
       integer :: ioerr
       character(len=120) :: iomessage
       integer :: istr1,istr2,istr3
-      integer :: ic,il,iil,iv,ii
+      integer :: ic,il,iil,iv
 
       integer :: nlev,ulev
       integer :: iw_idx
