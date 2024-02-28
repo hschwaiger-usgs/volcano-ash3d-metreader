@@ -93,7 +93,7 @@
       integer :: io                           ! Index for output streams
 
       INTERFACE
-      subroutine Read_ComdLine_InpFile(inlon,inlat, &
+        subroutine Read_ComdLine_InpFile(inlon,inlat, &
                       inyear,inmonth,inday,inhour,Simtime_in_hours,&
                       StreamFlag,OutStepInc_Minutes,ntraj,OutputLevels,&
                       iw,iwf,igrid,idf,iwfiles,&
@@ -1008,7 +1008,8 @@
          MR_Comp_StartHour,MR_Comp_Time_in_hours,MR_iwindfiles,MR_iwind,&
            MR_Allocate_FullMetFileList,&
            MR_Read_Met_DimVars,&
-           MR_Set_Met_Times
+           MR_Set_Met_Times,&
+           MR_FileIO_Error_Handler
 
       implicit none
 
