@@ -375,6 +375,9 @@
 
         elseif(MR_iwindformat.eq.29)then
           ! ECMWF ERA5
+          ! RDA provides the data as 1-variable/file so iwind=5
+            ! https://rda.ucar.edu/datasets/ds633.0
+          ! If data are from CDS, use iwind=4
           maxdimlen            = 37
           nlev_coords_detected = 1
           allocate(nlevs_fullmet(nlev_coords_detected))
@@ -479,15 +482,16 @@
           ! This is where the Netcdf and Grib subroutines can be compared
           !
           ! Checking for dimension length and values for x,y,t,p
-          !   Assume all files have the same format
+          !   Assume all files have the same format so we just work with MR_windfiles(1)
 
           maxdimlen = 0
           infile = adjustl(trim(MR_windfiles(1)))
           nSTAT=nf90_open(adjustl(trim(infile)),NF90_NOWRITE, ncid)
+          if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_open MR_windfiles(1)")
 
           do ivar = 1,MR_MAXVARS
-            if (.not.Met_var_IsAvailable(ivar)) cycle  ! Only look at variables that are available
-            if (Met_var_ndim(ivar).ne.4) cycle         !  and only ones with a 'level' dimension (i.e. with 4 dimensions)
+            if(.not.Met_var_IsAvailable(ivar)) cycle  ! Only look at variables that are available
+            if(Met_var_ndim(ivar).ne.4) cycle         !  and only ones with a 'level' dimension (i.e. with 4 dimensions)
             invar = Met_var_NC_names(ivar)
             nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
             if(nSTAT.ne.NF90_NOERR)then
@@ -503,7 +507,7 @@
                       xtype = var_xtype, &
                       ndims = var_ndims)   ! get the number of dimensions
             if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable")
-            if (var_ndims.ne.Met_var_ndim(ivar))then
+            if(var_ndims.ne.Met_var_ndim(ivar))then
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: The actual number of dimensions differs from'
                 write(errlog(io),*)'          what is expected'
@@ -530,10 +534,26 @@
                            name =  dimname, &
                            len = dimlen)
               if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension X")
-              if(index(dimname,Met_dim_names(4)).ne.0)then
+!              if(index(dimname,Met_dim_names(4)).ne.0)then
                 nx_fullmet = dimlen
                 xdim_id    = var_dimIDs(i_dim)
+!              endif
+              if(index(dimname,'x')        .eq.0.and.&        ! Check this dimension against known names
+                 index(dimname,'lon')      .eq.0.and.&
+                 index(dimname,'g0_lon_3') .eq.0.and.&
+                 index(dimname,'longitude').eq.0.and.&
+                 index(dimname,'g4_lon_3') .eq.0.and.&
+                 index(dimname,'west_east').eq.0.and.&
+                 index(dimname,trim(adjustl(Met_dim_names(4)))).eq.0)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR WARNING: Name of assumed x dimension does not'
+                  write(errlog(io),*)'            match any expected names.  Please verify'
+                  write(errlog(io),*)'            that this file is COORDS compliant.'
+                  write(errlog(io),*)'   Dimension name: ',dimname
+                endif;enddo
               endif
+              Met_dim_names(4) = trim(adjustl(dimname))
+
               nSTAT = nf90_inq_varid(ncid,dimname,var_id) ! get the variable associated with this dim
               if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable X")
               ! Check what temporary array to use
@@ -670,10 +690,25 @@
                            name =  dimname, &
                            len = dimlen)
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Y")
-              if(index(dimname,Met_dim_names(3)).ne.0)then
+              !if(index(dimname,Met_dim_names(3)).ne.0)then
                 ny_fullmet = dimlen
                 ydim_id    = var_dimIDs(i_dim)
+              !endif
+              if(index(dimname,'y')        .eq.0.and.&        ! Check this dimension against known names
+                 index(dimname,'lat')      .eq.0.and.&
+                 index(dimname,'g0_lat_2') .eq.0.and.&
+                 index(dimname,'latitude').eq.0.and.&
+                 index(dimname,'g4_lat_2') .eq.0.and.&
+                 index(dimname,'south_north').eq.0.and.&
+                 index(dimname,trim(adjustl(Met_dim_names(3)))).eq.0)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR WARNING: Name of assumed y dimension does not'
+                  write(errlog(io),*)'            match any expected names.  Please verify'
+                  write(errlog(io),*)'            that this file is COORDS compliant.'
+                  write(errlog(io),*)'   Dimension name: ',dimname
+                endif;enddo
               endif
+              Met_dim_names(3) = trim(adjustl(dimname))
 
               nSTAT = nf90_inq_varid(ncid,dimname,var_id) ! get the variable associated with this dim
               call MR_NC_check_status(nSTAT,1,"nf90_inq_varid Y")
@@ -817,11 +852,22 @@
                            name =  dimname, &
                            len = dimlen)
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension time")
-              if(index(dimname,Met_dim_names(1)).ne.0)then
+              !if(index(dimname,Met_dim_names(1)).ne.0)then
                 nt_fullmet = dimlen
                 tdim_id    = var_dimIDs(i_dim)
+              !endif
+               if(index(dimname,'time')        .eq.0.and.&        ! Check this dimension against known names
+                  index(dimname,'Time')        .eq.0.and.&
+                  index(dimname,trim(adjustl(Met_dim_names(1)))).eq.0)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR WARNING: Name of assumed t dimension does not'
+                  write(errlog(io),*)'            match any expected names.  Please verify'
+                  write(errlog(io),*)'            that this file is COORDS compliant.'
+                  write(errlog(io),*)'   Dimension name: ',dimname
+                endif;enddo
               endif
-  
+              Met_dim_names(1) = trim(adjustl(dimname))
+ 
             endif ! ivar.eq.1
 
             ! Dimension variables for x,y,time were read while reading GPH immediately
@@ -848,8 +894,10 @@
                 index(dimname,'lv_ISBL1').ne.0.or.&
                 index(dimname,'bottom_top').ne.0.or.&
                 index(dimname,'bottom_top_stag').ne.0.or.&
-                index(dimname,'soil_layers_stag').ne.0))then
-
+                index(dimname,'soil_layers_stag').ne.0).or.&
+                index(dimname,trim(adjustl(Met_dim_names(4)))).ne.0)then ! This last check is in case
+                                                                         ! the template file has something
+                                                                         ! non-standard
               ! Log this level coordinate if it is the first
               if (nlev_coords_detected.eq.0)then
                 nlev_coords_detected = nlev_coords_detected + 1
