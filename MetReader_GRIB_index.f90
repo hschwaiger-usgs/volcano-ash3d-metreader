@@ -34,7 +34,7 @@
       logical          :: Got_Version = .false.
 
       ! First, open grib file and determine if we have a grib1 or grib2 file
-      call codes_open_file(idx,adjustl(trim(grib_file)),'r')
+      call codes_open_file(idx,trim(adjustl(grib_file)),'r')
       call codes_new_from_file(idx,igrib,CODES_PRODUCT_GRIB,iret)
       call codes_get(igrib,'editionNumber',gribver)
       call codes_close_file(idx)
@@ -49,14 +49,14 @@
         stop 0
       endif
 
-      index_file = adjustl(trim(grib_file)) // ".index"
+      index_file = trim(adjustl(grib_file)) // ".index"
       write(MR_global_info,*)"Generating index file: ",index_file
 
       if(gribver.eq.1)then
         ! For grib1 files, we use the parameter numbers
         !!!  grib_ls -p indicatorOfParameter,date,time,level
           ! create an index from a grib file using some keys
-        call codes_index_create(idx,adjustl(trim(grib_file)),&
+        call codes_index_create(idx,trim(adjustl(grib_file)),&
               'indicatorOfParameter,level')
         call codes_grib_multi_support_on()
 
@@ -89,7 +89,7 @@
           enddo ! loop on level
         enddo ! loop on ParamN
 
-        call codes_index_write(idx,adjustl(trim(index_file)))
+        call codes_index_write(idx,trim(adjustl(index_file)))
         call codes_index_release(idx)
 
       elseif(gribver.eq.2)then
@@ -164,7 +164,7 @@
         !----------------------------------------------------------------------
 
           ! create an index from a grib file using some keys
-        call codes_index_create(idx,adjustl(trim(grib_file)),&
+        call codes_index_create(idx,trim(adjustl(grib_file)),&
               'discipline,parameterCategory,parameterNumber,scaledValueOfFirstFixedSurface,forecastTime')
         call codes_grib_multi_support_on()
 
@@ -216,7 +216,7 @@
           enddo ! loop on parameterCategory
         enddo ! loop on discipline
       
-        call codes_index_write(idx,adjustl(trim(index_file)))
+        call codes_index_write(idx,trim(adjustl(index_file)))
         call codes_index_release(idx)
 
       endif  ! grib version number

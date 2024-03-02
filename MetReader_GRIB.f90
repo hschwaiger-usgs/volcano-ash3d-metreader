@@ -175,7 +175,7 @@
       ! If we find a message that matches a variable criterion, then log the level to 
       !  a dummy array.
       ! Finally sort the pressure values and evaluate the distinct pressure coordinates
-      grib_file_path  = adjustl(trim(MR_windfiles(1)))
+      grib_file_path  = trim(adjustl(MR_windfiles(1)))
 
       call codes_open_file(ifile,grib_file_path,'R',nSTAT)
       if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
@@ -2131,7 +2131,7 @@
       if (nSTAT == CODES_SUCCESS) return
       call codes_get_error_string(nSTAT,err_message)
       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io) ,*)severity,errcode,operation,' ',adjustl(trim(err_message))
+        write(errlog(io) ,*)severity,errcode,operation,' ',trim(adjustl(err_message))
       endif;enddo
 
       ! If user-supplied error code is 0, then consider this a warning,

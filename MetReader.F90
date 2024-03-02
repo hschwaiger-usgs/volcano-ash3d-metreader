@@ -434,6 +434,7 @@
       logical,public :: y_pad_South    = .false. !   
 
       ! Met copies of projection variables, used for proj call on Met Grid
+      character(len=4),public :: Met_gridtype
       integer     ,public :: Met_iprojflag
       real(kind=8),public :: Met_Re
       real(kind=8),public :: Met_k0
@@ -996,7 +997,13 @@
       !                          -in ${GribFile} -out ${NCFile} -IsLargeFile
       ! 
       !         Alternatively, one could use ncl_convert2nc ${GribFile} -L
-      !         This creates variable names such as Z_GDS4_ISBL
+      !         This creates variable names such as HGT_P0_L100_GLL0; i.e. WMOname_P[param_class]_L[surf_class]_[gridtype]
+      !         where gridtype is one of:
+      !          Met_gridtype = "GLL0"  ! Latitude/Longitude
+      !          Met_gridtype = "GME0"  ! Mercator
+      !          Met_gridtype = "GLC0"  ! Lambert Conformal
+      !          Met_gridtype = "GST0"  ! Polar stereographic
+
         !  Geopotential Height  (m^2/s^2)
       Met_var_NC_names(1)          = "Geopotential_height_isobaric"
       Met_var_GRIB_names(1)        = "gh"
@@ -2917,14 +2924,14 @@
       ! of steps per file.
       if(MR_iwind.ne.5)then
         do i=1,MR_iwindfiles
-          inquire( file=adjustl(trim(MR_windfiles(i))), exist=IsThere )
+          inquire( file=trim(adjustl(MR_windfiles(i))), exist=IsThere )
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-            write(outlog(io),*)"     ",i,adjustl(trim(MR_windfiles(i))),IsThere
+            write(outlog(io),*)"     ",i,trim(adjustl(MR_windfiles(i))),IsThere
           endif;enddo
           if(.not.IsThere)then
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: Could not find windfile ",i
-              write(errlog(io),*)"          ",adjustl(trim(MR_windfiles(i)))
+              write(errlog(io),*)"          ",trim(adjustl(MR_windfiles(i)))
             endif;enddo
             stop 1
           endif
@@ -2943,14 +2950,14 @@
             endif;enddo
             stop 1
 #endif
-            inquire( file=adjustl(trim(infile)), exist=IsThere )
+            inquire( file=trim(adjustl(infile)), exist=IsThere )
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-              write(outlog(io),*)" ",i,trim(adjustl(trim(infile))),IsThere
+              write(outlog(io),*)" ",i,trim(adjustl(infile)),IsThere
             endif;enddo
             if(.not.IsThere)then
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then           
                 write(errlog(io),*)"MR ERROR: Could not find windfile ",i
-                write(errlog(io),*)"          ",adjustl(trim(infile))
+                write(errlog(io),*)"          ",trim(adjustl(infile))
               endif;enddo
               stop 1
             endif

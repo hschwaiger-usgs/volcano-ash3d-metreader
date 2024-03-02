@@ -37,7 +37,7 @@
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
          nlevs_fullmet,nlevs_fullmet,levs_code,nlev_coords_detected,levs_fullmet_sp,&
          p_fullmet_sp,x_fullmet_sp,y_fullmet_sp,MR_dx_met,MR_dy_met,iwf25_scale_facs,&
-         iwf25_offsets,z_approx,dx_met_const,dy_met_const,&
+         iwf25_offsets,z_approx,dx_met_const,dy_met_const,Met_gridtype,&
          IsGlobal_MetGrid,IsLatLon_MetGrid,IsRegular_MetGrid,MR_EPS_SMALL,MR_iversion,&
          MR_iwind,MR_iwindformat,MR_Max_geoH_metP_predicted,MR_MAXVARS,MR_Use_RDA,&
          np_fullmet,nt_fullmet,nx_fullmet,ny_fullmet,Pressure_Conv_Fac,x_inverted,&
@@ -95,6 +95,10 @@
           integer, intent(in) :: errcode
           character(len=*), intent(in) :: operation
         end subroutine MR_NC_check_status
+        subroutine MR_NC_check_var_synonyms(ivar,ncid)
+          integer, intent(in) :: ivar
+          integer, intent(in) :: ncid
+        end subroutine MR_NC_check_var_synonyms
         subroutine MR_Get_WRF_grid
         end subroutine MR_Get_WRF_grid
         subroutine MR_Set_Met_Dims_Template_netcdf
@@ -485,8 +489,8 @@
           !   Assume all files have the same format so we just work with MR_windfiles(1)
 
           maxdimlen = 0
-          infile = adjustl(trim(MR_windfiles(1)))
-          nSTAT=nf90_open(adjustl(trim(infile)),NF90_NOWRITE, ncid)
+          infile = trim(adjustl(MR_windfiles(1)))
+          nSTAT=nf90_open(trim(adjustl(infile)),NF90_NOWRITE, ncid)
           if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_open MR_windfiles(1)")
 
           do ivar = 1,MR_MAXVARS
@@ -498,10 +502,20 @@
               call MR_NC_check_status(nSTAT,0,"inq_varid")
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                 write(outlog(io),*)'  Cannot find variable ',invar
-                write(outlog(io),*)'  Setting Met_var_IsAvailable to .false.'
+                write(outlog(io),*)'  Testing for known synonyms'
               endif;enddo
-              Met_var_IsAvailable(ivar) = .false.
-              cycle
+              ! Checking other name options.
+              call MR_NC_check_var_synonyms(ivar,ncid)
+              ! Now try again
+              invar = Met_var_NC_names(ivar)
+              nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
+              if(nSTAT.ne.NF90_NOERR)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  write(outlog(io),*)'  Cannot find variable ',invar
+                endif;enddo
+                Met_var_IsAvailable(ivar) = .false.
+                cycle
+              endif
             endif
             nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
                       xtype = var_xtype, &
@@ -1344,7 +1358,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"About to open first WRF file : ",MR_windfiles(1)
       endif;enddo
-      nSTAT=nf90_open(adjustl(trim(MR_windfiles(1))),NF90_NOWRITE, ncid)
+      nSTAT=nf90_open(trim(adjustl(MR_windfiles(1))),NF90_NOWRITE, ncid)
       call MR_NC_check_status(nSTAT,1,"nf90_open WRF file")
       ! This is the first windfile, log some info on the netcdf library and datafile
       NCv_lib = trim(nf90_inq_libvers())
@@ -2053,13 +2067,13 @@
           ! Branch for WRF files
           ! Loop through all the windfiles
           do iw = 1,MR_iwindfiles
-            nSTAT = nf90_open(adjustl(trim(MR_windfiles(iw))),NF90_NOWRITE,ncid)
+            nSTAT = nf90_open(trim(adjustl(MR_windfiles(iw))),NF90_NOWRITE,ncid)
             call MR_NC_check_status(nSTAT,0,"nf90_open WRF")
             if(nSTAT.ne.NF90_NOERR)then
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: nf90_open to read header:', &
                                nf90_strerror(nSTAT)
-                write(errlog(io),*)'Could not open ',adjustl(trim(MR_windfiles(iw)))
+                write(errlog(io),*)'Could not open ',trim(adjustl(MR_windfiles(iw)))
                 write(errlog(io),*)'Exiting'
               endif;enddo
               stop 1
@@ -2077,7 +2091,7 @@
               NCv_datafile = formatNum
 
               ! Find the id of the time dimension
-              nSTAT = nf90_inq_dimid(ncid,adjustl(trim(Met_dim_names(1))),t_dim_id)
+              nSTAT = nf90_inq_dimid(ncid,trim(adjustl(Met_dim_names(1))),t_dim_id)
               call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid time")
               ! Get length of time dimension and allocate MR_windfile_stephour
               nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_fullmet)
@@ -2146,15 +2160,15 @@
             ! Each wind file needs a ref-time which in almost all cases is given
             ! in the 'units' attribute of the time variable
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-              write(outlog(io),*)iw,adjustl(trim(MR_windfiles(iw)))
+              write(outlog(io),*)iw,trim(adjustl(MR_windfiles(iw)))
             endif;enddo
-            nSTAT = nf90_open(adjustl(trim(MR_windfiles(iw))),NF90_NOWRITE,ncid)
+            nSTAT = nf90_open(trim(adjustl(MR_windfiles(iw))),NF90_NOWRITE,ncid)
             call MR_NC_check_status(nSTAT,0,"nf90_open")
             if(nSTAT.ne.NF90_NOERR)then
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: nf90_open to read header:', &
                                nf90_strerror(nSTAT)
-                write(errlog(io),*)'Could not open ',adjustl(trim(MR_windfiles(iw)))
+                write(errlog(io),*)'Could not open ',trim(adjustl(MR_windfiles(iw)))
                 write(errlog(io),*)'Exiting'
               endif;enddo
               stop 1
@@ -3081,11 +3095,11 @@
       endif
 
       if(MR_iwind.eq.5)then
-          ! Files are hard-coded
+          ! Files have hard-coded paths
         call MR_Set_iwind5_filenames(MR_MetStep_Hour_since_baseyear(istep),ivar,infile)
         infile = trim(adjustl(infile))
       else
-          ! Files are provided directly by calling program, not hard-coded
+          ! Files are provided directly by calling program, not hard-coded paths
         infile = trim(adjustl(MR_MetStep_File(istep)))
       endif
       np_met_loc = nlevs_fullmet(Met_var_zdim_idx(ivar))
@@ -3822,9 +3836,9 @@
       if (nSTAT == nf90_noerr) return
       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
         if (errcode.eq.0)then
-          write(outlog(io) ,*)severity,errcode,operation,' ',adjustl(trim(nf90_strerror(nSTAT)))
+          write(outlog(io) ,*)severity,errcode,operation,' ',trim(adjustl(nf90_strerror(nSTAT)))
         else
-          write(errlog(io) ,*)severity,errcode,operation,' ',adjustl(trim(nf90_strerror(nSTAT)))
+          write(errlog(io) ,*)severity,errcode,operation,' ',trim(adjustl(nf90_strerror(nSTAT)))
         endif
       endif;enddo
 
@@ -3834,4 +3848,154 @@
 
       end subroutine MR_NC_check_status
 
+!##############################################################################
+!
+!     MR_NC_check_var_synonyms
+!
+!     ivar   = variable ID
+!
+!     This subroutine is called if the expected variable name is not found. Then
+!     all synonyms for that variable are checked.  If the variable is found, 
+!     then Met_var_NC_names is updated
+!
+!##############################################################################
+
+      subroutine MR_NC_check_var_synonyms(ivar,ncid)
+
+      use MetReader,       only : &
+         Met_var_NC_names,Met_var_IsAvailable,Met_gridtype
+
+      use netcdf
+
+      implicit none
+
+      integer, intent(in) :: ivar
+      integer, intent(in) :: ncid
+
+      integer :: nSTAT
+      character(len=NF90_MAX_NAME)  :: invar
+      integer :: in_var_id
+
+      if(ivar.eq.1)then ! Geopotential height
+        invar = "H"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "hgt"
+        invar = "HGT_GDS0_ISBL"
+        invar = "gh"
+        invar = "Geopotential_isobaric"
+        invar = "Z"
+        invar = "Z_GDS0_ISBL"
+        invar = "Z_GDS4_ISBL"
+        invar = "Z3"
+        invar = "HGT_P0_L100_" // Met_gridtype
+      elseif(ivar.eq.2)then ! U-component of wind
+        invar = "u_wind_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "U"
+        invar = "uwnd"
+        invar = "UGRD_GDS0_ISBL"
+        invar = "U_GRD_GDS0_ISBL"
+        invar = "u"
+        invar = "U_component_of_wind_isobaric"
+        invar = "U_GDS0_ISBL"
+        invar = "U_GDS4_ISBL"
+        invar = "UGRD_P0_L100_" // Met_gridtype
+      elseif(ivar.eq.3)then ! V-component of wind
+        invar = "v_wind_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "V"
+        invar = "vwnd"
+        invar = "VGRD_GDS0_ISBL"
+        invar = "V_GRD_GDS0_ISBL"
+        invar = "v"
+        invar = "V_component_of_wind_isobaric"
+        invar = "V_GDS0_ISBL"
+        invar = "V_GDS4_ISBL"
+        invar = "VGRD_P0_L100_" // Met_gridtype
+      elseif(ivar.eq.4.or.ivar.eq.7)then ! Vertical velocity (pressure)
+        invar = "Pressure_vertical_velocity_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "Vertical_velocity_isobaric"
+        invar = "OMEGA"
+        invar = "Pressure_vertical_velocity_isobaric"
+        invar = "omega"
+        invar = "VVEL_GDS0_ISBL"
+        invar = "V_VEL_GDS0_ISBL"
+        invar = "W"
+        invar = "w"
+        invar = "W_GDS0_ISBL"
+        invar = "W_GDS4_ISBL"
+        invar = "VVEL_P0_L100_" // Met_gridtype
+      elseif(ivar.eq.5)then ! Temperature
+        invar = "Temp_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "T"
+        invar = "air"
+        invar = "TMP_GDS0_ISBL"
+        invar = "t"
+        invar = "T_GDS0_ISBL"
+        invar = "T_GDS4_ISBL"
+        invar = "TMP_P0_L100_" // Met_gridtype
+      elseif(ivar.eq.11)then ! Velocity component in x (or E) direction at 10 m above ground surface  (m/s)
+        invar = "u_wind_height_above_ground"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "U10"
+        invar = "UGRD_P0_L103_" // Met_gridtype
+      elseif(ivar.eq.12)then ! Velocity component in y (or N) direction at 10 m above ground surface  (m/s)
+        invar = "v_wind_height_above_ground"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "V10"
+        invar = "VGRD_P0_L103_" // Met_gridtype
+      elseif(ivar.eq.16)then ! Soil Moisture  (fraction)
+        invar = "Volumetric_Soil_Moisture_Content"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "Soil_moisture_content_depth_below_surface_layer"
+        invar = "SMOIS"
+        invar = "SOILW_P0_2L106_" // Met_gridtype
+      elseif(ivar.eq.30)then ! Relative humidity  (%)
+        invar = "RH"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "rhum"
+        invar = "RELHUM"
+        invar = "RH_P0_L100_" // Met_gridtype
+      elseif(ivar.eq.31)then ! Specific humidity  (kg/kg)
+        invar = "QV"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "shum"
+        invar = "Q"
+        invar = "QVAPOR"
+        invar = "SPFH_P0_L100_" // Met_gridtype
+      elseif(ivar.eq.32)then ! Cloud water mixing ratio  (kg/kg)
+        invar = "Cloud_water_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "shum"
+        invar = "QL"
+        invar = "CLWMR_P0_L100_" // Met_gridtype
+      elseif(ivar.eq.33)then ! Snow mixing ratio  (kg/kg)
+        invar = "Cloud_water_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "Ice_mixing_ratio_isobaric"
+        invar = "QI"
+        invar = "SNMR_P0_L100_" // Met_gridtype
+      endif
+
+      
+      !write(outlog(io),*)'  Setting Met_var_IsAvailable to .false.'
+      Met_var_IsAvailable(ivar) = .false.
+
+      end subroutine MR_NC_check_var_synonyms
+
+!##############################################################################
 

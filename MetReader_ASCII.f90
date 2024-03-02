@@ -365,7 +365,7 @@
             iw_idx = (itime-1)*MR_nSnd_Locs + iloc
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
               write(outlog(io),*)"Opening sonde file ",iw_idx,&
-                                   adjustl(trim(MR_windfiles(iw_idx)))
+                                   trim(adjustl(MR_windfiles(iw_idx)))
             endif;enddo
 
             open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))), status='old',action='read',err=1971)
@@ -869,7 +869,7 @@
             iw_idx = (itime-1)*MR_nSnd_Locs + iloc
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
               write(outlog(io),*)"Opening sonde file ",iw_idx,&
-                                     adjustl(trim(MR_windfiles(iw_idx)))
+                                     trim(adjustl(MR_windfiles(iw_idx)))
             endif;enddo
 
             open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))),status='old',action='read',err=1971)
@@ -3498,7 +3498,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
         write(outlog(io),*)"Radiosonde stations currently loaded:"
         do i=1,MR_nSnd_Locs
           ii = Snd_idx(i)
-          write(outlog(io),*)MR_Snd_id(ii),adjustl(trim(MR_Snd_lnm(ii))),',',MR_Snd_st(ii),',',MR_Snd_ct(ii)
+          write(outlog(io),*)MR_Snd_id(ii),trim(adjustl(MR_Snd_lnm(ii))),',',MR_Snd_st(ii),',',MR_Snd_ct(ii)
         enddo
       endif;enddo
 
@@ -3526,7 +3526,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
             nSnd_InDomain = nSnd_InDomain + 1
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
               write(outlog(io),*)&
-                 MR_Snd_id(i),adjustl(trim(MR_Snd_lnm(i))),',',MR_Snd_st(i),',',MR_Snd_ct(i)
+                 MR_Snd_id(i),trim(adjustl(MR_Snd_lnm(i))),',',MR_Snd_st(i),',',MR_Snd_ct(i)
             endif;enddo
           endif
         endif

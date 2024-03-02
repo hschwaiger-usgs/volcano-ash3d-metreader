@@ -24,7 +24,7 @@
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_production,&
          IsLatLon_MetGrid,IsGlobal_MetGrid,IsRegular_MetGrid,isGridRelative,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         MR_iversion,MR_Reannalysis
+         MR_iversion,MR_Reannalysis,Met_gridtype
 
       implicit none
 
@@ -66,6 +66,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  262.5_8
         Met_phi0          =  38.5_8
@@ -102,6 +103,7 @@
         isGridRelative    = .false.
         MR_Reannalysis    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  -107.0_8
         Met_phi0          =  50.0_8
@@ -119,6 +121,8 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.1041)then
          ! Not an NCEP grid
          !  This grid is for the NASA Np
@@ -127,6 +131,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.1040.or.igrid.eq.1024)then
          ! Not an NCEP grid
@@ -137,6 +143,8 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.1033)then
          ! Not an NCEP grid
          !  This grid is for the CAM files
@@ -145,6 +153,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.1032)then
          ! Not an NCEP grid
@@ -155,6 +165,8 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.1030)then
          ! Not an NCEP grid
          !  This grid is for the ECMWF ERA-20c
@@ -163,6 +175,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .false.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.1029)then
          ! Not an NCEP grid
@@ -173,6 +187,8 @@
         IsRegular_MetGrid = .false.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.1027)then
          ! Not an NCEP grid
          !  This grid is for the NOAA Reanalysis
@@ -182,12 +198,14 @@
           IsGlobal_MetGrid  = .true.
           IsRegular_MetGrid = .true.
           isGridRelative    = .true.
+          Met_gridtype      = "GLL0"
         elseif(MR_iversion.eq.3)then
           !v3
           IsLatLon_MetGrid  = .true.
           IsGlobal_MetGrid  = .true.
           IsRegular_MetGrid = .false.
           isGridRelative    = .true.
+          Met_gridtype      = "GLL0"
         endif
       elseif(igrid.eq.2)then
        ! Used by NCEP DOE reanalysis, NCEP-1
@@ -197,6 +215,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.3)then
         ! Used by GFS forecast
@@ -208,6 +228,8 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.4)then
         ! Used by GFS forecast
          !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid003.gif
@@ -216,6 +238,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.45)then
         ! Used by JMA 55
@@ -226,6 +250,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.91)then
         ! NAM 3-km Polar Stereographic
@@ -278,6 +304,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GST0"
         Met_iprojflag     = 1
         Met_lam0          = -150.0_8
         Met_phi0          =  90.0_8
@@ -315,6 +342,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GST0"
         Met_iprojflag     = 1
         Met_lam0          = -105.0_8
         Met_phi0          =  90.0_8
@@ -332,6 +360,8 @@
         IsRegular_MetGrid = .false.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.182)then
         ! HI N.Pacific 
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID182
@@ -341,6 +371,8 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.193)then
        ! Used by GFS forecast (0.25)
        !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID193
@@ -349,6 +381,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.196)then
         ! HI 2.5-km Mercator
@@ -391,6 +425,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GME0"
         Met_iprojflag     = 5
         Met_lam0          = 198.475_8
         Met_phi0          =  20.0_8
@@ -448,6 +483,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GST0"
         Met_iprojflag     = 1
         Met_lam0          = -150.0_8
         Met_phi0          =  90.0_8
@@ -483,6 +519,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  265.0_8
         Met_phi0          =  25.0_8
@@ -519,6 +556,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  265.0_8
         Met_phi0          =  25.0_8
@@ -554,6 +592,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GST0"
         Met_iprojflag     = 1
         Met_lam0          = -135.0_8
         Met_phi0          =  90.0_8
@@ -588,6 +627,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  265.0_8
         Met_phi0          =  25.0_8
@@ -624,6 +664,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  -107.0_8
         Met_phi0          =  50.0_8
@@ -659,6 +700,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  265.0_8
         Met_phi0          =  25.0_8
@@ -694,6 +736,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GST0"
         Met_iprojflag     = 1
         Met_lam0          = -135.0_8
         Met_phi0          =  90.0_8
@@ -2020,18 +2063,18 @@
 
       integer :: io                           ! Index for output streams
 
-      inquire( file=adjustl(trim(MR_iwf_template)), exist=IsThere )
+      inquire( file=trim(adjustl(MR_iwf_template)), exist=IsThere )
       if(.not.IsThere)then
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then        
           write(errlog(io),*)"MR ERROR: Could not find NWP template file ",&
-                     adjustl(trim(MR_iwf_template))
+                     trim(adjustl(MR_iwf_template))
           write(errlog(io),*)"          Make sure the calling program sets MR_iwf_template"
           write(errlog(io),*)"          and that it is linked to the cwd."
         endif;enddo
         stop 1
       endif
 
-      open(unit=fid,file=adjustl(trim(MR_iwf_template)),status='old',action='read')
+      open(unit=fid,file=trim(adjustl(MR_iwf_template)),status='old',action='read')
       read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
       if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
 
@@ -2187,8 +2230,8 @@
 
         if(varID.le.MR_MAXVARS)then
           Met_var_IsAvailable(varID)       = .true.
-          Met_var_NC_names(varID)          = adjustl(trim(vname))
-          Met_var_WMO_names(varID)         = adjustl(trim(vname_WMO))
+          Met_var_NC_names(varID)          = trim(adjustl(vname))
+          Met_var_WMO_names(varID)         = trim(adjustl(vname_WMO))
           idx=index(Met_var_NC_names(varID),' ')
           if(idx.gt.1)then
             linebuffer130 = Met_var_NC_names(varID)
