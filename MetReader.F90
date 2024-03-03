@@ -167,9 +167,10 @@
                                        ! 40 NASA-GEOS Cp
                                        ! 41 NASA-GEOS Np
                                        ! 50 WRF - output
-      logical,public :: MR_Use_RDA     = .true.
-      integer,public :: MR_iversion    = -1 ! version of the product; sometimes the grid used changes with newer
-                                            ! versions. -1 indicates latest version, but can be overridden here
+      logical,public :: MR_Use_RDA     = .false.  ! If reanalysis products were aquired via RDA, this flag can be changed
+      integer,public :: MR_RDAcode     = -1       ! This allows the calling program to specify older versions of data
+      integer,public :: MR_iversion    = -1       ! version of the product; sometimes the grid used changes with newer
+                                                  ! versions. -1 indicates latest version, but can be overridden here
       integer,public :: MR_iGridCode   !   MR_iGridCode specifies the NCEP grid described in:
                                        !   http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html
       integer,public :: MR_idataFormat !   Specifies the data model used
@@ -945,7 +946,7 @@
       isGridRelative = .true.
 
       !--------------------------------
-      !
+      ! Dimensions
       !--------------------------------
       ! Assume the critical dimensions are available
       ! Dimension names for NC files are read from the first file so do not need
@@ -954,40 +955,6 @@
       Met_dim_IsAvailable(2)=.true.; Met_dim_names(2)="unset name for p"
       Met_dim_IsAvailable(3)=.true.; Met_dim_names(3)="unset name for y"
       Met_dim_IsAvailable(4)=.true.; Met_dim_names(4)="unset name for x"
-
-      !Met_dim_names(1) = "reftime"
-      !Met_dim_names(1) = "time"
-      !Met_dim_names(1) = "time1"
-      !Met_dim_names(1) = "initial_time0_hours"
-      !Met_dim_names(1) = "Time"
-
-      !Met_dim_names(2) = "isobaric2"
-      !Met_dim_names(2) = "isobaric3"
-      !Met_dim_names(2) = "isobaric1"
-      !Met_dim_names(2) = "isobaric"
-      !Met_dim_names(2) = "lev"
-      !Met_dim_names(2) = "level"
-      !Met_dim_names(2) = "isobaricInhPa"
-      !Met_dim_names(2) = "lv_ISBL1"
-      !Met_dim_names(2) = "bottom_top"
-
-      !Met_dim_names(3) = "y"
-      !Met_dim_names(3) = "lat"
-      !Met_dim_names(3) = "g0_lat_2"
-      !Met_dim_names(3) = "latitude"
-      !Met_dim_names(3) = "g4_lat_2"
-      !Met_dim_names(3) = "south_north"
-
-      !Met_dim_names(4) = "x"
-      !Met_dim_names(4) = "lon"
-      !Met_dim_names(4) = "g0_lon_3"
-      !Met_dim_names(4) = "longitude"
-      !Met_dim_names(4) = "g4_lon_3"
-      !Met_dim_names(4) = "west_east"
-
-
-
-
 
       !--------------------------------
       ! Mechanical / State variables
@@ -1003,7 +970,11 @@
       !          Met_gridtype = "GME0"  ! Mercator
       !          Met_gridtype = "GLC0"  ! Lambert Conformal
       !          Met_gridtype = "GST0"  ! Polar stereographic
-
+      !
+      !         The NC_names listed are the names written by netcdf-java when converting grib forecast 
+      !         files to netcdf.  Reanalysis files might be provided in netcdf format directly, in
+      !         which case, the names are overwritten below. Since these name occasionally change,
+      !         know variants are checked if the expected name is not found in 
         !  Geopotential Height  (m^2/s^2)
       Met_var_NC_names(1)          = "Geopotential_height_isobaric"
       Met_var_GRIB_names(1)        = "gh"
@@ -1311,11 +1282,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode) 
         MR_Reannalysis = .true.
 
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "reftime"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric2"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.  ! Geopotential Height
         Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="u_wind_isobaric"
@@ -1359,11 +1325,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric3"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1406,11 +1367,6 @@
         MR_iGridCode = 216
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time1"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric1"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
 
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1456,11 +1412,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1504,11 +1455,6 @@
         MR_iGridCode = 212
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time1"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric3"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
 
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1555,11 +1501,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric1"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1593,11 +1534,6 @@
         MR_iGridCode = 227
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time1"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric2"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
 
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1648,11 +1584,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric2"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1692,11 +1623,6 @@
         MR_iGridCode = 196
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric2"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
 
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1745,11 +1671,6 @@
         MR_iGridCode = 198
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric2"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
 
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1808,11 +1729,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1862,11 +1778,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time1"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric2"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1905,7 +1816,6 @@
         ! GFS 0.5 deg
           !  http://www.nco.ncep.noaa.gov/pmb/products/gfs/
           !  http://motherlode.ucar.edu/native/conduit/data/nccf/com/gfs/prod/
-          !    
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
@@ -1916,11 +1826,6 @@
         MR_iGridCode = 4
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric3"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
 
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1962,11 +1867,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric3"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1986,7 +1886,6 @@
         ! GFS 0.25 deg
           ! http://www.nco.ncep.noaa.gov/pmb/products/gfs/
           ! http://motherlode.ucar.edu/native/conduit/data/nccf/com/gfs/prod/
-          !  
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
@@ -1997,11 +1896,6 @@
         MR_iGridCode = 193
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric3"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
 
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.
@@ -2043,11 +1937,6 @@
 
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 132
 
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -2074,11 +1963,6 @@
         MR_iGridCode = 1024
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .true.
-
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lev"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
 
         Met_dim_fac(1) = 1.0_sp/60.0_sp
 
@@ -2117,11 +2001,6 @@
         if(MR_iwind.eq.4)then
            ! https://rda.ucar.edu/datasets/ds090.0
 
-!          Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!          Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-!          Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!          Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-  
           ! Momentum / State variables
           Met_var_IsAvailable(1)=.true.
           Met_var_IsAvailable(2)=.true.
@@ -2130,18 +2009,13 @@
           Met_var_IsAvailable(5)=.true.
           Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Pressure_vertical_velocity_isobaric"
           ! Moisture
-          !Met_var_IsAvailable(30)=.true.
+          Met_var_IsAvailable(30)=.true.
   
           fill_value_sp = -9999.0_sp
 
         elseif(MR_iwind.eq.5)then
           MR_iw5_hours_per_file = 8760.0_dp
 
-!          Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!          Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "level"
-!          Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!          Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-  
           ! Momentum / State variables
           Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="hgt"        ! short m^2/s^2 (32066.f,1.f)
           Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="uwnd"       ! short m/s (202.66f,0.01f)
@@ -2154,7 +2028,7 @@
           !Met_var_IsAvailable(21)=.true.
           ! Moisture
           !Met_var_IsAvailable(30)=.true.; Met_var_NC_names(30)="rhum"      ! short  (302.66f,0.01f)
-          !Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="shum"      ! short SpecHum ~ mixing ratio kg/kg(0.032666f,1.e-06f)
+          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="shum"      ! short SpecHum ~ mixing ratio kg/kg(0.032666f,1.e-06f)
           !Met_var_IsAvailable(32)=.true.; Met_var_NC_names(32)="shum"      ! short should really be QL (liquid)
           ! Precipitation
           !Met_var_IsAvailable(44)=.true.; Met_var_NC_names(44)="prate"     ! short surface precipitation rate (kg/m2/s) (0.0032765f,1.e-07f)
@@ -2185,11 +2059,6 @@
         MR_iw5_hours_per_file = 672.0_dp
 
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 200
-
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g0_lat_2"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g0_lon_3"
 
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="HGT_GDS0_ISBL"
@@ -2231,10 +2100,6 @@
             ! Note: these must be converted from grib using
             !   ncl_convert2nc pgrbanl_mean_1912_VVEL_pres.grib -L
             ! netcdf-java does not seem to work on these
-!            Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
-!            Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
-!            Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g0_lat_2"
-!            Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g0_lon_3"
     
             ! Momentum / State variables
             Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="HGT_GDS0_ISBL"
@@ -2246,10 +2111,6 @@
           else 
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! Version 2c (https://www.esrl.noaa.gov/psd/data/gridded/data.20thC_ReanV2c.pressure.html)
-!            Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!            Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "level"
-!            Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!            Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
     
             ! Momentum / State variables
             Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="hgt"
@@ -2278,11 +2139,6 @@
   
           Met_var_GRIB1_Table(1:MR_MAXVARS) = 2
   
-!          Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!          Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaricInhPa"
-!          Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "latitude"
-!          Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "longitude"
-  
           ! Momentum / State variables
           Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="gh"
           Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="u"
@@ -2308,11 +2164,6 @@
 
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 128
 
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"
                                        Met_var_GRIB1_Param(1)=129
@@ -2336,8 +2187,34 @@
 
       elseif (MR_iwindformat.eq.29)then
          ! ECMWF ERA5
+         ! This is a premier reanalysis product that is available in lots of formats
+         ! From RDA, data are availabe in complete grid files with one variable/file/day
+         !   Current version is at https://rda.ucar.edu/datasets/ds633.0 and has a
+         !    file name format e5.oper.an.pl.128_129_z.ll025sc.YYYYMMDD00_YYYYMMMDD23.nc
+         !   Previous version is at https://rda.ucar.edu/datasets/ds630.0/ and has a
+         !    file name format e5.oper.an.pl.128_129_z.regn320sc.YYYYMMDD00_YYYYMMMDD23.nc
+         !   These are available as grib or nc4 files, but variable names will change
+         !   if grib is converted to netcdf via netcdf-java or ncl_convert2nc
+         !   Using RDA files required iwf=5 since variables on stored in different files
+         ! From CDS, data are available for download as a subset of the full dataset via
+         !  https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-pressure-levels?tab=form
+         ! Data are provided as a single file for all variables and timesteps (iwf=4) as
+         ! both grib and nc. If grib is downloaded, then converted to nc via netcdf-java or
+         ! ncl_convert2nc, variable names will be different from that of the files provided
+         ! directly by CDS, though metreader will attempt to translate.
 
         if(MR_iversion.eq.-1)MR_iversion = 2 ! v1 finished in 2019
+        if(MR_iversion.eq.1)then
+          MR_RDAcode=630
+        elseif(MR_iversion.eq.2)then
+          MR_RDAcode=633
+        else
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(outlog(io),*)" MR ERROR: ERA5 version not recognized ",MR_iversion
+          endif;enddo
+          stop 1
+        endif
+
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "ECMWF ERA5 reanalysis"
@@ -2349,80 +2226,32 @@
 
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 128
 
-        ! RDA v1
-            ! https://rda.ucar.edu/datasets/ds633.0
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "level"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "latitude"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "longitude"
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z"
-        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U"
-        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V"
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W"
-        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T"
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W"
-
-        ! RDA v2 (nc from rda)
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "level"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "latitude"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "longitude"
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z" 
-        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U" 
-        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V" 
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W" 
-        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T" 
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W" 
-
-        ! RDA v2 (grib to nc via ncj)
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"
-        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric"
-        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric"
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric"
-        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric"
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric"
-
-        ! RDA v2 (grib to nc via ncl)
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g0_lat_2"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g0_lon_3"
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z_GDS0_ISBL"
-        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_GDS0_ISBL"
-        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_GDS0_ISBL"
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W_GDS0_ISBL"
-        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T_GDS0_ISBL"
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W_GDS0_ISBL"
-
-        ! RDA v2 (nc from rda)
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "level"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "latitude"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "longitude"
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="z"
-        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="u"
-        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="v"
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="w"
-        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="t"
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="w"
-
-        if(MR_Use_RDA)then
+        if(MR_iwind.eq.3.or.MR_iwind.eq.4)then
+          ! These data are from CDS
+          ! https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-pressure-levels?tab=form
+          !                                                       ! via ncl     via netcdf-java
+          Met_var_IsAvailable( 1)=.true.; Met_var_NC_names(1)="z" ! Z_GDS0_ISBL Geopotential_isobaric
+          Met_var_IsAvailable( 2)=.true.; Met_var_NC_names(2)="u" ! Z_GDS0_ISBL U_component_of_wind_isobaric
+          Met_var_IsAvailable( 3)=.true.; Met_var_NC_names(3)="v" ! Z_GDS0_ISBL V_component_of_wind_isobaric
+          Met_var_IsAvailable( 4)=.true.; Met_var_NC_names(4)="w" ! Z_GDS0_ISBL Vertical_velocity_isobaric
+          Met_var_IsAvailable( 5)=.true.; Met_var_NC_names(5)="t" ! Z_GDS0_ISBL Temperature_isobaric
+          Met_var_IsAvailable( 7)=.true.; Met_var_NC_names(7)="w" ! Z_GDS0_ISBL Vertical_velocity_isobaric
+          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(7)="q" ! Z_GDS0_ISBL Specific_humidity_isobaric
+        elseif(MR_iwind.eq.5)then
+          ! RDA v1 or v2
+          ! https://rda.ucar.edu/datasets/ds633.0
+          MR_Use_RDA = .true.
           ! Note: files are provided as one variable per file and must use iwind=5
           !       Each file contains one day of data
           MR_iw5_hours_per_file = 24.0_dp
-          if(MR_iversion.eq.1)then
-            ! https://rda.ucar.edu/datasets/ds630.0
-
-          elseif(MR_iversion.eq.2)then
-            ! https://rda.ucar.edu/datasets/ds633.0
-
-          endif
-        else
-          ! https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-pressure-levels?tab=form
+          !                                                       ! via ncl     via netcdf-java
+          Met_var_IsAvailable( 1)=.true.; Met_var_NC_names(1)="Z" ! Z_GDS0_ISBL Geopotential_isobaric
+          Met_var_IsAvailable( 2)=.true.; Met_var_NC_names(2)="U" ! U_GDS0_ISBL U_component_of_wind_isobaric
+          Met_var_IsAvailable( 3)=.true.; Met_var_NC_names(3)="V" ! V_GDS0_ISBL V_component_of_wind_isobaric
+          Met_var_IsAvailable( 4)=.true.; Met_var_NC_names(4)="W" ! W_GDS0_ISBL Vertical_velocity_isobaric
+          Met_var_IsAvailable( 5)=.true.; Met_var_NC_names(5)="T" ! T_GDS0_ISBL Temperature_isobaric
+          Met_var_IsAvailable( 7)=.true.; Met_var_NC_names(7)="W" ! W_GDS0_ISBL Vertical_velocity_isobaric
+          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(7)="q" ! Q_GDS0_ISBL Specific_humidity_isobaric
         endif
 
         fill_value_sp = -9999.0_sp
@@ -2444,16 +2273,6 @@
         MR_iw5_hours_per_file = 672.0_dp
 
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 128
-
-
-        !Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
-        !Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
-        !Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g4_lat_2"
-        !Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g4_lon_3"
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"       ! initial_time0_hours
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"   ! level, lv_ISBL1
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"        ! latitude, g0_lat_2
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"        ! longitude, g0_lon_3
 
         ! Momentum / State variables
         !Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z_GDS4_ISBL" ! e5.oper.an.pl.128_129_z.regn320sc.2018062000_2018062023.nc
@@ -2488,11 +2307,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -2518,11 +2332,6 @@
         MR_iGridCode = 1033
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .true.
-
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lev"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
 
         Met_dim_fac(1) = 24.0
 
@@ -2551,11 +2360,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lev"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-
         Met_dim_fac(1) = 1.0_sp/60.0_sp
 
         ! Momentum / State variables
@@ -2579,11 +2383,6 @@
         MR_iGridCode = 1041
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lev"
-!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
 
         Met_dim_fac(1) = 1.0_sp/60.0_sp
 

@@ -10,7 +10,8 @@
 !     MR_Read_MetP_Variable_netcdf
 !     MR_interp_iwf25_grid
 !     MR_NC_check_status
-
+!     MR_NC_check_var_synonyms
+!
 !##############################################################################
 !
 !     MR_Read_Met_DimVars_netcdf
@@ -379,9 +380,9 @@
 
         elseif(MR_iwindformat.eq.29)then
           ! ECMWF ERA5
-          ! RDA provides the data as 1-variable/file so iwind=5
+          ! RDA provides the data as 1-variable/file so iwf=5
             ! https://rda.ucar.edu/datasets/ds633.0
-          ! If data are from CDS, use iwind=4
+          ! If data are from CDS, use iwf=4
           maxdimlen            = 37
           nlev_coords_detected = 1
           allocate(nlevs_fullmet(nlev_coords_detected))
@@ -501,7 +502,7 @@
             if(nSTAT.ne.NF90_NOERR)then
               call MR_NC_check_status(nSTAT,0,"inq_varid")
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-                write(outlog(io),*)'  Cannot find variable ',invar
+                write(outlog(io),*)'  Cannot find variable ',trim(adjustl(invar))
                 write(outlog(io),*)'  Testing for known synonyms'
               endif;enddo
               ! Checking other name options.
@@ -511,7 +512,7 @@
               nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
               if(nSTAT.ne.NF90_NOERR)then
                 do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-                  write(outlog(io),*)'  Cannot find variable ',invar
+                  write(outlog(io),*)'  Cannot find variable ',trim(adjustl(invar))
                 endif;enddo
                 Met_var_IsAvailable(ivar) = .false.
                 cycle
@@ -548,11 +549,9 @@
                            name =  dimname, &
                            len = dimlen)
               if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension X")
-!              if(index(dimname,Met_dim_names(4)).ne.0)then
-                nx_fullmet = dimlen
-                xdim_id    = var_dimIDs(i_dim)
-!              endif
-              if(index(dimname,'x')        .eq.0.and.&        ! Check this dimension against known names
+              nx_fullmet = dimlen
+              xdim_id    = var_dimIDs(i_dim)
+              if(index(dimname,'x')        .eq.0.and.&  ! Check this dimension against known names
                  index(dimname,'lon')      .eq.0.and.&
                  index(dimname,'g0_lon_3') .eq.0.and.&
                  index(dimname,'longitude').eq.0.and.&
@@ -711,7 +710,7 @@
               if(index(dimname,'y')        .eq.0.and.&        ! Check this dimension against known names
                  index(dimname,'lat')      .eq.0.and.&
                  index(dimname,'g0_lat_2') .eq.0.and.&
-                 index(dimname,'latitude').eq.0.and.&
+                 index(dimname,'latitude') .eq.0.and.&
                  index(dimname,'g4_lat_2') .eq.0.and.&
                  index(dimname,'south_north').eq.0.and.&
                  index(dimname,trim(adjustl(Met_dim_names(3)))).eq.0)then
@@ -898,23 +897,23 @@
             ! variable, we check if the 'level' coordinate is new or already
             ! noted in this file, building an indexed list
             nSTAT = nf90_inq_varid(ncid,dimname,var_id)
-            if(nSTAT.eq.NF90_NOERR.and. &   ! This first condition excludes dims with no vars
-               (index(dimname,'lev').ne.0.or.&  ! This one catches both 'lev' and 'level'
-                index(dimname,'isobaric').ne.0.or.&
-                index(dimname,'isobaricInhPa').ne.0.or.&
-                index(dimname,'pressure').ne.0.or.&
-                index(dimname,'height').ne.0.or.&
-                index(dimname,'depth').ne.0.or.&
-                index(dimname,'lv_ISBL1').ne.0.or.&
-                index(dimname,'bottom_top').ne.0.or.&
-                index(dimname,'bottom_top_stag').ne.0.or.&
+            if(nSTAT.eq.NF90_NOERR.and. &                    ! This first condition excludes dims with no vars
+               (index(dimname,'lev')             .ne.0.or.&  ! This one catches both 'lev' and 'level'
+                index(dimname,'isobaric')        .ne.0.or.&
+                index(dimname,'isobaricInhPa')   .ne.0.or.&
+                index(dimname,'pressure')        .ne.0.or.&
+                index(dimname,'height')          .ne.0.or.&
+                index(dimname,'depth')           .ne.0.or.&
+                index(dimname,'lv_ISBL1')        .ne.0.or.&
+                index(dimname,'bottom_top')      .ne.0.or.&
+                index(dimname,'bottom_top_stag') .ne.0.or.&
                 index(dimname,'soil_layers_stag').ne.0).or.&
                 index(dimname,trim(adjustl(Met_dim_names(4)))).ne.0)then ! This last check is in case
                                                                          ! the template file has something
                                                                          ! non-standard
               ! Log this level coordinate if it is the first
               if (nlev_coords_detected.eq.0)then
-                nlev_coords_detected = nlev_coords_detected + 1
+                nlev_coords_detected    = nlev_coords_detected + 1
                 Met_var_zdim_idx(ivar)  = nlev_coords_detected
                 Met_var_zdim_ncid(ivar) = var_dimIDs(i_dim)
                 maxdimlen = dimlen
@@ -930,7 +929,7 @@
                   endif
                 enddo
                 if(.not.FoundOldDim)then
-                  nlev_coords_detected = nlev_coords_detected + 1
+                  nlev_coords_detected    = nlev_coords_detected + 1
                   Met_var_zdim_idx(ivar)  = nlev_coords_detected
                   Met_var_zdim_ncid(ivar) = var_dimIDs(i_dim)
                   if (maxdimlen.lt.dimlen) maxdimlen = dimlen
@@ -1817,6 +1816,7 @@
       integer :: x_dim_id,y_dim_id,x_var_id,y_var_id
       integer :: reftimedimID
       integer :: var_ndims
+      integer :: ivar
       integer,dimension(:),allocatable :: var_dimIDs
       integer :: gph_ndims
       integer,dimension(NF90_MAX_VAR_DIMS) :: gph_DimIDs
@@ -1871,6 +1871,10 @@
           integer               :: byear
           logical               :: useLeaps
         end function HS_DayOfEvent
+        subroutine MR_NC_check_var_synonyms(ivar,ncid)
+          integer, intent(in) :: ivar
+          integer, intent(in) :: ncid
+        end subroutine MR_NC_check_var_synonyms
         subroutine MR_NC_check_status(nSTAT, errcode, operation)
           integer, intent(in) :: nSTAT
           integer, intent(in) :: errcode
@@ -2153,6 +2157,7 @@
             enddo
           enddo
         else
+          ! This branch is for non-iw=5 and non-iwf=50
           ! For all other formats, try to read the GRIB_orgReferenceTime string
           ! Loop through all the windfiles
           do iw = 1,MR_iwindfiles
@@ -2190,8 +2195,29 @@
             ! Find the id of the time dimension
             !   First, search for the GPH variable and check its
             !   dimensions
-            nSTAT = nf90_inq_varid(ncid,Met_var_NC_names(1),gph_var_id)
-            call MR_NC_check_status(nSTAT,1,"nf90_inq_varid GPH")
+            ivar = 1
+            nSTAT = nf90_inq_varid(ncid,Met_var_NC_names(ivar),gph_var_id)
+            ! This might fail if the GPH name is not as expected, so search known alternatives
+            ! first before giving up.
+            if(nSTAT.ne.NF90_NOERR)then
+              call MR_NC_check_status(nSTAT,0,"inq_varid")
+              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                write(outlog(io),*)'  Cannot find variable ',Met_var_NC_names(ivar)
+                write(outlog(io),*)'  Testing for known synonyms'
+              endif;enddo
+              ! Checking other name options.
+              call MR_NC_check_var_synonyms(ivar,ncid)
+              ! Now try again
+              invar = Met_var_NC_names(ivar)
+              nSTAT = nf90_inq_varid(ncid,invar,gph_var_id)  ! get the var_id for this named variable
+              if(nSTAT.ne.NF90_NOERR)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  write(outlog(io),*)'  Cannot find variable ',invar
+                endif;enddo
+                call MR_NC_check_status(nSTAT,1,"nf90_inq_varid GPH")
+              endif
+            endif
+
             nSTAT = nf90_inquire_variable(ncid, gph_var_id, ndims = gph_ndims)
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable GPH")
             nSTAT = nf90_inquire_variable(ncid, gph_var_id, dimids = gph_DimIDs(:gph_ndims))
@@ -2486,8 +2512,9 @@
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug1,&
-         Met_var_NC_names,MR_BaseYear,MR_useLeap,MR_Use_RDA,MR_iwindformat,MR_iw5_prefix,MR_iw5_root,&
-         MR_DirDelim,MR_DirDelim,MR_iw5_suffix1,MR_iw5_suffix2,MR_iversion,&
+         Met_var_NC_names,MR_BaseYear,MR_useLeap,MR_iwindformat,MR_iw5_prefix,MR_iw5_root,&
+         MR_DirDelim,MR_DirDelim,MR_iw5_suffix1,MR_iw5_suffix2,&
+         MR_Use_RDA,MR_RDAcode,MR_iversion,&
          MR_Comp_StartYear
 
       implicit none
@@ -2500,7 +2527,6 @@
       integer               :: dum_i1,dum_i2,dum_i3
 
       integer :: thisYear,thisMonth,thisDay
-      logical :: Use_ds630 = .false.
 
       integer :: io                           ! Index for output streams
 
@@ -2696,7 +2722,7 @@
         dum_i1 = thisDay                  ! Start day in file
         dum_i2 = thisDay                  ! End day in file
         dum_i3 = 23                                ! End hour in file
-        if (Use_ds630) then
+        if (MR_RDAcode.eq.630) then
           ! Dataset https://rda.ucar.edu/datasets/ds630.0/
           !  uses the following format:
           ! YYYY/e5.oper.an.pl.128_129_z.regn320sc.2018062000_2018062023.nc
@@ -2713,7 +2739,7 @@
           elseif(ivar.eq.7)then
             write(MR_iw5_prefix,291)'e5.oper.an.pl.128_135_w.regn320sc.'
           endif
-        else
+        else ! assume MR_RDAcode=633
           !  whereas https://rda.ucar.edu/datasets/ds633.0
           !  uses the following format:
           ! YYYY/e5.oper.an.pl.128_129_z.ll025sc.2018062000_2018062023.nc
@@ -3546,6 +3572,7 @@
                          start = (/1,1,iwstep/),       &
                          count = (/192,94,1/))
                 call MR_NC_check_status(nSTAT,0,"nf90_get_var NCEP 2d non-cat ncv3")
+         ! HFS get rid of the iwf25_scale_facs
                 call MR_interp_iwf25_grid(nx_submet,ny_submet,tmpsurf2d_short,temp2d_sp,&
                                     iwf25_scale_facs(ivar),iwf25_offsets(ivar))
                 MR_dum2d_met(1:nx_submet,:) = temp2d_sp(1:nx_submet,:,1)
@@ -3854,16 +3881,17 @@
 !
 !     ivar   = variable ID
 !
-!     This subroutine is called if the expected variable name is not found. Then
-!     all synonyms for that variable are checked.  If the variable is found, 
-!     then Met_var_NC_names is updated
+!     This subroutine is called from MR_Read_Met_DimVars_netcdf if the expected
+!     variable name is not found. Then all synonyms for that variable are
+!     checked.  If the variable is found, then Met_var_NC_names is updated.
 !
 !##############################################################################
 
       subroutine MR_NC_check_var_synonyms(ivar,ncid)
 
       use MetReader,       only : &
-         Met_var_NC_names,Met_var_IsAvailable,Met_gridtype
+         Met_var_NC_names,Met_var_IsAvailable,Met_gridtype,MR_nio,&
+         VB,verbosity_production,outlog
 
       use netcdf
 
@@ -3875,125 +3903,373 @@
       integer :: nSTAT
       character(len=NF90_MAX_NAME)  :: invar
       integer :: in_var_id
+      integer :: io
 
+      ! We are here because we could not find the expected variable name, so reset it
+      Met_var_NC_names(ivar) = "reset"
       if(ivar.eq.1)then ! Geopotential height
-        invar = "H"
+        invar = "Geopotential_height_isobaric"
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "H"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "hgt"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "HGT_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "gh"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Geopotential_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "z"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Z"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Z_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Z_GDS4_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Z3"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "HGT_P0_L100_" // Met_gridtype
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
       elseif(ivar.eq.2)then ! U-component of wind
+        invar = "u-component_of_wind_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "u_wind_isobaric"
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "U"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "uwnd"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "UGRD_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "U_GRD_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "u"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "U_component_of_wind_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "U_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "U_GDS4_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "UGRD_P0_L100_" // Met_gridtype
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
       elseif(ivar.eq.3)then ! V-component of wind
+        invar = "v-component_of_wind_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "v_wind_isobaric"
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "V"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "vwnd"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "VGRD_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "V_GRD_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "v"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "V_component_of_wind_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "V_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "V_GDS4_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "VGRD_P0_L100_" // Met_gridtype
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
       elseif(ivar.eq.4.or.ivar.eq.7)then ! Vertical velocity (pressure)
+        invar = "Vertical_velocity_pressure_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Pressure_vertical_velocity_isobaric"
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "Vertical_velocity_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "OMEGA"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "Pressure_vertical_velocity_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "omega"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "VVEL_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "V_VEL_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "W"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "w"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "W_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "W_GDS4_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "VVEL_P0_L100_" // Met_gridtype
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
       elseif(ivar.eq.5)then ! Temperature
+        invar = "Temperature_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Temp_isobaric"
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "T"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "air"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "TMP_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "t"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "T_GDS0_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "T_GDS4_ISBL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
         invar = "TMP_P0_L100_" // Met_gridtype
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !write(*,*)"       Checking ",trim(adjustl(invar)),' ',nSTAT
       elseif(ivar.eq.11)then ! Velocity component in x (or E) direction at 10 m above ground surface  (m/s)
+        invar = "u-component_of_wind_height_above_ground"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "u_wind_height_above_ground"
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "U10"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "UGRD_P0_L103_" // Met_gridtype
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
       elseif(ivar.eq.12)then ! Velocity component in y (or N) direction at 10 m above ground surface  (m/s)
+        invar = "v-component_of_wind_height_above_ground"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "v_wind_height_above_ground"
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "V10"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "VGRD_P0_L103_" // Met_gridtype
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
       elseif(ivar.eq.16)then ! Soil Moisture  (fraction)
+        invar = "Volumetric_Soil_Moisture_Content_depth_below_surface_layer"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Volumetric_Soil_Moisture_Content"
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Soil_moisture_content_depth_below_surface_layer"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "SMOIS"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "SOILW_P0_2L106_" // Met_gridtype
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
       elseif(ivar.eq.30)then ! Relative humidity  (%)
+        invar = "Relative_humidity_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "RH"
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "rhum"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "RELHUM"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "RH_P0_L100_" // Met_gridtype
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
       elseif(ivar.eq.31)then ! Specific humidity  (kg/kg)
+        invar = "Specific_humidity_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "QV"
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "shum"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Q"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "q"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "QVAPOR"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "SPFH_P0_L100_" // Met_gridtype
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
       elseif(ivar.eq.32)then ! Cloud water mixing ratio  (kg/kg)
+        invar = "Cloud_mixing_ratio_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Cloud_water_isobaric"
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "shum"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "QL"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "clwc"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        !invar = "crwc"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "CLWMR_P0_L100_" // Met_gridtype
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
       elseif(ivar.eq.33)then ! Snow mixing ratio  (kg/kg)
+        invar = "Snow_mixing_ratio_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Cloud_water_isobaric"
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "Ice_mixing_ratio_isobaric"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "QI"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "ciwc"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
+        invar = "cswc"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
         invar = "SNMR_P0_L100_" // Met_gridtype
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar
       endif
-
-      
-      !write(outlog(io),*)'  Setting Met_var_IsAvailable to .false.'
-      Met_var_IsAvailable(ivar) = .false.
+      if(index(Met_var_NC_names(ivar),'reset').ne.0)then
+        ! If this variable still contains 'reset', then we couldn't find a
+        ! synonym. Flag as unavailable
+        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+          write(outlog(io),*)'  Setting Met_var_IsAvailable to .false.'
+        endif;enddo
+        Met_var_IsAvailable(ivar) = .false.
+      else
+        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+          write(outlog(io),*)'  Variable name has been reset to: ',Met_var_NC_names(ivar)
+        endif;enddo
+      endif
 
       end subroutine MR_NC_check_var_synonyms
 
