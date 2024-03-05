@@ -1768,7 +1768,7 @@
 !
 !     Called once from MR_Read_Met_DimVars 
 !
-!     This subroutine opens each netcdf file and determine the time of each
+!     This subroutine opens each netcdf file and determines the time of each
 !     time step of each file in the number of hours since MR_BaseYear.
 !     In most cases, the length of the time variable (nt_fullmet) will be 
 !     read directly from the file and overwritten (is was set in MR_Read_Met_DimVars_netcdf
@@ -1908,7 +1908,7 @@
         MR_Comp_StartMonth       = HS_MonthOfEvent(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
         MR_Comp_StartDay         = HS_DayOfEvent(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
 
-        ! Here the branch for when MR_iwindformat = 25, 26, 27, 29, or 30
+        ! Here is the branch for when MR_iwindformat = 25, 26, 27, 29, or 30
         ! First copy path read in to slot 2
  110    format(a50,a1,i4,a1)
         write(MR_windfiles(1),110)trim(adjustl(MR_iw5_root)),MR_DirDelim, &
@@ -1938,22 +1938,27 @@
         nt_fullmet = 1
         do iw = 1,MR_iwindfiles
           if(MR_iwindformat.eq.25)then
+            ! NCEP 50-year reanalysis files start on Jan. 1
             MR_windfile_starthour(iw) = &
               real(HS_hours_since_baseyear(MR_Comp_StartYear+(iw-1),1,&
                                            1,0.0_8,MR_BaseYear,MR_useLeap),kind=sp)
           elseif(MR_iwindformat.eq.26)then
+            ! JRA-55 files start at the beginning of each month
             MR_windfile_starthour(iw) = &
               real(HS_hours_since_baseyear(MR_Comp_StartYear,MR_Comp_StartMonth+(iw-1),&
                                            1,0.0_8,MR_BaseYear,MR_useLeap),kind=sp)
           elseif(MR_iwindformat.eq.27)then
+            ! NOAA-CIRES reanalysis files start on Jan. 1
             MR_windfile_starthour(iw) = &
               real(HS_hours_since_baseyear(MR_Comp_StartYear+(iw-1),1,&
                                            1,0.0_8,MR_BaseYear,MR_useLeap),kind=sp)
           elseif(MR_iwindformat.eq.29)then
+            ! ERA5 files (from RDA) start at the beginning of each month
             MR_windfile_starthour(iw) = &
               real(HS_hours_since_baseyear(MR_Comp_StartYear,MR_Comp_StartMonth,&
                                            MR_Comp_StartDay+(iw-1),0.0_8,MR_BaseYear,MR_useLeap),kind=sp)
           elseif(MR_iwindformat.eq.30)then
+            ! 30 ECMWF 20-Century (ERA-20C from RDA) start at the beginning of each month
             MR_windfile_starthour(iw) = &
               real(HS_hours_since_baseyear(MR_Comp_StartYear,MR_Comp_StartMonth+(iw-1),&
                                            1,0.0_8,MR_BaseYear,MR_useLeap),kind=sp)
@@ -1961,6 +1966,8 @@
 
           ! Building the name of the first windfile (for hgt) to inspect for nt
           call MR_Set_iwind5_filenames(MR_Comp_StartHour+(iw-1)*iwf_tot,1,Z_infile)
+          ! Open the file storing Z. We will use this to determine the time parameters and
+          ! assume the other variable files have the same time structure
           nSTAT = nf90_open(trim(adjustl(Z_infile)),NF90_NOWRITE,ncid)
           if(nSTAT.ne.NF90_NOERR)then
             call MR_NC_check_status(nSTAT,0,"nf90_open")
@@ -2145,6 +2152,14 @@
               endif;enddo
               stop 1
             endif
+            ! Check if MetReader's base year is compatible with this WRF file
+            if(itstart_year.lt.MR_BaseYear)then
+              ! reset base year to the century before
+              MR_BaseYear = itstart_year - mod(itstart_year,100)
+              do io=1,2;if(VB(io).le.verbosity_info)then
+                write(outlog(io),*)"WARNING: Resetting MR_BaseYear to ",MR_BaseYear
+              endif;enddo
+            endif
             filestart_hour = real(itstart_hour,kind=sp) + &
                              real(itstart_min,kind=sp)/60.0_sp      + &
                              real(itstart_sec,kind=sp)/3600.0_sp
@@ -2326,6 +2341,24 @@
                       endif;enddo
                       stop 1
                     endif
+                    ! Check if MetReader's base year is compatible with this file
+                    if(itstart_year.lt.MR_BaseYear)then
+                      if(iw.eq.1)then
+                        ! If this is the first file, reset base year to the century before
+                        MR_BaseYear = itstart_year - mod(itstart_year,100)
+                        do io=1,2;if(VB(io).le.verbosity_info)then
+                          write(outlog(io),*)"WARNING: Resetting MR_BaseYear to ",MR_BaseYear
+                        endif;enddo
+                      else
+                        ! If the base year of subsequent files changes, issue an error
+                        do io=1,2;if(VB(io).le.verbosity_error)then
+                          write(outlog(io),*)"MR ERROR: BaseYear of this file does not agree with previous."
+                          write(outlog(io),*)"   BaseYear of file ",1,MR_BaseYear
+                          write(outlog(io),*)"   BaseYear of file ",iw,itstart_year
+                        endif;enddo
+                        stop 1
+                      endif
+                    endif
                     do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                       write(outlog(io),2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
                                                itstart_hour,itstart_min,itstart_sec
@@ -2390,6 +2423,24 @@
                         write(errlog(io),*)iomessage
                       endif;enddo
                       stop 1
+                    endif
+                    ! Check if MetReader's base year is compatible with this file
+                    if(itstart_year.lt.MR_BaseYear)then
+                      if(iw.eq.1)then
+                        ! If this is the first file, reset base year to the century before
+                        MR_BaseYear = itstart_year - mod(itstart_year,100)
+                        do io=1,2;if(VB(io).le.verbosity_info)then
+                          write(outlog(io),*)"WARNING: Resetting MR_BaseYear to ",MR_BaseYear
+                        endif;enddo
+                      else
+                        ! If the base year of subsequent files changes, issue an error
+                        do io=1,2;if(VB(io).le.verbosity_error)then
+                          write(outlog(io),*)"MR ERROR: BaseYear of this file does not agree with previous."
+                          write(outlog(io),*)"   BaseYear of file ",1,MR_BaseYear
+                          write(outlog(io),*)"   BaseYear of file ",iw,itstart_year
+                        endif;enddo
+                        stop 1
+                      endif
                     endif
                     do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                       write(outlog(io),2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
