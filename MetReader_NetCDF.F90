@@ -3025,6 +3025,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
+      integer, parameter :: dp        = 8 ! single precision
 
       integer,intent(in) :: ivar
       integer,intent(in) :: istep
@@ -3051,9 +3052,10 @@
       logical :: IsCategorical
 
       integer :: var_xtype
-      real(kind=sp) :: var_scale_fac = 0.0_sp
-      real(kind=sp) :: var_offset    = 0.0_sp
+      real(kind=dp) :: var_scale_fac = 0.0_dp
+      real(kind=dp) :: var_offset    = 0.0_dp
       real(kind=sp) :: dum_sp
+      real(kind=dp) :: dum_dp
 
       real(kind=sp),dimension(:,:,:,:),allocatable :: dum3d_metP_aux
       real(kind=sp) :: theta,cofac
@@ -3294,10 +3296,10 @@
                        count = (/iicount(i),ny_submet,np_met_loc,1/))
               call MR_NC_check_status(nSTAT,0,"nf90_get_var iw5 wf25 short")
 
-              nSTAT = nf90_get_att(ncid, in_var_id,"scale_factor",dum_sp)
-              var_scale_fac = dum_sp
-              nSTAT = nf90_get_att(ncid, in_var_id,"add_offset",dum_sp)
-              var_offset = dum_sp
+              nSTAT = nf90_get_att(ncid, in_var_id,"scale_factor",dum_dp)
+              var_scale_fac = dum_dp
+              nSTAT = nf90_get_att(ncid, in_var_id,"add_offset",dum_dp)
+              var_offset = dum_dp
             elseif(var_xtype.eq.NF90_FLOAT)then
               nSTAT = nf90_get_var(ncid,in_var_id,temp3d_sp(ileft(i):iright(i),:,:,:), &
                        start = (/iistart(i),jstart,1,iwstep/),       &
@@ -3469,10 +3471,10 @@
                        start = (/iistart(i),jstart,1,iwstep/),       &
                        count = (/iicount(i),ny_submet,np_met_loc,1/))
               call MR_NC_check_status(nSTAT,0,"nf90_get_var short")
-              nSTAT = nf90_get_att(ncid, in_var_id,"scale_factor",dum_sp)
-              var_scale_fac = dum_sp
-              nSTAT = nf90_get_att(ncid, in_var_id,"add_offset",dum_sp)
-              var_offset = dum_sp
+              nSTAT = nf90_get_att(ncid, in_var_id,"scale_factor",dum_dp)
+              var_scale_fac = dum_dp
+              nSTAT = nf90_get_att(ncid, in_var_id,"add_offset",dum_dp)
+              var_offset = dum_dp
             elseif(var_xtype.eq.NF90_FLOAT)then
               nSTAT = nf90_get_var(ncid,in_var_id,temp3d_sp(ileft(i):iright(i),:,:,:), &
                        start = (/iistart(i),jstart,1,iwstep/),       &
@@ -3521,12 +3523,12 @@
             if(var_xtype.eq.NF90_SHORT)then
               if(y_inverted)then
                 MR_dum3d_metP(1:nx_submet,j,1:np_met_loc) = &
-                                      real(temp3d_short(1:nx_submet,itmp,1:np_met_loc,1),kind=sp) * &
-                                       var_scale_fac + var_offset
+                                      real(temp3d_short(1:nx_submet,itmp,1:np_met_loc,1) * &
+                                       var_scale_fac + var_offset, kind=sp)
               else
                 MR_dum3d_metP(1:nx_submet,j,1:np_met_loc) = &
-                                      real(temp3d_short(1:nx_submet,j,1:np_met_loc,1),kind=sp) * &
-                                       var_scale_fac + var_offset
+                                      real(temp3d_short(1:nx_submet,j,1:np_met_loc,1) * &
+                                       var_scale_fac + var_offset,kind=sp)
               endif
             elseif(var_xtype.eq.NF90_FLOAT)then
               if(y_inverted)then
@@ -3819,7 +3821,7 @@
       call MR_NC_check_status(nSTAT,0,"nf90_close")
 
       MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_met_loc) =  &
-      MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_met_loc) * Met_var_conversion_factor(ivar)
+        MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_met_loc) * Met_var_conversion_factor(ivar)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"

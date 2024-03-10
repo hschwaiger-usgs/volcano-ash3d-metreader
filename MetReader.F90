@@ -2230,13 +2230,13 @@
           ! These data are from CDS
           ! https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-pressure-levels?tab=form
           !                                                       ! via ncl     via netcdf-java
-          Met_var_IsAvailable( 1)=.true.; Met_var_NC_names(1)="z" ! Z_GDS0_ISBL Geopotential_isobaric
-          Met_var_IsAvailable( 2)=.true.; Met_var_NC_names(2)="u" ! Z_GDS0_ISBL U_component_of_wind_isobaric
-          Met_var_IsAvailable( 3)=.true.; Met_var_NC_names(3)="v" ! Z_GDS0_ISBL V_component_of_wind_isobaric
-          Met_var_IsAvailable( 4)=.true.; Met_var_NC_names(4)="w" ! Z_GDS0_ISBL Vertical_velocity_isobaric
-          Met_var_IsAvailable( 5)=.true.; Met_var_NC_names(5)="t" ! Z_GDS0_ISBL Temperature_isobaric
-          Met_var_IsAvailable( 7)=.true.; Met_var_NC_names(7)="w" ! Z_GDS0_ISBL Vertical_velocity_isobaric
-          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(7)="q" ! Z_GDS0_ISBL Specific_humidity_isobaric
+          Met_var_IsAvailable( 1)=.true.; Met_var_NC_names( 1)="z" ! Z_GDS0_ISBL Geopotential_isobaric
+          Met_var_IsAvailable( 2)=.true.; Met_var_NC_names( 2)="u" ! Z_GDS0_ISBL U_component_of_wind_isobaric
+          Met_var_IsAvailable( 3)=.true.; Met_var_NC_names( 3)="v" ! Z_GDS0_ISBL V_component_of_wind_isobaric
+          Met_var_IsAvailable( 4)=.true.; Met_var_NC_names( 4)="w" ! Z_GDS0_ISBL Vertical_velocity_isobaric
+          Met_var_IsAvailable( 5)=.true.; Met_var_NC_names( 5)="t" ! Z_GDS0_ISBL Temperature_isobaric
+          Met_var_IsAvailable( 7)=.true.; Met_var_NC_names( 7)="w" ! Z_GDS0_ISBL Vertical_velocity_isobaric
+          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="q" ! Z_GDS0_ISBL Specific_humidity_isobaric
         elseif(MR_iwind.eq.5)then
           ! RDA v1 or v2
           ! https://rda.ucar.edu/datasets/ds633.0
@@ -2245,13 +2245,13 @@
           !       Each file contains one day of data
           MR_iw5_hours_per_file = 24.0_dp
           !                                                       ! via ncl     via netcdf-java
-          Met_var_IsAvailable( 1)=.true.; Met_var_NC_names(1)="Z" ! Z_GDS0_ISBL Geopotential_isobaric
-          Met_var_IsAvailable( 2)=.true.; Met_var_NC_names(2)="U" ! U_GDS0_ISBL U_component_of_wind_isobaric
-          Met_var_IsAvailable( 3)=.true.; Met_var_NC_names(3)="V" ! V_GDS0_ISBL V_component_of_wind_isobaric
-          Met_var_IsAvailable( 4)=.true.; Met_var_NC_names(4)="W" ! W_GDS0_ISBL Vertical_velocity_isobaric
-          Met_var_IsAvailable( 5)=.true.; Met_var_NC_names(5)="T" ! T_GDS0_ISBL Temperature_isobaric
-          Met_var_IsAvailable( 7)=.true.; Met_var_NC_names(7)="W" ! W_GDS0_ISBL Vertical_velocity_isobaric
-          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(7)="q" ! Q_GDS0_ISBL Specific_humidity_isobaric
+          Met_var_IsAvailable( 1)=.true.; Met_var_NC_names( 1)="Z" ! Z_GDS0_ISBL Geopotential_isobaric
+          Met_var_IsAvailable( 2)=.true.; Met_var_NC_names( 2)="U" ! U_GDS0_ISBL U_component_of_wind_isobaric
+          Met_var_IsAvailable( 3)=.true.; Met_var_NC_names( 3)="V" ! V_GDS0_ISBL V_component_of_wind_isobaric
+          Met_var_IsAvailable( 4)=.true.; Met_var_NC_names( 4)="W" ! W_GDS0_ISBL Vertical_velocity_isobaric
+          Met_var_IsAvailable( 5)=.true.; Met_var_NC_names( 5)="T" ! T_GDS0_ISBL Temperature_isobaric
+          Met_var_IsAvailable( 7)=.true.; Met_var_NC_names( 7)="W" ! W_GDS0_ISBL Vertical_velocity_isobaric
+          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="q" ! Q_GDS0_ISBL Specific_humidity_isobaric
         endif
 
         fill_value_sp = -9999.0_sp
