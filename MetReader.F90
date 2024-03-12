@@ -282,9 +282,9 @@
 #ifdef USEPOINTERS
       character(len=4 ),dimension(:)      ,pointer,public :: MR_Snd_cd          => null() ! Station code
       integer          ,dimension(:)      ,pointer,public :: MR_Snd_id          => null() ! WMO station ID
-      real(kind=dp)    ,dimension(:)      ,pointer,public :: MR_Snd_lt          => null() ! Station latitude
-      real(kind=dp)    ,dimension(:)      ,pointer,public :: MR_Snd_ln          => null() ! Station longitude
-      real(kind=dp)    ,dimension(:)      ,pointer,public :: MR_Snd_el          => null() ! Station elevation
+      real(kind=sp)    ,dimension(:)      ,pointer,public :: MR_Snd_lt          => null() ! Station latitude
+      real(kind=sp)    ,dimension(:)      ,pointer,public :: MR_Snd_ln          => null() ! Station longitude
+      real(kind=sp)    ,dimension(:)      ,pointer,public :: MR_Snd_el          => null() ! Station elevation
       character(len=25),dimension(:)      ,pointer,public :: MR_Snd_lnm         => null() ! Station long name
       character(len=2 ),dimension(:)      ,pointer,public :: MR_Snd_st          => null() ! Station state
       character(len=2 ),dimension(:)      ,pointer,public :: MR_Snd_ct          => null() ! Station country
@@ -297,9 +297,9 @@
 #else
       character(len=4 ),dimension(:)      ,allocatable,public :: MR_Snd_cd         ! Station code
       integer          ,dimension(:)      ,allocatable,public :: MR_Snd_id         ! WMO station ID
-      real(kind=dp)    ,dimension(:)      ,allocatable,public :: MR_Snd_lt         ! Station latitude
-      real(kind=dp)    ,dimension(:)      ,allocatable,public :: MR_Snd_ln         ! Station longitude
-      real(kind=dp)    ,dimension(:)      ,allocatable,public :: MR_Snd_el         ! Station elevation
+      real(kind=sp)    ,dimension(:)      ,allocatable,public :: MR_Snd_lt         ! Station latitude
+      real(kind=sp)    ,dimension(:)      ,allocatable,public :: MR_Snd_ln         ! Station longitude
+      real(kind=sp)    ,dimension(:)      ,allocatable,public :: MR_Snd_el         ! Station elevation
       character(len=25),dimension(:)      ,allocatable,public :: MR_Snd_lnm        ! Station long name
       character(len=2 ),dimension(:)      ,allocatable,public :: MR_Snd_st         ! Station state
       character(len=2 ),dimension(:)      ,allocatable,public :: MR_Snd_ct         ! Station country
@@ -319,7 +319,7 @@
                                            ! then it will be used, otherwise vel will be relative
                                            ! to comp grid.
       integer                                     , public :: MR_nstat = 4      ! number of stations to consider (0 for all)
-      real(kind=dp)                               , public :: MR_pexp  = 4.0_dp ! exponent for inverse distance calculation
+      real(kind=sp)                               , public :: MR_pexp  = 4.0_sp ! exponent for inverse distance calculation
 
       !    Native grid of Met file using Height as vertical coordinate
       !    (resampled onto z-gridpoints of computational grid)

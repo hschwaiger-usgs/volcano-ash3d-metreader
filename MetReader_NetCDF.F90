@@ -1826,8 +1826,8 @@
       integer :: unlimitedDimId
       integer :: formatNum
 
-      integer :: dimlen,maxdimlen,i_dim,tdim_id
-      character(len=NF90_MAX_NAME)  :: dimname
+      !integer :: dimlen,maxdimlen,i_dim,tdim_id
+      !character(len=NF90_MAX_NAME)  :: dimname
       integer            :: var_xtype
       character(len=NF90_MAX_NAME) :: invar
       character(len=NF90_MAX_NAME) :: indim

@@ -244,6 +244,7 @@
         call MR_Read_3d_Met_Variable_to_CompH(outvar_ID,MR_iMetStep_Now+1)
         out3d_t2(1:nx,1:ny,1:nz) = MR_dum3d_compH(1:nx,1:ny,1:nz)
         out3d = out3d_t1 + (out3d_t2-out3d_t1)*real(tfrac,kind=4)
+!        write(*,*)"MR_dum3d_metH"
 !        write(*,*)nx_submet,ny_submet,nz
 !        do i=1,nx_submet
 !          do j=1,ny_submet
@@ -254,14 +255,16 @@
 !            enddo
 !          enddo
 !        enddo
+!        write(*,*)"out3d"
 !        write(*,*)nx,ny,nz
-!        do i=1,nx
+!!        do i=1,nx
+!        i = 1
 !          do j=1,ny
 !            do k=1,nz
-!              write(*,*)i,j,k,out3d(i,j,k)
+!              write(*,*)i,j,k,out3d_t1(i,j,k)
 !            enddo
 !          enddo
-!        enddo
+!!        enddo
 !      stop 5
       elseif(outgrid_ID.eq.2)then
         ! We need CompP grids
