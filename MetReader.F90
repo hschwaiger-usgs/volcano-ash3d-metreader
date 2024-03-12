@@ -569,8 +569,8 @@
         !  46 = Precipitation rate large-scale (ice)
         !  47 = Precipitation rate convective  (ice)
       logical          ,dimension(MR_MAXVARS),public   :: Met_var_IsAvailable      ! true if iwf contains the var
-      character(len=71),dimension(MR_MAXVARS),public   :: Met_var_NC_names         ! name in the file
-      character(len=71),dimension(MR_MAXVARS),public   :: Met_var_GRIB_names       ! name in the file
+      character(len=80),dimension(MR_MAXVARS),public   :: Met_var_NC_names         ! name in the file
+      character(len=80),dimension(MR_MAXVARS),public   :: Met_var_GRIB_names       ! name in the file
       character(len=5) ,dimension(MR_MAXVARS),public   :: Met_var_WMO_names        ! WMO version of the name
       integer          ,dimension(MR_MAXVARS),public   :: Met_var_ndim             ! number of expected dimensions for this variable
       integer          ,dimension(MR_MAXVARS),public   :: Met_var_zdim_idx         ! The index of this coordinate (used in Met_var_nlevs) 
@@ -1925,6 +1925,11 @@
          ! NCEP / DOE reanalysis 2.5 degree files 
          ! https://rda.ucar.edu/datasets/ds091.0
 
+        Met_dim_names(1)="time"
+        Met_dim_names(2)="isobaric"
+        Met_dim_names(3)="lat"
+        Met_dim_names(4)="lon"
+
         if(MR_iversion.eq.-1)MR_iversion = 0 ! latest is 0, but deprecated
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
@@ -1953,6 +1958,11 @@
 
       elseif (MR_iwindformat.eq.24)then
          ! NASA-MERRA reanalysis 0.625 x 0.5 degree files 
+
+        Met_dim_names(1)="time"
+        Met_dim_names(2)="lev"
+        Met_dim_names(3)="lat"
+        Met_dim_names(4)="lon"
 
         if(MR_iversion.eq.-1)MR_iversion = 2 ! v1 finished in 2016
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
@@ -1987,6 +1997,11 @@
 
       elseif (MR_iwindformat.eq.25)then
          ! NCEP/NCAR reanalysis 2.5 degree files 
+
+        Met_dim_names(1)="time"
+        Met_dim_names(2)="level"
+        Met_dim_names(3)="lat"
+        Met_dim_names(4)="lon"
 
         if(MR_iversion.eq.-1)MR_iversion = 0 !
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
@@ -2047,6 +2062,11 @@
          ! JRA-55 reanalysis 1.25 degree files 
          ! https://rda.ucar.edu/datasets/ds628.0/
 
+        Met_dim_names(1)="initial_time0_hours"
+        Met_dim_names(2)="lv_ISBL1"
+        Met_dim_names(3)="g0_lat_2"
+        Met_dim_names(4)="g0_lon_3"
+
         if(MR_iversion.eq.-1)MR_iversion = 0 ! 
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
@@ -2076,6 +2096,11 @@
          ! NOAA-CIRES reanalysis 2.0 degree files 
          ! https://rda.ucar.edu/datasets/ds131.2/
          ! https://www.esrl.noaa.gov/psd/data/gridded/data.20thC_ReanV2c.pressure.html
+
+        Met_dim_names(1)="initial_time0_hours"
+        Met_dim_names(2)="lv_ISBL1"
+        Met_dim_names(3)="g0_lat_2"
+        Met_dim_names(4)="g0_lon_3"
 
         if(MR_iversion.eq.-1)then
           MR_iversion = 3 ! This is the latest
@@ -2153,6 +2178,11 @@
          ! ECMWF Interim Reanalysis (ERA-Interim)
          ! https://rda.ucar.edu/datasets/ds627.0
 
+        Met_dim_names(1)="time"
+        Met_dim_names(2)="isobaric"
+        Met_dim_names(3)="lat"
+        Met_dim_names(4)="lon"
+
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "ECMWF Interim Reanalysis (ERA-Interim)"
@@ -2202,6 +2232,11 @@
          ! both grib and nc. If grib is downloaded, then converted to nc via netcdf-java or
          ! ncl_convert2nc, variable names will be different from that of the files provided
          ! directly by CDS, though metreader will attempt to translate.
+
+        Met_dim_names(1)="time"
+        Met_dim_names(2)="level"
+        Met_dim_names(3)="latitude"
+        Met_dim_names(4)="longitude"
 
         if(MR_iversion.eq.-1)MR_iversion = 2 ! v1 finished in 2019
         if(MR_iversion.eq.1)then
@@ -2777,6 +2812,7 @@
 #ifdef USENETCDF
           call MR_Read_Met_Times_netcdf
           call MR_Read_Met_DimVars_netcdf
+!          call MR_Read_Met_Times_netcdf
 #endif
         elseif(MR_idataFormat.eq.3)then
 #ifdef USEGRIB

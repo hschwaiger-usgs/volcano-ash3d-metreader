@@ -26,12 +26,12 @@ else
 fi
 
 pushd tests
-sh clean.sh
-sh run_tests_Sonde.sh
-sh clean.sh
+bash clean.sh
+bash run_tests_Sonde.sh
+bash clean.sh
 if [[ "$RUNNCEP" -eq T ]] ; then
-  sh run_tests_NCEP.sh
-  sh clean.sh
+  bash run_tests_NCEP.sh
+  bash clean.sh
 fi
 popd
 

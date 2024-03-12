@@ -199,7 +199,7 @@ bin/makegfsncml: tools/makegfsncml.f90 makefile $(SYSINC)
 	$(FC) $(FFLAGS) $(EXFLAGS) makegfsncml.o  $(LIBS) $(nclib) -o bin/makegfsncml
 
 check: $(EXEC)
-	sh run_tests.sh
+	bash run_tests.sh
 
 clean:
 	rm -f *.o *__genmod.f90 *__genmod.mod

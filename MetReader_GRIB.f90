@@ -1055,7 +1055,7 @@
 
       integer :: iw,iwstep
       integer :: np_met_loc
-      character(len=71)  :: invar
+      character(len=80)  :: invar
       character(len=130) :: index_file
       character(len=130) :: grib_file_path
       character(len=130) :: grib_file
