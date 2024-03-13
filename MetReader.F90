@@ -2233,10 +2233,22 @@
          ! ncl_convert2nc, variable names will be different from that of the files provided
          ! directly by CDS, though metreader will attempt to translate.
 
+        ! Dimension names are in the direct nc4 download
         Met_dim_names(1)="time"
         Met_dim_names(2)="level"
         Met_dim_names(3)="latitude"
         Met_dim_names(4)="longitude"
+        ! Dimension names are in the grib to netcdf via ncj
+        Met_dim_names(1)="time"
+        Met_dim_names(2)="isobaric"
+        Met_dim_names(3)="lat"
+        Met_dim_names(4)="lon"
+        ! Dimension names are in the grib to netcdf via ncl_convert2nc
+        !Met_dim_names(1)="initial_time0_hours"
+        !Met_dim_names(2)="lv_ISBL1"
+        !Met_dim_names(3)="g0_lat_2"
+        !Met_dim_names(4)="g0_lon_3"
+
 
         if(MR_iversion.eq.-1)MR_iversion = 2 ! v1 finished in 2019
         if(MR_iversion.eq.1)then
@@ -2287,6 +2299,15 @@
           Met_var_IsAvailable( 5)=.true.; Met_var_NC_names( 5)="T" ! T_GDS0_ISBL Temperature_isobaric
           Met_var_IsAvailable( 7)=.true.; Met_var_NC_names( 7)="W" ! W_GDS0_ISBL Vertical_velocity_isobaric
           Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="q" ! Q_GDS0_ISBL Specific_humidity_isobaric
+
+           ! HFS: Erase this bit once variable name checking is in place for iwind=5
+          Met_var_IsAvailable( 1)=.true.; Met_var_NC_names( 1)="Geopotential_isobaric"
+          Met_var_IsAvailable( 2)=.true.; Met_var_NC_names( 2)="GU_component_of_wind_isobaric"
+          Met_var_IsAvailable( 3)=.true.; Met_var_NC_names( 3)="GV_component_of_wind_isobaric"
+          Met_var_IsAvailable( 4)=.true.; Met_var_NC_names( 4)="GVertical_velocity_isobaric"
+          Met_var_IsAvailable( 5)=.true.; Met_var_NC_names( 5)="GTemperature_isobaric"
+          Met_var_IsAvailable( 7)=.true.; Met_var_NC_names( 7)="GVertical_velocity_isobaric"
+          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="GSpecific_humidity_isobaric"
         endif
 
         fill_value_sp = -9999.0_sp

@@ -34,9 +34,3 @@ if [[ "$RUNNCEP" -eq T ]] ; then
   bash clean.sh
 fi
 popd
-
-echo "Note: Any test failures should be inspected."
-echo "      This script only uses the cmp command for comparison."
-echo "      Values can be off by 0.001% using different compilation flags."
-
-

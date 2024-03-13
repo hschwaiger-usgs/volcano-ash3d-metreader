@@ -471,6 +471,9 @@
         idx = Met_var_zdim_idx(1)
         p_fullmet_sp(1:nlevs_fullmet(idx)) = levs_fullmet_sp(idx,1:nlevs_fullmet(idx))
 
+        ! HFS: This is where we should put the check on variable names, but for iwind=5, we
+        !      need to open each file for each variable individually
+
       else  ! MR_iwind not equal to 5
         !--------------------------------------------------------------------------
         !  Start of all non-iwind=5 cases
@@ -2023,7 +2026,6 @@
               !endif
               !Met_dim_names(1) = trim(adjustl(dimname))
 
-          write(*,*)Met_dim_names(1)
           nSTAT = nf90_inq_dimid(ncid,Met_dim_names(1),t_dim_id)
           call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid time")
           nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_tst)
@@ -3242,9 +3244,13 @@
       endif
 
       nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+
+
+
       call MR_NC_check_status(nSTAT,0,"nf90_inq_varid")
       nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
                 xtype = var_xtype)
+
       call MR_NC_check_status(nSTAT,0,"nf90_inquire_variable")
 
       if(Dimension_of_Variable.eq.3)then
