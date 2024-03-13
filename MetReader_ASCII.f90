@@ -3615,7 +3615,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
 
       use MetReader,       only : &
          MR_Snd_lt,y_comp_sp,x_comp_sp,nx_comp,ny_comp,MR_nSnd_Locs,MR_Snd2Comp_map_idx,&
-         Snd_idx,MR_Snd_ln,MR_Snd_lt,MR_Snd2Comp_map_wgt,MR_Snd2Comp_map_idx
+         Snd_idx,MR_Snd_ln,MR_Snd_lt,MR_Snd2Comp_map_wgt
 
       implicit none
 
@@ -3630,7 +3630,10 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       real(kind=sp) :: lat2,lon2
       real(kind=sp) :: norm
       real(kind=sp) :: dist
+      real(kind=sp) :: lenscale
+      real(kind=sp) :: domwgt
       integer :: maxstations
+      logical :: inStencil
       logical,dimension(:),allocatable :: StatInStencil
 
       real(kind=sp),dimension(:,:,:),allocatable :: MR_Snd2Comp_dist
@@ -3643,6 +3646,10 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           real(kind=4)  :: lat2
         end function MR_Haversine
       END INTERFACE
+
+      ! First, get a domain length scale so that our weighting terms do not approach
+      ! machine precision.  Using the diaganol distance
+      lenscale = MR_Haversine(x_comp_sp(1),y_comp_sp(1),x_comp_sp(nx_comp),y_comp_sp(ny_comp))
 
       ! Figure out how many stations to use in the inv.dist. weighting
       if(present(nstat))then
@@ -3667,14 +3674,10 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           lat1 = real(y_comp_sp(j),kind=sp)
           ! Loop over all the sonde locations and get distances to the comp node
           do k=1,MR_nSnd_Locs
-            !lon2 = real(MR_Snd_ln(Snd_idx(k)),kind=sp)+360.0_sp
-            !lat2 = real(MR_Snd_lt(Snd_idx(k)),kind=sp)
             lon2 = MR_Snd_ln(Snd_idx(k))+360.0_sp
             lat2 = MR_Snd_lt(Snd_idx(k))
-            MR_Snd2Comp_dist(i,j,k) = MR_Haversine(lon1,lat1,lon2,lat2)
-            !MR_Snd2Comp_map_wgt(i,j,k) = real(1.0_sp/(MR_Snd2Comp_dist(i,j,k)**pexp),kind=sp)
+            MR_Snd2Comp_dist(i,j,k) = MR_Haversine(lon1,lat1,lon2,lat2)/lenscale
             MR_Snd2Comp_map_wgt(i,j,k) = 1.0_sp/(MR_Snd2Comp_dist(i,j,k)**pexp)
-            !MR_Snd2Comp_map_wgt(i,j,k) = max(MR_Snd2Comp_map_wgt(i,j,k),1.0e-5_sp)
             !norm = norm + MR_Snd2Comp_map_wgt(i,j,k)
             !MR_Snd2Comp_map_idx(i,j,k) = k
           enddo
@@ -3682,8 +3685,10 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           StatInStencil(1:MR_nSnd_Locs) = .false.
           idx = 0
           do l=1,maxstations
-            ! Looking for the next closest station
+            ! Find the distance to the furthest station, then look through
+            ! all the stations to find the closest not yet accounted for
             dist = maxval(MR_Snd2Comp_dist(i,j,1:MR_nSnd_Locs))
+            ! Looking for the next closest station
             do k=1,MR_nSnd_Locs
               if(StatInStencil(k)) cycle ! skip to next k if this is already in stencil
               if(MR_Snd2Comp_dist(i,j,k).le.dist)then
@@ -3691,28 +3696,42 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
                 idx = k
               endif
             enddo
+            ! Log this station and mark it as part of the stencil
             MR_Snd2Comp_map_idx(i,j,l) = idx
             StatInStencil(idx) = .true.
           enddo
+
+          ! Zero-out any sonde points that are not part of the stencil
+          do k=1,MR_nSnd_Locs
+            inStencil = .false.
+            do l=1,maxstations
+              if(MR_Snd2Comp_map_idx(i,j,l).eq.k)inStencil=.true.
+            enddo
+            if(.not.inStencil)MR_Snd2Comp_map_wgt(i,j,k) = 0.0_sp
+          enddo
+
+          ! Zero-out any sonde points that do not contribute more that 0.1%
+          domwgt = maxval(MR_Snd2Comp_map_wgt(i,j,:))
+          do k=1,MR_nSnd_Locs
+            if(MR_Snd2Comp_map_wgt(i,j,k)/domwgt.lt.0.001_sp)MR_Snd2Comp_map_wgt(i,j,k)=0.0_sp
+          enddo
+
           ! Now find the normalization factor
           norm = 0.0_sp
           do l=1,maxstations
             idx = MR_Snd2Comp_map_idx(i,j,l)
             norm = norm + MR_Snd2Comp_map_wgt(i,j,idx)
           enddo
-          if(i.eq.1)write(*,*)i,j,norm,MR_Snd2Comp_map_wgt(i,j,:)
           ! Finally, normalize the requested weights and zero the others
           do k=1,MR_nSnd_Locs
             if(StatInStencil(k))then
-              MR_Snd2Comp_map_wgt(i,j,k) = real(MR_Snd2Comp_map_wgt(i,j,k)/norm,kind=sp)
+              MR_Snd2Comp_map_wgt(i,j,k) = MR_Snd2Comp_map_wgt(i,j,k)/norm
             else
               MR_Snd2Comp_map_wgt(i,j,k) = 0.0_sp
             endif
-            !if(i.eq.1)write(*,*)i,j,k,MR_Snd2Comp_map_wgt(i,j,k)
           enddo
         enddo
       enddo
-      stop 12
 
       end subroutine MR_Calc_Snd_Weights_InvDistWeight
 

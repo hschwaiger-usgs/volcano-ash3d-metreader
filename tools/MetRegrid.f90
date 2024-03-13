@@ -359,7 +359,7 @@
         endif;enddo
         stop 1
       endif
-210   format(3i8,4f12.4)
+210   format(3i8,4f12.3)
       if(outdim_ID.eq.0)then
         ! We need all three indexes to be non-zero for point output
         if(iidx.eq.0.or.jidx.eq.0.or.kidx.eq.0)then
