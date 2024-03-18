@@ -28,7 +28,6 @@
          Met_var_IsAvailable,&
          MR_dum3d_compH,MR_dum3d_compP,MR_dum3d_metH,MR_dum3d_metP,&
          np_fullmet,nx_submet,ny_submet,&
-         MR_geoH_metP_next,MR_geoH_metP_last,MR_Snd2Comp_map_wgt,&
            MR_Read_Met_DimVars,&
            MR_Set_Met_Times,&
            MR_Initialize_Met_Grids,&
@@ -64,6 +63,7 @@
       integer             :: outgrid_ID
       integer             :: outvar_ID
       integer             :: outdim_ID
+      integer             :: outformat       ! output format
       logical             :: IsH
       integer             :: iidx
       integer             :: jidx
@@ -77,6 +77,7 @@
       integer             :: nx,ny,nz
       character(len=13)   :: outfilename
       real(kind=4)        :: zout
+      character(len=20)   :: filename_root
 
       real(kind=4),dimension(:,:,:),allocatable :: out3d_t1,out3d_t2,out3d
       
@@ -87,7 +88,7 @@
                       gridwidth_x,gridwidth_y,gridwidth_z,&
                       dx,dy,dz_const,&
                       inyear,inmonth,inday,inhour,&
-                      outgrid_ID,outvar_ID,outdim_ID,iidx,jidx,kidx)
+                      outgrid_ID,outvar_ID,outdim_ID,outformat,iidx,jidx,kidx)
            logical                  ,intent(out) :: IsLatLon
            real(kind=4)             ,intent(out) :: xLL
            real(kind=4)             ,intent(out) :: yLL
@@ -103,17 +104,26 @@
            integer                  ,intent(out) :: outgrid_ID
            integer                  ,intent(out) :: outvar_ID
            integer                  ,intent(out) :: outdim_ID
+           integer                  ,intent(out) :: outformat
            integer                  ,intent(out) :: iidx
            integer                  ,intent(out) :: jidx
            integer                  ,intent(out) :: kidx
         end subroutine Read_ComdLine_InpFile
+        subroutine write_2D_ASCII(IsLatLon,nx,ny,xLL,yLL,dx,dy,OutVar,filename_root)
+           logical                  ,intent(in) :: IsLatLon
+           integer                  ,intent(in) :: nx,ny
+           real(kind=4)             ,intent(in) :: xLL,yLL
+           real(kind=4)             ,intent(in) :: dx,dy
+           real(kind=4)             ,intent(in) :: OutVar(nx,ny)
+           character(len=20)        ,intent(in) :: filename_root
+        end subroutine
       END INTERFACE
 
       call Read_ComdLine_InpFile(IsLatLon,xLL,yLL,zbot,&
                       gridwidth_x,gridwidth_y,gridwidth_z,&
                       dx,dy,dz_const,&
                       inyear,inmonth,inday,inhour,&
-                      outgrid_ID,outvar_ID,outdim_ID,iidx,jidx,kidx)
+                      outgrid_ID,outvar_ID,outdim_ID,outformat,iidx,jidx,kidx)
 
         ! Check for existance and compatibility with simulation time requirements
       call MR_Read_Met_DimVars(inyear)
@@ -244,28 +254,6 @@
         call MR_Read_3d_Met_Variable_to_CompH(outvar_ID,MR_iMetStep_Now+1)
         out3d_t2(1:nx,1:ny,1:nz) = MR_dum3d_compH(1:nx,1:ny,1:nz)
         out3d = out3d_t1 + (out3d_t2-out3d_t1)*real(tfrac,kind=4)
-!        write(*,*)"MR_dum3d_metH"
-!        write(*,*)nx_submet,ny_submet,nz
-!        do i=1,nx_submet
-!          do j=1,ny_submet
-!            !do k=1,np_fullmet
-!            !  write(*,*)i,j,k,MR_geoH_metP_last(i,j,k) , MR_geoH_metP_next(i,j,k)
-!            do k=1,nz
-!              write(*,*)i,j,k,MR_dum3d_metH(i,j,k)
-!            enddo
-!          enddo
-!        enddo
-!        write(*,*)"out3d"
-!        write(*,*)nx,ny,nz
-!!        do i=1,nx
-!        i = 1
-!          do j=1,ny
-!            do k=1,nz
-!              write(*,*)i,j,k,out3d_t1(i,j,k)
-!            enddo
-!          enddo
-!!        enddo
-!      stop 5
       elseif(outgrid_ID.eq.2)then
         ! We need CompP grids
         nx = nxmax
@@ -521,6 +509,7 @@
           stop 1
         endif
       elseif(outdim_ID.eq.2)then
+        ! We need one of three indexes to be non-zero for line output
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
           write(outlog(io),*)"Writing slice data at:"
         endif;enddo
@@ -544,18 +533,36 @@
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
               write(outlog(io),*)"Writing data to out file:",nx,ny
             endif;enddo
-            do i=1,nx
-              do j=1,ny
-                write(20,210)i,j,kidx,x_cc(i),y_cc(j),zout,out3d(i,j,kidx)
+            if(outformat.eq.0)then
+              do i=1,nx
+                do j=1,ny
+                  write(fid_outfile,210)i,j,kidx,x_cc(i),y_cc(j),zout,out3d(i,j,kidx)
+                enddo
               enddo
-            enddo
+            elseif(outformat.eq.1)then
+              filename_root = 'outvarComp'
+              call write_2D_ASCII(.true.,nx,ny,x_cc(1),y_cc(1),dx,dy,out3d(1:nx,1:ny,kidx),filename_root)
+            else
+              ! Unknown output format
+              stop 1
+            endif
           else
             ! Horz Coords are Met
-            do i=1,nx
-              do j=1,ny
-                write(fid_outfile,210)i,j,kidx,x_submet_sp(i),y_submet_sp(j),zout,out3d(i,j,kidx)
+            if(outformat.eq.0)then
+              do i=1,nx
+                do j=1,ny
+                  write(fid_outfile,210)i,j,kidx,x_submet_sp(i),y_submet_sp(j),zout,out3d(i,j,kidx)
+                enddo
               enddo
-            enddo
+            elseif(outformat.eq.1)then
+              dx = x_submet_sp(2)-x_submet_sp(1)
+              dy = y_submet_sp(2)-y_submet_sp(1)
+              filename_root = 'outvarMet'
+              call write_2D_ASCII(.true.,nx,ny,x_submet_sp(1),y_submet_sp(1),dx,dy,out3d(1:nx,1:ny,kidx),filename_root)
+            else
+              ! Unknown output format
+              stop 1
+            endif
           endif
         elseif(iidx.eq.0.and.kidx.eq.0)then
           ! east-west slices
@@ -651,6 +658,7 @@
           stop 1
         endif
       elseif(outdim_ID.eq.3)then
+        ! We need none of three indexes to be non-zero for line output (all = 0)
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
           write(outlog(io),*)"Writing volume data"
         endif;enddo
@@ -701,7 +709,7 @@
 ! 1980 5 18 15.5                  ! YYYY MM DD HH.H
 ! 1                               ! Output grid (1,2,3,4 for CompH,CompP,MetH,MetP)
 ! 5                               ! Output Var (1=H,2=Vx,3=Vy,4=Vz,5=T)
-! 2                               ! Output Dimension (1,2,or 3)
+! 2 [1]                           ! Output Dimension (1,2,or 3), format
 ! 0 0 1                           ! i,j,k of output grid with zeros for unused dims.
 ! 5 25 2 2                        ! iwind iwindformat igrid iformat
 ! 1                               ! number of windfiles
@@ -712,7 +720,7 @@
                       xLL,yLL,zbot,gridwidth_x,gridwidth_y,gridwidth_z,&
                       dx,dy,dz_const,&
                       inyear,inmonth,inday,inhour,&
-                      outgrid_ID,outvar_ID,outdim_ID,iidx,jidx,kidx)
+                      outgrid_ID,outvar_ID,outdim_ID,outformat,iidx,jidx,kidx)
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_info,verbosity_error,&
@@ -747,6 +755,7 @@
       integer                   ,intent(out) :: outgrid_ID
       integer                   ,intent(out) :: outvar_ID
       integer                   ,intent(out) :: outdim_ID
+      integer                   ,intent(out) :: outformat
       integer                   ,intent(out) :: iidx
       integer                   ,intent(out) :: jidx
       integer                   ,intent(out) :: kidx
@@ -956,6 +965,21 @@
         call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         stop 1
       endif
+      ! Try to read the optional format code.  If not present then = 0
+      !   0 = ASCII dump with i,j,k,x,y,z,var
+      !   1 = ESRI ASCII (only works for 2d xy slices)
+      ! Later, we might add other options such as kml, png, shapefile similar to Ash3d_PostProc
+      read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) outdim_ID, outformat
+      if(iostatus.ne.0.or.&
+         outformat.lt.0.or.outformat.gt.1)then
+        outformat = 0
+      endif
+      if(outdim_ID.eq.1.or.outdim_ID.eq.3)then
+        ! For now; ESRI ASCII output requires 2-d output
+        ! Reverting to full ASCII dump
+        outformat = 0
+      endif
+
 
       ! Line 10: i,j,k index with 0's for unused dimensions
       read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
@@ -1056,6 +1080,90 @@
       stop 1
 
       end subroutine Read_ComdLine_InpFile
+
+!##############################################################################
+!
+!  write_2D_ASCII
+!
+!  Arguments:
+!    IsLatLon      = logical
+!    nx            = x length of output array OutVar
+!    ny            = y length of output array OutVar
+!    xLL,yLL       = lower-left coordinates
+!    dx,dy         = x and y spacing
+!    OutVar        = 2-d array to be written to ASCII file
+!    filename_root = root name of file (20 characters)
+!
+!  Subroutine that writes out 2-D arrays in ESRI ASCII raster format
+!  This format can be post-processed with gmt converting to grid files with
+!  gmt grdconvert out.dat=ef out.grd
+!
+!##############################################################################
+
+      subroutine write_2D_ASCII(IsLatLon,nx,ny,xLL,yLL,dx,dy,OutVar,filename_root)
+
+      use MetReader,       only : &
+         MR_nio,VB,errlog,verbosity_error
+
+      logical          ,intent(in) :: IsLatLon
+      integer          ,intent(in) :: nx,ny
+      real(kind=4)     ,intent(in) :: xLL,yLL
+      real(kind=4)     ,intent(in) :: dx,dy
+      real(kind=4)     ,intent(in) :: OutVar(nx,ny)
+      character(len=20),intent(in) :: filename_root
+
+      real(kind=4),parameter :: KM_2_M = 1000.0_4
+
+      integer :: i,j
+      character(len=50)  :: filename_out
+
+      integer,parameter :: fid_outfile = 20
+
+      integer :: io                           ! Index for output streams
+
+      write(filename_out,*)trim(adjustl(filename_root)),'.dat'
+
+      open(unit=fid_outfile,file=trim(adjustl(filename_out)), status='replace',action='write',err=2500)
+
+      write(fid_outfile,3000) nx        ! write header values
+      write(fid_outfile,3001) ny
+      if (IsLatLon) then
+        write(fid_outfile,3002) xLL
+        write(fid_outfile,3003) yLL
+        write(fid_outfile,3004) dx,dy
+      else
+        write(fid_outfile,3002) xLL*KM_2_M    ! convert xLL from km to meters so ArcMap can read it
+        write(fid_outfile,3003) yLL*KM_2_M    ! same with yLL
+        write(fid_outfile,3004) dx*KM_2_M,dy*KM_2_M    ! and with dx and dy
+      endif
+      write(fid_outfile,3005)'-9999.'
+
+      ! Write out arrays
+      do j=ny,1,-1
+        write(fid_outfile,3006) (OutVar(i,j), i=1,nx)
+        !write(fid_outfile,'(g0)') ''          ! make a blank line between rows
+        write(fid_outfile,*)" "               ! make a blank line between rows
+      enddo
+
+      close(fid_outfile)
+
+!     format statements
+3000  format('NCOLS ',i5)
+3001  format('NROWS ',i5)
+3002  format('XLLCORNER ',f15.3)
+3003  format('YLLCORNER ',f15.3)
+3004  format('CELLSIZE ',2f15.3)
+3005  format('NODATA_VALUE ',a6)
+3006  format(10f18.6)
+      return
+
+!     Error traps
+2500  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        write(errlog(io),*) 'Error opening output file ASCII_output_file.txt.  Program stopped'
+      endif;enddo
+      stop 1
+
+      end subroutine write_2D_ASCII
 
 !##############################################################################
 !##############################################################################

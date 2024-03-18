@@ -116,14 +116,14 @@ fi
 
 sh clean.sh
 echo "-----------------------------------------------------------"
-echo "RUNNING SONDE TEST CASE 3: MetRegrid 2d"
+echo "RUNNING SONDE TEST CASE 3: MetRegrid 2d - vertical slice"
 echo "-----------------------------------------------------------"
 rc=0
 s=3
 ln -s ../examples/UpperAirSoundings .
 outdir="output${WindLabel}${s}"
-cp ../examples/Regrid_${WindLabel}.ctr .
-../bin/MetRegrid Regrid_${WindLabel}.ctr  > /dev/null 2>&1
+cp ../examples/RegridXZ_${WindLabel}.ctr .
+../bin/MetRegrid RegridXZ_${WindLabel}.ctr  > /dev/null 2>&1
 rc=$((rc + $?))
 if [[ "$rc" -gt 0 ]] ; then
   echo "Error: MetRegrid returned error code"
@@ -156,4 +156,33 @@ else
   printf " ---> ${RED}${stat}${NC}\n"
 fi
 
+sh clean.sh
+echo "-----------------------------------------------------------"
+echo "RUNNING SONDE TEST CASE 4: MetRegrid 2d - map view"
+echo "-----------------------------------------------------------"
+rc=0
+s=4
+ln -s ../examples/UpperAirSoundings .
+outdir="output${WindLabel}${s}"
+cp ../examples/Regrid_${WindLabel}.ctr .
+../bin/MetRegrid Regrid_${WindLabel}.ctr  > /dev/null 2>&1
+rc=$((rc + $?))
+if [[ "$rc" -gt 0 ]] ; then
+  echo "Error: MetRegrid returned error code"
+  exit 1
+fi
+###  Run check on outvarComp.dat and outputSonde4/outvarComp.dat
+# This file is in ESRI ASCII format
+newdatafile="outvarComp.dat"
+olddatafile="output${WindLabel}${s}/outvarComp.dat"
+../bin/MR_ASCII_check ${newdatafile} ${olddatafile}  > /dev/null 2>&1
+rc=$((rc + $?))
+
+if [[ $rc -eq 0 ]] ; then
+  stat="PASS"
+  printf " ---> ${GREEN}${stat}${NC}\n"
+else
+  stat="FAIL"
+  printf " ---> ${RED}${stat}${NC}\n"
+fi
 

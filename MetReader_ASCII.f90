@@ -88,7 +88,7 @@
          Snd_Have_PT,nt_fullmet,MR_BaseYear,MR_useLeap,MR_Snd_nt_fullmet,MR_Snd_nvars,Snd_Have_Coord,&
          MR_Max_geoH_metP_predicted,MR_iwind,MR_iwindformat,IsGlobal_MetGrid,IsLatLon_MetGrid,IsRegular_MetGrid,&
          Met_iprojflag,Met_k0,Met_lam0,Met_lam1,Met_lam2,Met_phi0,Met_phi1,Met_phi2,Met_Re,MR_EPS_SMALL,&
-         MR_Comp_StartYear,MR_Comp_StartMonth,&
+         MR_Comp_StartYear,MR_Comp_StartMonth,MR_nstat,&
            MR_Z_US_StdAtm,&
            MR_Temp_US_StdAtm,&
            MR_Pres_US_StdAtm, &
@@ -329,6 +329,7 @@
 
       Met_dim_IsAvailable = .false.
       Met_var_IsAvailable = .false.
+      MR_nstat = min(MR_nSnd_Locs,MR_nstat)
       ! This is the start of a huge if statement that determines the type of ASCII input
       ! and loads the data.  All data for all time steps are loaded here into the
       ! variable MR_SndVars_metP(MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,nrows)
@@ -3702,19 +3703,19 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           enddo
 
           ! Zero-out any sonde points that are not part of the stencil
-          do k=1,MR_nSnd_Locs
-            inStencil = .false.
-            do l=1,maxstations
-              if(MR_Snd2Comp_map_idx(i,j,l).eq.k)inStencil=.true.
-            enddo
-            if(.not.inStencil)MR_Snd2Comp_map_wgt(i,j,k) = 0.0_sp
-          enddo
+!          do k=1,MR_nSnd_Locs
+!            inStencil = .false.
+!            do l=1,maxstations
+!              if(MR_Snd2Comp_map_idx(i,j,l).eq.k)inStencil=.true.
+!            enddo
+!            if(.not.inStencil)MR_Snd2Comp_map_wgt(i,j,k) = 0.0_sp
+!          enddo
 
           ! Zero-out any sonde points that do not contribute more that 0.1%
-          domwgt = maxval(MR_Snd2Comp_map_wgt(i,j,:))
-          do k=1,MR_nSnd_Locs
-            if(MR_Snd2Comp_map_wgt(i,j,k)/domwgt.lt.0.001_sp)MR_Snd2Comp_map_wgt(i,j,k)=0.0_sp
-          enddo
+!          domwgt = maxval(MR_Snd2Comp_map_wgt(i,j,:))
+!          do k=1,MR_nSnd_Locs
+!            if(MR_Snd2Comp_map_wgt(i,j,k)/domwgt.lt.0.001_sp)MR_Snd2Comp_map_wgt(i,j,k)=0.0_sp
+!          enddo
 
           ! Now find the normalization factor
           norm = 0.0_sp

@@ -318,7 +318,7 @@
       logical,public :: Snd_Have_Coord    = .false.  ! If the 1-d data have the optional projection params
                                            ! then it will be used, otherwise vel will be relative
                                            ! to comp grid.
-      integer                                     , public :: MR_nstat = 4      ! number of stations to consider (0 for all)
+      integer                                     , public :: MR_nstat = 8      ! number of stations to consider (0 for all)
       real(kind=sp)                               , public :: MR_pexp  = 4.0_sp ! exponent for inverse distance calculation
 
       !    Native grid of Met file using Height as vertical coordinate
@@ -1925,11 +1925,6 @@
          ! NCEP / DOE reanalysis 2.5 degree files 
          ! https://rda.ucar.edu/datasets/ds091.0
 
-        Met_dim_names(1)="time"
-        Met_dim_names(2)="isobaric"
-        Met_dim_names(3)="lat"
-        Met_dim_names(4)="lon"
-
         if(MR_iversion.eq.-1)MR_iversion = 0 ! latest is 0, but deprecated
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
@@ -1958,11 +1953,6 @@
 
       elseif (MR_iwindformat.eq.24)then
          ! NASA-MERRA reanalysis 0.625 x 0.5 degree files 
-
-        Met_dim_names(1)="time"
-        Met_dim_names(2)="lev"
-        Met_dim_names(3)="lat"
-        Met_dim_names(4)="lon"
 
         if(MR_iversion.eq.-1)MR_iversion = 2 ! v1 finished in 2016
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
@@ -1997,11 +1987,6 @@
 
       elseif (MR_iwindformat.eq.25)then
          ! NCEP/NCAR reanalysis 2.5 degree files 
-
-        Met_dim_names(1)="time"
-        Met_dim_names(2)="level"
-        Met_dim_names(3)="lat"
-        Met_dim_names(4)="lon"
 
         if(MR_iversion.eq.-1)MR_iversion = 0 !
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
@@ -2062,11 +2047,6 @@
          ! JRA-55 reanalysis 1.25 degree files 
          ! https://rda.ucar.edu/datasets/ds628.0/
 
-        Met_dim_names(1)="initial_time0_hours"
-        Met_dim_names(2)="lv_ISBL1"
-        Met_dim_names(3)="g0_lat_2"
-        Met_dim_names(4)="g0_lon_3"
-
         if(MR_iversion.eq.-1)MR_iversion = 0 ! 
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
@@ -2096,11 +2076,6 @@
          ! NOAA-CIRES reanalysis 2.0 degree files 
          ! https://rda.ucar.edu/datasets/ds131.2/
          ! https://www.esrl.noaa.gov/psd/data/gridded/data.20thC_ReanV2c.pressure.html
-
-        Met_dim_names(1)="initial_time0_hours"
-        Met_dim_names(2)="lv_ISBL1"
-        Met_dim_names(3)="g0_lat_2"
-        Met_dim_names(4)="g0_lon_3"
 
         if(MR_iversion.eq.-1)then
           MR_iversion = 3 ! This is the latest
@@ -2178,11 +2153,6 @@
          ! ECMWF Interim Reanalysis (ERA-Interim)
          ! https://rda.ucar.edu/datasets/ds627.0
 
-        Met_dim_names(1)="time"
-        Met_dim_names(2)="isobaric"
-        Met_dim_names(3)="lat"
-        Met_dim_names(4)="lon"
-
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "ECMWF Interim Reanalysis (ERA-Interim)"
@@ -2234,21 +2204,20 @@
          ! directly by CDS, though metreader will attempt to translate.
 
         ! Dimension names are in the direct nc4 download
-        Met_dim_names(1)="time"
-        Met_dim_names(2)="level"
-        Met_dim_names(3)="latitude"
-        Met_dim_names(4)="longitude"
+        !Met_dim_names(1)="time"
+        !Met_dim_names(2)="level"
+        !Met_dim_names(3)="latitude"
+        !Met_dim_names(4)="longitude"
         ! Dimension names are in the grib to netcdf via ncj
-        Met_dim_names(1)="time"
-        Met_dim_names(2)="isobaric"
-        Met_dim_names(3)="lat"
-        Met_dim_names(4)="lon"
+        !Met_dim_names(1)="time"
+        !Met_dim_names(2)="isobaric"
+        !Met_dim_names(3)="lat"
+        !Met_dim_names(4)="lon"
         ! Dimension names are in the grib to netcdf via ncl_convert2nc
         !Met_dim_names(1)="initial_time0_hours"
         !Met_dim_names(2)="lv_ISBL1"
         !Met_dim_names(3)="g0_lat_2"
         !Met_dim_names(4)="g0_lon_3"
-
 
         if(MR_iversion.eq.-1)MR_iversion = 2 ! v1 finished in 2019
         if(MR_iversion.eq.1)then
@@ -2300,14 +2269,6 @@
           Met_var_IsAvailable( 7)=.true.; Met_var_NC_names( 7)="W" ! W_GDS0_ISBL Vertical_velocity_isobaric
           Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="q" ! Q_GDS0_ISBL Specific_humidity_isobaric
 
-           ! HFS: Erase this bit once variable name checking is in place for iwind=5
-          Met_var_IsAvailable( 1)=.true.; Met_var_NC_names( 1)="Geopotential_isobaric"
-          Met_var_IsAvailable( 2)=.true.; Met_var_NC_names( 2)="GU_component_of_wind_isobaric"
-          Met_var_IsAvailable( 3)=.true.; Met_var_NC_names( 3)="GV_component_of_wind_isobaric"
-          Met_var_IsAvailable( 4)=.true.; Met_var_NC_names( 4)="GVertical_velocity_isobaric"
-          Met_var_IsAvailable( 5)=.true.; Met_var_NC_names( 5)="GTemperature_isobaric"
-          Met_var_IsAvailable( 7)=.true.; Met_var_NC_names( 7)="GVertical_velocity_isobaric"
-          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="GSpecific_humidity_isobaric"
         endif
 
         fill_value_sp = -9999.0_sp
@@ -2331,19 +2292,12 @@
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 128
 
         ! Momentum / State variables
-        !Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z_GDS4_ISBL" ! e5.oper.an.pl.128_129_z.regn320sc.2018062000_2018062023.nc
-        !Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_GDS4_ISBL" ! e5.oper.an.pl.128_131_u.regn320uv.2018062000_2018062023.nc
-        !Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_GDS4_ISBL" ! e5.oper.an.pl.128_132_v.regn320uv.2018062000_2018062023.nc
-        !Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W_GDS4_ISBL" ! e5.oper.an.pl.128_135_w.regn320sc.2018062000_2018062023.nc
-        !Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T_GDS4_ISBL" ! e5.oper.an.pl.128_130_t.regn320sc.2018062000_2018062023.nc
-        !Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W_GDS4_ISBL" ! e5.oper.an.pl.128_135_w.regn320sc.201
-
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric" ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
+        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"        ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
         Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_u.ll025uv.1991061500_1991061523.nc
         Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_v.ll025uv.1991061500_1991061523.nc
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric" ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
-        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric" ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric" ! e5.oper.an.pl.128_129_w.ll025sc.19910
+        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
+        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric"         ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
+        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_129_w.ll025sc.19910
 
 
         fill_value_sp = -9999.0_sp
@@ -2739,7 +2693,7 @@
         else
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
             write(outlog(io),*)"MR WARNING: If the iw=5 (NCEP Reannalysis, NOAA Reannalysis, "
-            write(outlog(io),*)"            etc.) are used, then MR_Read_Met_DimVars"
+            write(outlog(io),*)"            ERA5, etc.) are used, then MR_Read_Met_DimVars"
             write(outlog(io),*)"            should be called with a start year.  This is needed"
             write(outlog(io),*)"            to allocate the correct number of time steps per file."
             write(outlog(io),*)"            Setting MR_Comp_StartYear to 2018 for a non-leap year."
@@ -2833,7 +2787,6 @@
 #ifdef USENETCDF
           call MR_Read_Met_Times_netcdf
           call MR_Read_Met_DimVars_netcdf
-!          call MR_Read_Met_Times_netcdf
 #endif
         elseif(MR_idataFormat.eq.3)then
 #ifdef USEGRIB

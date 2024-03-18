@@ -1252,6 +1252,7 @@
 !##############################################################################
 
 
+
 !##############################################################################
 !
 !     MR_Get_WRF_grid
@@ -1789,7 +1790,7 @@
          Met_dim_fac,Met_var_NC_names,MR_windfiles,Met_dim_IsAvailable,nt_fullmet,MR_iwindformat,&
          x_inverted,y_inverted,MR_iwind,MR_iw5_hours_per_file,MR_Comp_StartHour,MR_BaseYear,MR_useLeap,&
          MR_iw5_root,MR_iversion,MR_Comp_StartYear,MR_Comp_StartMonth,MR_Comp_StartDay,MR_DirDelim,&
-         IsRegular_MetGrid,NCv_lib,NCv_datafile
+         IsRegular_MetGrid,NCv_lib,NCv_datafile,Met_var_IsAvailable,Met_var_ndim
 
       use netcdf
 
@@ -1820,6 +1821,7 @@
       integer,dimension(:),allocatable :: var_dimIDs
       integer :: gph_ndims
       integer,dimension(NF90_MAX_VAR_DIMS) :: gph_DimIDs
+      integer :: dimlen,i_dim,in_var_id
 
       integer :: reftimedimlen
       real(kind=sp),dimension(:),allocatable :: filetime_in_sp
@@ -1830,7 +1832,7 @@
       integer :: formatNum
 
       !integer :: dimlen,maxdimlen,i_dim,tdim_id
-      !character(len=NF90_MAX_NAME)  :: dimname
+      character(len=NF90_MAX_NAME)  :: dimname
       integer            :: var_xtype
       character(len=NF90_MAX_NAME) :: invar
       character(len=NF90_MAX_NAME) :: indim
@@ -1917,12 +1919,15 @@
                                    MR_Comp_StartYear,MR_DirDelim
         MR_windfiles(1) = trim(adjustl(MR_windfiles(1)))
         if(MR_iwindformat.eq.25)then
+          ! NCEP 50-year reanalysis are 1-year files at 6-hour time steps
           iwf_int = 6.0_dp
           iwf_tot = MR_iw5_hours_per_file
         elseif(MR_iwindformat.eq.26)then
+          ! JRA-55 reanalysis are 1-month files at 6-hour time steps
           iwf_int = 6.0_dp
           iwf_tot = MR_iw5_hours_per_file
         elseif(MR_iwindformat.eq.27)then
+          ! NOAA-CIRES reanalysis are either 3 or 6-hour, depending on version
           if(MR_iversion.eq.2)then
             iwf_int = 6.0_dp
             iwf_tot = MR_iw5_hours_per_file
@@ -1931,9 +1936,11 @@
             iwf_tot = MR_iw5_hours_per_file
           endif
         elseif(MR_iwindformat.eq.29)then
+          ! ERA5 reanalysis are 1-month files at 1-hour time steps
           iwf_int = 1.0_dp
           iwf_tot = MR_iw5_hours_per_file
         elseif(MR_iwindformat.eq.30)then
+          ! ERA-20C reanalysis are 1-month files at 3-hour time steps
           iwf_int = 3.0_dp
           iwf_tot = MR_iw5_hours_per_file
         endif
@@ -2005,32 +2012,161 @@
             NCv_datafile = formatNum
           endif
 
-              !i_dim = 4  ! get t info
-              !nSTAT = nf90_inquire_dimension(ncid,var_dimIDs(i_dim), &
-              !             name =  dimname, &
-              !             len = dimlen)
-              !call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension time")
-              !!if(index(dimname,Met_dim_names(1)).ne.0)then
-              !  nt_fullmet = dimlen
-              !  tdim_id    = var_dimIDs(i_dim)
-              !!endif
-              ! if(index(dimname,'time')        .eq.0.and.&        ! Check this dimension against known names
-              !    index(dimname,'Time')        .eq.0.and.&
-              !    index(dimname,trim(adjustl(Met_dim_names(1)))).eq.0)then
-              !  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-              !    write(errlog(io),*)'MR WARNING: Name of assumed t dimension does not'
-              !    write(errlog(io),*)'            match any expected names.  Please verify'
-              !    write(errlog(io),*)'            that this file is COORDS compliant.'
-              !    write(errlog(io),*)'   Dimension name: ',dimname
-              !  endif;enddo
-              !endif
-              !Met_dim_names(1) = trim(adjustl(dimname))
+          ! First, we sort out the names of the variable for GPH and all the associated
+          ! dimension names.  This is a copy of the code from MR_Read_Met_DimVars_netcdf
+          ! above, but targeting the GPH variable. We need to do this because netcdf
+          ! variable/dimension names are different depending on if the netcdf file was
+          ! created by the provider or converted from grib by ncl or ncj.
+          ivar = 1 ! set variable to GPH
+          invar = Met_var_NC_names(ivar)
+          nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
+          if(nSTAT.ne.NF90_NOERR)then
+            call MR_NC_check_status(nSTAT,0,"inq_varid")
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)'  Cannot find variable ',trim(adjustl(invar))
+              write(outlog(io),*)'  Testing for known synonyms'
+            endif;enddo
+            ! Checking other name options.
+            call MR_NC_check_var_synonyms(ivar,ncid)
+            ! Now try again
+            invar = Met_var_NC_names(ivar)
+            nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
+            if(nSTAT.ne.NF90_NOERR)then
+              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                write(outlog(io),*)'  Cannot find variable ',trim(adjustl(invar))
+              endif;enddo
+              Met_var_IsAvailable(ivar) = .false.
+              cycle
+            endif
+          endif
+          ! Now that we have the name for the GPH variable, populate the other variable names
+          ! for the ECMWF products
+          if(MR_iwindformat.eq.28.or.MR_iwindformat.eq.29.or.MR_iwindformat.eq.30)then
+            if(index(Met_var_NC_names( 1),"Geopotential_isobaric").gt.0)then
+              Met_var_NC_names( 2)="U_component_of_wind_isobaric"
+              Met_var_NC_names( 3)="V_component_of_wind_isobaric"
+              Met_var_NC_names( 4)="Vertical_velocity_isobaric"
+              Met_var_NC_names( 5)="Temperature_isobaric"
+              Met_var_NC_names( 7)="Vertical_velocity_isobaric"
+              Met_var_NC_names(31)="Specific_humidity_isobaric"
+            elseif(index(Met_var_NC_names( 1),"Z_GDS0_ISBL").gt.0)then
+              Met_var_NC_names( 2)="U_GDS0_ISBL"
+              Met_var_NC_names( 3)="V_GDS0_ISBL"
+              Met_var_NC_names( 4)="W_GDS0_ISBL"
+              Met_var_NC_names( 5)="T_GDS0_ISBL"
+              Met_var_NC_names( 7)="W_GDS0_ISBL"
+              Met_var_NC_names(31)="Q_GDS0_ISBL"
+            elseif(index(Met_var_NC_names( 1),"Z").gt.0)then
+              Met_var_NC_names( 2)="U"
+              Met_var_NC_names( 3)="V"
+              Met_var_NC_names( 4)="W"
+              Met_var_NC_names( 5)="T"
+              Met_var_NC_names( 7)="W"
+              Met_var_NC_names(31)="q"
+            elseif(index(Met_var_NC_names( 1),"z").gt.0)then
+              Met_var_NC_names( 2)="u"
+              Met_var_NC_names( 3)="v"
+              Met_var_NC_names( 4)="w"
+              Met_var_NC_names( 5)="t"
+              Met_var_NC_names( 7)="w"
+              Met_var_NC_names(31)="q"
+            endif
+          endif
+
+          nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
+                    xtype = var_xtype, &
+                    ndims = var_ndims)   ! get the number of dimensions
+          if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable")
+          if(var_ndims.ne.Met_var_ndim(ivar))then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)'MR ERROR: The actual number of dimensions differs from'
+              write(errlog(io),*)'          what is expected'
+              write(errlog(io),*)'      Variable : ',ivar,Met_var_NC_names(ivar)
+              write(errlog(io),*)'      Expected : ',Met_var_ndim(ivar)
+              write(errlog(io),*)'      Found    : ',var_ndims
+            endif;enddo
+            stop 1
+          endif
+          allocate(var_dimIDs(var_ndims))
+          nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
+                    dimids = var_dimIDs(:var_ndims))
+          if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable")
+          i_dim = 1  ! get x info
+          nSTAT = nf90_inquire_dimension(ncid,var_dimIDs(i_dim), &
+                       name =  dimname, &
+                       len = dimlen)
+          if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension X")
+          nx_fullmet = dimlen
+          x_dim_id    = var_dimIDs(i_dim)
+          if(index(dimname,'x')        .eq.0.and.&  ! Check this dimension against known names
+             index(dimname,'lon')      .eq.0.and.&
+             index(dimname,'g0_lon_3') .eq.0.and.&
+             index(dimname,'longitude').eq.0.and.&
+             index(dimname,'g4_lon_3') .eq.0.and.&
+             index(dimname,'west_east').eq.0.and.&
+             index(dimname,trim(adjustl(Met_dim_names(4)))).eq.0)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)'MR WARNING: Name of assumed x dimension does not'
+              write(errlog(io),*)'            match any expected names.  Please verify'
+              write(errlog(io),*)'            that this file is COORDS compliant.'
+              write(errlog(io),*)'   Dimension name: ',dimname
+            endif;enddo
+          endif
+          Met_dim_names(4) = trim(adjustl(dimname))
+          i_dim = 2  ! get y info
+          nSTAT = nf90_inquire_dimension(ncid,var_dimIDs(i_dim), &
+                       name =  dimname, &
+                       len = dimlen)
+          call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Y")
+          !if(index(dimname,Met_dim_names(3)).ne.0)then
+            ny_fullmet = dimlen
+            y_dim_id    = var_dimIDs(i_dim)
+          !endif
+          if(index(dimname,'y')        .eq.0.and.&        ! Check this dimension against known names
+             index(dimname,'lat')      .eq.0.and.&
+             index(dimname,'g0_lat_2') .eq.0.and.&
+             index(dimname,'latitude') .eq.0.and.&
+             index(dimname,'g4_lat_2') .eq.0.and.&
+             index(dimname,'south_north').eq.0.and.&
+             index(dimname,trim(adjustl(Met_dim_names(3)))).eq.0)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)'MR WARNING: Name of assumed y dimension does not'
+              write(errlog(io),*)'            match any expected names.  Please verify'
+              write(errlog(io),*)'            that this file is COORDS compliant.'
+              write(errlog(io),*)'   Dimension name: ',dimname
+            endif;enddo
+          endif
+          Met_dim_names(3) = trim(adjustl(dimname))
+          i_dim = 4  ! get t info
+          nSTAT = nf90_inquire_dimension(ncid,var_dimIDs(i_dim), &
+                       name =  dimname, &
+                       len = dimlen)
+          call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension time")
+          !if(index(dimname,Met_dim_names(1)).ne.0)then
+            nt_fullmet = dimlen
+            t_dim_id    = var_dimIDs(i_dim)
+          !endif
+           if(index(dimname,'time')        .eq.0.and.&        ! Check this dimension against known names
+              index(dimname,'Time')        .eq.0.and.&
+              index(dimname,trim(adjustl(Met_dim_names(1)))).eq.0)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)'MR WARNING: Name of assumed t dimension does not'
+              write(errlog(io),*)'            match any expected names.  Please verify'
+              write(errlog(io),*)'            that this file is COORDS compliant.'
+              write(errlog(io),*)'   Dimension name: ',dimname
+            endif;enddo
+          endif
+          Met_dim_names(1) = trim(adjustl(dimname))
+
+
+          
+
 
           nSTAT = nf90_inq_dimid(ncid,Met_dim_names(1),t_dim_id)
           call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid time")
           nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_tst)
           call MR_NC_check_status(nSTAT,1,"nf90_Inquire_Dimension time")
-          if(iw.eq.1.and.(.not.IsRegular_MetGrid))then ! for iwf=5, this is 27,29, or 30
+          if(iw.eq.1.and.(.not.IsRegular_MetGrid))then ! for iwind=5, this is 27,29, or 30
             ! Normally we would populate the x and y arrays in MR_Read_Met_DimVars_netcdf, but
             ! for Gaussian or otherwise irregular grids, it is easier to just read the grids
             ! directly.  We will do this now while we have the Geopotential Height file open.  
@@ -2096,6 +2232,8 @@
         do iwstep = 1,nt_fullmet
           MR_windfile_stephour(:,iwstep) = (iwstep-1)*iwf_int
         enddo
+        !  End of iwind=5 section
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       else ! MR_iwind = 3 or 4
         if(MR_iwindformat.eq.50)then
           ! Branch for WRF files
@@ -2628,7 +2766,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Set_iwind5_filenames            ----------"
-        write(outlog(io),*)inhour,ivar,infile
+        write(outlog(io),*)inhour,ivar
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -2869,6 +3007,7 @@
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)" Set filename to : ",trim(adjustl(infile))
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
