@@ -532,7 +532,7 @@
               endif;enddo
               stop 1
             endif
-            allocate(var_dimIDs(var_ndims))
+            if(.not.allocated(var_dimIDs))allocate(var_dimIDs(var_ndims))
             nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
                       dimids = var_dimIDs(:var_ndims))
             if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable")
@@ -2087,7 +2087,7 @@
             endif;enddo
             stop 1
           endif
-          allocate(var_dimIDs(var_ndims))
+          if(.not.allocated(var_dimIDs))allocate(var_dimIDs(var_ndims))
           nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
                     dimids = var_dimIDs(:var_ndims))
           if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable")
@@ -2547,7 +2547,7 @@
               endif
 
               var_ndims = 1
-              allocate(var_dimIDs(1))
+              if(.not.allocated(var_dimIDs))allocate(var_dimIDs(1))
               nSTAT = nf90_inquire_variable(ncid, reftime_var_id, invar, &
                         dimids = var_dimIDs(:var_ndims))
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable reftime")
