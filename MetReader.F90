@@ -324,10 +324,10 @@
       !    Native grid of Met file using Height as vertical coordinate
       !    (resampled onto z-gridpoints of computational grid)
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:,:,:),pointer,public :: MR_dum3d_metH => null()
-      real(kind=sp),dimension(:,:,:),pointer,public :: MR_u_ER_metP  => null()! For the cases where Met is proj and comp
-      real(kind=sp),dimension(:,:,:),pointer,public :: MR_v_ER_metP  => null()!  different we need to rotate so these
-                                                                              !  store Earth-Relative velocities on MetP
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d_metH => null()
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_u_ER_metP  => null()! For the cases where Met is proj and comp
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_v_ER_metP  => null()!  different we need to rotate so these
+                                                                               !  store Earth-Relative velocities on MetP
 #else
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_dum3d_metH
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_u_ER_metP ! For the cases where Met is proj and comp
@@ -411,7 +411,6 @@
       real(kind=sp),public :: dx_met_const
       real(kind=sp),public :: dy_met_const
 
-
       integer,public       :: nx_submet ! length of x or lon of sub-grid
       integer,public       :: ny_submet ! length of y or lat of sub-grid
 #ifdef USEPOINTERS
@@ -439,33 +438,33 @@
       integer     ,public :: Met_iprojflag
       real(kind=8),public :: Met_Re
       real(kind=8),public :: Met_k0
-      real(kind=8),public :: Met_phi0    != 90.0_ip        ! latitude of projection point
+      real(kind=8),public :: Met_phi0            ! latitude of projection point
       real(kind=8),public :: Met_phi1
       real(kind=8),public :: Met_phi2
-      real(kind=8),public :: Met_lam0 != -135.0_ip   ! longitude of projection point
+      real(kind=8),public :: Met_lam0            ! longitude of projection point
       real(kind=8),public :: Met_lam1
       real(kind=8),public :: Met_lam2
 
       integer     ,public :: Comp_iprojflag
       real(kind=8),public :: Comp_Re
       real(kind=8),public :: Comp_k0
-      real(kind=8),public :: Comp_phi0    != 90.0_ip        ! latitude of projection point
-      real(kind=8),public :: Comp_lam0 != -135.0_ip   ! longitude of projection point
-      real(kind=8),public :: Comp_lam1
+      real(kind=8),public :: Comp_phi0           ! latitude of projection point
       real(kind=8),public :: Comp_phi1
-      real(kind=8),public :: Comp_lam2
       real(kind=8),public :: Comp_phi2
+      real(kind=8),public :: Comp_lam0           ! longitude of projection point
+      real(kind=8),public :: Comp_lam1
+      real(kind=8),public :: Comp_lam2
 
       integer     ,public :: Map_Case
 
       ! Some geometry terms
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:,:)     ,pointer        :: rdphi_MetP_sp    => null()
-      real(kind=sp),dimension(:,:,:)   ,pointer        :: rdlambda_MetP_sp => null()
-      real(kind=sp),dimension(:)       ,pointer,public :: MR_dx_met        => null()
-      real(kind=sp),dimension(:)       ,pointer,public :: MR_dx_submet     => null()
-      real(kind=sp),dimension(:)       ,pointer,public :: MR_dy_met        => null()
-      real(kind=sp),dimension(:)       ,pointer,public :: MR_dy_submet     => null()
+      real(kind=sp),dimension(:,:)     ,pointer            :: rdphi_MetP_sp    => null()
+      real(kind=sp),dimension(:,:,:)   ,pointer            :: rdlambda_MetP_sp => null()
+      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dx_met        => null()
+      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dx_submet     => null()
+      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dy_met        => null()
+      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dy_submet     => null()
 #else
       real(kind=sp),dimension(:,:)     ,allocatable        :: rdphi_MetP_sp
       real(kind=sp),dimension(:,:,:)   ,allocatable        :: rdlambda_MetP_sp
@@ -474,6 +473,7 @@
       real(kind=sp),dimension(:)       ,allocatable,public :: MR_dy_met
       real(kind=sp),dimension(:)       ,allocatable,public :: MR_dy_submet
 #endif
+      real(kind=sp),public :: MR_minlen = 100000.0_sp    ! minimum length of the met subgrid (m)
 
         ! There are some computational grid variables we might need, so make local copies
       integer      ,public :: MR_BaseYear            = 1900    ! This should be reset in calling program
@@ -505,20 +505,24 @@
       integer      ,dimension(:,:,:),allocatable,public :: CompPoint_on_subMet_idx ! index on met sub-grid of comp point
       real(kind=sp),dimension(:,:,:),allocatable,public :: bilin_map_wgt
 #endif
+
       ! Here are a few variables needed for sigma-altitude coordinates
-      logical        :: MR_use_SigmaAlt   = .false.
-      integer        :: MR_ZScaling_ID    = 0  ! = 0 for no scaling (i.e. s = z)
-                                               ! = 1 for altitude shifting (s=z=zsurf)
-                                               ! = 2 for sigma-altitude (s=(z-surf)/(top-surf))
-      real(kind=sp)  :: MR_ztop
+      logical          ,public :: MR_useTopo             = .false.
+      integer          ,public :: MR_ZScaling_ID    = 0  ! = 0 for no scaling (i.e. s = z)
+                                                         ! = 1 for sigma-altitude (s=(z-surf)/(top-surf))
+      real(kind=sp)    ,public :: MR_ztop
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:),    pointer :: s_comp_sp => null() ! s-coordinates (scaled z) of computational grid
-      real(kind=sp),dimension(:,:),  pointer :: MR_zsurf  => null() ! surface elevation in km
-      real(kind=sp),dimension(:,:),  pointer :: MR_jacob  => null() ! Jacobian of trans. = MR_ztop-MR_zsurf
+      real(kind=sp),dimension(:)   ,pointer, public :: s_comp_sp     => null() ! s-coordinates (scaled z) of comp. grid
+      real(kind=sp),dimension(:,:) ,pointer, public :: MR_Topo_met   => null()
+      real(kind=sp),dimension(:,:) ,pointer, public :: MR_Topo_comp  => null()
+      real(kind=sp),dimension(:,:) ,pointer, public :: MR_jacob_met  => null() ! Jacobian of trans. = MR_ztop-MR_Topo_met
+      real(kind=sp),dimension(:,:) ,pointer, public :: MR_jacob_comp => null() 
 #else
-      real(kind=sp),dimension(:),    allocatable :: s_comp_sp ! s-coordinates (scaled z) of computational grid
-      real(kind=sp),dimension(:,:),  allocatable :: MR_zsurf  ! surface elevation in km
-      real(kind=sp),dimension(:,:),  allocatable :: MR_jacob  ! Jacobian of trans. = MR_ztop-MR_zsurf
+      real(kind=sp),dimension(:)   ,allocatable, public :: s_comp_sp ! s-coordinates (scaled z) of computational grid
+      real(kind=sp),dimension(:,:) ,allocatable, public :: MR_Topo_met
+      real(kind=sp),dimension(:,:) ,allocatable, public :: MR_Topo_comp
+      real(kind=sp),dimension(:,:) ,allocatable, public :: MR_jacob_met  ! Jacobian of trans. = MR_ztop-MR_zsurf
+      real(kind=sp),dimension(:,:) ,allocatable, public :: MR_jacob_comp
 #endif
 
       logical                       ,public :: FoundFillVAttr = .false.
@@ -743,8 +747,10 @@
        if(associated(amap_iwf25                    ))deallocate(amap_iwf25)
        if(associated(imap_iwf25                    ))deallocate(imap_iwf25)
        if(associated(s_comp_sp                     ))deallocate(s_comp_sp)
-       if(associated(MR_zsurf                      ))deallocate(MR_zsurf)
-       if(associated(MR_jacob                      ))deallocate(MR_jacob)
+       if(associated(MR_Topo_met                   ))deallocate(MR_Topo_met)
+       if(associated(MR_jacob_met                  ))deallocate(MR_jacob_met)
+       if(associated(MR_Topo_comp                  ))deallocate(MR_Topo_comp)
+       if(associated(MR_jacob_comp                 ))deallocate(MR_jacob_comp)
        if(associated(MR_u_ER_metP                  ))deallocate(MR_u_ER_metP)
        if(associated(MR_v_ER_metP                  ))deallocate(MR_v_ER_metP)
        if(associated(theta_Met                     ))deallocate(theta_Met)
@@ -832,8 +838,10 @@
        if(allocated(amap_iwf25                    ))deallocate(amap_iwf25)
        if(allocated(imap_iwf25                    ))deallocate(imap_iwf25)
        if(allocated(s_comp_sp                     ))deallocate(s_comp_sp)
-       if(allocated(MR_zsurf                      ))deallocate(MR_zsurf)
-       if(allocated(MR_jacob                      ))deallocate(MR_jacob)
+       if(allocated(MR_Topo_met                   ))deallocate(MR_Topo_met)
+       if(allocated(MR_jacob_met                  ))deallocate(MR_jacob_met)
+       if(allocated(MR_Topo_comp                  ))deallocate(MR_Topo_comp)
+       if(allocated(MR_jacob_comp                 ))deallocate(MR_jacob_comp)
        if(allocated(MR_u_ER_metP                  ))deallocate(MR_u_ER_metP)
        if(allocated(MR_v_ER_metP                  ))deallocate(MR_v_ER_metP)
        if(allocated(theta_Met                     ))deallocate(theta_Met)
@@ -933,8 +941,8 @@
 
       ! Initialize the dimension and variable arrays.  Select slots in these arrays will be
       ! overwritten from the calls in the case block below
-      Met_dim_IsAvailable=.false.
-      Met_var_IsAvailable=.false.
+      Met_dim_IsAvailable                     = .false.
+      Met_var_IsAvailable                     = .false.
       Met_var_IsAvailable(1:MR_MAXVARS)       = .false.
       Met_var_zdim_idx(1:MR_MAXVARS)          = 0
       Met_var_zdim_ncid(1:MR_MAXVARS)         = 0
@@ -2607,7 +2615,7 @@
 !           MR_Read_Met_Times_netcdf
 !
 !     From the calling program, this is called once the names of the NWP files
-!     is specified.  If a custom netcdf template file is to be used (iwf=0), then
+!     are specified.  If a custom netcdf template file is to be used (iwf=0), then
 !     the variable MR_iwf_template must also be filled so that it can be read
 !     from MR_Read_Met_DimVars_[].  
 !
@@ -2619,7 +2627,7 @@
 !       IsLatLon_MetGrid, IsGlobal_MetGrid, IsRegular_MetGrid 
 !
 !     The next step is for the calling program to specify the projection parameters
-!     of the computational grid (i.e. the grid MetReader should be returing values to)
+!     of the computational grid (i.e. the grid MetReader should be returning values to)
 !
 !##############################################################################
 
@@ -2895,7 +2903,7 @@
         endif
       endif
 
-      !to do: perform a sanity check on these projection parameters
+      !HFS to do: perform a sanity check on these projection parameters
       ! take a lon/lat, project, then inverse project and check
 
       CALLED_MR_Set_CompProjection = .true.
@@ -2946,7 +2954,7 @@
       real(kind=sp),intent(in) :: dumz_sp(nz)
       logical      ,intent(in) :: periodic
 
-      integer       :: i,j,k
+      integer :: i,j,k
       integer :: io                           ! Index for output streams
 
       !                allocates *_Met_P for subset of Met grid on pressure levels
@@ -3021,7 +3029,7 @@
       case(2)
         !call MR_Set_MetComp_Grids_ASCII_3d
       case (3:5)
-        ! Now that we have the full grids defined in MR_Read_Met_DimVars_netcdf,
+        ! Now that we have the full grids defined in MR_Read_Met_DimVars,
         ! calculate the subgrid needed for the simulation
         call MR_Set_MetComp_Grids
 
@@ -3077,6 +3085,21 @@
           endif
         enddo
       endif
+      MR_minlen = maxval(rdlambda_MetP_sp(:,:,:))
+      do i=1,nx_submet
+        do j=1,ny_submet
+          if(MR_minlen.gt.rdlambda_MetP_sp(i,j,1)) MR_minlen=rdlambda_MetP_sp(i,j,1)
+          if(MR_minlen.gt.rdphi_MetP_sp(j,1))      MR_minlen=rdphi_MetP_sp(j,1)
+        enddo
+      enddo
+
+      if(MR_useTopo)then
+        allocate(s_comp_sp(nz_comp))
+        allocate(MR_Topo_met(nx_submet,ny_submet));  MR_Topo_met(:,:)   = 0.0_sp
+        allocate(MR_jacob_met(nx_submet,ny_submet)); MR_jacob_met(:,:)  = 1.0_sp
+        allocate(MR_Topo_comp(nx_comp,ny_comp));     MR_Topo_comp(:,:)  = 0.0_sp
+        allocate(MR_jacob_comp(nx_comp,ny_comp));    MR_jacob_comp(:,:) = 1.0_sp
+      endif
 
       CALLED_MR_Initialize_Met_Grids = .true.
 
@@ -3104,22 +3127,34 @@
 
       integer :: io                           ! Index for output streams
 
+      if(.not.MR_useTopo)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+          write(outlog(io),*)"MR WARNING: Trying to set sigma-alt. coordinates, but MR_useTopo=F"
+        endif;enddo
+        return
+      endif
+
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Set_SigmaAlt_Scaling                      ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
-      MR_use_SigmaAlt   = .true.
-      MR_ztop           = dum_sp
-      MR_ZScaling_ID    = dum_int
-      allocate(s_comp_sp(nz));     s_comp_sp(1:nz) = dumz_sp(1:nz)
-      allocate(MR_zsurf(nx,ny));   MR_zsurf(1:nx,1:ny) = dumxy1_sp(1:nx,1:ny)
-      allocate(MR_jacob(nx,ny))
-      if (MR_ZScaling_ID.eq.2)then
-        MR_jacob(1:nx,1:ny) = MR_ztop - MR_zsurf(1:nx,1:ny)
+      MR_ztop            = dum_sp
+      MR_ZScaling_ID     = dum_int
+      s_comp_sp(1:nz) = dumz_sp(1:nz)
+      if(MR_ZScaling_ID.eq.0)then
+        ! no topo
+        MR_jacob_comp(1:nx,1:ny) = 1.0_sp
+      elseif(MR_ZScaling_ID.eq.1)then
+        ! sigma-altitude (s=(z-surf)/(top-surf))
+        MR_jacob_comp(1:nx,1:ny) = MR_ztop - MR_Topo_comp(1:nx,1:ny)
       else
-        MR_jacob(1:nx,1:ny) = 1.0_sp
+        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+          write(outlog(io),*)"MR WARNING: Topography scheme not recognized."
+          write(outlog(io),*)"            Reverting to altitude."
+        endif;enddo
+        MR_jacob_comp(1:nx,1:ny) = 1.0_sp
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
@@ -3929,13 +3964,13 @@
             endif
           endif
 
-          if (MR_use_SigmaAlt)then
-              ! this recovers the real-world z coordinate from the sigma level and topography
-            dumVertCoord_sp(1:nz_comp) = MR_zsurf(i,j) + &
-                                           s_comp_sp(1:nz_comp) * MR_jacob(i,j)
-          else
+!          if (MR_useTopo)then
+!              ! this recovers the real-world z coordinate from the sigma level and topography
+!            dumVertCoord_sp(1:nz_comp) = MR_Topo_comp(i,j) + &
+!                                           s_comp_sp(1:nz_comp) * MR_jacob_comp(i,j)
+!          else
             dumVertCoord_sp(1:nz_comp) = z_comp_sp(1:nz_comp)
-          endif
+!          endif
 
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !   Interpolate these values to a regular grid with
@@ -4056,18 +4091,18 @@
         enddo
         MR_dum3d_compH(:,:,k) = tmp_regrid2d_sp(:,:)
       enddo
-      if (MR_use_SigmaAlt) then
-        ! If we are using sigma-altitude coordinates, then MR_dum3d_compH is returned on the
-        ! s-grid, but we might need to scale the variable
-        if(ivar.eq.4)then
-          ! vertical velocity is scaled by jacobian
-          do i=1,nx_comp
-            do j=1,ny_comp
-              MR_dum3d_compH(i,j,:)=MR_dum3d_compH(i,j,:)/MR_jacob(i,j)
-            enddo
-          enddo
-        endif
-      endif
+      !if (MR_use_SigmaAlt) then
+      !  ! If we are using sigma-altitude coordinates, then MR_dum3d_compH is returned on the
+      !  ! s-grid, but we might need to scale the variable
+      !  if(ivar.eq.4)then
+      !    ! vertical velocity is scaled by jacobian
+      !    do i=1,nx_comp
+      !      do j=1,ny_comp
+      !        MR_dum3d_compH(i,j,:)=MR_dum3d_compH(i,j,:)/MR_jacob(i,j)
+      !      enddo
+      !    enddo
+      !  endif
+      !endif
 
       deallocate(tmp_regrid2d_sp)
 
