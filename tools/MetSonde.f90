@@ -159,7 +159,8 @@
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_info,verbosity_error,&
-           MR_Set_CompProjection
+           MR_Set_CompProjection,&
+           MR_FileIO_Error_Handler
 
       use projection,      only : &
            PJ_Set_Proj_Params
@@ -177,8 +178,10 @@
       character(len=100) ,intent(out) :: WINDROOT
 
       integer             :: nargs
-      integer             :: status
-      character (len=100) :: arg
+      integer             :: iostatus
+      integer             :: inlen
+      character(len=120)  :: iomessage
+      character(len=100)  :: arg
 
       integer :: iprojflag
       real(kind=8) :: lambda0,phi0,phi1,phi2,k0,radius_earth
@@ -186,45 +189,133 @@
 
       integer :: io                           ! Index for output streams
 
+      INTERFACE
+        subroutine Print_Usage
+        end subroutine Print_Usage
+      END INTERFACE
+
 !     TEST READ COMMAND LINE ARGUMENTS
       nargs = command_argument_count()
       if (nargs.lt.6) then
         ! We need at least 6 parameter to define the run.
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"Too few command-line arguments:"
-          write(errlog(io),*)"  Usage: MetSonde lon lat YYYY MM DD HH.H [WIND_ROOT]"
-          write(errlog(io),*)"           lon       = longitude of start point"
-          write(errlog(io),*)"           lat       = latitude of start point"
-          write(errlog(io),*)"           YYYY      = start year"
-          write(errlog(io),*)"           MM        = start month"
-          write(errlog(io),*)"           DD        = start day"
-          write(errlog(io),*)"           HH.H      = start hour"
-          write(errlog(io),*)"           WIND_ROOT = path to windfiles (optional)"
-        endif;enddo
-        stop 1
+        ! Not enough arguments; print usage and exit
+        call Print_Usage
       else
-        call get_command_argument(1, arg, status)
-        read(arg,*)inlon
-        if(inlon.lt.-360.0)then
+        call get_command_argument(1, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-            write(errlog(io),*)"ERROR: Longitude must be gt -360"
+            write(errlog(io),*)"MR ERROR : Could not read first command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)inlon
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,arg(1:80),iomessage)
+        if(inlon.lt.-360.0_4)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: Longitude must be gt -360"
           endif;enddo
           stop 1
         endif
         if(inlon.lt.0.0_4.or.inlon.gt.360.0_4)inlon=mod(inlon+360.0_4,360.0_4)
-        call get_command_argument(2, arg, status)
-        read(arg,*)inlat
-        call get_command_argument(3, arg, status)
-        read(arg,*)inyear
-        call get_command_argument(4, arg, status)
-        read(arg,*)inmonth
-        call get_command_argument(5, arg, status)
-        read(arg,*)inday
-        call get_command_argument(6, arg, status)
-        read(arg,*)inhour
+        call get_command_argument(2, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read second command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)inlat
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,arg(1:80),iomessage)
+        if(inlat.lt.-90.0_4.or.inlat.gt.90.0_4)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: Latitude must be in range -90->90"
+          endif;enddo
+          stop 1
+        endif
+
+        call get_command_argument(3, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read third command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)inyear
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,arg(1:80),iomessage)
+
+        call get_command_argument(4, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read fourth command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)inmonth
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,arg(1:80),iomessage)
+        ! Error-check inmonth
+        if(inmonth.lt.1.or.&
+           inmonth.gt.12)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: month must be in range 1-12"
+            write(errlog(io),*)" inmonth = ",inmonth
+          endif;enddo
+          stop 1
+        endif
+
+        call get_command_argument(5, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read fifth command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)inday
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,arg(1:80),iomessage)
+        ! Error-check inday
+        if(inday.lt.1.or.&
+           inday.gt.31)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: day must be in range 1-31"
+            write(errlog(io),*)" inday = ",inday
+          endif;enddo
+          stop 1
+        endif
+
+        call get_command_argument(6, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read sixth command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)inhour
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,arg(1:80),iomessage)
+        ! Error-check inhour
+        if(inhour.lt.0.0_8.or.&
+           inhour.gt.24.0_8)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: hour must be in range 0.0-24.0"
+            write(errlog(io),*)" inhour = ",inhour
+          endif;enddo
+          stop 1
+        endif
+
         if(nargs.ge.7)then
-          call get_command_argument(7, arg, status)
-          WINDROOT = TRIM(arg)
+          call get_command_argument(7, arg, length=inlen, status=iostatus)
+          if(iostatus.ne.0)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR : Could not read seventh command-line argument"
+              write(errlog(io),*)" arg = ",arg
+            endif;enddo
+            call Print_Usage
+          endif
+          WINDROOT = trim(arg)
         else
           WINDROOT='/data/WindFiles'
         endif
@@ -428,7 +519,7 @@
       elseif(inyear.lt.1948)then
         ! Too old for NCEP runs, must use control file
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"ERROR: Requested start time is too old for NCEP Reanalysis."
+          write(errlog(io),*)"MR ERROR: Requested start time is too old for NCEP Reanalysis."
         endif;enddo
         stop 1
       else
@@ -445,7 +536,7 @@
           endif;enddo
           if (Probe_StartHour-RunStartHour.ge.real(GFS_FC_TotHours,kind=8))then
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-              write(errlog(io),*)"ERROR Run cannot complete with the current FC package."
+              write(errlog(io),*)"MR ERROR Run cannot complete with the current FC package."
             endif;enddo
             stop 1
           endif
@@ -769,3 +860,37 @@
 
 !##############################################################################
 !##############################################################################
+!
+!  Print_Usage
+!
+!  This subroutine is called if there is an error reading the command-line.
+!  Expected usage is written to stdout and the program exits.
+!
+!##############################################################################
+
+      subroutine Print_Usage
+
+      use MetReader,       only : &
+         MR_nio,VB,verbosity_error,errlog,VB
+
+      implicit none
+
+      integer :: io
+
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"Too few command-line arguments:"
+          write(errlog(io),*)"  Usage: MetSonde lon lat YYYY MM DD HH.H [WIND_ROOT]"
+          write(errlog(io),*)"           lon       = longitude of start point"
+          write(errlog(io),*)"           lat       = latitude of start point"
+          write(errlog(io),*)"           YYYY      = start year"
+          write(errlog(io),*)"           MM        = start month"
+          write(errlog(io),*)"           DD        = start day"
+          write(errlog(io),*)"           HH.H      = start hour"
+          write(errlog(io),*)"           WIND_ROOT = path to windfiles (optional)"
+        endif;enddo
+        stop 1
+
+      end subroutine Print_Usage
+
+!##############################################################################
+

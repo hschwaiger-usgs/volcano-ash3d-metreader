@@ -167,9 +167,10 @@
                                        ! 40 NASA-GEOS Cp
                                        ! 41 NASA-GEOS Np
                                        ! 50 WRF - output
-      logical,public :: MR_Use_RDA     = .true.
-      integer,public :: MR_iversion    = -1 ! version of the product; sometimes the grid used changes with newer
-                                            ! versions. -1 indicates latest version, but can be overridden here
+      logical,public :: MR_Use_RDA     = .false.  ! If reanalysis products were aquired via RDA, this flag can be changed
+      integer,public :: MR_RDAcode     = -1       ! This allows the calling program to specify older versions of data
+      integer,public :: MR_iversion    = -1       ! version of the product; sometimes the grid used changes with newer
+                                                  ! versions. -1 indicates latest version, but can be overridden here
       integer,public :: MR_iGridCode   !   MR_iGridCode specifies the NCEP grid described in:
                                        !   http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html
       integer,public :: MR_idataFormat !   Specifies the data model used
@@ -281,9 +282,9 @@
 #ifdef USEPOINTERS
       character(len=4 ),dimension(:)      ,pointer,public :: MR_Snd_cd          => null() ! Station code
       integer          ,dimension(:)      ,pointer,public :: MR_Snd_id          => null() ! WMO station ID
-      real(kind=dp)    ,dimension(:)      ,pointer,public :: MR_Snd_lt          => null() ! Station latitude
-      real(kind=dp)    ,dimension(:)      ,pointer,public :: MR_Snd_ln          => null() ! Station longitude
-      real(kind=dp)    ,dimension(:)      ,pointer,public :: MR_Snd_el          => null() ! Station elevation
+      real(kind=sp)    ,dimension(:)      ,pointer,public :: MR_Snd_lt          => null() ! Station latitude
+      real(kind=sp)    ,dimension(:)      ,pointer,public :: MR_Snd_ln          => null() ! Station longitude
+      real(kind=sp)    ,dimension(:)      ,pointer,public :: MR_Snd_el          => null() ! Station elevation
       character(len=25),dimension(:)      ,pointer,public :: MR_Snd_lnm         => null() ! Station long name
       character(len=2 ),dimension(:)      ,pointer,public :: MR_Snd_st          => null() ! Station state
       character(len=2 ),dimension(:)      ,pointer,public :: MR_Snd_ct          => null() ! Station country
@@ -296,9 +297,9 @@
 #else
       character(len=4 ),dimension(:)      ,allocatable,public :: MR_Snd_cd         ! Station code
       integer          ,dimension(:)      ,allocatable,public :: MR_Snd_id         ! WMO station ID
-      real(kind=dp)    ,dimension(:)      ,allocatable,public :: MR_Snd_lt         ! Station latitude
-      real(kind=dp)    ,dimension(:)      ,allocatable,public :: MR_Snd_ln         ! Station longitude
-      real(kind=dp)    ,dimension(:)      ,allocatable,public :: MR_Snd_el         ! Station elevation
+      real(kind=sp)    ,dimension(:)      ,allocatable,public :: MR_Snd_lt         ! Station latitude
+      real(kind=sp)    ,dimension(:)      ,allocatable,public :: MR_Snd_ln         ! Station longitude
+      real(kind=sp)    ,dimension(:)      ,allocatable,public :: MR_Snd_el         ! Station elevation
       character(len=25),dimension(:)      ,allocatable,public :: MR_Snd_lnm        ! Station long name
       character(len=2 ),dimension(:)      ,allocatable,public :: MR_Snd_st         ! Station state
       character(len=2 ),dimension(:)      ,allocatable,public :: MR_Snd_ct         ! Station country
@@ -317,16 +318,16 @@
       logical,public :: Snd_Have_Coord    = .false.  ! If the 1-d data have the optional projection params
                                            ! then it will be used, otherwise vel will be relative
                                            ! to comp grid.
-      integer                                     , public :: MR_nstat = 4      ! number of stations to consider (0 for all)
-      real(kind=dp)                               , public :: MR_pexp  = 4.0_dp ! exponent for inverse distance calculation
+      integer                                     , public :: MR_nstat = 8      ! number of stations to consider (0 for all)
+      real(kind=sp)                               , public :: MR_pexp  = 4.0_sp ! exponent for inverse distance calculation
 
       !    Native grid of Met file using Height as vertical coordinate
       !    (resampled onto z-gridpoints of computational grid)
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:,:,:),pointer,public :: MR_dum3d_metH => null()
-      real(kind=sp),dimension(:,:,:),pointer,public :: MR_u_ER_metP  => null()! For the cases where Met is proj and comp
-      real(kind=sp),dimension(:,:,:),pointer,public :: MR_v_ER_metP  => null()!  different we need to rotate so these
-                                                                              !  store Earth-Relative velocities on MetP
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d_metH => null()
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_u_ER_metP  => null()! For the cases where Met is proj and comp
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_v_ER_metP  => null()!  different we need to rotate so these
+                                                                               !  store Earth-Relative velocities on MetP
 #else
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_dum3d_metH
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_u_ER_metP ! For the cases where Met is proj and comp
@@ -410,7 +411,6 @@
       real(kind=sp),public :: dx_met_const
       real(kind=sp),public :: dy_met_const
 
-
       integer,public       :: nx_submet ! length of x or lon of sub-grid
       integer,public       :: ny_submet ! length of y or lat of sub-grid
 #ifdef USEPOINTERS
@@ -434,36 +434,37 @@
       logical,public :: y_pad_South    = .false. !   
 
       ! Met copies of projection variables, used for proj call on Met Grid
+      character(len=4),public :: Met_gridtype
       integer     ,public :: Met_iprojflag
       real(kind=8),public :: Met_Re
       real(kind=8),public :: Met_k0
-      real(kind=8),public :: Met_phi0    != 90.0_ip        ! latitude of projection point
+      real(kind=8),public :: Met_phi0            ! latitude of projection point
       real(kind=8),public :: Met_phi1
       real(kind=8),public :: Met_phi2
-      real(kind=8),public :: Met_lam0 != -135.0_ip   ! longitude of projection point
+      real(kind=8),public :: Met_lam0            ! longitude of projection point
       real(kind=8),public :: Met_lam1
       real(kind=8),public :: Met_lam2
 
       integer     ,public :: Comp_iprojflag
       real(kind=8),public :: Comp_Re
       real(kind=8),public :: Comp_k0
-      real(kind=8),public :: Comp_phi0    != 90.0_ip        ! latitude of projection point
-      real(kind=8),public :: Comp_lam0 != -135.0_ip   ! longitude of projection point
-      real(kind=8),public :: Comp_lam1
+      real(kind=8),public :: Comp_phi0           ! latitude of projection point
       real(kind=8),public :: Comp_phi1
-      real(kind=8),public :: Comp_lam2
       real(kind=8),public :: Comp_phi2
+      real(kind=8),public :: Comp_lam0           ! longitude of projection point
+      real(kind=8),public :: Comp_lam1
+      real(kind=8),public :: Comp_lam2
 
       integer     ,public :: Map_Case
 
       ! Some geometry terms
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:,:)     ,pointer        :: rdphi_MetP_sp    => null()
-      real(kind=sp),dimension(:,:,:)   ,pointer        :: rdlambda_MetP_sp => null()
-      real(kind=sp),dimension(:)       ,pointer,public :: MR_dx_met        => null()
-      real(kind=sp),dimension(:)       ,pointer,public :: MR_dx_submet     => null()
-      real(kind=sp),dimension(:)       ,pointer,public :: MR_dy_met        => null()
-      real(kind=sp),dimension(:)       ,pointer,public :: MR_dy_submet     => null()
+      real(kind=sp),dimension(:,:)     ,pointer            :: rdphi_MetP_sp    => null()
+      real(kind=sp),dimension(:,:,:)   ,pointer            :: rdlambda_MetP_sp => null()
+      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dx_met        => null()
+      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dx_submet     => null()
+      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dy_met        => null()
+      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dy_submet     => null()
 #else
       real(kind=sp),dimension(:,:)     ,allocatable        :: rdphi_MetP_sp
       real(kind=sp),dimension(:,:,:)   ,allocatable        :: rdlambda_MetP_sp
@@ -472,6 +473,7 @@
       real(kind=sp),dimension(:)       ,allocatable,public :: MR_dy_met
       real(kind=sp),dimension(:)       ,allocatable,public :: MR_dy_submet
 #endif
+      real(kind=sp),public :: MR_minlen = 100000.0_sp    ! minimum length of the met subgrid (m)
 
         ! There are some computational grid variables we might need, so make local copies
       integer      ,public :: MR_BaseYear            = 1900    ! This should be reset in calling program
@@ -503,20 +505,24 @@
       integer      ,dimension(:,:,:),allocatable,public :: CompPoint_on_subMet_idx ! index on met sub-grid of comp point
       real(kind=sp),dimension(:,:,:),allocatable,public :: bilin_map_wgt
 #endif
+
       ! Here are a few variables needed for sigma-altitude coordinates
-      logical        :: MR_use_SigmaAlt   = .false.
-      integer        :: MR_ZScaling_ID    = 0  ! = 0 for no scaling (i.e. s = z)
-                                               ! = 1 for altitude shifting (s=z=zsurf)
-                                               ! = 2 for sigma-altitude (s=(z-surf)/(top-surf))
-      real(kind=sp)  :: MR_ztop
+      logical          ,public :: MR_useTopo             = .false.
+      integer          ,public :: MR_ZScaling_ID    = 0  ! = 0 for no scaling (i.e. s = z)
+                                                         ! = 1 for sigma-altitude (s=(z-surf)/(top-surf))
+      real(kind=sp)    ,public :: MR_ztop
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:),    pointer :: s_comp_sp => null() ! s-coordinates (scaled z) of computational grid
-      real(kind=sp),dimension(:,:),  pointer :: MR_zsurf  => null() ! surface elevation in km
-      real(kind=sp),dimension(:,:),  pointer :: MR_jacob  => null() ! Jacobian of trans. = MR_ztop-MR_zsurf
+      real(kind=sp),dimension(:)   ,pointer, public :: s_comp_sp     => null() ! s-coordinates (scaled z) of comp. grid
+      real(kind=sp),dimension(:,:) ,pointer, public :: MR_Topo_met   => null()
+      real(kind=sp),dimension(:,:) ,pointer, public :: MR_Topo_comp  => null()
+      real(kind=sp),dimension(:,:) ,pointer, public :: MR_jacob_met  => null() ! Jacobian of trans. = MR_ztop-MR_Topo_met
+      real(kind=sp),dimension(:,:) ,pointer, public :: MR_jacob_comp => null() 
 #else
-      real(kind=sp),dimension(:),    allocatable :: s_comp_sp ! s-coordinates (scaled z) of computational grid
-      real(kind=sp),dimension(:,:),  allocatable :: MR_zsurf  ! surface elevation in km
-      real(kind=sp),dimension(:,:),  allocatable :: MR_jacob  ! Jacobian of trans. = MR_ztop-MR_zsurf
+      real(kind=sp),dimension(:)   ,allocatable, public :: s_comp_sp ! s-coordinates (scaled z) of computational grid
+      real(kind=sp),dimension(:,:) ,allocatable, public :: MR_Topo_met
+      real(kind=sp),dimension(:,:) ,allocatable, public :: MR_Topo_comp
+      real(kind=sp),dimension(:,:) ,allocatable, public :: MR_jacob_met  ! Jacobian of trans. = MR_ztop-MR_zsurf
+      real(kind=sp),dimension(:,:) ,allocatable, public :: MR_jacob_comp
 #endif
 
       logical                       ,public :: FoundFillVAttr = .false.
@@ -567,10 +573,10 @@
         !  46 = Precipitation rate large-scale (ice)
         !  47 = Precipitation rate convective  (ice)
       logical          ,dimension(MR_MAXVARS),public   :: Met_var_IsAvailable      ! true if iwf contains the var
-      character(len=71),dimension(MR_MAXVARS),public   :: Met_var_NC_names          ! name in the file
-      character(len=71),dimension(MR_MAXVARS),public   :: Met_var_GRIB_names        ! name in the file
+      character(len=80),dimension(MR_MAXVARS),public   :: Met_var_NC_names         ! name in the file
+      character(len=80),dimension(MR_MAXVARS),public   :: Met_var_GRIB_names       ! name in the file
       character(len=5) ,dimension(MR_MAXVARS),public   :: Met_var_WMO_names        ! WMO version of the name
-      integer          ,dimension(MR_MAXVARS),public   :: Met_var_ndim             ! 
+      integer          ,dimension(MR_MAXVARS),public   :: Met_var_ndim             ! number of expected dimensions for this variable
       integer          ,dimension(MR_MAXVARS),public   :: Met_var_zdim_idx         ! The index of this coordinate (used in Met_var_nlevs) 
       integer          ,dimension(MR_MAXVARS),public   :: Met_var_zdim_ncid        ! The dimID of the dimension in the nc file
       integer                                ,public   :: nlev_coords_detected = 0
@@ -741,8 +747,10 @@
        if(associated(amap_iwf25                    ))deallocate(amap_iwf25)
        if(associated(imap_iwf25                    ))deallocate(imap_iwf25)
        if(associated(s_comp_sp                     ))deallocate(s_comp_sp)
-       if(associated(MR_zsurf                      ))deallocate(MR_zsurf)
-       if(associated(MR_jacob                      ))deallocate(MR_jacob)
+       if(associated(MR_Topo_met                   ))deallocate(MR_Topo_met)
+       if(associated(MR_jacob_met                  ))deallocate(MR_jacob_met)
+       if(associated(MR_Topo_comp                  ))deallocate(MR_Topo_comp)
+       if(associated(MR_jacob_comp                 ))deallocate(MR_jacob_comp)
        if(associated(MR_u_ER_metP                  ))deallocate(MR_u_ER_metP)
        if(associated(MR_v_ER_metP                  ))deallocate(MR_v_ER_metP)
        if(associated(theta_Met                     ))deallocate(theta_Met)
@@ -830,8 +838,10 @@
        if(allocated(amap_iwf25                    ))deallocate(amap_iwf25)
        if(allocated(imap_iwf25                    ))deallocate(imap_iwf25)
        if(allocated(s_comp_sp                     ))deallocate(s_comp_sp)
-       if(allocated(MR_zsurf                      ))deallocate(MR_zsurf)
-       if(allocated(MR_jacob                      ))deallocate(MR_jacob)
+       if(allocated(MR_Topo_met                   ))deallocate(MR_Topo_met)
+       if(allocated(MR_jacob_met                  ))deallocate(MR_jacob_met)
+       if(allocated(MR_Topo_comp                  ))deallocate(MR_Topo_comp)
+       if(allocated(MR_jacob_comp                 ))deallocate(MR_jacob_comp)
        if(allocated(MR_u_ER_metP                  ))deallocate(MR_u_ER_metP)
        if(allocated(MR_v_ER_metP                  ))deallocate(MR_v_ER_metP)
        if(allocated(theta_Met                     ))deallocate(theta_Met)
@@ -931,8 +941,8 @@
 
       ! Initialize the dimension and variable arrays.  Select slots in these arrays will be
       ! overwritten from the calls in the case block below
-      Met_dim_IsAvailable=.false.
-      Met_var_IsAvailable=.false.
+      Met_dim_IsAvailable                     = .false.
+      Met_var_IsAvailable                     = .false.
       Met_var_IsAvailable(1:MR_MAXVARS)       = .false.
       Met_var_zdim_idx(1:MR_MAXVARS)          = 0
       Met_var_zdim_ncid(1:MR_MAXVARS)         = 0
@@ -944,13 +954,35 @@
       isGridRelative = .true.
 
       !--------------------------------
+      ! Dimensions
+      !--------------------------------
+      ! Assume the critical dimensions are available
+      ! Dimension names for NC files are read from the first file so do not need
+      ! to be set here. These could be populated by the template file.
+      Met_dim_IsAvailable(1)=.true.; Met_dim_names(1)="unset name for t"
+      Met_dim_IsAvailable(2)=.true.; Met_dim_names(2)="unset name for p"
+      Met_dim_IsAvailable(3)=.true.; Met_dim_names(3)="unset name for y"
+      Met_dim_IsAvailable(4)=.true.; Met_dim_names(4)="unset name for x"
+
+      !--------------------------------
       ! Mechanical / State variables
       !--------------------------------
       !   Note: All default names are that assigned by netcdf-java in the grib-to-nc conversion
       !         Command used :: java -Xmx2048m -classpath ~/ncj/netcdfAll-4.5.jar ucar.nc2.dataset.NetcdfDataset \
       !                          -in ${GribFile} -out ${NCFile} -IsLargeFile
       ! 
-      !         Alternatively, one could use ncl_convert2nc
+      !         Alternatively, one could use ncl_convert2nc ${GribFile} -L
+      !         This creates variable names such as HGT_P0_L100_GLL0; i.e. WMOname_P[param_class]_L[surf_class]_[gridtype]
+      !         where gridtype is one of:
+      !          Met_gridtype = "GLL0"  ! Latitude/Longitude
+      !          Met_gridtype = "GME0"  ! Mercator
+      !          Met_gridtype = "GLC0"  ! Lambert Conformal
+      !          Met_gridtype = "GST0"  ! Polar stereographic
+      !
+      !         The NC_names listed are the names written by netcdf-java when converting grib forecast 
+      !         files to netcdf.  Reanalysis files might be provided in netcdf format directly, in
+      !         which case, the names are overwritten below. Since these name occasionally change,
+      !         know variants are checked if the expected name is not found in 
         !  Geopotential Height  (m^2/s^2)
       Met_var_NC_names(1)          = "Geopotential_height_isobaric"
       Met_var_GRIB_names(1)        = "gh"
@@ -1258,11 +1290,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode) 
         MR_Reannalysis = .true.
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "reftime"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric2"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.  ! Geopotential Height
         Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="u_wind_isobaric"
@@ -1306,11 +1333,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric3"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1353,11 +1375,6 @@
         MR_iGridCode = 216
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time1"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric1"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
 
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1403,11 +1420,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1451,11 +1463,6 @@
         MR_iGridCode = 212
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time1"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric3"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
 
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1502,11 +1509,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric1"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1540,11 +1542,6 @@
         MR_iGridCode = 227
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time1"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric2"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
 
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1595,11 +1592,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric2"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1639,11 +1631,6 @@
         MR_iGridCode = 196
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric2"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
 
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1692,11 +1679,6 @@
         MR_iGridCode = 198
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric2"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
 
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1755,11 +1737,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1809,11 +1786,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time1"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric2"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "y"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "x"
-
         ! Mechanical / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1852,7 +1824,6 @@
         ! GFS 0.5 deg
           !  http://www.nco.ncep.noaa.gov/pmb/products/gfs/
           !  http://motherlode.ucar.edu/native/conduit/data/nccf/com/gfs/prod/
-          !    
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
@@ -1863,11 +1834,6 @@
         MR_iGridCode = 4
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric3"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
 
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1909,11 +1875,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric3"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -1933,7 +1894,6 @@
         ! GFS 0.25 deg
           ! http://www.nco.ncep.noaa.gov/pmb/products/gfs/
           ! http://motherlode.ucar.edu/native/conduit/data/nccf/com/gfs/prod/
-          !  
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
@@ -1944,11 +1904,6 @@
         MR_iGridCode = 193
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric3"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
 
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.
@@ -1990,11 +1945,6 @@
 
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 132
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.
         Met_var_IsAvailable(2)=.true.
@@ -2021,11 +1971,6 @@
         MR_iGridCode = 1024
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .true.
-
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lev"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
 
         Met_dim_fac(1) = 1.0_sp/60.0_sp
 
@@ -2064,11 +2009,6 @@
         if(MR_iwind.eq.4)then
            ! https://rda.ucar.edu/datasets/ds090.0
 
-          Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-          Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-          Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-          Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-  
           ! Momentum / State variables
           Met_var_IsAvailable(1)=.true.
           Met_var_IsAvailable(2)=.true.
@@ -2077,18 +2017,13 @@
           Met_var_IsAvailable(5)=.true.
           Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Pressure_vertical_velocity_isobaric"
           ! Moisture
-          !Met_var_IsAvailable(30)=.true.
+          Met_var_IsAvailable(30)=.true.
   
           fill_value_sp = -9999.0_sp
 
         elseif(MR_iwind.eq.5)then
           MR_iw5_hours_per_file = 8760.0_dp
 
-          Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-          Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "level"
-          Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-          Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-  
           ! Momentum / State variables
           Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="hgt"        ! short m^2/s^2 (32066.f,1.f)
           Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="uwnd"       ! short m/s (202.66f,0.01f)
@@ -2101,7 +2036,7 @@
           !Met_var_IsAvailable(21)=.true.
           ! Moisture
           !Met_var_IsAvailable(30)=.true.; Met_var_NC_names(30)="rhum"      ! short  (302.66f,0.01f)
-          !Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="shum"      ! short SpecHum ~ mixing ratio kg/kg(0.032666f,1.e-06f)
+          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="shum"      ! short SpecHum ~ mixing ratio kg/kg(0.032666f,1.e-06f)
           !Met_var_IsAvailable(32)=.true.; Met_var_NC_names(32)="shum"      ! short should really be QL (liquid)
           ! Precipitation
           !Met_var_IsAvailable(44)=.true.; Met_var_NC_names(44)="prate"     ! short surface precipitation rate (kg/m2/s) (0.0032765f,1.e-07f)
@@ -2132,11 +2067,6 @@
         MR_iw5_hours_per_file = 672.0_dp
 
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 200
-
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g0_lat_2"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g0_lon_3"
 
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="HGT_GDS0_ISBL"
@@ -2178,10 +2108,6 @@
             ! Note: these must be converted from grib using
             !   ncl_convert2nc pgrbanl_mean_1912_VVEL_pres.grib -L
             ! netcdf-java does not seem to work on these
-            Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
-            Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
-            Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g0_lat_2"
-            Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g0_lon_3"
     
             ! Momentum / State variables
             Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="HGT_GDS0_ISBL"
@@ -2193,10 +2119,6 @@
           else 
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! Version 2c (https://www.esrl.noaa.gov/psd/data/gridded/data.20thC_ReanV2c.pressure.html)
-            Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-            Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "level"
-            Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-            Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
     
             ! Momentum / State variables
             Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="hgt"
@@ -2210,7 +2132,7 @@
         elseif(MR_iversion.eq.3)then
           ! NOAA-CIRES-DOE Twentieth Century Reanalysis Version 3 
           ! https://rda.ucar.edu/datasets/ds131.3/
-          ! Note: this is also avalable from
+          ! Note: this is also available from
           ! https://psl.noaa.gov/data/gridded/data.20thC_ReanV3.html, but might
           ! need format verification
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
@@ -2224,11 +2146,6 @@
           MR_iw5_hours_per_file = 8760.0_dp
   
           Met_var_GRIB1_Table(1:MR_MAXVARS) = 2
-  
-          Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-          Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaricInhPa"
-          Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "latitude"
-          Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "longitude"
   
           ! Momentum / State variables
           Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="gh"
@@ -2255,11 +2172,6 @@
 
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 128
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"
                                        Met_var_GRIB1_Param(1)=129
@@ -2283,10 +2195,49 @@
 
       elseif (MR_iwindformat.eq.29)then
          ! ECMWF ERA5
-         ! https://rda.ucar.edu/datasets/ds630.0
-         ! Note: files are provided as one variable per file
-         ! https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-pressure-levels?tab=form
+         ! This is a premier reanalysis product that is available in lots of formats
+         ! From RDA, data are availabe in complete grid files with one variable/file/day
+         !   Current version is at https://rda.ucar.edu/datasets/ds633.0 and has a
+         !    file name format e5.oper.an.pl.128_129_z.ll025sc.YYYYMMDD00_YYYYMMMDD23.nc
+         !   Previous version is at https://rda.ucar.edu/datasets/ds630.0/ and has a
+         !    file name format e5.oper.an.pl.128_129_z.regn320sc.YYYYMMDD00_YYYYMMMDD23.nc
+         !   These are available as grib or nc4 files, but variable names will change
+         !   if grib is converted to netcdf via netcdf-java or ncl_convert2nc
+         !   Using RDA files required iwf=5 since variables on stored in different files
+         ! From CDS, data are available for download as a subset of the full dataset via
+         !  https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-pressure-levels?tab=form
+         ! Data are provided as a single file for all variables and timesteps (iwf=4) as
+         ! both grib and nc. If grib is downloaded, then converted to nc via netcdf-java or
+         ! ncl_convert2nc, variable names will be different from that of the files provided
+         ! directly by CDS, though metreader will attempt to translate.
 
+        ! Dimension names are in the direct nc4 download
+        !Met_dim_names(1)="time"
+        !Met_dim_names(2)="level"
+        !Met_dim_names(3)="latitude"
+        !Met_dim_names(4)="longitude"
+        ! Dimension names are in the grib to netcdf via ncj
+        !Met_dim_names(1)="time"
+        !Met_dim_names(2)="isobaric"
+        !Met_dim_names(3)="lat"
+        !Met_dim_names(4)="lon"
+        ! Dimension names are in the grib to netcdf via ncl_convert2nc
+        !Met_dim_names(1)="initial_time0_hours"
+        !Met_dim_names(2)="lv_ISBL1"
+        !Met_dim_names(3)="g0_lat_2"
+        !Met_dim_names(4)="g0_lon_3"
+
+        if(MR_iversion.eq.-1)MR_iversion = 2 ! v1 finished in 2019
+        if(MR_iversion.eq.1)then
+          MR_RDAcode=630
+        elseif(MR_iversion.eq.2)then
+          MR_RDAcode=633
+        else
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(outlog(io),*)" MR ERROR: ERA5 version not recognized ",MR_iversion
+          endif;enddo
+          stop 1
+        endif
 
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then     
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
@@ -2296,65 +2247,37 @@
         MR_iGridCode = 1029
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .true.
-        MR_iw5_hours_per_file = 24.0_dp
 
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 128
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "level"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "latitude"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "longitude"
+        if(MR_iwind.eq.3.or.MR_iwind.eq.4)then
+          ! These data are from CDS
+          ! https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-pressure-levels?tab=form
+          !                                                       ! via ncl     via netcdf-java
+          Met_var_IsAvailable( 1)=.true.; Met_var_NC_names( 1)="z" ! Z_GDS0_ISBL Geopotential_isobaric
+          Met_var_IsAvailable( 2)=.true.; Met_var_NC_names( 2)="u" ! Z_GDS0_ISBL U_component_of_wind_isobaric
+          Met_var_IsAvailable( 3)=.true.; Met_var_NC_names( 3)="v" ! Z_GDS0_ISBL V_component_of_wind_isobaric
+          Met_var_IsAvailable( 4)=.true.; Met_var_NC_names( 4)="w" ! Z_GDS0_ISBL Vertical_velocity_isobaric
+          Met_var_IsAvailable( 5)=.true.; Met_var_NC_names( 5)="t" ! Z_GDS0_ISBL Temperature_isobaric
+          Met_var_IsAvailable( 7)=.true.; Met_var_NC_names( 7)="w" ! Z_GDS0_ISBL Vertical_velocity_isobaric
+          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="q" ! Z_GDS0_ISBL Specific_humidity_isobaric
+        elseif(MR_iwind.eq.5)then
+          ! RDA v1 or v2
+          ! https://rda.ucar.edu/datasets/ds633.0
+          MR_Use_RDA = .true.
+          ! Note: files are provided as one variable per file and must use iwind=5
+          !       Each file contains one day of data
+          MR_iw5_hours_per_file = 24.0_dp
+          !                                                       ! via ncl     via netcdf-java
+          Met_var_IsAvailable( 1)=.true.; Met_var_NC_names( 1)="Z" ! Z_GDS0_ISBL Geopotential_isobaric
+          Met_var_IsAvailable( 2)=.true.; Met_var_NC_names( 2)="U" ! U_GDS0_ISBL U_component_of_wind_isobaric
+          Met_var_IsAvailable( 3)=.true.; Met_var_NC_names( 3)="V" ! V_GDS0_ISBL V_component_of_wind_isobaric
+          Met_var_IsAvailable( 4)=.true.; Met_var_NC_names( 4)="W" ! W_GDS0_ISBL Vertical_velocity_isobaric
+          Met_var_IsAvailable( 5)=.true.; Met_var_NC_names( 5)="T" ! T_GDS0_ISBL Temperature_isobaric
+          Met_var_IsAvailable( 7)=.true.; Met_var_NC_names( 7)="W" ! W_GDS0_ISBL Vertical_velocity_isobaric
+          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="q" ! Q_GDS0_ISBL Specific_humidity_isobaric
 
-        !Modified for ERA5 windfiles downloaded from ds630.0 ERA5 files
-        !downloaded from https://rda.ucar.edu on May 13, 2020
-        !Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
-        !Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
-        !Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g0_lat_2"
-        !Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g0_lon_3"
-        !Met_dim_IsAvailable(5)=.true.; Met_dim_names(5) = "ncl_strlen_0"
-        !Modified for ERA5 windfiles downloaded from ds633.0 ERA5 files
-        !downloaded from https://rda.ucar.edu on Feb. 15, 2024
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-
-
-        ! Momentum / State variables
-        !Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z_GDS0_ISBL" ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
-        !Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_GDS0_ISBL" ! e5.oper.an.pl.128_129_u.ll025uv.1991061500_1991061523.nc
-        !Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_GDS0_ISBL" ! e5.oper.an.pl.128_129_v.ll025uv.1991061500_1991061523.nc
-        !Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W_GDS0_ISBL" ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
-        !Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T_GDS0_ISBL" ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
-        !Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W_GDS0_ISBL" ! e5.oper.an.pl.128_129_w.ll025sc.19910
-
-        !Modified for ERA5 windfiles downloaded from ds630.0 ERA5 files
-        !downloaded from https://rda.ucar.edu on May 13, 2020
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z" ! e5.oper.an.pl.128_129_z.regn320sc.2018062000_2018062023.nc
-        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U" ! e5.oper.an.pl.128_131_u.regn320uv.2018062000_2018062023.nc
-        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V" ! e5.oper.an.pl.128_132_v.regn320uv.2018062000_2018062023.nc
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W" ! e5.oper.an.pl.128_135_w.regn320sc.2018062000_2018062023.nc
-        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T" ! e5.oper.an.pl.128_130_t.regn320sc.2018062000_2018062023.nc
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W" ! e5.oper.an.pl.128_135_w.regn320sc.2018062000_2018062023.nc
-        !Modified for ERA5 windfiles downloaded from ds633.0 ERA5 files
-        !downloaded from https://rda.ucar.edu on Feb. 15, 2024
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"        ! e5.oper.an.pl.128_129_z.ll025sc.2018062000_2018062023.grb.nc
-        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric" ! e5.oper.an.pl.128_131_u.ll025uv.2018062000_2018062023.grb.nc
-        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric" ! e5.oper.an.pl.128_132_v.ll025uv.2018062000_2018062023.grb.nc
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_135_w.ll025sc.2018062000_2018062023.grb.nc
-        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric"         ! e5.oper.an.pl.128_130_t.ll025sc.2018062000_2018062023.grb.nc
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_135_w.ll025sc.2018062000_2018062023.grb.nc
-
-        ! Atmospheric Structure
-        !Met_var_IsAvailable(23)=.true.; Met_var_NC_names(23)="CC" ! e5.oper.an.pl.128_248_cc.regn320sc.2018062000_2018062023.nc
-        ! Moisture
-        !Met_var_IsAvailable(30)=.true.; Met_var_NC_names(30)="R"   ! e5.oper.an.pl.128_157_r.regn320sc.2018062000_2018062023.nc
-        !Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="Q"   ! e5.oper.an.pl.128_133_q.regn320sc.2018062000_2018062023.nc
-        !Met_var_IsAvailable(32)=.true.; Met_var_NC_names(32)="CLWC"! e5.oper.an.pl.128_246_clwc.regn320sc.2018062000_2018062023.nc
-        !Met_var_IsAvailable(32)=.true.; Met_var_NC_names(32)="CIWC"! e5.oper.an.pl.128_247_ciwc.regn320sc.2018062000_2018062023.nc
-        ! Precipitation
-        !Met_var_IsAvailable(32)=.true.; Met_var_NC_names(32)="CRWC"! e5.oper.an.pl.128_075_crwc.regn320sc.2018062000_2018062023.nc
-        !Met_var_IsAvailable(32)=.true.; Met_var_NC_names(32)="CSWC"! e5.oper.an.pl.128_076_cswc.regn320sc.2018062000_2018062023.nc
+        endif
 
         fill_value_sp = -9999.0_sp
         Met_var_conversion_factor(1) = 1.0_sp/9.81_sp
@@ -2376,30 +2299,13 @@
 
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 128
 
-
-        !Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "initial_time0_hours"
-        !Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lv_ISBL1"
-        !Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "g4_lat_2"
-        !Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "g4_lon_3"
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"       ! initial_time0_hours
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"   ! level, lv_ISBL1
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"        ! latitude, g0_lat_2
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"        ! longitude, g0_lon_3
-
         ! Momentum / State variables
-        !Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Z_GDS4_ISBL" ! e5.oper.an.pl.128_129_z.regn320sc.2018062000_2018062023.nc
-        !Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_GDS4_ISBL" ! e5.oper.an.pl.128_131_u.regn320uv.2018062000_2018062023.nc
-        !Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_GDS4_ISBL" ! e5.oper.an.pl.128_132_v.regn320uv.2018062000_2018062023.nc
-        !Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W_GDS4_ISBL" ! e5.oper.an.pl.128_135_w.regn320sc.2018062000_2018062023.nc
-        !Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T_GDS4_ISBL" ! e5.oper.an.pl.128_130_t.regn320sc.2018062000_2018062023.nc
-        !Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W_GDS4_ISBL" ! e5.oper.an.pl.128_135_w.regn320sc.201
-
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric" ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
+        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"        ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
         Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_u.ll025uv.1991061500_1991061523.nc
         Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_v.ll025uv.1991061500_1991061523.nc
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric" ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
-        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric" ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric" ! e5.oper.an.pl.128_129_w.ll025sc.19910
+        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
+        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric"         ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
+        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_129_w.ll025sc.19910
 
 
         fill_value_sp = -9999.0_sp
@@ -2418,11 +2324,6 @@
         MR_iGridCode = 1032
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "isobaric"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
 
         ! Momentum / State variables
         Met_var_IsAvailable(1)=.true.
@@ -2449,11 +2350,6 @@
         MR_iGridCode = 1033
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .true.
-
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lev"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
 
         Met_dim_fac(1) = 24.0
 
@@ -2482,11 +2378,6 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lev"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
-
         Met_dim_fac(1) = 1.0_sp/60.0_sp
 
         ! Momentum / State variables
@@ -2510,11 +2401,6 @@
         MR_iGridCode = 1041
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .false.
-
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "lev"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "lat"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "lon"
 
         Met_dim_fac(1) = 1.0_sp/60.0_sp
 
@@ -2540,10 +2426,10 @@
         call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .true.
 
-        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "Time"
-        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "bottom_top"
-        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "south_north"
-        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "west_east"
+!        Met_dim_IsAvailable(1)=.true.; Met_dim_names(1) = "Time"
+!        Met_dim_IsAvailable(2)=.true.; Met_dim_names(2) = "bottom_top"
+!        Met_dim_IsAvailable(3)=.true.; Met_dim_names(3) = "south_north"
+!        Met_dim_IsAvailable(4)=.true.; Met_dim_names(4) = "west_east"
         ! for pressure, read "P"  :: perturbation pressure
         !               and  "PB" :: base pressure
 
@@ -2729,7 +2615,7 @@
 !           MR_Read_Met_Times_netcdf
 !
 !     From the calling program, this is called once the names of the NWP files
-!     is specified.  If a custom netcdf template file is to be used (iwf=0), then
+!     are specified.  If a custom netcdf template file is to be used (iwf=0), then
 !     the variable MR_iwf_template must also be filled so that it can be read
 !     from MR_Read_Met_DimVars_[].  
 !
@@ -2741,7 +2627,7 @@
 !       IsLatLon_MetGrid, IsGlobal_MetGrid, IsRegular_MetGrid 
 !
 !     The next step is for the calling program to specify the projection parameters
-!     of the computational grid (i.e. the grid MetReader should be returing values to)
+!     of the computational grid (i.e. the grid MetReader should be returning values to)
 !
 !##############################################################################
 
@@ -2787,7 +2673,7 @@
                                  .false.)    ! CALLED_MR_Set_Met_Times
 
 #ifdef USEPOINTERS
-      ! Need to add a check here for the case where MR_windfiles is a pointer, but has not been filled
+      ! HFS: Need to add a check here for the case where MR_windfiles is a pointer, but has not been filled
 #else
       if(.not.allocated(MR_windfiles))then
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
@@ -2815,7 +2701,7 @@
         else
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
             write(outlog(io),*)"MR WARNING: If the iw=5 (NCEP Reannalysis, NOAA Reannalysis, "
-            write(outlog(io),*)"            etc.) are used, then MR_Read_Met_DimVars"
+            write(outlog(io),*)"            ERA5, etc.) are used, then MR_Read_Met_DimVars"
             write(outlog(io),*)"            should be called with a start year.  This is needed"
             write(outlog(io),*)"            to allocate the correct number of time steps per file."
             write(outlog(io),*)"            Setting MR_Comp_StartYear to 2018 for a non-leap year."
@@ -2855,14 +2741,14 @@
       ! of steps per file.
       if(MR_iwind.ne.5)then
         do i=1,MR_iwindfiles
-          inquire( file=adjustl(trim(MR_windfiles(i))), exist=IsThere )
+          inquire( file=trim(adjustl(MR_windfiles(i))), exist=IsThere )
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-            write(outlog(io),*)"     ",i,adjustl(trim(MR_windfiles(i))),IsThere
+            write(outlog(io),*)"     ",i,trim(adjustl(MR_windfiles(i))),IsThere
           endif;enddo
           if(.not.IsThere)then
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: Could not find windfile ",i
-              write(errlog(io),*)"          ",adjustl(trim(MR_windfiles(i)))
+              write(errlog(io),*)"          ",trim(adjustl(MR_windfiles(i)))
             endif;enddo
             stop 1
           endif
@@ -2881,14 +2767,14 @@
             endif;enddo
             stop 1
 #endif
-            inquire( file=adjustl(trim(infile)), exist=IsThere )
+            inquire( file=trim(adjustl(infile)), exist=IsThere )
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-              write(outlog(io),*)" ",i,trim(adjustl(trim(infile))),IsThere
+              write(outlog(io),*)" ",i,trim(adjustl(infile)),IsThere
             endif;enddo
             if(.not.IsThere)then
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then           
                 write(errlog(io),*)"MR ERROR: Could not find windfile ",i
-                write(errlog(io),*)"          ",adjustl(trim(infile))
+                write(errlog(io),*)"          ",trim(adjustl(infile))
               endif;enddo
               stop 1
             endif
@@ -3017,7 +2903,7 @@
         endif
       endif
 
-      !to do: perform a sanity check on these projection parameters
+      !HFS to do: perform a sanity check on these projection parameters
       ! take a lon/lat, project, then inverse project and check
 
       CALLED_MR_Set_CompProjection = .true.
@@ -3068,7 +2954,7 @@
       real(kind=sp),intent(in) :: dumz_sp(nz)
       logical      ,intent(in) :: periodic
 
-      integer       :: i,j,k
+      integer :: i,j,k
       integer :: io                           ! Index for output streams
 
       !                allocates *_Met_P for subset of Met grid on pressure levels
@@ -3143,7 +3029,7 @@
       case(2)
         !call MR_Set_MetComp_Grids_ASCII_3d
       case (3:5)
-        ! Now that we have the full grids defined in MR_Read_Met_DimVars_netcdf,
+        ! Now that we have the full grids defined in MR_Read_Met_DimVars,
         ! calculate the subgrid needed for the simulation
         call MR_Set_MetComp_Grids
 
@@ -3199,6 +3085,21 @@
           endif
         enddo
       endif
+      MR_minlen = maxval(rdlambda_MetP_sp(:,:,:))
+      do i=1,nx_submet
+        do j=1,ny_submet
+          if(MR_minlen.gt.rdlambda_MetP_sp(i,j,1)) MR_minlen=rdlambda_MetP_sp(i,j,1)
+          if(MR_minlen.gt.rdphi_MetP_sp(j,1))      MR_minlen=rdphi_MetP_sp(j,1)
+        enddo
+      enddo
+
+      if(MR_useTopo)then
+        allocate(s_comp_sp(nz_comp))
+        allocate(MR_Topo_met(nx_submet,ny_submet));  MR_Topo_met(:,:)   = 0.0_sp
+        allocate(MR_jacob_met(nx_submet,ny_submet)); MR_jacob_met(:,:)  = 1.0_sp
+        allocate(MR_Topo_comp(nx_comp,ny_comp));     MR_Topo_comp(:,:)  = 0.0_sp
+        allocate(MR_jacob_comp(nx_comp,ny_comp));    MR_jacob_comp(:,:) = 1.0_sp
+      endif
 
       CALLED_MR_Initialize_Met_Grids = .true.
 
@@ -3226,22 +3127,34 @@
 
       integer :: io                           ! Index for output streams
 
+      if(.not.MR_useTopo)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+          write(outlog(io),*)"MR WARNING: Trying to set sigma-alt. coordinates, but MR_useTopo=F"
+        endif;enddo
+        return
+      endif
+
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Set_SigmaAlt_Scaling                      ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
-      MR_use_SigmaAlt   = .true.
-      MR_ztop           = dum_sp
-      MR_ZScaling_ID    = dum_int
-      allocate(s_comp_sp(nz));     s_comp_sp(1:nz) = dumz_sp(1:nz)
-      allocate(MR_zsurf(nx,ny));   MR_zsurf(1:nx,1:ny) = dumxy1_sp(1:nx,1:ny)
-      allocate(MR_jacob(nx,ny))
-      if (MR_ZScaling_ID.eq.2)then
-        MR_jacob(1:nx,1:ny) = MR_ztop - MR_zsurf(1:nx,1:ny)
+      MR_ztop            = dum_sp
+      MR_ZScaling_ID     = dum_int
+      s_comp_sp(1:nz) = dumz_sp(1:nz)
+      if(MR_ZScaling_ID.eq.0)then
+        ! no topo
+        MR_jacob_comp(1:nx,1:ny) = 1.0_sp
+      elseif(MR_ZScaling_ID.eq.1)then
+        ! sigma-altitude (s=(z-surf)/(top-surf))
+        MR_jacob_comp(1:nx,1:ny) = MR_ztop - MR_Topo_comp(1:nx,1:ny)
       else
-        MR_jacob(1:nx,1:ny) = 1.0_sp
+        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+          write(outlog(io),*)"MR WARNING: Topography scheme not recognized."
+          write(outlog(io),*)"            Reverting to altitude."
+        endif;enddo
+        MR_jacob_comp(1:nx,1:ny) = 1.0_sp
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
@@ -4051,13 +3964,13 @@
             endif
           endif
 
-          if (MR_use_SigmaAlt)then
-              ! this recovers the real-world z coordinate from the sigma level and topography
-            dumVertCoord_sp(1:nz_comp) = MR_zsurf(i,j) + &
-                                           s_comp_sp(1:nz_comp) * MR_jacob(i,j)
-          else
+!          if (MR_useTopo)then
+!              ! this recovers the real-world z coordinate from the sigma level and topography
+!            dumVertCoord_sp(1:nz_comp) = MR_Topo_comp(i,j) + &
+!                                           s_comp_sp(1:nz_comp) * MR_jacob_comp(i,j)
+!          else
             dumVertCoord_sp(1:nz_comp) = z_comp_sp(1:nz_comp)
-          endif
+!          endif
 
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !   Interpolate these values to a regular grid with
@@ -4178,18 +4091,18 @@
         enddo
         MR_dum3d_compH(:,:,k) = tmp_regrid2d_sp(:,:)
       enddo
-      if (MR_use_SigmaAlt) then
-        ! If we are using sigma-altitude coordinates, then MR_dum3d_compH is returned on the
-        ! s-grid, but we might need to scale the variable
-        if(ivar.eq.4)then
-          ! vertical velocity is scaled by jacobian
-          do i=1,nx_comp
-            do j=1,ny_comp
-              MR_dum3d_compH(i,j,:)=MR_dum3d_compH(i,j,:)/MR_jacob(i,j)
-            enddo
-          enddo
-        endif
-      endif
+      !if (MR_use_SigmaAlt) then
+      !  ! If we are using sigma-altitude coordinates, then MR_dum3d_compH is returned on the
+      !  ! s-grid, but we might need to scale the variable
+      !  if(ivar.eq.4)then
+      !    ! vertical velocity is scaled by jacobian
+      !    do i=1,nx_comp
+      !      do j=1,ny_comp
+      !        MR_dum3d_compH(i,j,:)=MR_dum3d_compH(i,j,:)/MR_jacob(i,j)
+      !      enddo
+      !    enddo
+      !  endif
+      !endif
 
       deallocate(tmp_regrid2d_sp)
 
@@ -4740,7 +4653,6 @@
             ! ASCII profile data with multiple locations
             call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metH(1:nx_submet,1:ny_submet,k),       &
                                          nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
-            !stop 5
           else
             ! All other cases
             call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metH(1:nx_submet,1:ny_submet,k),       &

@@ -26,17 +26,11 @@ else
 fi
 
 pushd tests
-sh clean.sh
-sh run_tests_Sonde.sh
-sh clean.sh
+bash clean.sh
+bash run_tests_Sonde.sh
+bash clean.sh
 if [[ "$RUNNCEP" -eq T ]] ; then
-  sh run_tests_NCEP.sh
-  sh clean.sh
+  bash run_tests_NCEP.sh
+  bash clean.sh
 fi
 popd
-
-echo "Note: Any test failures should be inspected."
-echo "      This script only uses the cmp command for comparison."
-echo "      Values can be off by 0.001% using different compilation flags."
-
-

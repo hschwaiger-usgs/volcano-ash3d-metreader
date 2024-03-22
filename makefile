@@ -121,6 +121,7 @@ EXEC = \
  bin/MetTraj_B \
  bin/MetCheck  \
  bin/MetProbe  \
+ bin/MR_ASCII_check \
  bin/makegfsncml $(GRIBTOOL)
 
 AUTOSCRIPTS = \
@@ -197,9 +198,12 @@ bin/makegfsncml: tools/makegfsncml.f90 makefile $(SYSINC)
 	mkdir -p bin
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(nclib) -c tools/makegfsncml.f90
 	$(FC) $(FFLAGS) $(EXFLAGS) makegfsncml.o  $(LIBS) $(nclib) -o bin/makegfsncml
+bin/MR_ASCII_check: tools/MR_ASCII_check.f90 makefile $(SYSINC)
+	mkdir -p bin
+	$(FC) $(FFLAGS) $(EXFLAGS) tools/MR_ASCII_check.f90 -o bin/MR_ASCII_check -L./ -lMetReader $(LIBS) $(nclib) $(grblib) $(USGSLIB)
 
 check: $(EXEC)
-	sh run_tests.sh
+	bash run_tests.sh
 
 clean:
 	rm -f *.o *__genmod.f90 *__genmod.mod

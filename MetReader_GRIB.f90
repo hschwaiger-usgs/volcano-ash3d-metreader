@@ -1,6 +1,8 @@
 !##############################################################################
 !##############################################################################
 !##############################################################################
+! Note: you can inspect the grib header using grib_dump tmp.grib2 > header.txt
+
 
 !     MR_Read_Met_DimVars_GRIB
 !     MR_Read_Met_Times_GRIB
@@ -172,10 +174,10 @@
       maxdimlen = 0
 
       ! Loop through all the grib messages,
-      ! If we find a message that matches a variable criteria, then log the level to 
+      ! If we find a message that matches a variable criterion, then log the level to 
       !  a dummy array.
       ! Finally sort the pressure values and evaluate the distinct pressure coordinates
-      grib_file_path  = adjustl(trim(MR_windfiles(1)))
+      grib_file_path  = trim(adjustl(MR_windfiles(1)))
 
       call codes_open_file(ifile,grib_file_path,'R',nSTAT)
       if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
@@ -188,8 +190,8 @@
         count1=count1+1
         if (count1.gt.MAXGRIBREC) then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-            write(errlog(io),*)"ERROR: too many grib messages"
-            write(errlog(io),*)"       current limit set to ",MAXGRIBREC
+            write(errlog(io),*)"MR ERROR: too many grib messages"
+            write(errlog(io),*)"          current limit set to ",MAXGRIBREC
           endif;enddo
           stop 1
         endif
@@ -1055,7 +1057,7 @@
 
       integer :: iw,iwstep
       integer :: np_met_loc
-      character(len=71)  :: invar
+      character(len=80)  :: invar
       character(len=130) :: index_file
       character(len=130) :: grib_file_path
       character(len=130) :: grib_file
@@ -2131,7 +2133,7 @@
       if (nSTAT == CODES_SUCCESS) return
       call codes_get_error_string(nSTAT,err_message)
       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io) ,*)severity,errcode,operation,' ',adjustl(trim(err_message))
+        write(errlog(io) ,*)severity,errcode,operation,' ',trim(adjustl(err_message))
       endif;enddo
 
       ! If user-supplied error code is 0, then consider this a warning,

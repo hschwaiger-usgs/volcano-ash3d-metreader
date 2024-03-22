@@ -88,7 +88,7 @@
          Snd_Have_PT,nt_fullmet,MR_BaseYear,MR_useLeap,MR_Snd_nt_fullmet,MR_Snd_nvars,Snd_Have_Coord,&
          MR_Max_geoH_metP_predicted,MR_iwind,MR_iwindformat,IsGlobal_MetGrid,IsLatLon_MetGrid,IsRegular_MetGrid,&
          Met_iprojflag,Met_k0,Met_lam0,Met_lam1,Met_lam2,Met_phi0,Met_phi1,Met_phi2,Met_Re,MR_EPS_SMALL,&
-         MR_Comp_StartYear,MR_Comp_StartMonth,&
+         MR_Comp_StartYear,MR_Comp_StartMonth,MR_nstat,&
            MR_Z_US_StdAtm,&
            MR_Temp_US_StdAtm,&
            MR_Pres_US_StdAtm, &
@@ -111,7 +111,7 @@
       integer :: ioerr
       character(len=120) :: iomessage
       integer :: istr1,istr2,istr3
-      integer :: ic,il,iil,iv,ii
+      integer :: ic,il,iil,iv
 
       integer :: nlev,ulev
       integer :: iw_idx
@@ -329,6 +329,7 @@
 
       Met_dim_IsAvailable = .false.
       Met_var_IsAvailable = .false.
+      MR_nstat = min(MR_nSnd_Locs,MR_nstat)
       ! This is the start of a huge if statement that determines the type of ASCII input
       ! and loads the data.  All data for all time steps are loaded here into the
       ! variable MR_SndVars_metP(MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,nrows)
@@ -365,7 +366,7 @@
             iw_idx = (itime-1)*MR_nSnd_Locs + iloc
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
               write(outlog(io),*)"Opening sonde file ",iw_idx,&
-                                   adjustl(trim(MR_windfiles(iw_idx)))
+                                   trim(adjustl(MR_windfiles(iw_idx)))
             endif;enddo
 
             open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))), status='old',action='read',err=1971)
@@ -869,7 +870,7 @@
             iw_idx = (itime-1)*MR_nSnd_Locs + iloc
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
               write(outlog(io),*)"Opening sonde file ",iw_idx,&
-                                     adjustl(trim(MR_windfiles(iw_idx)))
+                                     trim(adjustl(MR_windfiles(iw_idx)))
             endif;enddo
 
             open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))),status='old',action='read',err=1971)
@@ -1890,8 +1891,8 @@
         subroutine MR_Calc_Snd_Weights_NearNeigh
         end subroutine MR_Calc_Snd_Weights_NearNeigh
         subroutine MR_Calc_Snd_Weights_InvDistWeight(pexp,nstat)
-          integer,      parameter   :: dp        = 8 ! double precision
-          real(kind=dp), intent(in) :: pexp
+          integer,      parameter   :: sp        = 4 ! single precision
+          real(kind=sp), intent(in) :: pexp
           integer,       intent(in), optional :: nstat
         end subroutine MR_Calc_Snd_Weights_InvDistWeight
       END INTERFACE
@@ -2138,15 +2139,15 @@
 
       implicit none
 
-      integer, parameter :: dp             = 8
+      integer, parameter :: sp             = 4
 
       integer, parameter :: MAX_STAT_NUM   = 1200
 
       character(len=4 ),dimension(MAX_STAT_NUM) :: cd   ! Station code
       integer          ,dimension(MAX_STAT_NUM) :: id   ! WMO station ID
-      real(kind=dp)    ,dimension(MAX_STAT_NUM) :: lt   ! Station latitude
-      real(kind=dp)    ,dimension(MAX_STAT_NUM) :: ln   ! Station longitude
-      real(kind=dp)    ,dimension(MAX_STAT_NUM) :: el   ! Station elevation
+      real(kind=sp)    ,dimension(MAX_STAT_NUM) :: lt   ! Station latitude
+      real(kind=sp)    ,dimension(MAX_STAT_NUM) :: ln   ! Station longitude
+      real(kind=sp)    ,dimension(MAX_STAT_NUM) :: el   ! Station elevation
       character(len=25),dimension(MAX_STAT_NUM) :: lnm  ! Station long name
       character(len=2 ),dimension(MAX_STAT_NUM) :: st   ! Station state
       character(len=2 ),dimension(MAX_STAT_NUM) :: ct   ! Station country
@@ -3498,7 +3499,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
         write(outlog(io),*)"Radiosonde stations currently loaded:"
         do i=1,MR_nSnd_Locs
           ii = Snd_idx(i)
-          write(outlog(io),*)MR_Snd_id(ii),adjustl(trim(MR_Snd_lnm(ii))),',',MR_Snd_st(ii),',',MR_Snd_ct(ii)
+          write(outlog(io),*)MR_Snd_id(ii),trim(adjustl(MR_Snd_lnm(ii))),',',MR_Snd_st(ii),',',MR_Snd_ct(ii)
         enddo
       endif;enddo
 
@@ -3526,7 +3527,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
             nSnd_InDomain = nSnd_InDomain + 1
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
               write(outlog(io),*)&
-                 MR_Snd_id(i),adjustl(trim(MR_Snd_lnm(i))),',',MR_Snd_st(i),',',MR_Snd_ct(i)
+                 MR_Snd_id(i),trim(adjustl(MR_Snd_lnm(i))),',',MR_Snd_st(i),',',MR_Snd_ct(i)
             endif;enddo
           endif
         endif
@@ -3548,56 +3549,61 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
 !
 !##############################################################################
 
-      subroutine MR_Calc_Snd_Weights_NearNeigh
-
-      use MetReader,       only : &
-         nx_comp,ny_comp,MR_nSnd_Locs,x_comp_sp,y_comp_sp,MR_Snd_ln,MR_Snd_lt,&
-         MR_Snd2Comp_map_wgt,MR_Snd2Comp_map_idx,Snd_idx
-
-      implicit none
-
-      integer, parameter :: sp             = 4
-      integer, parameter :: dp             = 8
-
-      integer :: i,j,k,idx
-      real(kind=dp)     :: lat1,lon1
-      real(kind=dp)     :: lat2,lon2
-
-      real(kind=dp),dimension(:,:,:),allocatable :: MR_Snd2Comp_dist
-
-      INTERFACE
-        real(kind=8) function MR_Haversine(lon1,lat1,lon2,lat2)
-          real(kind=8)  :: lon1
-          real(kind=8)  :: lat1
-          real(kind=8)  :: lon2
-          real(kind=8)  :: lat2
-        end function MR_Haversine
-      END INTERFACE
-
-      allocate(MR_Snd2Comp_dist(nx_comp,ny_comp,MR_nSnd_Locs))
-
-      MR_Snd2Comp_map_wgt = 0.0_sp
-
-      do i=1,nx_comp
-        lon1 = real(x_comp_sp(i),kind=dp)
-        do j=1,ny_comp
-          lat1 = real(y_comp_sp(j),kind=dp)
-          do k=1,MR_nSnd_Locs
-            lon2 = real(MR_Snd_ln(Snd_idx(k)),kind=8)+360.0_dp
-            lat2 = real(MR_Snd_lt(Snd_idx(k)),kind=8)
-            MR_Snd2Comp_dist(i,j,k) = MR_Haversine(lon1,lat1,lon2,lat2)
-            MR_Snd2Comp_map_idx(i,j,k) = k
-          enddo
-          idx = minloc(MR_Snd2Comp_dist(i,j,:),1)
-          MR_Snd2Comp_map_wgt(i,j,idx) = 1.0_sp
-        enddo
-      enddo
-
-      end subroutine MR_Calc_Snd_Weights_NearNeigh
+!      subroutine MR_Calc_Snd_Weights_NearNeigh
+!
+!      use MetReader,       only : &
+!         nx_comp,ny_comp,MR_nSnd_Locs,x_comp_sp,y_comp_sp,MR_Snd_ln,MR_Snd_lt,&
+!         MR_Snd2Comp_map_wgt,MR_Snd2Comp_map_idx,Snd_idx
+!
+!      implicit none
+!
+!      integer, parameter :: sp             = 4
+!      integer, parameter :: dp             = 8
+!
+!      integer :: i,j,k,idx
+!      real(kind=dp)     :: lat1,lon1
+!      real(kind=dp)     :: lat2,lon2
+!
+!      real(kind=dp),dimension(:,:,:),allocatable :: MR_Snd2Comp_dist
+!
+!      INTERFACE
+!        real(kind=4) function MR_Haversine(lon1,lat1,lon2,lat2)
+!          real(kind=4)  :: lon1
+!          real(kind=4)  :: lat1
+!          real(kind=4)  :: lon2
+!          real(kind=4)  :: lat2
+!        end function MR_Haversine
+!      END INTERFACE
+!
+!      allocate(MR_Snd2Comp_dist(nx_comp,ny_comp,MR_nSnd_Locs))
+!
+!      MR_Snd2Comp_map_wgt = 0.0_sp
+!
+!      do i=1,nx_comp
+!        lon1 = real(x_comp_sp(i),kind=dp)
+!        do j=1,ny_comp
+!          lat1 = real(y_comp_sp(j),kind=dp)
+!          do k=1,MR_nSnd_Locs
+!            lon2 = real(MR_Snd_ln(Snd_idx(k)),kind=8)+360.0_dp
+!            lat2 = real(MR_Snd_lt(Snd_idx(k)),kind=8)
+!            MR_Snd2Comp_dist(i,j,k) = MR_Haversine(lon1,lat1,lon2,lat2)
+!            MR_Snd2Comp_map_idx(i,j,k) = k
+!          enddo
+!          idx = minloc(MR_Snd2Comp_dist(i,j,:),1)
+!          MR_Snd2Comp_map_wgt(i,j,idx) = 1.0_sp
+!        enddo
+!      enddo
+!
+!      end subroutine MR_Calc_Snd_Weights_NearNeigh
 
 !##############################################################################
 !
 !     MR_Calc_Snd_Weights_InvDistWeight
+!
+!     pext  = positive expo of inv dist func (default=4.0)
+!     nstat = num of stations to consider (default=4; All=0; NearNeigh=1)
+!
+!     Sets MR_Snd2Comp_map_wgt
 !
 !     This subroutine calculates the interpolation weights on the computational
 !     grid from a sparse set of radiosonde staions using an inverse distance.
@@ -3610,34 +3616,41 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
 
       use MetReader,       only : &
          MR_Snd_lt,y_comp_sp,x_comp_sp,nx_comp,ny_comp,MR_nSnd_Locs,MR_Snd2Comp_map_idx,&
-         Snd_idx,MR_Snd_ln,MR_Snd_lt,MR_Snd2Comp_map_wgt,MR_Snd2Comp_map_idx
+         Snd_idx,MR_Snd_ln,MR_Snd_lt,MR_Snd2Comp_map_wgt
 
       implicit none
 
       integer, parameter :: sp               = 4
-      integer, parameter :: dp               = 8
+      !integer, parameter :: dp               = 8
 
-      real(kind=dp), intent(in)           :: pexp  ! positive expo of inv dist func
+      real(kind=sp), intent(in)           :: pexp  ! positive expo of inv dist func
       integer,       intent(in), optional :: nstat ! num of stations to consider
 
       integer       :: i,j,k,l,idx
-      real(kind=dp) :: lat1,lon1
-      real(kind=dp) :: lat2,lon2
-      real(kind=dp) :: norm
-      real(kind=dp) :: dist
+      real(kind=sp) :: lat1,lon1
+      real(kind=sp) :: lat2,lon2
+      real(kind=sp) :: norm
+      real(kind=sp) :: dist
+      real(kind=sp) :: lenscale
+      real(kind=sp) :: domwgt
       integer :: maxstations
+      logical :: inStencil
       logical,dimension(:),allocatable :: StatInStencil
 
-      real(kind=dp),dimension(:,:,:),allocatable :: MR_Snd2Comp_dist
+      real(kind=sp),dimension(:,:,:),allocatable :: MR_Snd2Comp_dist
 
       INTERFACE
-        real(kind=8) function MR_Haversine(lon1,lat1,lon2,lat2)
-          real(kind=8)  :: lon1
-          real(kind=8)  :: lat1
-          real(kind=8)  :: lon2
-          real(kind=8)  :: lat2
+        real(kind=4) function MR_Haversine(lon1,lat1,lon2,lat2)
+          real(kind=4)  :: lon1
+          real(kind=4)  :: lat1
+          real(kind=4)  :: lon2
+          real(kind=4)  :: lat2
         end function MR_Haversine
       END INTERFACE
+
+      ! First, get a domain length scale so that our weighting terms do not approach
+      ! machine precision.  Using the diaganol distance
+      lenscale = MR_Haversine(x_comp_sp(1),y_comp_sp(1),x_comp_sp(nx_comp),y_comp_sp(ny_comp))
 
       ! Figure out how many stations to use in the inv.dist. weighting
       if(present(nstat))then
@@ -3657,15 +3670,15 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
 
       ! Loop over all nodes on the computational grid
       do i=1,nx_comp
-        lon1 = real(x_comp_sp(i),kind=dp)
+        lon1 = real(x_comp_sp(i),kind=sp)
         do j=1,ny_comp
-          lat1 = real(y_comp_sp(j),kind=dp)
+          lat1 = real(y_comp_sp(j),kind=sp)
           ! Loop over all the sonde locations and get distances to the comp node
           do k=1,MR_nSnd_Locs
-            lon2 = real(MR_Snd_ln(Snd_idx(k)),kind=dp)+360.0_dp
-            lat2 = real(MR_Snd_lt(Snd_idx(k)),kind=dp)
-            MR_Snd2Comp_dist(i,j,k) = MR_Haversine(lon1,lat1,lon2,lat2)
-            MR_Snd2Comp_map_wgt(i,j,k) = real(1.0_dp/(MR_Snd2Comp_dist(i,j,k)**pexp),kind=sp)
+            lon2 = MR_Snd_ln(Snd_idx(k))+360.0_sp
+            lat2 = MR_Snd_lt(Snd_idx(k))
+            MR_Snd2Comp_dist(i,j,k) = MR_Haversine(lon1,lat1,lon2,lat2)/lenscale
+            MR_Snd2Comp_map_wgt(i,j,k) = 1.0_sp/(MR_Snd2Comp_dist(i,j,k)**pexp)
             !norm = norm + MR_Snd2Comp_map_wgt(i,j,k)
             !MR_Snd2Comp_map_idx(i,j,k) = k
           enddo
@@ -3673,8 +3686,10 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           StatInStencil(1:MR_nSnd_Locs) = .false.
           idx = 0
           do l=1,maxstations
-            ! Looking for the next closest station
+            ! Find the distance to the furthest station, then look through
+            ! all the stations to find the closest not yet accounted for
             dist = maxval(MR_Snd2Comp_dist(i,j,1:MR_nSnd_Locs))
+            ! Looking for the next closest station
             do k=1,MR_nSnd_Locs
               if(StatInStencil(k)) cycle ! skip to next k if this is already in stencil
               if(MR_Snd2Comp_dist(i,j,k).le.dist)then
@@ -3682,11 +3697,28 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
                 idx = k
               endif
             enddo
+            ! Log this station and mark it as part of the stencil
             MR_Snd2Comp_map_idx(i,j,l) = idx
             StatInStencil(idx) = .true.
           enddo
+
+          ! Zero-out any sonde points that are not part of the stencil
+!          do k=1,MR_nSnd_Locs
+!            inStencil = .false.
+!            do l=1,maxstations
+!              if(MR_Snd2Comp_map_idx(i,j,l).eq.k)inStencil=.true.
+!            enddo
+!            if(.not.inStencil)MR_Snd2Comp_map_wgt(i,j,k) = 0.0_sp
+!          enddo
+
+          ! Zero-out any sonde points that do not contribute more that 0.1%
+!          domwgt = maxval(MR_Snd2Comp_map_wgt(i,j,:))
+!          do k=1,MR_nSnd_Locs
+!            if(MR_Snd2Comp_map_wgt(i,j,k)/domwgt.lt.0.001_sp)MR_Snd2Comp_map_wgt(i,j,k)=0.0_sp
+!          enddo
+
           ! Now find the normalization factor
-          norm = 0.0_dp
+          norm = 0.0_sp
           do l=1,maxstations
             idx = MR_Snd2Comp_map_idx(i,j,l)
             norm = norm + MR_Snd2Comp_map_wgt(i,j,idx)
@@ -3694,7 +3726,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           ! Finally, normalize the requested weights and zero the others
           do k=1,MR_nSnd_Locs
             if(StatInStencil(k))then
-              MR_Snd2Comp_map_wgt(i,j,k) = real(MR_Snd2Comp_map_wgt(i,j,k)/norm,kind=sp)
+              MR_Snd2Comp_map_wgt(i,j,k) = MR_Snd2Comp_map_wgt(i,j,k)/norm
             else
               MR_Snd2Comp_map_wgt(i,j,k) = 0.0_sp
             endif
@@ -3720,12 +3752,12 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
 
       implicit none
 
-      real(kind=8)  :: MR_Haversine
-      real(kind=8)  :: lon1,lat1,lon2,lat2
-      real(kind=8)  :: lam1,psi1,lam2,psi2
-      real(kind=8)  :: dpsi,dlam
-      real(kind=8)  :: a,c
-      real(kind=8)  :: fac1,fac2
+      real(kind=4)  :: MR_Haversine
+      real(kind=4)  :: lon1,lat1,lon2,lat2
+      real(kind=4)  :: lam1,psi1,lam2,psi2
+      real(kind=4)  :: dpsi,dlam
+      real(kind=4)  :: a,c
+      real(kind=4)  :: fac1,fac2
 
       ! From https://www.movable-type.co.uk/scripts/latlong.html
       lam1 = lon1*MR_DEG2RAD
@@ -3735,11 +3767,11 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       dpsi = psi2-psi1
       dlam = lam2-lam1
 
-      a = sin(0.5_8*dpsi)*sin(0.5_8*dpsi) + &
-          sin(0.5_8*dlam)*sin(0.5_8*dlam) * cos(psi1)*cos(psi2)
+      a = sin(0.5_4*dpsi)*sin(0.5_4*dpsi) + &
+          sin(0.5_4*dlam)*sin(0.5_4*dlam) * cos(psi1)*cos(psi2)
       fac1 = sqrt(      a)
-      fac2 = sqrt(1.0_8-a)
-      c = 2.0_8*atan2( fac1, fac2 )
+      fac2 = sqrt(1.0_4-a)
+      c = 2.0_4*atan2( fac1, fac2 )
 
       MR_Haversine = MR_RAD_EARTH * c
 
