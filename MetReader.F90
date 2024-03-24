@@ -594,19 +594,19 @@
         ! Variables needed by netcdf reader
       real(kind=sp),public :: iwf25_scale_facs(MR_MAXVARS)
       real(kind=sp),public :: iwf25_offsets(MR_MAXVARS)
-      real(kind=sp),public :: x_in_iwf25_sp(192)
-      real(kind=sp),public :: y_in_iwf25_sp(94)
+!      real(kind=sp),public :: x_in_iwf25_sp(192)
+!      real(kind=sp),public :: y_in_iwf25_sp(94)
         ! Here is the mapping for bilinear weighting coefficients (amap) and
         ! indices (imap) from the 1.875-deg 2d grid to the 2.5-deg 
-#ifdef USEPOINTERS
-      real(kind=sp)   ,dimension(:,:,:),pointer,public :: amap_iwf25      => null()
-      integer         ,dimension(:,:,:),pointer,public :: imap_iwf25      => null()
-      integer(kind=sp),dimension(:,:,:),pointer,public :: tmpsurf2d_short => null()
-#else
-      real(kind=sp)   ,dimension(:,:,:),allocatable,public :: amap_iwf25
-      integer         ,dimension(:,:,:),allocatable,public :: imap_iwf25
-      integer(kind=sp),dimension(:,:,:),allocatable,public :: tmpsurf2d_short
-#endif
+!#ifdef USEPOINTERS
+!      real(kind=sp)   ,dimension(:,:,:),pointer,public :: amap_iwf25      => null()
+!      integer         ,dimension(:,:,:),pointer,public :: imap_iwf25      => null()
+!      integer(kind=sp),dimension(:,:,:),pointer,public :: tmpsurf2d_short => null()
+!#else
+!      real(kind=sp)   ,dimension(:,:,:),allocatable,public :: amap_iwf25
+!      integer         ,dimension(:,:,:),allocatable,public :: imap_iwf25
+!      integer(kind=sp),dimension(:,:,:),allocatable,public :: tmpsurf2d_short
+!#endif
 
       integer,public :: istart
       integer,public :: iend
@@ -744,8 +744,8 @@
        if(associated(CompPoint_Y_on_Met_sp         ))deallocate(CompPoint_Y_on_Met_sp)
        if(associated(CompPoint_on_subMet_idx       ))deallocate(CompPoint_on_subMet_idx)
        if(associated(bilin_map_wgt                 ))deallocate(bilin_map_wgt)
-       if(associated(amap_iwf25                    ))deallocate(amap_iwf25)
-       if(associated(imap_iwf25                    ))deallocate(imap_iwf25)
+!       if(associated(amap_iwf25                    ))deallocate(amap_iwf25)
+!       if(associated(imap_iwf25                    ))deallocate(imap_iwf25)
        if(associated(s_comp_sp                     ))deallocate(s_comp_sp)
        if(associated(MR_Topo_met                   ))deallocate(MR_Topo_met)
        if(associated(MR_jacob_met                  ))deallocate(MR_jacob_met)
@@ -835,8 +835,8 @@
        if(allocated(CompPoint_Y_on_Met_sp         ))deallocate(CompPoint_Y_on_Met_sp)
        if(allocated(CompPoint_on_subMet_idx       ))deallocate(CompPoint_on_subMet_idx)
        if(allocated(bilin_map_wgt                 ))deallocate(bilin_map_wgt)
-       if(allocated(amap_iwf25                    ))deallocate(amap_iwf25)
-       if(allocated(imap_iwf25                    ))deallocate(imap_iwf25)
+!       if(allocated(amap_iwf25                    ))deallocate(amap_iwf25)
+!       if(allocated(imap_iwf25                    ))deallocate(imap_iwf25)
        if(allocated(s_comp_sp                     ))deallocate(s_comp_sp)
        if(allocated(MR_Topo_met                   ))deallocate(MR_Topo_met)
        if(allocated(MR_jacob_met                  ))deallocate(MR_jacob_met)
@@ -846,7 +846,7 @@
        if(allocated(MR_v_ER_metP                  ))deallocate(MR_v_ER_metP)
        if(allocated(theta_Met                     ))deallocate(theta_Met)
        if(allocated(theta_Comp                    ))deallocate(theta_Comp)
-       if(allocated(tmpsurf2d_short               ))deallocate(tmpsurf2d_short)
+!       if(allocated(tmpsurf2d_short               ))deallocate(tmpsurf2d_short)
        if(allocated(temp1d_sp                     ))deallocate(temp1d_sp)
        if(allocated(temp2d_sp                     ))deallocate(temp2d_sp)
        if(allocated(temp3d_sp                     ))deallocate(temp3d_sp)
@@ -2031,16 +2031,10 @@
           Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="omega"      ! short Pa/s (29.765f,0.001f)
           Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="air"        ! short K (477.66f,0.01f)
           Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="omega"      ! short Pa/s (29.765f,0.001f)
-          ! Atmospheric Structure
-          !Met_var_IsAvailable(20)=.true.
-          !Met_var_IsAvailable(21)=.true.
           ! Moisture
           !Met_var_IsAvailable(30)=.true.; Met_var_NC_names(30)="rhum"      ! short  (302.66f,0.01f)
           Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="shum"      ! short SpecHum ~ mixing ratio kg/kg(0.032666f,1.e-06f)
           !Met_var_IsAvailable(32)=.true.; Met_var_NC_names(32)="shum"      ! short should really be QL (liquid)
-          ! Precipitation
-          !Met_var_IsAvailable(44)=.true.; Met_var_NC_names(44)="prate"     ! short surface precipitation rate (kg/m2/s) (0.0032765f,1.e-07f)
-          !Met_var_IsAvailable(45)=.true.; Met_var_NC_names(45)="cprat"     ! short surface convective precip kg/m2/s (0.0031765f,1.e-07f)
   
           fill_value_sp = -9999.0_sp
 
@@ -2519,9 +2513,9 @@
 
       if (MR_iwind.eq.5)then
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then              
-          write(outlog(io),*)"For iwf=5:: one variable per file,"
-          write(outlog(io),*)"Only the directory should be listed. The remaining"
-          write(outlog(io),*)"path is hard-coded."
+          write(outlog(io),*)"For iwf=5:: one variable per file."
+          write(outlog(io),*)"Only the directory should be listed."
+          write(outlog(io),*)"The remaining path is hard-coded."
         endif;enddo
         ! Reset MR_iwindfiles to 2: only one "file" will be read,
         ! but we need this to be 2 to accommodate runs that might span two years/months
@@ -2673,9 +2667,10 @@
                                  .false.)    ! CALLED_MR_Set_Met_Times
 
 #ifdef USEPOINTERS
-      ! HFS: Need to add a check here for the case where MR_windfiles is a pointer, but has not been filled
+      if(.not.associate(MR_windfiles))then
 #else
       if(.not.allocated(MR_windfiles))then
+#endif
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR:  The list of windfile names, MR_windfiles, has not been"
           write(errlog(io),*)"           allocated.  The calling program must allocate this"
@@ -2683,7 +2678,6 @@
         endif;enddo
         stop 1
       endif
-#endif
 
       if(MR_iwind.eq.5)then
         ! For iwind=5 files (NCEP 2.5 degree reanalysis, NOAA, etc. ), only the directory
@@ -3024,8 +3018,12 @@
 
       select case (MR_iwind)
       case(1)   ! if we're using a 1-D wind sounding
+        write(*,*)"Calling MR_Set_MetComp_Grids_ASCII_1d"
         call MR_Set_MetComp_Grids_ASCII_1d
+        write(*,*)"Called MR_Set_MetComp_Grids_ASCII_1d"
+        write(*,*)"Calling MR_Set_Comp2Met_Map"
         call MR_Set_Comp2Met_Map
+        write(*,*)"Called MR_Set_Comp2Met_Map"
       case(2)
         !call MR_Set_MetComp_Grids_ASCII_3d
       case (3:5)
@@ -3084,14 +3082,23 @@
             enddo
           endif
         enddo
-      endif
-      MR_minlen = maxval(rdlambda_MetP_sp(:,:,:))
-      do i=1,nx_submet
-        do j=1,ny_submet
-          if(MR_minlen.gt.rdlambda_MetP_sp(i,j,1)) MR_minlen=rdlambda_MetP_sp(i,j,1)
-          if(MR_minlen.gt.rdphi_MetP_sp(j,1))      MR_minlen=rdphi_MetP_sp(j,1)
+        MR_minlen = maxval(rdlambda_MetP_sp(:,:,:))
+        do i=1,nx_submet
+          do j=1,ny_submet
+            if(MR_minlen.gt.rdlambda_MetP_sp(i,j,1)) MR_minlen=rdlambda_MetP_sp(i,j,1)
+            if(MR_minlen.gt.rdphi_MetP_sp(j,1))      MR_minlen=rdphi_MetP_sp(j,1)
+          enddo
         enddo
-      enddo
+      else
+        if(allocated(MR_dx_met))then
+          MR_minlen = min(minval(MR_dx_met),minval(MR_dy_met))
+        else
+          ! MR_dx_met and MR_dy_met might not be defined for radio sonde or ascii
+          ! grids.  Just set MR_minlen to 10% of min domain dimension
+          MR_minlen = 0.1_sp * (x_comp_sp(nx) - x_comp_sp(1))
+          MR_minlen = min(MR_minlen,0.1_sp * (y_comp_sp(ny) - y_comp_sp(1)))
+        endif
+      endif
 
       if(MR_useTopo)then
         allocate(s_comp_sp(nz_comp))

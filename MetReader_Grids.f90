@@ -792,14 +792,15 @@
          MR_dum2d_comp_int,MR_dum2d_comp,MR_dum3d_compP,MR_dum3d_compH,&
          MR_geoH_metP_last,MR_geoH_metP_next,ilhalf_fm_l,ilhalf_nx,irhalf_fm_l,irhalf_nx,&
          istart,jstart,MR_v_ER_metP,MR_dum3d_compH_2,MR_dum3d_compP_2,theta_Comp,&
-         amap_iwf25,imap_iwf25,y_in_iwf25_sp,x_fullmet_sp,y_fullmet_sp,MR_dx_met,&
-         MR_dy_met,x_in_iwf25_sp,y_comp_sp,iend,ilhalf_fm_r,IsGlobal_MetGrid,&
+         x_fullmet_sp,y_fullmet_sp,MR_dx_met,&
+         MR_dy_met,y_comp_sp,iend,ilhalf_fm_r,IsGlobal_MetGrid,&
          Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
          isGridRelative,bilin_map_wgt,CompPoint_on_subMet_idx,y_pad_South,y_pad_North,&
          y_inverted,wrapgrid,UseFullMetGrid,ny_fullmet,ny_comp,nx_comp,nx_fullmet,&
          irhalf_fm_r,IsLatLon_MetGrid,IsPeriodic_CompGrid,jend,Map_Case,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         MR_iwindformat,MR_useCompH,MR_useCompP,np_fullmet,nz_comp
+         !x_in_iwf25_sp,amap_iwf25,imap_iwf25,y_in_iwf25_sp,&
+         MR_useCompH,MR_useCompP,np_fullmet,nz_comp
 
       use projection,      only : &
            PJ_Set_Proj_Params,&
@@ -818,8 +819,8 @@
       real(kind=sp) :: xLL,yLL
       real(kind=sp) :: xUR,yUR
 
-      real(kind=sp) :: dely_sp,x_loc,y_loc,xc_sp,yc_sp,xfrac_sp,yfrac_sp
-      integer :: ilat,ilon,ix1,ix2,iy1,iy2
+      !real(kind=sp) :: dely_sp,x_loc,y_loc,xc_sp,yc_sp,xfrac_sp,yfrac_sp
+      !integer :: ilat,ilon,ix1,ix2,iy1,iy2
 
       real(kind=dp) :: ptlon,ptlat,xin,yin,de_x,de_y
 
@@ -972,8 +973,8 @@
         endif;enddo
       endif
 
-      !SEE if COMPUTATIONAL REGION STRADDLES THE BREAK IN THE WIND FILE
-      !  (EITHER THE PRIME OR ANTI-MERIDIAN)
+      ! See if computational region straddles the break in the wind file
+      !  (either the prime or anti-meridian)
       if(iend.le.nx_fullmet)then        !yes
         wrapgrid = .false.
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
@@ -1034,7 +1035,7 @@
         write(outlog(io),*)"-------------"
       endif;enddo
 
-      !SEE IF THE MODEL DOMAIN EXTENDS NORTH OR SOUTH OF THE MESOSCALE DOMAIN
+      ! See if the model domain extends north or south of the mesoscale domain
       if(UseFullMetGrid)then
           ! This is the special case where the comp grid equals the Met grid
         jstart = 1
@@ -1168,8 +1169,7 @@
       allocate( y_submet_sp(1:ny_submet))
       allocate( MR_dy_submet(1:ny_submet))
 
-      ! POPULATE THE X AND Y ARRAYS (Z ARRAY WILL BE POPULATED DIFFERENTLY
-      ! AT EACH POINT, IN READ4DWINDARRAY.F90)
+      ! Populate the x and y arrays
       if (wrapgrid) then
         x_submet_sp(          1:ilhalf_nx) = x_fullmet_sp(ilhalf_fm_l:ilhalf_fm_l+ilhalf_nx-1)
         x_submet_sp(ilhalf_nx+1:nx_submet) = x_fullmet_sp(irhalf_fm_l:irhalf_fm_l+irhalf_nx-1) + 360.0_sp
@@ -1447,91 +1447,92 @@
       allocate(MR_geoH_metP_last(nx_submet,ny_submet,np_fullmet))
       allocate(MR_geoH_metP_next(nx_submet,ny_submet,np_fullmet))
 
-      if(MR_iwindformat.eq.25)then
-        ! The following is only needed if we are reading 2d variables from NCEP
-        ! wind files, but we will set up the grids regardless as a precaution
-          ! Here are the weights starting with LL then counter-clockwise
-        allocate(amap_iwf25(nx_submet,ny_submet,4))
-        amap_iwf25 = 0.0_sp
-        !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + sp*(as_nxmax*as_nymax*4)
-          ! Here is the x1,x2,y1,y2 indices
-        allocate(imap_iwf25(nx_submet,ny_submet,4))
-        imap_iwf25 = 0
-        !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + sp*(as_nxmax*as_nymax*4)
-
-        ! These should be read directly, but for now, just hardcode it.        
-        do i = 1,192
-          x_in_iwf25_sp(i)=(i-1)*1.875_sp
-        enddo
-        y_in_iwf25_sp(1:94) = (/ &
-         88.542_sp,  86.6531_sp,  84.7532_sp,  82.8508_sp,  80.9473_sp,   79.0435_sp,  77.1394_sp, 75.2351_sp, &
-        73.3307_sp,  71.4262_sp,  69.5217_sp,  67.6171_sp,  65.7125_sp,   63.8079_sp,  61.9033_sp, 59.9986_sp, &
-        58.0939_sp,  56.1893_sp,  54.2846_sp,  52.3799_sp,  50.4752_sp,   48.5705_sp,  46.6658_sp, 44.7611_sp, &
-        42.8564_sp,  40.9517_sp,   39.047_sp,  37.1422_sp,  35.2375_sp,   33.3328_sp,  31.4281_sp, 29.5234_sp, &
-        27.6186_sp,  25.7139_sp,  23.8092_sp,  21.9044_sp,  19.9997_sp,    18.095_sp,  16.1902_sp, 14.2855_sp, &
-        12.3808_sp, 10.47604_sp,  8.57131_sp,  6.66657_sp,  4.76184_sp,    2.8571_sp, 0.952368_sp, &
-      -0.952368_sp,  -2.8571_sp, -4.76184_sp, -6.66657_sp, -8.57131_sp, -10.47604_sp, -12.3808_sp, &
-       -14.2855_sp, -16.1902_sp,  -18.095_sp, -19.9997_sp, -21.9044_sp,  -23.8092_sp, -25.7139_sp, &
-       -27.6186_sp, -29.5234_sp, -31.4281_sp, -33.3328_sp, -35.2375_sp,  -37.1422_sp,  -39.047_sp, &
-       -40.9517_sp, -42.8564_sp, -44.7611_sp, -46.6658_sp, -48.5705_sp,  -50.4752_sp, -52.3799_sp, &
-       -54.2846_sp, -56.1893_sp, -58.0939_sp, -59.9986_sp, -61.9033_sp,  -63.8079_sp, -65.7125_sp, &
-       -67.6171_sp, -69.5217_sp, -71.4262_sp, -73.3307_sp, -75.2351_sp,  -77.1394_sp, -79.0435_sp, &
-       -80.9473_sp, -82.8508_sp, -84.7532_sp, -86.6531_sp,  -88.542_sp /)
-
-        do ilon = 1,nx_submet
-          x_loc = max(0.0_sp,x_submet_sp(ilon))
-          xfrac_sp = -1.0_sp
-          xc_sp    = -1.0_sp
-          do i = 1,191
-            if(max(0.0_sp,x_in_iwf25_sp(i)).le.x_loc.and.x_in_iwf25_sp(i+1).gt.x_loc)then
-              ix1 = i
-              ix2 = i+1
-              xfrac_sp = (x_loc - x_in_iwf25_sp(i))/1.875_sp
-              xc_sp = 1.0_sp - xfrac_sp
-              exit ! leave do loop
-            endif
-          enddo
-          if(xfrac_sp.lt.0.0_sp.or.xc_sp.lt.0.0_sp)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-              write(errlog(io),*)"MR ERROR: i maps out of grid: ",i
-            endif;enddo
-            stop 1
-          endif
-
-          do ilat = 1,ny_submet
-            y_loc = y_submet_sp(ilat)
-            yfrac_sp = -1.0_sp
-            yc_sp    = -1.0_sp
-            do j = 94,2,-1
-              if(y_in_iwf25_sp(j).le.y_loc.and.y_in_iwf25_sp(j-1).gt.y_loc)then
-                iy1 = j
-                iy2 = j-1
-                dely_sp = y_in_iwf25_sp(j-1)-y_in_iwf25_sp(j)
-                yfrac_sp = (y_loc - y_in_iwf25_sp(j))/dely_sp
-                yc_sp = 1.0_sp - yfrac_sp
-                exit ! leave do loop
-              endif
-            enddo
-            if(yfrac_sp.lt.0.0_sp.or.yc_sp.lt.0.0_sp)then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-                write(errlog(io),*)"MR ERROR: i maps out of grid: ",i
-              endif;enddo
-              stop 1
-            endif
-
-            imap_iwf25(ilon,ilat,1)=ix1
-            imap_iwf25(ilon,ilat,2)=ix2
-            imap_iwf25(ilon,ilat,3)=iy1
-            imap_iwf25(ilon,ilat,4)=iy2
-            amap_iwf25(ilon,ilat,1)=xc_sp*yc_sp
-            amap_iwf25(ilon,ilat,2)=xfrac_sp*yc_sp
-            amap_iwf25(ilon,ilat,3)=xfrac_sp*yfrac_sp
-            amap_iwf25(ilon,ilat,4)=yfrac_sp*xc_sp
-
-          enddo
-        enddo
-
-      endif
+!      if(MR_iwindformat.eq.25)then
+!        ! The following is only needed if we are reading 2d variables from NCEP
+!        ! wind files, but we will set up the grids regardless as a precaution
+!          ! Here are the weights starting with LL then counter-clockwise
+!        allocate(amap_iwf25(nx_submet,ny_submet,4))
+!        amap_iwf25 = 0.0_sp
+!        !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + sp*(as_nxmax*as_nymax*4)
+!          ! Here is the x1,x2,y1,y2 indices
+!        allocate(imap_iwf25(nx_submet,ny_submet,4))
+!        imap_iwf25 = 0
+!        !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + sp*(as_nxmax*as_nymax*4)
+!
+!        ! These should be read directly, but for now, just hardcode it.        
+!        do i = 1,192
+!          x_in_iwf25_sp(i)=(i-1)*1.875_sp
+!        enddo
+!        y_in_iwf25_sp(1:94) = (/ &
+!         88.542_sp,  86.6531_sp,  84.7532_sp,  82.8508_sp,  80.9473_sp,   79.0435_sp,  77.1394_sp, 75.2351_sp, &
+!        73.3307_sp,  71.4262_sp,  69.5217_sp,  67.6171_sp,  65.7125_sp,   63.8079_sp,  61.9033_sp, 59.9986_sp, &
+!        58.0939_sp,  56.1893_sp,  54.2846_sp,  52.3799_sp,  50.4752_sp,   48.5705_sp,  46.6658_sp, 44.7611_sp, &
+!        42.8564_sp,  40.9517_sp,   39.047_sp,  37.1422_sp,  35.2375_sp,   33.3328_sp,  31.4281_sp, 29.5234_sp, &
+!        27.6186_sp,  25.7139_sp,  23.8092_sp,  21.9044_sp,  19.9997_sp,    18.095_sp,  16.1902_sp, 14.2855_sp, &
+!        12.3808_sp, 10.47604_sp,  8.57131_sp,  6.66657_sp,  4.76184_sp,    2.8571_sp, 0.952368_sp, &
+!      -0.952368_sp,  -2.8571_sp, -4.76184_sp, -6.66657_sp, -8.57131_sp, -10.47604_sp, -12.3808_sp, &
+!       -14.2855_sp, -16.1902_sp,  -18.095_sp, -19.9997_sp, -21.9044_sp,  -23.8092_sp, -25.7139_sp, &
+!       -27.6186_sp, -29.5234_sp, -31.4281_sp, -33.3328_sp, -35.2375_sp,  -37.1422_sp,  -39.047_sp, &
+!       -40.9517_sp, -42.8564_sp, -44.7611_sp, -46.6658_sp, -48.5705_sp,  -50.4752_sp, -52.3799_sp, &
+!       -54.2846_sp, -56.1893_sp, -58.0939_sp, -59.9986_sp, -61.9033_sp,  -63.8079_sp, -65.7125_sp, &
+!       -67.6171_sp, -69.5217_sp, -71.4262_sp, -73.3307_sp, -75.2351_sp,  -77.1394_sp, -79.0435_sp, &
+!       -80.9473_sp, -82.8508_sp, -84.7532_sp, -86.6531_sp,  -88.542_sp /)
+!
+!        do ilon = 1,nx_submet
+!          x_loc = max(0.0_sp,x_submet_sp(ilon))
+!          xfrac_sp = -1.0_sp
+!          xc_sp    = -1.0_sp
+!          do i = 1,191
+!            if(max(0.0_sp,x_in_iwf25_sp(i)).le.x_loc.and.x_in_iwf25_sp(i+1).gt.x_loc)then
+!              ix1 = i
+!              ix2 = i+1
+!              xfrac_sp = (x_loc - x_in_iwf25_sp(i))/1.875_sp
+!              xc_sp = 1.0_sp - xfrac_sp
+!              exit ! leave do loop
+!            endif
+!          enddo
+!          if(xfrac_sp.lt.0.0_sp.or.xc_sp.lt.0.0_sp)then
+!            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+!              write(errlog(io),*)"MR ERROR: i maps out of grid: ",i
+!            endif;enddo
+!            stop 1
+!          endif
+!
+!          do ilat = 1,ny_submet
+!            y_loc = y_submet_sp(ilat)
+!            write(*,*)ilat,ny_submet,y_loc
+!            yfrac_sp = -1.0_sp
+!            yc_sp    = -1.0_sp
+!            do j = 94,2,-1
+!              if(y_in_iwf25_sp(j).le.y_loc.and.y_in_iwf25_sp(j-1).gt.y_loc)then
+!                iy1 = j
+!                iy2 = j-1
+!                dely_sp = y_in_iwf25_sp(j-1)-y_in_iwf25_sp(j)
+!                yfrac_sp = (y_loc - y_in_iwf25_sp(j))/dely_sp
+!                yc_sp = 1.0_sp - yfrac_sp
+!                exit ! leave do loop
+!              endif
+!            enddo
+!            if(yfrac_sp.lt.0.0_sp.or.yc_sp.lt.0.0_sp)then
+!              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+!                write(errlog(io),*)"MR ERROR: j maps out of grid: ",j
+!              endif;enddo
+!              stop 1
+!            endif
+!
+!            imap_iwf25(ilon,ilat,1)=ix1
+!            imap_iwf25(ilon,ilat,2)=ix2
+!            imap_iwf25(ilon,ilat,3)=iy1
+!            imap_iwf25(ilon,ilat,4)=iy2
+!            amap_iwf25(ilon,ilat,1)=xc_sp*yc_sp
+!            amap_iwf25(ilon,ilat,2)=xfrac_sp*yc_sp
+!            amap_iwf25(ilon,ilat,3)=xfrac_sp*yfrac_sp
+!            amap_iwf25(ilon,ilat,4)=yfrac_sp*xc_sp
+!
+!          enddo
+!        enddo
+!
+!      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"

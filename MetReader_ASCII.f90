@@ -910,8 +910,8 @@
             do while (iostatus.ge.0)
               read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
               ! No aborting on read-error here since we will read this file until the EOF
-              idx =index(linebuffer080,"TTAA")
-              idx2=index(linebuffer080,"TTCC")
+              idx =index(linebuffer080,"TTAA") ! Look for string identifying WMO/GTS or RAW (both have this)
+              idx2=index(linebuffer080,"TTCC") ! Look for string indicating extended data
               if (idx.gt.0) then
                 IsGTS = .true.
               endif
@@ -930,7 +930,7 @@
               !2. 72694 TTAA  56001 72694 99009 22868 29006 00137 20667 28507
               !  Note that the format is slightly different so we need to find out
               ! which it is
-              GTSstr(1:53)="//////"
+              GTSstr(1:53)="//////"  ! Note: each 'element' of GTSstr(:) is really a 6-char string
               rewind(fid)
               read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
               if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
@@ -1198,16 +1198,13 @@
               DayOfMonth = DayOfMonth-50
               read(GTSstr(1)(3:4),*,iostat=iostatus,iomsg=iomessage)SndHour
               ! There is no year in this file, so assume year for requested
-              ! event.  Needs to be set by calling program prio to this point.
+              ! event.  Needs to be set by calling program prior to this point.
               if(MR_Comp_StartYear.lt.1900)then
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                   write(errlog(io),*)"MR ERROR: Trying to use sonde data in raw format"
                   write(errlog(io),*)"          with an unknown year."
                 endif;enddo
                 stop 1
-                ! This is for the windfile tests with all windfile formats for 2018/06/20
-                !MR_Comp_StartYear  = 2018
-                !MR_Comp_StartMonth = 6
               endif
 
               MR_windfile_starthour(iw_idx) = &
@@ -1216,7 +1213,6 @@
 
               ! Block A: station identifier
               read(GTSstr(2),*,iostat=iostatus,iomsg=iomessage)Stat_ID
-              !call MR_Load_Radiosonde_Station_Data
               call MR_Get_Radiosonde_Station_Coord(Stat_ID, Stat_idx,&
                                        y_fullmet_sp(iloc),x_fullmet_sp(iloc),&
                                        Stat_elev)
@@ -1352,6 +1348,8 @@
                 else
                   MR_SndVars_metP(iloc,itime,5,il) = real(T_tmp(il),kind=sp)
                 endif
+
+!   HFS             write(*,*)MR_SndVars_metP(iloc,itime,:,il)
               enddo
               do il = 1,ulev
                 ! Set NaN's below the surface to the surface value
@@ -1753,7 +1751,7 @@
               MR_windfile_starthour(iw_idx) = HS_hours_since_baseyear(ivalue1,ivalue2,ivalue3,&
                                               real(ivalue4,kind=dp),MR_BaseYear,MR_useLeap)
 
-            endif
+            endif ! IsGTS
             close(fid)
             ! Finished reading all the data for this file
 
@@ -3632,9 +3630,9 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       real(kind=sp) :: norm
       real(kind=sp) :: dist
       real(kind=sp) :: lenscale
-      real(kind=sp) :: domwgt
       integer :: maxstations
-      logical :: inStencil
+      !logical :: inStencil
+      !real(kind=sp) :: domwgt
       logical,dimension(:),allocatable :: StatInStencil
 
       real(kind=sp),dimension(:,:,:),allocatable :: MR_Snd2Comp_dist
