@@ -104,8 +104,11 @@
       integer, parameter :: dp        = 8 ! double precision
       real(kind=dp), parameter :: PI        = 3.141592653589793_dp
       real(kind=dp), parameter :: DEG2RAD   = 1.7453292519943295e-2_dp
+      real(kind=sp), parameter :: KNOTS2MS  = 0.514444444_sp
       integer, parameter :: MAX_ROWS  = 300 ! maximum number of row of data
       integer, parameter :: fid       = 120
+
+
 
       integer :: iostatus
       integer :: ioerr
@@ -157,8 +160,6 @@
       integer,dimension(:),allocatable :: SndColReadOrder
       character(len=3),dimension(0:50) :: MR_SndVarsName
 
-      !real(kind=dp)      :: HS_hours_since_baseyear  ! function that calculates hours
-                                                     !  since base year
       integer           :: Stat_ID
       integer           :: Stat_idx
       real(kind=sp)     :: Stat_elev
@@ -331,6 +332,10 @@
       Met_dim_IsAvailable = .false.
       Met_var_IsAvailable = .false.
       MR_nstat = min(MR_nSnd_Locs,MR_nstat)
+
+      ! HFS: Break up reader into a diagnostic (type of ASCII file), then subroutines
+      !      for the individual types (ASCII column, Radiosonde: list, raw, RUC)
+
       ! This is the start of a huge if statement that determines the type of ASCII input
       ! and loads the data.  All data for all time steps are loaded here into the
       ! variable MR_SndVars_metP(MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,nrows)
@@ -1435,7 +1440,7 @@
                   endif
                 endif
               enddo
-              WindVelocity(:)   = WindVelocity(:)*0.514444444_sp                             ! convert Knot to m/s
+              !WindVelocity(:)   = WindVelocity(:)*KNOTS2MS                             ! convert Knot to m/s
 
               ! Wind direction: do error checking
               do il = 1,ulev
@@ -1461,12 +1466,11 @@
                     WindDirection(il) = vbot + (vtop-vbot)*(zhere-zbot)/(ztop-zbot)
                   endif
                 endif
+                MR_SndVars_metP(iloc,itime,3,il) = &
+                  -1.0_sp*real(WindVelocity(il)*sin(DEG2RAD*WindDirection(il)),kind=sp)*KNOTS2MS
+                MR_SndVars_metP(iloc,itime,4,il) = &
+                  -1.0_sp*real(WindVelocity(il)*cos(DEG2RAD*WindDirection(il)),kind=sp)*KNOTS2MS
               enddo
-
-              MR_SndVars_metP(iloc,itime,3,:) = &
-                real(WindVelocity(:)*sin(pi + DEG2RAD*WindDirection(:)),kind=sp)
-              MR_SndVars_metP(iloc,itime,4,:) = &
-                real(WindVelocity(:)*cos(pi + DEG2RAD*WindDirection(:)),kind=sp)
 
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                 write(outlog(io),*)"==================================================================="
@@ -1486,6 +1490,7 @@
    141          format(3x,7f10.3)
                 write(outlog(io),*)"==================================================================="
               endif;enddo
+!              stop 77
             else  ! end of GTS format section
               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
               !  Reading data Textlist format from http://weather.uwyo.edu/
@@ -1583,6 +1588,7 @@
 !                  ivalue4 = ivalue4_o - int(fac*(ivalue4_o - ivalue4)) ! DRCT
 !                  ivalue5 = ivalue5_o - int(fac*(ivalue5_o - ivalue5)) ! SKNT
                 endif
+
                 if (abs(pres_Snd_tmp(iil)-rvalue1).lt.1.0_sp) then ! Sometimes the last level is 10.5
                   ! found the next mandatory level
                   MR_SndVars_metP(iloc,itime,1,iil) = rvalue1
@@ -1606,17 +1612,17 @@
                   else
                     MR_SndVars_metP(iloc,itime,4,iil) = real(ivalue5,kind=4)
                   endif
-   
-                  !do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-                  !  write(outlog(io),'(7f13.5)')&
-                  !          MR_SndVars_metP(iloc,itime,1,iil),& ! PRES
-                  !          MR_SndVars_metP(iloc,itime,2,iil),& ! HGHT
-                  !          MR_SndVars_metP(iloc,itime,3,iil),& ! TEMP
-                  !          MR_SndVars_metP(iloc,itime,4,iil),& ! DRCT
-                  !          MR_SndVars_metP(iloc,itime,5,iil),& ! SKNT
-                  !          WindVelocity(iil),&
-                  !          WindDirection(iil)
-                  !endif;enddo
+! HFS
+!                  do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+!                    write(outlog(io),'(7f13.5)')&
+!                            MR_SndVars_metP(iloc,itime,1,iil),& ! PRES
+!                            MR_SndVars_metP(iloc,itime,2,iil),& ! HGHT
+!                            MR_SndVars_metP(iloc,itime,3,iil),& ! TEMP
+!                            MR_SndVars_metP(iloc,itime,4,iil),& ! DRCT
+!                            MR_SndVars_metP(iloc,itime,5,iil),& ! SKNT
+!                            WindVelocity(iil),&
+!                            WindDirection(iil)
+!                  endif;enddo
                   MR_Snd_np_fullmet(iloc,itime) = iil  ! This keeps getting reassigned with each
                                                        ! successful read
                   iil = iil + 1
@@ -1692,13 +1698,14 @@
                   MR_SndVars_metP(iloc,itime,1,iil) = MR_SndVars_metP(iloc,itime,1,iil) * 100.0_sp  ! mb->Ppa
                   MR_SndVars_metP(iloc,itime,2,iil) = MR_SndVars_metP(iloc,itime,2,iil) *1.0e-3_sp  !  m->km
                   MR_SndVars_metP(iloc,itime,5,iil) = MR_SndVars_metP(iloc,itime,5,iil) + 273.0_sp  !  C->K
-                  WindVelocity(iil)   = MR_SndVars_metP(iloc,itime,3,iil)*0.514444444_sp            ! knt->m/s
-                  WindDirection(iil)  = MR_SndVars_metP(iloc,itime,4,iil)                           ! deg
+                  WindVelocity(iil)   = MR_SndVars_metP(iloc,itime,4,iil)            ! knt->m/s
+                  WindDirection(iil)  = MR_SndVars_metP(iloc,itime,3,iil)            ! deg
                   MR_SndVars_metP(iloc,itime,3,iil) = &
-                    real(WindVelocity(iil)*sin(pi + DEG2RAD*WindDirection(iil)),kind=sp)            ! Vx in m/s
+                    -1.0_sp*real(WindVelocity(iil)*sin(DEG2RAD*WindDirection(iil)),kind=sp)*KNOTS2MS ! Vx in m/s\
                   MR_SndVars_metP(iloc,itime,4,iil) = &
-                    real(WindVelocity(iil)*cos(pi + DEG2RAD*WindDirection(iil)),kind=sp)            ! Vy in m/s
-
+                    -1.0_sp*real(WindVelocity(iil)*cos(DEG2RAD*WindDirection(iil)),kind=sp)*KNOTS2MS ! Vy in m/s
+!                  write(*,*)MR_SndVars_metP(iloc,itime,1:5,iil),WindVelocity(iil),WindDirection(iil)
+!                  stop 98
                   do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                     write(outlog(io),'(7f13.5)')&
                             MR_SndVars_metP(iloc,itime,1,iil),& ! PRES Pa
