@@ -36,7 +36,7 @@
 #    This variable cannot be left blank
 #      
 SYSTEM = gfortran
-SYSINC = make_gfortran.inc
+SYSINC = make_$(SYSTEM).inc
 #
 #  RUN specifies which collection of compilation flags that should be run
 #    Current available options are:
@@ -44,9 +44,9 @@ SYSINC = make_gfortran.inc
 #      PROF  : includes profiling flags with some optimization
 #      OPT   : includes optimizations flags for fastest runtime
 #    This variable cannot be left blank
-RUN=DEBUG
+#RUN=DEBUG
 #RUN=PROF
-#RUN=OPT
+RUN=OPT
 #
 INSTALLDIR=/opt/USGS
 #

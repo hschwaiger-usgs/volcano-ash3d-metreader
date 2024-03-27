@@ -5,6 +5,7 @@
 \usepackage{graphicx}
 \usepackage{verbatim}
 \usepackage{multirow}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=red]{hyperref}
 
 \setlength{\textwidth}{15.5cm}
 \setlength{\oddsidemargin}{1.0cm}
@@ -17,12 +18,12 @@
 
 \title{MetReader: Documentation and User's Guide}   % type title between braces
 \author{Hans F. Schwaiger}
-\date{June 1, 2023}    % type date between braces
+\date{March 27, 2024}    % type date between braces
 \maketitle
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-MetReader is a library written in fortran 90 that provides an interface to
+MetReader is a library written in Fortran 90 that provides an interface to
 numerical weather prediction (NWP) data, or other forms of meteorological
 data, such as radiosonde or other 1-D data.
 
@@ -32,7 +33,7 @@ programs in addition to Ash3d, this interface to NWP files is provided
 as a separate repository that can either be compiled as a library or simply
 compiled directly with other source code.
 
-NWP data are generally made available by agencies (NCEP, NOAA, NASA, etc.)
+NWP data are generally made available by agencies (NCEP, NOAA, NASA, ECMWF, etc.)
 in a variety of formats (NetCDF, GRIB, ASCII); each product having
 its own data structure, naming convention, units, etc.  This library
 isolates the calling program from the peculiarities of interfacing with
@@ -49,12 +50,12 @@ This library requires two additional libraries made available on GitHub and USGS
 \item HoursSince \\
 This is a library that takes a date and time, and calculates the number of hours
 since January 1, 1900 (or any arbitrary base year).\\
-https://github.com/DOI-USGS/volcano-ash3d-hourssince\\
-https://code.usgs.gov/vsc/ash3d/volcano-ash3d-hourssince
+\url{https://github.com/DOI-USGS/volcano-ash3d-hourssince}\\
+\url{https://code.usgs.gov/vsc/ash3d/volcano-ash3d-hourssince}
 \item projection \\
 This is a library that calculates commonly-used projected coordinates.\\
-https://github.com/DOI-USGS/volcano-ash3d-projection\\
-https://code.usgs.gov/vsc/ash3d/volcano-ash3d-projection
+\url{https://github.com/DOI-USGS/volcano-ash3d-projection}\\
+\url{https://code.usgs.gov/vsc/ash3d/volcano-ash3d-projection}
 \end{itemize}
 
 These libraries are installed by default into \texttt{/opt/USGS}.  If they are
@@ -71,7 +72,8 @@ format libraries by typing
 \end{verbatim}
 or for Ubuntu
 \begin{verbatim}
-     sudo apt-get install libnetcdf* libgrib-api*
+     sudo apt-get install libnetcdf-c++4 libnetcdf-dev libnetcdff-dev
+     sudo apt-get install libeccodes0 libeccodes-dev
 \end{verbatim}
 To compile MetReader as a library, simply type:
 \begin{verbatim}
@@ -97,23 +99,28 @@ are within the expected ranges.
 files.
 \item \texttt{MetProbe} : This is a more general version of \texttt{MetSonde} controled by
 an input file that can handle more NWP data types.
-\item \texttt{MetTraj\_F} : This tool will generate foreward trajectories from based on the
+\item \texttt{MR\_ASCII\_check} : This tool takes two ESRI ASCII input files and compares them,
+returning an error if the files differ by more than a threshold value.
+\item \texttt{MetTraj\_F} : This tool will generate foreward trajectories based on the
 time-series NWP data.
-\item \texttt{MetTraj\_B} : This tool will generate backward trajectories from based on the
+\item \texttt{MetTraj\_B} : This tool will generate backward trajectories based on the
 time-series NWP data.
 \item \texttt{makegfsncml} :  This tool is used to strip out unused variable when converting
-grib to netCDF using the download scripts.
+grib to NetCDF using the download scripts.
 \end{itemize}
 
 To test the build, type:
 \begin{verbatim}
      make check
 \end{verbatim}
-This will run three tests using the radiosonde data (found in \texttt{examples/UpperAirSoundings}),
-followed by three tests using the NCEP 50-year reanalysis data.  The three test for
-each wind data type are: \texttt{MetProbe}, \texttt{MetTraj\_F}, and \texttt{MetRegri}.
-Output data file are compared with saved datafiles in \texttt{tests/output*}. Note that
-the files are only compared using the unix \texttt{cmp} command and small differences
+This will run four tests using the radiosonde data (found in \texttt{examples/UpperAirSoundings}),
+followed by four tests using the NCEP 50-year reanalysis data.  The four tests for
+each wind data type are: \texttt{MetProbe}, \texttt{MetTraj\_F}, \texttt{MetRegrid} (vertical slice)
+and  \texttt{MetRegrid} (map view).
+Output data file are compared with saved datafiles in \texttt{tests/output[Sonde,NCEP][1-4]}.
+If \texttt{bc} and \texttt{awk} are installed on the system, the values in the output files are
+compared within a tolerance.  Otherwise the files are compared
+using the unix \texttt{cmp} command, in which case small differences
 can be present in output files depending on if \texttt{OPT} or \texttt{DEBUG} was used
 when building the tools.
 
@@ -127,7 +134,7 @@ the makefile (the default is \texttt{/opt/USGS}) and type:
 This will also install scripts that can be used to download the $0.5^{\circ}$ GFS
 forecast files and the NCEP $2.5^{\circ}$ Reanalysis files.
 
-You will need to have write permission in \texttt{\$\{INSTALLDIR\}}
+You will need to have write permission in \texttt{INSTALLDIR}
 or install as root.  Assuming the libraries \texttt{projection} and \texttt{hourssince} are
 installed in the default location, installation will result in the following
 directory structure:
@@ -149,6 +156,7 @@ directory structure:
 |   |-- MetTraj_B
 |   |-- MetTraj_F
 |   |-- MetProbe
+|   |-- MR_ASCII_check
 |   |-- project_for
 |   |-- project_inv
 |   `-- yyyymmddhh_since_1900
@@ -164,14 +172,14 @@ directory structure:
 The \texttt{makefile} included the following variables that can be changed, depending on your
 system.
 \begin{itemize}
-\item \texttt{SYSTEM} : \texttt{gfortran} or \texttt{ifort}\\
+\item \texttt{SYSTEM} : \texttt{gfortran}, \texttt{ifort}, or \texttt{aocc}\\
 Fortran compiler.
 \item \texttt{RUN} : \texttt{DEBUG}, \texttt{PROF} or \texttt{OPT}\\
 Sets class of compiler flags for debugging, profiling, of optimization:
 \item \texttt{INSTALLDIR} : \texttt{/opt/USGS} \\
 Install location.
 \item \texttt{USENETCDF} : \texttt{T} or \texttt{F}\\
-Logical flag to build netCDF interface.
+Logical flag to build NetCDF interface.
 \item \texttt{USEGRIB} : \texttt{T} or \texttt{F}\\
 Logical flag to build GRIB2 interface.
 \item \texttt{USEPOINTERS} : \texttt{T} or \texttt{F}\\
@@ -239,7 +247,7 @@ altitudes above those available in the NWP files are requested.  Default value i
  \begin{itemize}
  \item   1 : Stop the program
  \item   2 : Return wind values equal to the value at the highest available node; temperature
-values remain constant from 11-20 km, then increase by $2^{\circ} \, \mathrm{C/km}$.
+values are filled by the U.S. Standard Atmosphere.
  \end{itemize}
 \item \texttt{MR\_iwf\_template} :: This is the file name of the template for the
 custom NetCDF files described in section \ref{SecCust}.  This is only required to be set
@@ -261,15 +269,20 @@ with each name not exceeding 130 characters in length.  For the special cases of
 %for the NCEP/NCAR
 %Reanalysis 1 or the NOAA-CIRES 20th Century Reanalysis (\texttt{iwf=}25 or 27),
 MetReader expects
-a specific structure to the directory holding the NWP files.  For these reanalysis product,
+a specific structure to the directory holding the NWP files.  For these reanalysis products,
 the list of files is only one string (\texttt{iwfiles}=1)
-with the `file' given as the root directory to the NWP files.  For example, for the
-NCEP/NCAR Reanalysis 1:
+with the `file' given as the root directory to the NWP files.  The following reanalysis products
+are implemented:
+
+\subparagraph{NCEP/NCAR Reanalysis 1:}
+\texttt{iwf=25}
+
+\url{http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis/pressure}
 \begin{verbatim}
 iwfiles = 1
 MR_windfiles(1) = `/data/WindFiles/NCEP'
 \end{verbatim}
-where the files are stored as follows:
+Data are stored with each file containing a full year of values with a file structure as follows:
 \begin{verbatim}
 /data/WindFiles/NCEP
 |-- 2016
@@ -285,34 +298,114 @@ where the files are stored as follows:
     |-- uwnd.2017.nc
     `-- vwnd.2017.nc
 \end{verbatim}
-Similarly, for the NOAA-CIRES 20th Century Reanalysis product:
+
+\subparagraph{JRA-55 reanalysis:}
+\texttt{iwf=26}
+
+\url{https://rda.ucar.edu/datasets/ds628.0}\\
+Data from this site is provided in GRIB1 format and must be converted to NetCDF
+with the NCAR Command Language (\texttt{ncl}) tool \texttt{ncl\_convert2nc -L}.
+\begin{verbatim}
+iwfiles = 1
+MR_windfiles(1) = `/data/WindFiles/JRA55'
+\end{verbatim}
+Data are stored with each file containing one month of values with a file structure as follows:
+\begin{verbatim}
+/data/WindFiles/JRA55
+|-- 2018
+    |-- anl_p125.007_hgt.2018060100_2018063018.nc
+    |-- anl_p125.011_tmp.2018060100_2018063018.nc
+    |-- anl_p125.033_ugrd.2018060100_2018063018.nc
+    |-- anl_p125.034_vgrd.2018060100_2018063018.nc
+    `-- anl_p125.039_vvel.2018060100_2018063018.nc
+\end{verbatim}
+
+\subparagraph{NOAA-CIRES 20th Century Reanalysis:}
+\texttt{iwf=27}
+
+\url{https://rda.ucar.edu/datasets/ds131.3}
 \begin{verbatim}
 iwfiles = 1
 MR_windfiles(1) = `/data/WindFiles/NOAA'
 \end{verbatim}
-where the files are stored as follows:
+Data are stored with each file containing full year of values with a file structure as follows:
 \begin{verbatim}
 /data/WindFiles/NOAA
 |-- 2008
-|   |-- pgrbanl_mean_2008_HGT_pres.nc
-|   |-- pgrbanl_mean_2008_TMP_pres.nc
-|   |-- pgrbanl_mean_2008_UGRD_pres.nc
-|   |-- pgrbanl_mean_2008_VGRD_pres.nc
-|   `-- pgrbanl_mean_2008_VVEL_pres.nc
+|   |-- anl_mean_2008_HGT_pres.nc
+|   |-- anl_mean_2008_TMP_pres.nc
+|   |-- anl_mean_2008_UGRD_pres.nc
+|   |-- anl_mean_2008_VGRD_pres.nc
+|   `-- anl_mean_2008_VVEL_pres.nc
 |-- 2009
     | -- ...
 \end{verbatim}
-If the files are retrieved from \texttt{https://rda.ucar.edu/datasets/ds131.2/}.  This product is
-provided in GRIB format and must be converted to NetCDF using \texttt{ncl\_convert2nc -L}.
-%Alternatively, this product is also available from
-%\texttt{https://www.esrl.noaa.gov/psd/data/gridded/data.20thC\_ReanV2c.pressure.html}
-%with the variables \texttt{air.2017.nc,hgt.2017.nc,omega.2017.nc,uwnd.2017.nc,vwnd.2017.nc}.
-%If these files are used, the logical variable must be set: \texttt{MR\_Use\_RDA = .false.} in
-%\texttt{MetReader.F90}.
-Other compatible products include:
-JRA-55 reanalysis (\texttt{https://rda.ucar.edu/datasets/ds628.0}),
-ECMWF ERA5 (\texttt{https://rda.ucar.edu/datasets/ds630.0}), and
-ECMWF ERA 20th Century Reanalysis (\texttt{https://rda.ucar.edu/datasets/ds626.0})
+Older versions of this product are available from \url{https://rda.ucar.edu} (e.g. \texttt{ds131.2}),
+but have a different name (\texttt{pgrbanl\_mean} instead of \texttt{anl\_mean}). These version 2
+files are also only provided in GRIB format from this site and must be converted via \texttt{ncl\_convert2nc -L}.
+If older versions are used, please set the variable \texttt{MR\_iversion} to the correct version number.
+The default value of \texttt{MR\_iversion} is the most recent version.
+
+\subparagraph{ECMWF ERA5 Reanalysis:}
+\texttt{iwf=29}
+
+\url{https://rda.ucar.edu/datasets/ds630.0}
+\begin{verbatim}
+iwfiles = 1
+MR_windfiles(1) = `/data/WindFiles/ERA5'
+\end{verbatim}
+Data are stored with each file containing 24 hours of values with a file structure as follows:
+\begin{verbatim}
+/data/WindFiles/ERA5
+|-- 2018
+|   |-- e5.oper.an.pl.128_129_z.ll025sc.2018062000_2018062023.nc
+|   |-- e5.oper.an.pl.128_130_t.ll025sc.2018062000_2018062023.nc
+|   |-- e5.oper.an.pl.128_131_u.ll025uv.2018062000_2018062023.nc
+|   |-- e5.oper.an.pl.128_132_v.ll025uv.2018062000_2018062023.nc
+|   `-- e5.oper.an.pl.128_135_w.ll025sc.2018062000_2018062023.nc
+|-- 2019
+    | -- ...
+\end{verbatim}
+Data from this site is provided in GRIB1 format and must be converted to NetCDF
+with the NCAR Command Language (\texttt{ncl}) tool \texttt{ncl\_convert2nc -L}.
+
+\subparagraph{ECMWF ERA 20th Century Reanalysis:}
+\texttt{iwf=30}
+
+\url{https://rda.ucar.edu/datasets/ds626.0}
+\begin{verbatim}
+iwfiles = 1
+MR_windfiles(1) = `/data/WindFiles/ERA20C'
+\end{verbatim}
+Data are stored with each file containing one month of values with a file structure as follows:
+\begin{verbatim}
+/data/WindFiles/ERA20C
+|-- 1912
+|   |-- e20c.oper.an.pl.3hr.128_129_z.regn80sc.1912060100_1912063021.nc
+|   |-- e20c.oper.an.pl.3hr.128_130_t.regn80sc.1912060100_1912063021.nc
+|   |-- e20c.oper.an.pl.3hr.128_131_u.regn80uv.1912060100_1912063021.nc
+|   |-- e20c.oper.an.pl.3hr.128_132_v.regn80uv.1912060100_1912063021.nc
+|   `-- e20c.oper.an.pl.3hr.128_135_w.regn80sc.1912060100_1912063021.nc
+|-- 1913
+    | -- ...
+\end{verbatim}
+Data from this site is provided in GRIB1 format and must be converted to NetCDF
+with the NCAR Command Language (\texttt{ncl}) tool \texttt{ncl\_convert2nc -L}.
+
+Products generated by ECMWF are also available from \url{https://cds.climate.copernicus.eu}.
+When downloaded from this site, subsets of the data can be specified for the variables, 
+pressure levels, time, and sub-region. Requests can be for data in either GRIB or NetCDF
+format. Data in NetCDF are stored as short integers with a scaling factor and offset, which
+allows for small files with a slight loss of precision.  Alternatively, GRIB files can
+be downloaded, but must be converted to NetCDF to be read by MetReader, either by
+\texttt{ncl\_convert2nc -L} or netcdf-java via the provided script \texttt{autorun\_scripts/grib2nc.sh}.
+Data from this site are provided with all requested variables in the same file 
+(\texttt{iwf=}3 or 4) and do not require the specific filename structure outlined above.
+Since these NetCDF files can be from so many souce sites and/or conversion tools, MetReader
+assumes variable and dimension names, but checks against all known names if the default
+names are not present in the file.  If MetReader is still unable to determine the variable
+and dimension names, you will need to convert the NetCDF files, renaming the variables, or
+use the custom NetCDF reader with a template file described in section \ref{SecCust} below.
 
 \paragraph{Step 3:} Once the names of the NWP files are specified, the files must
 be queried to determine the scope of the available data.
@@ -330,7 +423,7 @@ pressure1, y, x, pressure2 (for Vz), pressure3 (for RH)
 \item \texttt{Met\_var\_names()} :: The names of the variables in the file according to the
 Table \ref{TabVar} of Appendix \ref{ApVar}:
 \item \texttt{Met\_var\_conversion\_factor()} :: For each of the variables, if the units
-is not as listed above, then the corresponding factor is set that converts to the
+are not as listed, then the corresponding factor is set that converts them to the
 expected units.  For example, if precipitation rate is given in $\mathrm{mm/hr}$, then
 the conversion factor to the expected units ($\mathrm{kg/m^2s}$) is $1/3600$ or
 $2.778 \times 10^{-4}$.
@@ -483,7 +576,7 @@ work array \texttt{MR\_dum2d\_met}, where again,
 \texttt{1:nx\_submet,1:ny\_submet} corresponds to the subset of nodes of the NWP
 file that is needed to span the computational grid.
 \begin{verbatim}
-     call MR_Read_2d_Met_Variable_to_CompH(ivar,istep)
+     call MR_Read_2d_Met_Variable_to_CompGrid(ivar,istep)
 \end{verbatim}
 can be called similar to \texttt{MR\_Read\_2d\_Met\_Variable} which directly reads the
 variable needed and returns the
@@ -491,8 +584,8 @@ values interpolated onto the public work space \texttt{MR\_dum2d\_comp}.
 
 \subsubsection{Regridding meteorological data}
 Internal to MetReader are a variety of regridding subroutines to interpolate from
-the \texttt{metP} grid onto \texttt{metH},\texttt{compP} or \texttt{compH}.  
-In some circumstances, data is initially needed just on the native NWP grid, but
+the \texttt{metP} grid onto \texttt{metH}, \texttt{compP} or \texttt{compH}.  
+In some circumstances, data are initially needed just on the native NWP grid, but
 then derived values might be required on the full computational grid.
 For example, if air viscosity is needed for a particle fall model, temperature and
 pressure values on the NWP grid can be read.  Then viscosities can be calculated for each
@@ -570,8 +663,8 @@ The simplest format for meteorological data is just a 1-D wind profile in ASCII
 format.  To read this type, set \texttt{iw = 1}.  The particular format
 of the 1-D data can be specified by the \texttt{iwf}, where 1 indicates a
 user-specified column of values and 2 indicates that the files are from 
-the global radiosonde data available from \texttt{https://ruc.noaa.gov/raobs/} or
-from \texttt{http://weather.uwyo.edu}.
+the global radiosonde data available from \url{https://ruc.noaa.gov/raobs/} or
+from \url{http://weather.uwyo.edu}.
 In both these cases, there is no NCEP grid ID associated with the sonde points so
 \texttt{MR\_iGridCode} is interpreted as the number of profile points.  Each point at each
 time must have its own file containing the profile data.
@@ -653,9 +746,9 @@ projected grid.
 Instead of user-specified profiles, MetReader can also read radiosonde data.
 Both the global archive as well as the 00Z and 12Z radiosonde data are
 available from the NOAA Earth System Research Laboratory Rapid Update Cycle
-Radiosonde Database (\texttt{https://ruc.noaa.gov/raobs/}).  These data
+Radiosonde Database (\url{https://ruc.noaa.gov/raobs/}).  These data
 are also archived at the University of Wyoming\\
-(\texttt{http://weather.uwyo.edu/upperair/sounding.html}).
+(\url{http://weather.uwyo.edu/upperair/sounding.html}).
 To use data in this format, set \texttt{iwf = 2}.
 From both these sites, radiosonde data are available in a variety of formats.
 The default format for the UW site is "Text: List``
@@ -671,12 +764,12 @@ read.  Only the pressure, height, temperature, wind direction and wind speed are
 After the columnar data are read, the \texttt{Station number} is read.  From this number
 ($72694$ in the above example), the station longitude, latitude and elevation are
 automatically populated from internally stored station
-metadata available from \texttt{https://ruc.noaa.gov/raobs/General\_Information.html}.  The
+metadata available from \url{https://ruc.noaa.gov/raobs/General\_Information.html}.  The
 station list is truncated to just what is currently operational and to just current
 coordinates (some stations have been moved or deactivated).
 Next the \texttt{Observation time} is read.  
 
-An alternative format is the FAA604 WMO/GTS format from \texttt{https://ruc.noaa.gov/raobs/}
+An alternative format is the FAA604 WMO/GTS format from \url{https://ruc.noaa.gov/raobs/}
 or the nearly identical "Text:Raw`` format from the University of Wyoming.
 
 \small \verbatiminput{windfiles/SLE_20180620_00Z_TextRaw.dat} \normalsize
@@ -684,7 +777,7 @@ or the nearly identical "Text:Raw`` format from the University of Wyoming.
 This format contains nearly the same information as the previous example, but 
 requires a bit of translation.
 Appendix F of\\
-\texttt{https://www.ofcm.gov/publications/fmh/FMH3/00-entire-FMH3.pdf}
+\url{https://www.ofcm.gov/publications/fmh/FMH3/00-entire-FMH3.pdf}
 gives the full specification.
 % The better document is from the Iowa State class notes for Introduction to Synoptic Meteorology
 %   http://www.meteor.iastate.edu/classes/mt311/extras/Codul-TEMP.pdf
@@ -726,7 +819,7 @@ products are available directly in NetCDF. format such as NCEP/NCAR Reanalysis 1
 NASA GEOS-5.  These products generally require NetCDF version 4.  Most of the NCEP
 forecast products are provided in GRIB format.  To convert these forecast products
 to NetCDF format, MetReader relies on the NetCDF java package\\
-(\texttt{https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/}).  The
+(\url{https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/}).  The
 conversion script in the \texttt{autorun\_scripts} folder are linked to \texttt{netcdfAll-5.4}
 however any recent version should work.  Older versions create NetCDF files with
 different variable names.
