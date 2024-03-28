@@ -1612,17 +1612,6 @@
                   else
                     MR_SndVars_metP(iloc,itime,4,iil) = real(ivalue5,kind=4)
                   endif
-! HFS
-!                  do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-!                    write(outlog(io),'(7f13.5)')&
-!                            MR_SndVars_metP(iloc,itime,1,iil),& ! PRES
-!                            MR_SndVars_metP(iloc,itime,2,iil),& ! HGHT
-!                            MR_SndVars_metP(iloc,itime,3,iil),& ! TEMP
-!                            MR_SndVars_metP(iloc,itime,4,iil),& ! DRCT
-!                            MR_SndVars_metP(iloc,itime,5,iil),& ! SKNT
-!                            WindVelocity(iil),&
-!                            WindDirection(iil)
-!                  endif;enddo
                   MR_Snd_np_fullmet(iloc,itime) = iil  ! This keeps getting reassigned with each
                                                        ! successful read
                   iil = iil + 1

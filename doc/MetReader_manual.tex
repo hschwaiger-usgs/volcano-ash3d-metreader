@@ -205,7 +205,7 @@ must first be completed.
 The calling program needs to prepare several parameters that define the type of meteorological
 data to be read.  
 \begin{itemize}
-\item \texttt{iw} :: windfile class 
+\item \texttt{MR\_iwind} :: windfile class 
  \begin{itemize}
  \item 1 : 1-D wind sounding
  \item 2 : 3-D grid is read from a ASCII file
@@ -220,16 +220,16 @@ data to be read.
      \item ERA 20th Century Reanalysis
    \end{itemize}
  \end{itemize}
-\item \texttt{iwf} :: windfile format number (linked to specific product in Table
+\item \texttt{MR\_iwindformat} :: windfile format number (linked to specific product in Table
   \ref{Tabiwf} of Appendix \ref{Apiwf})
-\item \texttt{igrid} :: NCEP Grid ID
-\item \texttt{idf} :: Data file format code (ASCII, NetCDF, GRIB, etc)
+\item \texttt{MR\_iGridCode} :: NCEP Grid ID
+\item \texttt{MR\_idataFormat} :: Data file format code (ASCII, NetCDF, GRIB, etc)
  \begin{itemize}
  \item   1 : ASCII
  \item   2 : NetCDF
  \item   3 : GRIB Edition 1 or 2
  \end{itemize}
-\item \texttt{iwfiles} :: number of windfiles to be read
+\item \texttt{MR\_iwindfiles} :: number of windfiles to be read
 %\item iy      ::   year of start time needed (integer)
 \item \texttt{SimStartHour} ::  The starting time needed given as hours since 1900-01-01 00:00Z\\
 This can alternatively be given as hours since a different base year as described below.
@@ -251,8 +251,8 @@ values are filled by the U.S. Standard Atmosphere.
  \end{itemize}
 \item \texttt{MR\_iwf\_template} :: This is the file name of the template for the
 custom NetCDF files described in section \ref{SecCust}.  This is only required to be set
-if \texttt{iwf}=0.  Currently, the custom windfile specification is only implemented for
-\texttt{idf}=2 (NetCDF).
+if \texttt{MR\_iwind}=0.  Currently, the custom windfile specification is only implemented for
+\texttt{MR\_idataFormat}=2 (NetCDF).
 \item \texttt{call MR\_Reset\_Memory} :: If MetReader had been initialized and used for
 one set of NWP files, but later during the execution of the calling program, a subsequent
 set of NWP files is needed, this subroutine can be called to free all allocated memory.
@@ -265,21 +265,21 @@ set of NWP files is needed, this subroutine can be called to free all allocated 
 This allocates the variable \texttt{MR\_windfiles(1:MR\_iwindfiles)}.
 
 \paragraph{Step 2:} The calling program must now fill the list of file names \texttt{MR\_windfiles()}
-with each name not exceeding 130 characters in length.  For the special cases of one-variable files (\texttt{iwf}=5),
+with each name not exceeding 130 characters in length.  For the special cases of one-variable files (\texttt{MR\_iwind}=5),
 %for the NCEP/NCAR
-%Reanalysis 1 or the NOAA-CIRES 20th Century Reanalysis (\texttt{iwf=}25 or 27),
+%Reanalysis 1 or the NOAA-CIRES 20th Century Reanalysis (\texttt{MR_iwindformat=}25 or 27),
 MetReader expects
 a specific structure to the directory holding the NWP files.  For these reanalysis products,
-the list of files is only one string (\texttt{iwfiles}=1)
+the list of files is only one string (\texttt{MR\_iwindfiles}=1)
 with the `file' given as the root directory to the NWP files.  The following reanalysis products
 are implemented:
 
 \subparagraph{NCEP/NCAR Reanalysis 1:}
-\texttt{iwf=25}
+\texttt{MR\_iwindformat=25}
 
 \url{http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis/pressure}
 \begin{verbatim}
-iwfiles = 1
+MR_iwindfiles = 1
 MR_windfiles(1) = `/data/WindFiles/NCEP'
 \end{verbatim}
 Data are stored with each file containing a full year of values with a file structure as follows:
@@ -300,13 +300,13 @@ Data are stored with each file containing a full year of values with a file stru
 \end{verbatim}
 
 \subparagraph{JRA-55 reanalysis:}
-\texttt{iwf=26}
+\texttt{MR\_iwindformat=26}
 
 \url{https://rda.ucar.edu/datasets/ds628.0}\\
 Data from this site is provided in GRIB1 format and must be converted to NetCDF
 with the NCAR Command Language (\texttt{ncl}) tool \texttt{ncl\_convert2nc -L}.
 \begin{verbatim}
-iwfiles = 1
+MR_iwindfiles = 1
 MR_windfiles(1) = `/data/WindFiles/JRA55'
 \end{verbatim}
 Data are stored with each file containing one month of values with a file structure as follows:
@@ -321,11 +321,11 @@ Data are stored with each file containing one month of values with a file struct
 \end{verbatim}
 
 \subparagraph{NOAA-CIRES 20th Century Reanalysis:}
-\texttt{iwf=27}
+\texttt{MR\_iwindformat=27}
 
 \url{https://rda.ucar.edu/datasets/ds131.3}
 \begin{verbatim}
-iwfiles = 1
+MR_iwindfiles = 1
 MR_windfiles(1) = `/data/WindFiles/NOAA'
 \end{verbatim}
 Data are stored with each file containing full year of values with a file structure as follows:
@@ -347,11 +347,11 @@ If older versions are used, please set the variable \texttt{MR\_iversion} to the
 The default value of \texttt{MR\_iversion} is the most recent version.
 
 \subparagraph{ECMWF ERA5 Reanalysis:}
-\texttt{iwf=29}
+\texttt{MR\_iwindformat=29}
 
 \url{https://rda.ucar.edu/datasets/ds633.0}
 \begin{verbatim}
-iwfiles = 1
+MR_iwindfiles = 1
 MR_windfiles(1) = `/data/WindFiles/ERA5'
 \end{verbatim}
 Data are stored with each file containing 24 hours of values with a file structure as follows:
@@ -370,11 +370,11 @@ Data from this site is provided in GRIB1 format and must be converted to NetCDF
 with the NCAR Command Language (\texttt{ncl}) tool \texttt{ncl\_convert2nc -L}.
 
 \subparagraph{ECMWF ERA 20th Century Reanalysis:}
-\texttt{iwf=30}
+\texttt{MR\_iwindformat=30}
 
 \url{https://rda.ucar.edu/datasets/ds626.0}
 \begin{verbatim}
-iwfiles = 1
+MR_iwindfiles = 1
 MR_windfiles(1) = `/data/WindFiles/ERA20C'
 \end{verbatim}
 Data are stored with each file containing one month of values with a file structure as follows:
@@ -400,7 +400,7 @@ allows for small files with a slight loss of precision.  Alternatively, GRIB fil
 be downloaded, but must be converted to NetCDF to be read by MetReader, either by
 \texttt{ncl\_convert2nc -L} or netcdf-java via the provided script \texttt{autorun\_scripts/grib2nc.sh}.
 Data from this site are provided with all requested variables in the same file 
-(\texttt{iwf=}3 or 4) and do not require the specific filename structure outlined above.
+(\texttt{MR\_iwind=}3 or 4) and do not require the specific filename structure outlined above.
 Since these NetCDF files can be from so many souce sites and/or conversion tools, MetReader
 assumes variable and dimension names, but checks against all known names if the default
 names are not present in the file.  If MetReader is still unable to determine the variable
@@ -657,18 +657,21 @@ a height in $\mathrm{km}$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Supported types of meteorological data}
-MetReader can read meteorological data in a variety of different formats.  
+MetReader can read meteorological data in a variety of different formats, including
+a simple ASCII profile of wind velocity with height, Radiosonde data (in various formats),
+numerous forecast numerical weather prediction and reanalysis products, as well as output
+files from common NWP and atmospheric specification programs (WRF, CAM, AVO-G2S).
 \subsection{1-D ASCII data}
 The simplest format for meteorological data is just a 1-D wind profile in ASCII
-format.  To read this type, set \texttt{iw = 1}.  The particular format
-of the 1-D data can be specified by the \texttt{iwf}, where 1 indicates a
+format.  To read this type, set \texttt{MR\_iwind = 1}.  The particular format
+of the 1-D data can be specified by the \texttt{MR\_iwindformat}, where 1 indicates a
 user-specified column of values and 2 indicates that the files are from 
-the global radiosonde data available from \url{https://ruc.noaa.gov/raobs/} or
+the global radiosonde data available from \url{https://ruc.noaa.gov/raobs} or
 from \url{http://weather.uwyo.edu}.
 In both these cases, there is no NCEP grid ID associated with the sonde points so
 \texttt{MR\_iGridCode} is interpreted as the number of profile points.  Each point at each
 time must have its own file containing the profile data.
-\texttt{MR\_idataFormat} is not needed (ASCII is assumed from \texttt{iw = 1}).
+\texttt{MR\_idataFormat} is not needed (ASCII is assumed from \texttt{MR\_iwind = 1}).
 Profiles at multiple times can be included by repeating the sequence of profile
 locations at the later times.  All points must have profiles for all times and files
 for subsequent time steps must be given in the same order.
@@ -677,16 +680,16 @@ For example:
 
 \small
 \begin{verbatim}
-iw    = 1
-iwf   = 2
-igrid = 3
-iwindfiles = 6        # This must be an even multiple of igrid
-PADQ_2018060100.dat   # 00Z radio sonde at Kodiak, AK
-PAKN_2018060100.dat   # 00Z radio sonde at King Salmon, AK
-PANC_2018060100.dat   # 00Z radio sonde at Anchorage, AK
-PADQ_2018060112.dat   # 12Z radio sonde at Kodiak, AK
-PAKN_2018060112.dat   # 12Z radio sonde at King Salmon, AK
-PANC_2018060112.dat   # 12Z radio sonde at Anchorage, 
+MR_iwind       = 1
+MR_iwindformat = 2
+MR_iGridCode   = 3
+MR_iwindfiles  = 6    # This must be an even multiple of MR_iGridCode
+PADQ_2018060100.dat   # 00Z radiosonde at Kodiak, AK
+PAKN_2018060100.dat   # 00Z radiosonde at King Salmon, AK
+PANC_2018060100.dat   # 00Z radiosonde at Anchorage, AK
+PADQ_2018060112.dat   # 12Z radiosonde at Kodiak, AK
+PAKN_2018060112.dat   # 12Z radiosonde at King Salmon, AK
+PANC_2018060112.dat   # 12Z radiosonde at Anchorage, 
 \end{verbatim}
 \normalsize
 
@@ -735,28 +738,30 @@ is projected with specification defined by subsequent values on line 3.
 
 Line 4 contains the start of \texttt{nlev} rows of data
 
-Here is an example of the 3-column format.
+Here is an example of the 3-column format where the columns correspond to altitude (m),
+wind speed (m/s) and wind direction (E of N).
 \small \verbatiminput{windfiles/Hanford_3col.txt} \normalsize
 
-Here is an example of a user-specified number of columns with data on a 
-projected grid.
+Below is an example of a user-specified number of columns with data on a 
+projected grid. In this case, there are 5 variables: altitude (m), U (m/s),
+V (m/s), pressure (hPa), and temperature (C).
 \small \verbatiminput{windfiles/Hanford_Ncol.txt} \normalsize
 
 \subsubsection{1-D radiosonde profiles (single or multiple times)}
 Instead of user-specified profiles, MetReader can also read radiosonde data.
 Both the global archive as well as the 00Z and 12Z radiosonde data are
 available from the NOAA Earth System Research Laboratory Rapid Update Cycle
-Radiosonde Database (\url{https://ruc.noaa.gov/raobs/}).  These data
+Radiosonde Database (\url{https://ruc.noaa.gov/raobs}).  These data
 are also archived at the University of Wyoming\\
 (\url{http://weather.uwyo.edu/upperair/sounding.html}).
-To use data in this format, set \texttt{iwf = 2}.
+To use data in this format, set \texttt{MR\_iwind = 1} and \texttt{MR\_iwindformat = 2}.
 From both these sites, radiosonde data are available in a variety of formats.
-The default format for the UW site is "Text: List``
+The default format for the University of Wyoming site is ``Text: List"
 
 \small \verbatiminput{windfiles/SLE_20180620_00Z_TextList.dat} \normalsize
 
 This file contains many pressure levels, but the radiosonde standard include
-a limited set of "required`` pressure levels (1000, 925, 850, 700, 500,
+a limited set of ``required" pressure levels (1000, 925, 850, 700, 500,
 400, 300, 250, 200, 150, and 100 $\mathrm{mbar}$; and supplementally 
 70, 50, 30, 20, 10 if the probe reaches those heights.).
 When MetReader reads a file of this format, only these mandatory pressure levels are
@@ -769,26 +774,25 @@ station list is truncated to just what is currently operational and to just curr
 coordinates (some stations have been moved or deactivated).
 Next the \texttt{Observation time} is read.  
 
-An alternative format is the FAA604 WMO/GTS format from \url{https://ruc.noaa.gov/raobs/}
-or the nearly identical "Text:Raw`` format from the University of Wyoming.
+An alternative format is the FAA604 WMO/GTS format from \url{https://ruc.noaa.gov/raobs}
+or the nearly identical ``Text:Raw" format from the University of Wyoming.
 
 \small \verbatiminput{windfiles/SLE_20180620_00Z_TextRaw.dat} \normalsize
 
 This format contains nearly the same information as the previous example, but 
 requires a bit of translation.
-Appendix F of\\
-\url{https://www.ofcm.gov/publications/fmh/FMH3/00-entire-FMH3.pdf}
+Appendix F of the Federal Meteorological Handbook No. 3
+(\url{https://www.icams-portal.gov/resources/ofcm/fmh/FMH3/00-entire-FMH3.pdf})
 gives the full specification.
 % The better document is from the Iowa State class notes for Introduction to Synoptic Meteorology
 %   http://www.meteor.iastate.edu/classes/mt311/extras/Codul-TEMP.pdf
 % But this is likely an ephemeral link.
-If the string "TTAA`` is found
-in the ASCII file, this format is attempted first, otherwise the "Text:List" is
+If the string ``TTAA" is found
+in the ASCII file, this format is attempted first, otherwise the ``Text:List" is
 assumed.  This WMO/GTS format is intended for the Rapid Update Cycle data and
 does not contain the year or month (only the day-of-month and hour) of the data.
-If this format is detected, the year and month at
-execution time is assumed unless otherwise
-specified by the calling program.
+If this format is detected, the year and month of \texttt{SimStartHour}
+is assumed unless otherwise specified by the calling program.
 
 \subsection{Network of 1-D radiosonde profiles}
 In most of the world, the radiosonde launch sites are too disperse to form
@@ -818,23 +822,26 @@ MetReader's preferred format for 3-D forecast and reanalysis files is NetCDF.  M
 products are available directly in NetCDF. format such as NCEP/NCAR Reanalysis 1 or
 NASA GEOS-5.  These products generally require NetCDF version 4.  Most of the NCEP
 forecast products are provided in GRIB format.  To convert these forecast products
-to NetCDF format, MetReader relies on the NetCDF java package\\
-(\url{https://www.unidata.ucar.edu/software/thredds/current/netcdf-java/}).  The
+to NetCDF format, MetReader relies on the NetCDF java package
+(\url{https://www.unidata.ucar.edu/software/netcdf-java}). The
 conversion script in the \texttt{autorun\_scripts} folder are linked to \texttt{netcdfAll-5.4}
 however any recent version should work.  Older versions create NetCDF files with
-different variable names.
+different variable names. GRIB files can also be converted to NetCDF using the NCAR Command
+Language tools (\texttt{ncl}), available from \url{https://www.ncl.ucar.edu}.  The
+command \texttt{ncl\_convert2nc -L} will convert GRIB to NetCDF, but will produce
+files with different variable and dimension names, which may be incompatable.
 
 Many of the forecast and reanalysis products are built in to MetReader where the
 grid geometry, variable list, and pressure levels are preset.  These include all
-the \texttt{iwf} numbers listed in section \ref{SSecPrelimMetaData}.  If the
+the \texttt{MR\_iwindformat} numbers listed in section \ref{SSecPrelimMetaData}.  If the
 products change such that the pressure levels differ or if variable names change,
 then the source code will need to be modified to account for the changes.
 Alternatively, a template file could be used as described in section \ref{SecCust} below.
 
 MetReader can also read GRIB files directly for certain forecast products, including the
-NAM 196 grid over HI (\texttt{iwf=11}), the NAM 91 grid over AK
-(\texttt{iwf=13}) and the GFS $0.25 \, ^{\circ}$ and $0.5 \, ^{\circ}$
-products (\texttt{iwf=22,20}).  To read these GRIB files, an index
+NAM 196 grid over HI (\texttt{MR\_iwindformat=11}), the NAM 91 grid over AK
+(\texttt{MR\_iwindformat=13}) and the GFS $0.25 \, ^{\circ}$ and $0.5 \, ^{\circ}$
+products (\texttt{MR\_iwindformat=20,21,22}).  To read these GRIB files, an index
 file containing the locations of all the records must be created.
 This index file can be created 
 by the utility \texttt{gen\_GRIB\_index}, or if the file does not exist at
@@ -852,7 +859,7 @@ full grids will be noticeable.
 As an alternative to using a particular forecast or reanalysis product with
 hard-coded file structure, a template file can be used the allows a custom
 specification of a NetCDF file.
-The custom template is indicated by \texttt{iwf=0} and setting \texttt{MR\_iwf\_template}
+The custom template is indicated by \texttt{MR\_iwindformat=0} and setting \texttt{MR\_iwf\_template}
 to the name of the template file.  The template file has the following format.
 
 Line 1: The line of projection parameters as expected by \texttt{libprojection.a}.
@@ -871,8 +878,10 @@ whether or not to use leap years (Assumed \verb|T| if not provided)
 
 Line 3: \verb|ndims nvars| :: number of dimensions and variable that will be listed
 
-Line 4-: list of dimensions where each row specifies the information about the dimension.
-For example
+Line 4+: list of dimensions where each row specifies the information about the dimension.
+Dimension lines are read using the format \texttt{(a1,i9,f9.2,a30)} so care must be taken
+to ensure that each term is in the correct position and with spaces in-between (no tabs).
+For example:
 \small
 \begin{verbatim}
 d      1  1.6667e-2 time                         hours since
@@ -882,8 +891,8 @@ d      2      100.0 lev                          Pa
 In this example, the \verb|d| signifies that the row describes a dimension, \verb|1| is
 the dimension number, \verb|1.6667e-2| is a scaling factor, and
 \verb|time| is the name of the dimension.  The dimensions should be listed in the
-following order: time, pressure used for primary state variables (velocity, temperature),
-y (or longitude), x (or latitude), pressure used for vertical velocities, and pressure
+following order: time, pressure used for primary state variables (geopotential height, velocity,
+temperature), y (or longitude), x (or latitude), pressure used for vertical velocities, and pressure
 used for moisture variables.  Additional dimensions can be listed to support other
 specific variables.  The scaling factor is the factor needed to convert the dimension
 from the units provided to the units required.  In this example, the time values are
@@ -893,15 +902,17 @@ $\mathrm{Pa}$.
 
 Line 4+\verb|ndims|- : list of variables where each row specifies the information about
 the variable.
+As in the formatted read of the dimension information, the variables are read using
+the format \texttt{(a1,i3,i3,i3,f9.2,a7,a71)}.
 \small
 \begin{verbatim}
-v 4  2 1        1.0    HGT   H                              gpm
-v 4  2 2        1.0   UGRD   U                              m/s
-v 4  2 3        1.0   VGRD   V                              m/s
-v 4  5 4        1.0   VVEL   OMEGA                          Pa/s
-v 4  2 5        1.0    TMP   T                              K
-v 4  6 30       1.0     RH   RH                             %
-v 4  6 31       1.0   SPFH   SH                             kg/kg
+v 4  2 1        1.0    HGT   H
+v 4  2 2        1.0   UGRD   U
+v 4  2 3        1.0   VGRD   V
+v 4  5 4        1.0   VVEL   OMEGA
+v 4  2 5        1.0    TMP   T
+v 4  6 30       1.0     RH   RH
+v 4  6 31       1.0   SPFH   SH
 \end{verbatim}
 \normalsize
 In this example, the first character, \verb|v|, signifies that the row describes a variable.
@@ -918,14 +929,15 @@ There are several limitations of the template for the custom NWP reader.  Firstl
 the NetCDF reader is currently implemented.  Secondly, currently all variables are
 assumed to be transient; so land-use or topography cannot be read with this scheme.
 Variables that cannot be simply scaled to the expected units cannot be 
-described in this template.  For example, WRF files (\verb|iwf=50|) uses a staggered
+described in this template.  For example, WRF files (\verb|MR_iwindformat=50|) uses a staggered
 grid with pressure and geopotential given both as a base value plus a perturbation.
 Lastly, to determine the start time of the data, a reference time must be read.  First
 the time variable is checked for the \texttt{GRIB\_orgReferenceTime} attribute.  If this
 is not found, then the variable \texttt{reftime} is checked, if it exists.
 
 Several examples of these template files used with NAM and GFS
-forecast products are shown in Appendix \ref{ApTemplate}.
+forecast products are shown in Appendix \ref{ApTemplate} and given in the \texttt{doc} folder
+of this repository.
 
 \section{Additional tools/Examples}\label{SecTools}
 In the \texttt{tools} folder, several programs are included the illustrate the
@@ -940,16 +952,17 @@ and reads the full grid for the variables: geopotential height, Vx, Vy, Vz, and
 temperature.  If any values are outside of expected ranges, then the program
 stops returning a non-zero stop-code (\verb|stop 1|).
 Usage:\\
-\verb|  MetCheck iwf idf filename [year]|
+\verb|  MetCheck MR_iwindformat MR_idataFormat filename [year]|
 
 This utility will write a log file, \texttt{MetCheck\_log.txt} containing four columns:
 filename, step in file, year, day of year.
+
 \subsection{\texttt{MetRegrid}}
 
 This is a stand-alone program that uses the MetReader interface to calculate
 regridded atmospheric data.  A control file is provided which defines the
 computational grid specifications, output time, output variable, output
-grid (could be CompH, CompP, MetH, or MetP), and the output dimension.
+grid (could be \texttt{compH}, \texttt{compP}, \texttt{metH}, or \texttt{metP}), and the output dimension.
 The output dimension could be 0 for point data, 1 for line data,
 2 for slices of the computational grid, or 3
 for volume data.  An example control file (\texttt{Regrid\_NCEP.ctr}) for
@@ -962,12 +975,12 @@ the NCEP 50-year Reanalysis is given  in the \texttt{examples} directory.
 0.1     0.1    0.5              ! DX, DY, Dz of grid cells  (km, or deg.)
 1                               ! iHeightHandler
 1980 5 18 15.5                  ! YYYY MM DD HH.H
-1                               ! Output grid (1,2,3,4 for CompH,CompP,MetH,MetP)
+1                               ! Output grid (1,2,3,4 for compH,compP,metH,metP)
 5                               ! Output Var (1=H,2=Vx,3=Vy,4=Vz,5=T)
-2                               ! Output Dimension (0,1,2,or 3)
+2 1                             ! Output Dimension (0,1,2,or 3), ASCII type: 0=full dump, 1=ESRI
 0 0 15                          ! i,j,k of output grid with zeros for unused dims.
-5 25 2 2                        ! iwind iwindformat igrid iformat
-1                               ! number of windfiles
+5 25 2 2                        ! MR_iwind MR_iwindformat MR_iGridCode MR_idataFormat
+1                               ! MR_iwindfiles: number of windfiles
 NCEP
 \end{verbatim}
 \normalsize
@@ -979,22 +992,25 @@ grid.
 Line 3 gives the total width in the three coordinate directions.  
 Line 4 gives the grid spacing in each dimension.  For lines 2-4, the $x$ and $y$ (or $lat$ and $lon$)
 are given in either $\mathrm{km}$ or degrees, whereas all $z$ values are in $\mathrm{km}$.  If a
-pressure-based grid is requested (CompP or MetP), the pressure levels of the NWP file are used
+pressure-based grid is requested (\texttt{compP} or \texttt{metP}), the pressure levels of the NWP file are used
 and the $z$ specifications are ignored.
 Line 5 is the iHeightHandler flag which determines if the program should stop if the computational
 grid requires data above that provided by the NWP file (\texttt{iHeightHandler=2}) or if those nodes
 should be populated using the top-most data of the NWP file (\texttt{iHeightHandler=1}).
 Line 6 specifies the year, month, day and hour of the output.
-Line 7 contains an integer flag specifing the output grid type (CompH,CompP,MetH,MetP).
+Line 7 contains an integer flag specifing the output grid type
+(\texttt{compH}, \texttt{compP}, \texttt{metH}, \texttt{metP}).
 Line 8 contains the integer specifying the variable to regrid and export (see Table \ref{ApVar}).
-Line 9 specifies the output dimension (0,1,2,or 3).
+Line 9 specifies the output dimension (0, 1, 2, or 3) and optionally a flag to indicate ASCII should be
+in ESRI format.  This only applies to 2-d mapview regridding.
 Line 10 contains 3 integers specifying the nodes used in the output. 0 should be given for indexes of unused
 dimensions.  In the example above, the output dimension is 2 indicating a slice of the grid will be
 exported.  We need to specify only one index to indicate the location of the cutting plane.  The $i=0$
 and $j=0$ indicate that the plane is an $x-y$ sheet at $k=15$.  This is interpreted as either the 15th node
 along the height axis of the computational grid or the 15th pressure node of the NWP pressure coordinate,
 depending on the requested grid from line 8.
-Line 11 specifies the windfile format (\texttt{iwind} \texttt{iwindformat} \texttt{igrid} \texttt{iformat}).
+Line 11 specifies the windfile format (\texttt{MR\_iwind} \texttt{MR\_iwindformat}
+\texttt{MR\_iGridCode} \texttt{MR\_idataFormat}).
 Line 12 gives the number of windfiles to be read.
 Line 13 $\rightarrow$ \texttt{EOF} are the names of the windfiles to be read.
 
@@ -1003,8 +1019,8 @@ An example control file for a network of radiosonde data is also given in
 follows:
 \footnotesize
 \begin{verbatim}
-1 2 6 1                         ! iwind iwindformat igrid iformat
-48                              ! number of windfiles
+1 2 6 1                         ! MR_iwind MR_iwindformat MR_iGridCode MR_idataFormat
+48                              ! MR_iwindfiles: number of windfiles
 UpperAirSoundings/BOI_1980051700_raw.dat
 UpperAirSoundings/GGW_1980051700_raw.dat
 UpperAirSoundings/GJT_1980051700_raw.dat
@@ -1020,14 +1036,14 @@ UpperAirSoundings/SLE_1980051712_raw.dat
 .....
 \end{verbatim}
 \normalsize
-The \texttt{igrid=6} indicates that there are 6 sonde locations provided.  Each set of 6
+The \texttt{MR\_iGridCode=6} indicates that there are 6 sonde locations provided.  Each set of 6
 must be repeated in the same order for the subsequent 12-hour times.  Plots of $V_x$ for
 both these control files using the same computational grid are shown below.
 \begin{figure}[htbp]\begin{center}
- \includegraphics[angle=0,scale=0.55]{Figs/RegNCEP.pdf}
- \includegraphics[angle=0,scale=0.55]{Figs/RegSonde.pdf}
+ \includegraphics[angle=0,scale=0.35]{Figs/RegNCEP.pdf}
+ \includegraphics[angle=0,scale=0.35]{Figs/RegSonde.pdf}
  \parbox{15cm}{\caption{\label{FigRegrid}
- Example regridded output of $V_x$ of the NCEP reanalysis (\texttt{iwformat=25}) and
+ Example regridded output of $V_x$ of the NCEP reanalysis (\texttt{MR\_iwindformat=25}) and
  6-point radiosonde data (left and right, respectively) using \texttt{RegridMet} with control files
  from the \texttt{examples} folder.
  }}
@@ -1051,21 +1067,21 @@ This program is a more general version of \texttt{MetSonde}, requiring 15 or mor
 arguments.  The command-line arguments are as follows.
 \\
 \begin{tabular}{ l  l  l }
-filename      & string    & name of input file \\
-timestep      & integer   & time step in file \\
-llflag        & integer   & 0 for using windfile grid; 1 for forcing Lat/Lon \\
-lon/x         & real      & longitude (or x) of sonde point \\
-lat/y         & real      & latitude (or y) of sonde point \\
-trunc flag    & character & truncation flag (T or F) \\
-nvars         & integer   & number of pressure variables to export \\
-varID(nvars)  & integers  & variable ID's to read and export (Tab \ref{ApVar}) \\
-iw            & integer   & windfile format code (3,4,5) \\
-iwf           & integer   & windfile product code \\
-idf           & integer   & igrid (2 for nc, 3 for grib) \\
-year          & integer   & only needed for iw = 5 files \\
-month         & integer   & only needed for iw = 5 files \\
-day           & integer   & only needed for iw = 5 files \\
-hour          & real      & only needed for iw = 5 files \\
+filename        & string    & name of input file \\
+timestep        & integer   & time step in file \\
+llflag          & integer   & 0 for using windfile grid; 1 for forcing Lat/Lon \\
+lon/x           & real      & longitude (or x) of sonde point \\
+lat/y           & real      & latitude (or y) of sonde point \\
+trunc flag      & character & truncation flag (T or F) \\
+nvars           & integer   & number of pressure variables to export \\
+varID(nvars)    & integers  & variable ID's to read and export (Tab \ref{ApVar}) \\
+MR\_iwind       & integer   & windfile class code (3,4,5) \\
+MR\_iwindformat & integer   & windfile product code \\
+MR\_idataFormat & integer   & 1 for ASCII, 2 for nc, 3 for grib \\
+year            & integer   & only needed for MR\_iwind = 5 files \\
+month           & integer   & only needed for MR\_iwind = 5 files \\
+day             & integer   & only needed for MR\_iwind = 5 files \\
+hour            & real      & only needed for MR\_iwind = 5 files \\
 \end{tabular}
 
 For example, the following command will probe a GFS file and write out
@@ -1111,9 +1127,9 @@ packages are downloaded.
 forecast packages are stored on the system.
 \texttt{GFS\_FC\_TotHours} (default = 198 hours) is the number of forecast hours
 downloaded for each forecast package.
-For  forward trajectories, forecast package beginning most closely prior to the requested
-start time is used unless the start time is greater than two weeks from present.  If
-so, the NCEP files are used.  For the backward trajectories, the forecast package
+For forward trajectories, forecast package beginning most closely prior to the requested
+start time is used unless the start time is earlier than two weeks from present.  If
+so, the NCEP files are used. For the backward trajectories, the forecast package
 chosen is that which can accommodate the default 24-hours of backward integration.
 
 For each of the trajectory calculations, files are written to the current working directory
@@ -1142,9 +1158,9 @@ file. The control file has the following format.
 6                                     ! ntraj (<10)
 1.524 3.048 6.096 9.144 12.192 15.240 ! level values in km
 1 4 -107.0 50.0 50.0 50.0 6367.470    ! Output projection
-5 25 2 2                              ! iwind iwindformat igrid iformat
+5 25 2 2                              ! MR_iwind MR_iwindformat MR_iGridCode MR_idataFormat
 0 12 14                               ! autoflag (0 for auto, 1 for specified) FC_freq GFS_Archive_Days
-1                                     ! number of windfiles
+1                                     ! MR_iwindfiles: number of windfiles
 NCEP
 \end{verbatim}
 \normalsize
@@ -1159,7 +1175,8 @@ Line 5 allows users to specify the output interval in minutes (default is 60).  
 is the number of output trajectory levels (up to 10).  In line 7, the altitudes of
 these trajectories is specified.
 Line 8 specifies the coordinate system of the output grid.
-Line 9 gives the windfile descriptions (\texttt{iwind iwindformat igrid iformat}).
+Line 9 gives the windfile descriptions
+(\texttt{MR\_iwind MR\_iwindformat MR\_iGridCode MR\_idataFormat}).
 Line 10 allows windfiles to be spelected automatically, similar to when this utility
 is run with command-line options only.  Alternatively, line 11 will specify the number
 of windfiles to read, followed by the windfile names in lines 12+.
@@ -1169,7 +1186,7 @@ select output shown in Figure \ref{FigTraj}
  \includegraphics[angle=0,scale=0.3]{Figs/trajectory_NCEP.pdf}
  \includegraphics[angle=0,scale=0.3]{Figs/trajectory_Sonde.pdf}
  \parbox{15cm}{\caption{\label{FigTraj}
- Example of foreward trajectory output using NCEP reanalysis (\texttt{iwformat=25}) and
+ Example of foreward trajectory output using NCEP reanalysis (\texttt{MR\_iwindformat=25}) and
  6-point radiosonde data (left and right, respectively) using \texttt{RegridMet} with control files
  from the \texttt{examples} folder.  The start time for both these trajectory simulations is
  May 18, 1980, 15:30 UTC. Because \texttt{MR\_iHeightHandler=2} by default, the trajectories for 30,000
@@ -1178,9 +1195,16 @@ select output shown in Figure \ref{FigTraj}
  \end{center}\end{figure}
 
 \subsection{\texttt{makegfsncml}}
-This utility generates a \texttt{ncml} file that can be used when converting
-grib files to netcdf.  The \texttt{ncml} provides the conversion tool a template
+This utility takes two arguments (\texttt{infile} and \texttt{outfile})
+and generates a \texttt{ncml} file that can be used when converting
+GRIB files to NetCDF.  The \texttt{ncml} provides the conversion tool a template
 for identifying which variables to exclued when writing the netcdf file.
+
+\subsection{\texttt{MR\_ASCII\_check}}
+This utility takes two ESRI ASCII files are input arguments and calculates the L2 norm of
+the difference (they must be on the same grid).  If the L2 norm exceeds the tolerance of
+$0.001$, \texttt{MR\_ASCII\_check} will report a failure.  Optionally, a different tolerance
+can be provided as a third command-line argument.
 
 \section{Windfile management scripts}
 Scripts used to manage GFS and NCEP Reanalysis files are provided in the
@@ -1205,9 +1229,10 @@ These scripts are intended to be run as cron jobs.  The following line can be ad
 crontab to download the files once they are available.
 \footnotesize
 \begin{verbatim}
-01 22 * * *   /opt/USGS/bin/autorun_scripts/autorun_gfs.sh 0p50 0  > gfs00_log 2>&1
-01 11 * * *   /opt/USGS/bin/autorun_scripts/autorun_gfs.sh 0p50 12 > gfs12_log 2>&1
-01 01 * * Sun /opt/USGS/bin/autorun_scripts/autorun_NCEP_50YearReanalysis.sh > NCEP_50yr_log   2>&1
+01 22 * *  * /opt/USGS/bin/autorun_scripts/autorun_gfs.sh 0p50 0            > gfs00_log       2>&1
+01 11 * *  * /opt/USGS/bin/autorun_scripts/autorun_gfs.sh 0p50 12           > gfs12_log       2>&1
+01 01 * 06 * /opt/USGS/bin/autorun_scripts/autorun_NCEP_50YearReanalysis.sh > NCEP_50yr_log   2>&1
+30 03 * *  * /opt/USGS/bin/autorun_scripts/prune_windfiles.sh               > prune.log       2>&1
 \end{verbatim}
 \normalsize
 
@@ -1275,59 +1300,61 @@ Variable type & ID & Name & dimensions \\
 \end{table}
 
 \clearpage
-\subsection{NWP product ID (\texttt{iwf})}\label{Apiwf}
+\subsection{NWP product ID (\texttt{MR\_iwindformat})}\label{Apiwf}
 Several NWP product (both reanalysis and forecast) are recognized
 and do not need template files.  These are listed in the table below
-by the format code.  \texttt{iwf=1,2} are ASCII files.
-\texttt{iwf=3-19} are reserved for products with projected grids.
-\texttt{iwf=20-49} are reserved for global (lon/lat) grids.
-\texttt{iwf=50} is for NetCDF output from Weather Research and 
+by the format code.  \texttt{MR\_iwindformat=1,2} are ASCII files.
+\texttt{MR\_iwindformat=3-19} are reserved for products with projected grids.
+\texttt{MR\_iwindformat=20-49} are reserved for global (lon/lat) grids.
+\texttt{MR\_iwindformat=50} is for NetCDF output from Weather Research and 
 Forecasting (WRF) simulations.
 
 \begin{table}[h]\label{Tabiwf}
 \caption{NWP product ID}
-\begin{tabular}{| r | l | l | l |}
+\footnotesize
+\begin{tabular}{| c | c | l | l | l |}
 \hline
-iwf & Product & NCEP Grid & resolution \\
+MR\_iwind & MR\_iwindformat & Product & NCEP Grid & resolution \\
 \hline
-  0 & Custom format based on template & & \\
-  1 & ASCII profile & & \\
-  2 & Radiosonde data & & \\
+3/4 &  0 & Custom format based on template & & \\
+1 &  1 & ASCII profile & & \\
+1 &  2 & Radiosonde data & & \\
 \hline
-  3 & North American Regional Reanalysis NARR & 221 & 32 km \\
-  4 & NAM Regional North America & 221 & 32 km \\
-  5 & NAM Regional Alaska & 216 & 45 km \\
-  6 & NAM N. Hemisphere & 104 & 90 km \\
-  7 & NAM Regional CONUS & 212 & 40 km \\
-  8 & NAM Regional CONUS & 218 & 12 km \\
-  9 & NAM Regional CONUS & 227 & 5.08 km \\
- 10 & NAM Regional Alaska & 242 & 11.25 km \\
- 11 & NAM Regional Hawaii & 196 & 2.5 km \\
- 12 & NAM Regional Alaska & 198 & 5.953 km \\
- 13 & NAM Regional Alaska & 91 & 2.976 km \\
- 14 & NAM Regional CONUS & None & 3.0 km \\
-\hline
- 20 & GFS & 4   & $ 0.5 \, ^{\circ}$ \\
- 21 & GFS & 3   & $ 1.0 \, ^{\circ}$ \\
- 22 & GFS & 193 & $0.25 \, ^{\circ}$ \\
- 23 & NCEP-DOE Reanalysis 2 & 2  & $2.5 \, ^{\circ}$ \\
- 24 & NASA-MERRA-2 Reanalysis & None & $0.625 \, \times \,0.5^{\circ}$ \\
- 25 & NCEP/NCAR Reanalysis 1 & 2 & $2.5 \, ^{\circ}$ \\
- 26 & JRA-55 & 45 & $1.25 \, ^{\circ}$ \\
- 27 & NOAA-CIRES 20th Century Reanalysis & 2 & $2.5^{\circ}$ \\
- 28 & ECMWF ERA-Interim Reanalysis & 170 & $\sim 0.7^{\circ}$-Gaussian \\
- 29 & ECMWF ERA5 Reanalysis & None & $0.281$ \\
- 30 & ECMWF ERA-20C Reanalysis & None & $1.125 \, \times \, \sim 1.121^{\circ}$-Gaussian\\
-\hline
- 32 & Air Force Weather Agency subcenter = 0 & None & $0.25^{\circ}$ \\
- 33 & CCSM3.0 Community Atmosphere Model &None & $3.75 \, \times \,3.7^{\circ}$\\
-\hline
- 40 & NASA GEOS-5 Cp & None & $0.625 \, \times \,0.5^{\circ}$ \\
- 41 & NASA GEOS-5 Np & None & $0.3125 \, \times \,0.25^{\circ}$\\
- 50 & WRF - output & None & \\
+4 &   3 & North American Regional Reanalysis NARR & 221 & 32 km \\
+4 &   4 & NAM Regional North America & 221 & 32 km \\
+4 &   5 & NAM Regional Alaska & 216 & 45 km \\
+4 &   6 & NAM N. Hemisphere & 104 & 90 km \\
+4 &   7 & NAM Regional CONUS & 212 & 40 km \\
+4 &   8 & NAM Regional CONUS & 218 & 12 km \\
+4 &   9 & NAM Regional CONUS & 227 & 5.08 km \\
+4 &  10 & NAM Regional Alaska & 242 & 11.25 km \\
+4 &  11 & NAM Regional Hawaii & 196 & 2.5 km \\
+4 &  12 & NAM Regional Alaska & 198 & 5.953 km \\
+4 &  13 & NAM Regional Alaska & 91 & 2.976 km \\
+4 &  14 & NAM Regional CONUS & None & 3.0 km \\
+  \hline
+4 &  20 & GFS & 4   & $ 0.5 \, ^{\circ}$ \\
+4 &  21 & GFS & 3   & $ 1.0 \, ^{\circ}$ \\
+4 &  22 & GFS & 193 & $0.25 \, ^{\circ}$ \\
+4 &  23 & NCEP-DOE Reanalysis 2 & 2  & $2.5 \, ^{\circ}$ \\
+4 &  24 & NASA-MERRA-2 Reanalysis & None & $0.625 \, \times \,0.5^{\circ}$ \\
+4/5 &  25 & NCEP/NCAR Reanalysis 1 & 2 & $2.5 \, ^{\circ}$ \\
+5 &  26 & JRA-55 & 45 & $1.25 \, ^{\circ}$ \\
+5 &  27 & NOAA-CIRES 20th Century Reanalysis & 2 & $2.5^{\circ}$ \\
+4 &  28 & ECMWF ERA-Interim Reanalysis & 170 (gg) & $\sim 0.7^{\circ}$ \\
+4/5 &  29 & ECMWF ERA5 Reanalysis & None & $0.281$ \\
+5 &  30 & ECMWF ERA-20C Reanalysis & None (gg) & $1.125 \, \times \, \sim 1.121^{\circ}$\\
+  \hline
+4 &  32 & Air Force Weather Agency subcenter = 0 & None & $0.25^{\circ}$ \\
+4 &  33 & CCSM3.0 Community Atmosphere Model &None & $3.75 \, \times \,3.7^{\circ}$\\
+  \hline
+4 &  40 & NASA GEOS-5 Cp & None & $0.625 \, \times \,0.5^{\circ}$ \\
+4 &  41 & NASA GEOS-5 Np & None & $0.3125 \, \times \,0.25^{\circ}$\\
+4 &  50 & WRF - output & None & \\
 \hline
 \end{tabular}
 \end{table}
+\normalsize
 \clearpage
 \subsection{Example Template files}\label{ApTemplate}
 \begin{figure}[htbp]\begin{center}

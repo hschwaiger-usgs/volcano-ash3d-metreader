@@ -755,7 +755,7 @@
        if(associated(MR_v_ER_metP                  ))deallocate(MR_v_ER_metP)
        if(associated(theta_Met                     ))deallocate(theta_Met)
        if(associated(theta_Comp                    ))deallocate(theta_Comp)
-       if(associated(tmpsurf2d_short               ))deallocate(tmpsurf2d_short)
+!       if(associated(tmpsurf2d_short               ))deallocate(tmpsurf2d_short)
        if(associated(temp1d_sp                     ))deallocate(temp1d_sp)
        if(associated(temp2d_sp                     ))deallocate(temp2d_sp)
        if(associated(temp3d_sp                     ))deallocate(temp3d_sp)
@@ -2627,7 +2627,7 @@
 
       subroutine MR_Read_Met_DimVars(iy)
 
-      integer, optional,intent(in) :: iy  ! Note: this is only needed for iw=5
+      integer, optional,intent(in) :: iy  ! Note: this is only needed for MR_iwind=5
                                           !       since we need to know how many
                                           !       metsteps to allocate
 
@@ -2667,7 +2667,7 @@
                                  .false.)    ! CALLED_MR_Set_Met_Times
 
 #ifdef USEPOINTERS
-      if(.not.associate(MR_windfiles))then
+      if(.not.associated(MR_windfiles))then
 #else
       if(.not.allocated(MR_windfiles))then
 #endif
@@ -2694,7 +2694,7 @@
           MR_Comp_StartYear = iy
         else
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-            write(outlog(io),*)"MR WARNING: If the iw=5 (NCEP Reannalysis, NOAA Reannalysis, "
+            write(outlog(io),*)"MR WARNING: If the MR_iwind=5 (NCEP Reannalysis, NOAA Reannalysis, "
             write(outlog(io),*)"            ERA5, etc.) are used, then MR_Read_Met_DimVars"
             write(outlog(io),*)"            should be called with a start year.  This is needed"
             write(outlog(io),*)"            to allocate the correct number of time steps per file."
@@ -2729,7 +2729,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"  Verifying existance of windfiles:"
       endif;enddo
-     ! Note iwf=5 cases have the number of windfiles (MR_iwindfiles)
+     ! Note MR_iwind=5 cases have the number of windfiles (MR_iwindfiles)
       ! modified in MR_Allocate_FullMetFileList to be the number of
       ! anticipated files based on the length of the simulation and the number
       ! of steps per file.
@@ -2756,7 +2756,7 @@
             call MR_Set_iwind5_filenames(inhour,ivar,infile)
 #else
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-              write(errlog(io),*)"MR ERROR: Currently, iw=5 required netcdf."
+              write(errlog(io),*)"MR ERROR: Currently, MR_iwind=5 required netcdf."
               write(errlog(io),*)"          Recompile MetReader with netcdf enabled"
             endif;enddo
             stop 1
@@ -2836,6 +2836,9 @@
 
       subroutine MR_Set_CompProjection(LL_flag,ipf,lam0,phi0,phi1,phi2,ko,Re)
 
+      use projection,    only : &
+         PJ_proj_for,PJ_proj_inv
+
       logical     ,intent(in) :: LL_flag
       integer     ,intent(in) :: ipf
       real(kind=8),intent(in) :: lam0,phi0
@@ -2843,6 +2846,8 @@
       real(kind=8),intent(in) :: phi2
       real(kind=8),intent(in) :: ko
       real(kind=8),intent(in) :: Re
+      real(kind=8) :: inx1,outx,inx2
+      real(kind=8) :: iny1,outy,iny2
 
       integer :: io                           ! Index for output streams
 
@@ -2899,6 +2904,23 @@
 
       !HFS to do: perform a sanity check on these projection parameters
       ! take a lon/lat, project, then inverse project and check
+      !if(.not.isLatLon_CompGrid)then
+      !  write(*,*)x_comp_sp(1),y_comp_sp(1)
+      !  inx1 = x_comp_sp(1)
+      !  iny1 = y_comp_sp(1)
+      !  call PJ_proj_inv(inx1,iny1, &
+      !                 Comp_iprojflag,&
+      !                 Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
+      !                 outx,outy)
+
+      !  call PJ_proj_for(outx,outy, &
+      !                 Comp_iprojflag,&
+      !                 Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
+      !                 inx2,iny2)
+      !  write(*,*)inx1,outx,inx2
+      !  write(*,*)iny1,outy,iny2
+      !  stop 99
+      !endif
 
       CALLED_MR_Set_CompProjection = .true.
 
@@ -3090,7 +3112,11 @@
           enddo
         enddo
       else
+#ifdef USEPOINTERS
+        if(associated(MR_dx_met))then
+#else
         if(allocated(MR_dx_met))then
+#endif
           MR_minlen = min(minval(MR_dx_met),minval(MR_dy_met))
         else
           ! MR_dx_met and MR_dy_met might not be defined for radio sonde or ascii
@@ -3871,8 +3897,6 @@
 !##############################################################################
 
       subroutine MR_Read_3d_MetH_Variable(ivar,istep)
-
-      !integer, parameter :: sp        = 4 ! single precision
 
       integer,intent(in)        :: ivar
       integer,intent(in)        :: istep
