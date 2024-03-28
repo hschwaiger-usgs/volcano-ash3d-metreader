@@ -1483,7 +1483,6 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Traj time: ",inyear,inmonth,inday,inhour
         write(outlog(io),*)"Now      : ",RunStartYear,RunStartMonth,RunStartDay,RunStartHr
-        write(outlog(io),*)"FC  time : ",FC_year,FC_mon,FC_day,FC_Package_hour
       endif;enddo
 
       end subroutine GetWindFile

@@ -340,6 +340,13 @@
           endif;enddo
           stop 1
         endif
+        if(invars.gt.10)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: number of variables must be no more than 10"
+            write(errlog(io),*)" invars = ",invars
+          endif;enddo
+          stop 1
+        endif
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
           write(outlog(io),*)"invars = ",invars
           write(outlog(io),*)"Allocating var list of length ",invars
@@ -744,7 +751,8 @@
 
       real(kind=4),dimension(:,:),allocatable :: outvars
       real(kind=4),dimension(:)  ,allocatable :: u,v
-
+      !character        :: invarchar
+      !character(len=8) :: frmtstr
       integer :: io                           ! Index for output streams
 
       allocate(outvars(invars,np_fullmet))
@@ -787,10 +795,14 @@
 
       enddo
 
+      !write(invarchar,'(i1)')invars+1
+      !frmtstr = '(' // invarchar // 'F16.5)'
       open(unit=20,file='NWP_prof.dat')
       do i = 1,np_fullmet
-        write(20,*)p_fullmet_sp(i),outvars(:,i)
+        !write(20,frmtstr)p_fullmet_sp(i),outvars(1:invars,i)
+        write(20,107)p_fullmet_sp(i),outvars(1:invars,i)
       enddo
+107   format(11F16.5)
       close(20)
 
       end subroutine GetMetProfile
