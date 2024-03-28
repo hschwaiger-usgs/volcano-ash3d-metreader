@@ -36,7 +36,7 @@
 #    This variable cannot be left blank
 #      
 SYSTEM = gfortran
-SYSINC = make_gfortran.inc
+SYSINC = make_$(SYSTEM).inc
 #
 #  RUN specifies which collection of compilation flags that should be run
 #    Current available options are:
@@ -44,10 +44,11 @@ SYSINC = make_gfortran.inc
 #      PROF  : includes profiling flags with some optimization
 #      OPT   : includes optimizations flags for fastest runtime
 #    This variable cannot be left blank
-#RUN=DEBUG
-#RUN=PROF
-RUN=OPT
-#
+
+#RUN = DEBUG
+#RUN = PROF
+RUN = OPT
+
 INSTALLDIR=/opt/USGS
 #
 # DATA FORMATS
@@ -151,7 +152,7 @@ libMetReader.a: MetReader.F90 MetReader.o $(ncOBJS) $(grbOBJS) MetReader_Grids.o
 
 MetReader.o: MetReader.F90 makefile $(SYSINC)
 	sh get_version.sh
-	$(FC) $(FPPFLAGS) $(EXFLAGS) -c MetReader.F90
+	$(FC) $(FPPFLAGS) $(EXFLAGS) $(LIBS) $(USGSLIB) -c MetReader.F90
 MetReader_Grids.o: MetReader_Grids.f90 MetReader.o makefile $(SYSINC)
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(USGSLIB) -c MetReader_Grids.f90
 MetReader_ASCII.o: MetReader_ASCII.f90 MetReader.o makefile $(SYSINC)

@@ -48,12 +48,17 @@ if [[ "$HavBCawk" -eq 0 ]] ; then
    for ic in {1..5};  do
     new=`awk -v l="$ir" -v c="$ic" 'NR==l {printf ("%6.3f",$c)}' ${newdatafile}`
     old=`awk -v l="$ir" -v c="$ic" 'NR==l {printf ("%6.3f",$c)}' ${olddatafile}`
-    err=$(echo "sqrt((($new - $old)/$old)^2)" | bc -l)
-    st=`echo "$err > $THRESH" | bc`
-    if [ $st -eq 1 ]; then
-      # increment error code
-      rc=$((rc + 1))
-    fi
+    # Make sure we are not dividing by 0
+    st1=`echo "$old >  0.001" | bc -l`
+    st2=`echo "$old < -0.001" | bc -l`
+    if [ $((st1 + st2)) -eq 1 ]; then
+      err=$(echo "sqrt((($new - $old)/$old)^2)" | bc -l)
+      st=`echo "$err > $THRESH" | bc`
+      if [ $st -eq 1 ]; then
+        # increment error code
+        rc=$((rc + 1))
+      fi
+   fi
    done
   done
 else
@@ -93,12 +98,17 @@ if [[ "$HavBCawk" -eq 0 ]] ; then
    for ic in {1..2};  do
     new=`awk -v l="$ir" -v c="$ic" 'NR==l {printf ("%6.3f",$c)}' ${newdatafile}`
     old=`awk -v l="$ir" -v c="$ic" 'NR==l {printf ("%6.3f",$c)}' ${olddatafile}`
-    err=$(echo "sqrt((($new - $old)/$old)^2)" | bc -l)
-    st=`echo "$err > $THRESH" | bc`
-    if [ $st -eq 1 ]; then
-      # increment error code
-      rc=$((rc + 1))
-    fi
+    # Make sure we are not dividing by 0
+    st1=`echo "$old >  0.001" | bc -l`
+    st2=`echo "$old < -0.001" | bc -l`
+    if [ $((st1 + st2)) -eq 1 ]; then
+      err=$(echo "sqrt((($new - $old)/$old)^2)" | bc -l)
+      st=`echo "$err > $THRESH" | bc`
+      if [ $st -eq 1 ]; then
+        # increment error code
+        rc=$((rc + 1))
+      fi
+   fi
    done
   done
 else
@@ -137,11 +147,16 @@ if [[ "$HavBCawk" -eq 0 ]] ; then
   ic=7
   new=`awk '{sum+=$7;} END{printf ("%6.3f",sum);}' ${newdatafile}`
   old=`awk '{sum+=$7;} END{printf ("%6.3f",sum);}' ${olddatafile}`
-  err=$(echo "sqrt((($new - $old)/$old)^2)" | bc -l)
-  st=`echo "$err > $THRESH" | bc`
-  if [ $st -eq 1 ]; then
-    # increment error code
-    rc=$((rc + 1))
+  # Make sure we are not dividing by 0
+  st1=`echo "$old >  0.001" | bc -l`
+  st2=`echo "$old < -0.001" | bc -l`
+  if [ $((st1 + st2)) -eq 1 ]; then
+    err=$(echo "sqrt((($new - $old)/$old)^2)" | bc -l)
+    st=`echo "$err > $THRESH" | bc`
+    if [ $st -eq 1 ]; then
+      # increment error code
+      rc=$((rc + 1))
+    fi
   fi
 else
   cmp -s ${newdatafile} ${olddatafile}

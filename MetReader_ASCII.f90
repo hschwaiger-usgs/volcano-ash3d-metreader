@@ -104,8 +104,11 @@
       integer, parameter :: dp        = 8 ! double precision
       real(kind=dp), parameter :: PI        = 3.141592653589793_dp
       real(kind=dp), parameter :: DEG2RAD   = 1.7453292519943295e-2_dp
+      real(kind=sp), parameter :: KNOTS2MS  = 0.514444444_sp
       integer, parameter :: MAX_ROWS  = 300 ! maximum number of row of data
       integer, parameter :: fid       = 120
+
+
 
       integer :: iostatus
       integer :: ioerr
@@ -139,6 +142,7 @@
       character(len=7)   :: field_str
       character(len=6),dimension(53) :: GTSstr
       character(len=6)   :: dumstr1,dumstr2,dumstr3,dumstr4
+      real(kind=sp)      :: WindSuppl
       integer :: dum_int
       integer,dimension(:),allocatable :: H_tmp
       integer,dimension(:),allocatable :: T_tmp
@@ -156,8 +160,6 @@
       integer,dimension(:),allocatable :: SndColReadOrder
       character(len=3),dimension(0:50) :: MR_SndVarsName
 
-      !real(kind=dp)      :: HS_hours_since_baseyear  ! function that calculates hours
-                                                     !  since base year
       integer           :: Stat_ID
       integer           :: Stat_idx
       real(kind=sp)     :: Stat_elev
@@ -330,6 +332,10 @@
       Met_dim_IsAvailable = .false.
       Met_var_IsAvailable = .false.
       MR_nstat = min(MR_nSnd_Locs,MR_nstat)
+
+      ! HFS: Break up reader into a diagnostic (type of ASCII file), then subroutines
+      !      for the individual types (ASCII column, Radiosonde: list, raw, RUC)
+
       ! This is the start of a huge if statement that determines the type of ASCII input
       ! and loads the data.  All data for all time steps are loaded here into the
       ! variable MR_SndVars_metP(MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,nrows)
@@ -905,13 +911,18 @@
 
             ! First search the whole radiosonde file for the string 'TTAA'.  If this
             ! is present, then assume the file is in FAA604 (WMO/GTS or RAW) format
+            ! TTAA denotes manndatory level data (12 p lev): T,dew-point,gph,w-dir,w-sp
+            ! TTBB denotes significant level data for T,RH (points that help reconstruct profile): we ignore this
+            ! PPBB denotes regional and significant wind levels (also ignored)
+            ! TTCC starts the block that extends TTAA to higher levels if the balloon survives
+            ! TTDD significant level data for pressures less than 100 mb
             idx   = 0
             iostatus = 0
             do while (iostatus.ge.0)
               read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
               ! No aborting on read-error here since we will read this file until the EOF
-              idx =index(linebuffer080,"TTAA")
-              idx2=index(linebuffer080,"TTCC")
+              idx =index(linebuffer080,"TTAA") ! Look for string identifying WMO/GTS or RAW (both have this)
+              idx2=index(linebuffer080,"TTCC") ! Look for string indicating extended data
               if (idx.gt.0) then
                 IsGTS = .true.
               endif
@@ -930,7 +941,7 @@
               !2. 72694 TTAA  56001 72694 99009 22868 29006 00137 20667 28507
               !  Note that the format is slightly different so we need to find out
               ! which it is
-              GTSstr(1:53)="//////"
+              GTSstr(1:53)="//////"  ! Note: each 'element' of GTSstr(:) is really a 6-char string
               rewind(fid)
               read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
               if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
@@ -943,7 +954,7 @@
                 if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080_2,iomessage)
                 read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080_3
                 if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080_3,iomessage)
-                 ! the dumstr accommodates the 'TTAA'
+                 ! the dumstr accommodates the 'TTAA' in the first line with the rest going to GTSstr
                 read(linebuffer080  ,155,iostat=iostatus,iomsg=iomessage)dumstr1,GTSstr(1:12)
                 if(iostatus.ne.0)then
                   do io=1,MR_nio;if(VB(io).le.verbosity_error)then
@@ -961,6 +972,7 @@
                   endif;enddo
                   stop 1
                 endif
+                 ! Load the second line to the next 13 elements of GTSstr
                 read(linebuffer080_2,155,iostat=iostatus,iomsg=iomessage)GTSstr(13:25)
                 if(iostatus.ne.0)then
                   do io=1,MR_nio;if(VB(io).le.verbosity_error)then
@@ -978,6 +990,7 @@
                   endif;enddo
                   stop 1
                 endif
+                ! And load the third line to elemets 26-38 of the GTSstr array
                 read(linebuffer080_3,155,iostat=iostatus,iomsg=iomessage)GTSstr(26:38)
                 if(iostatus.ne.0)then
                   do io=1,MR_nio;if(VB(io).le.verbosity_error)then
@@ -995,6 +1008,9 @@
                   endif;enddo
                   stop 1
                 endif
+                ! There might be an additional line or two in block TTAA with atmospheric structure
+                ! data: '88' indicates tropopause, '77' indicates max wind.  We ignore those and now
+                ! skip to the TTCC block (if it exists)
 
                 ! Now we need to load the TTCC string blocks if the sonde went high enough
                 if(HasTTCC)then
@@ -1193,34 +1209,42 @@
                 endif
               endif
               ! Now interpret the strings
-              ! Block B: day/time
+              ! Block B: day/time/data-height
+              !   Day of month is the first two digits - 50
               read(GTSstr(1)(1:2),*,iostat=iostatus,iomsg=iomessage)DayOfMonth
               DayOfMonth = DayOfMonth-50
+              !   Hour of day is the second two digits
               read(GTSstr(1)(3:4),*,iostat=iostatus,iomsg=iomessage)SndHour
               ! There is no year in this file, so assume year for requested
-              ! event.  Needs to be set by calling program prio to this point.
+              ! event.  Needs to be set by calling program prior to this point.
               if(MR_Comp_StartYear.lt.1900)then
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                   write(errlog(io),*)"MR ERROR: Trying to use sonde data in raw format"
                   write(errlog(io),*)"          with an unknown year."
                 endif;enddo
-                stop 1
-                ! This is for the windfile tests with all windfile formats for 2018/06/20
-                !MR_Comp_StartYear  = 2018
-                !MR_Comp_StartMonth = 6
+                !stop 1
+                MR_Comp_StartYear  = 2018
+                MR_Comp_StartMonth = 6
               endif
-
               MR_windfile_starthour(iw_idx) = &
                  HS_hours_since_baseyear(MR_Comp_StartYear,MR_Comp_StartMonth,DayOfMonth,&
                                          real(SndHour,kind=dp),MR_BaseYear,MR_useLeap)
 
+              !   Last character of block B is 1 if data are provided up to 100mb
+              read(GTSstr(1)(5:5),*,iostat=iostatus,iomsg=iomessage)dum_int
+              !if(dum_int.eq.1)then
+                ! TTAA block contains full set of pressure levels
+              !else
+                ! TTAA block contains truncated set of pressure levels
+              !endif
+
               ! Block A: station identifier
               read(GTSstr(2),*,iostat=iostatus,iomsg=iomessage)Stat_ID
-              !call MR_Load_Radiosonde_Station_Data
               call MR_Get_Radiosonde_Station_Coord(Stat_ID, Stat_idx,&
                                        y_fullmet_sp(iloc),x_fullmet_sp(iloc),&
                                        Stat_elev)
               Snd_idx(iloc) = Stat_idx
+
               ! Block C: surface pressure
               if(GTSstr(3)(1:1).ne.'/')then
                 read(GTSstr(3)(1:2),*,iostat=iostatus,iomsg=iomessage)dum_int ! should be 99 indicating surface
@@ -1240,18 +1264,20 @@
               else
                 SurfTemp_int = -9999
               endif
+              ! These three digits are 10's, 1's and tenths for the temperature.  If the last digit is odd, the
+              ! temperature is negative
               if (mod(SurfTemp_int,2).eq.0)then
                 SurfTemp =  0.1_sp*real(SurfTemp_int,kind=sp)
               else
                 SurfTemp = -0.1_sp*real(SurfTemp_int,kind=sp)
               endif
-              SurfTemp = SurfTemp 
+              !SurfTemp = SurfTemp
               if(GTSstr(4)(4:4).ne.'/')then
                 read(GTSstr(4)(4:5),*,iostat=iostatus,iomsg=iomessage)dum_int
               else
                 dum_int = -9999
               endif
-              SurfDewPoint = real(dum_int,kind=sp)
+              SurfDewPoint = real(dum_int,kind=sp) ! HFS something's not right; might need a scaling like above
 
               ! Block E: Wind direction and speed for last pressure
               if(GTSstr(5)(1:1).ne.'/')then
@@ -1277,10 +1303,11 @@
                 istr1 = 6 + (il-1)*3    ! block for pressure/height
                 istr2 = 6 + (il-1)*3 +1 ! block for temperature/dew-point
                 istr3 = 6 + (il-1)*3 +2 ! block for wind direction/speed
-
+!                write(*,*)GTSstr(istr1),GTSstr(istr2),GTSstr(istr3)
                 !  Block 1 of the 3-block level data (pressure, height)
                 if(GTSstr(istr1)(1:1).ne.'/')then
-                  read(GTSstr(istr1)(1:2),*,iostat=iostatus,iomsg=iomessage)dum_int ! this is a pressure indicator that we could double-check
+                  ! this is a pressure indicator that we could double-check
+                  read(GTSstr(istr1)(1:2),*,iostat=iostatus,iomsg=iomessage)dum_int
                 else
                   dum_int = -9999
                 endif
@@ -1302,13 +1329,22 @@
                 else
                   dum_int = -9999
                 endif
+                ! Note, the azimuth is 3-digits and ends in 0 or 5. If it ends in 1 or 6, then this indicates
+                ! that the wind speed (given in the last 2 chars) is greater than 99 knots. In that case, we
+                ! will need to round down the azimuth and add 100 to the wind speed
+                if(GTSstr(istr3)(3:3).eq.'1'.or.GTSstr(istr3)(3:3).eq.'6')then
+                  WindSuppl = 100.0_sp
+                  dum_int   = dum_int-1
+                else
+                  WindSuppl = 0.0_sp
+                endif
                 WindDirection(il) = real(dum_int,kind=sp)
                 if(GTSstr(istr3)(4:4).ne.'/')then
                   read(GTSstr(istr3)(4:5),*,iostat=iostatus,iomsg=iomessage)dum_int  ! Wind speed (knts) is char 4-5
                 else
                   dum_int = -9999
                 endif
-                WindVelocity(il) = real(dum_int,kind=sp)
+                WindVelocity(il) = real(dum_int,kind=sp) + WindSuppl
               enddo
 
               !--------------------------------
@@ -1344,7 +1380,7 @@
               ! Temperature: do error checking
               do il = 1,ulev
                 if(T_tmp(il).ne.-9999)then
-                  if (mod(dum_int,2).eq.0)then
+                  if (mod(T_tmp(il),2).eq.0)then
                     MR_SndVars_metP(iloc,itime,5,il) =  0.1_sp*real(T_tmp(il),kind=sp)
                   else
                     MR_SndVars_metP(iloc,itime,5,il) = -0.1_sp*real(T_tmp(il),kind=sp)
@@ -1404,7 +1440,7 @@
                   endif
                 endif
               enddo
-              WindVelocity(:)   = WindVelocity(:)*0.514444444_sp                             ! convert Knot to m/s
+              !WindVelocity(:)   = WindVelocity(:)*KNOTS2MS                             ! convert Knot to m/s
 
               ! Wind direction: do error checking
               do il = 1,ulev
@@ -1430,12 +1466,11 @@
                     WindDirection(il) = vbot + (vtop-vbot)*(zhere-zbot)/(ztop-zbot)
                   endif
                 endif
+                MR_SndVars_metP(iloc,itime,3,il) = &
+                  -1.0_sp*real(WindVelocity(il)*sin(DEG2RAD*WindDirection(il)),kind=sp)*KNOTS2MS
+                MR_SndVars_metP(iloc,itime,4,il) = &
+                  -1.0_sp*real(WindVelocity(il)*cos(DEG2RAD*WindDirection(il)),kind=sp)*KNOTS2MS
               enddo
-
-              MR_SndVars_metP(iloc,itime,3,:) = &
-                real(WindVelocity(:)*sin(pi + DEG2RAD*WindDirection(:)),kind=sp)
-              MR_SndVars_metP(iloc,itime,4,:) = &
-                real(WindVelocity(:)*cos(pi + DEG2RAD*WindDirection(:)),kind=sp)
 
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                 write(outlog(io),*)"==================================================================="
@@ -1455,6 +1490,7 @@
    141          format(3x,7f10.3)
                 write(outlog(io),*)"==================================================================="
               endif;enddo
+!              stop 77
             else  ! end of GTS format section
               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
               !  Reading data Textlist format from http://weather.uwyo.edu/
@@ -1552,6 +1588,7 @@
 !                  ivalue4 = ivalue4_o - int(fac*(ivalue4_o - ivalue4)) ! DRCT
 !                  ivalue5 = ivalue5_o - int(fac*(ivalue5_o - ivalue5)) ! SKNT
                 endif
+
                 if (abs(pres_Snd_tmp(iil)-rvalue1).lt.1.0_sp) then ! Sometimes the last level is 10.5
                   ! found the next mandatory level
                   MR_SndVars_metP(iloc,itime,1,iil) = rvalue1
@@ -1575,17 +1612,6 @@
                   else
                     MR_SndVars_metP(iloc,itime,4,iil) = real(ivalue5,kind=4)
                   endif
-   
-                  !do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-                  !  write(outlog(io),'(7f13.5)')&
-                  !          MR_SndVars_metP(iloc,itime,1,iil),& ! PRES
-                  !          MR_SndVars_metP(iloc,itime,2,iil),& ! HGHT
-                  !          MR_SndVars_metP(iloc,itime,3,iil),& ! TEMP
-                  !          MR_SndVars_metP(iloc,itime,4,iil),& ! DRCT
-                  !          MR_SndVars_metP(iloc,itime,5,iil),& ! SKNT
-                  !          WindVelocity(iil),&
-                  !          WindDirection(iil)
-                  !endif;enddo
                   MR_Snd_np_fullmet(iloc,itime) = iil  ! This keeps getting reassigned with each
                                                        ! successful read
                   iil = iil + 1
@@ -1661,13 +1687,14 @@
                   MR_SndVars_metP(iloc,itime,1,iil) = MR_SndVars_metP(iloc,itime,1,iil) * 100.0_sp  ! mb->Ppa
                   MR_SndVars_metP(iloc,itime,2,iil) = MR_SndVars_metP(iloc,itime,2,iil) *1.0e-3_sp  !  m->km
                   MR_SndVars_metP(iloc,itime,5,iil) = MR_SndVars_metP(iloc,itime,5,iil) + 273.0_sp  !  C->K
-                  WindVelocity(iil)   = MR_SndVars_metP(iloc,itime,3,iil)*0.514444444_sp            ! knt->m/s
-                  WindDirection(iil)  = MR_SndVars_metP(iloc,itime,4,iil)                           ! deg
+                  WindVelocity(iil)   = MR_SndVars_metP(iloc,itime,4,iil)            ! knt->m/s
+                  WindDirection(iil)  = MR_SndVars_metP(iloc,itime,3,iil)            ! deg
                   MR_SndVars_metP(iloc,itime,3,iil) = &
-                    real(WindVelocity(iil)*sin(pi + DEG2RAD*WindDirection(iil)),kind=sp)            ! Vx in m/s
+                    -1.0_sp*real(WindVelocity(iil)*sin(DEG2RAD*WindDirection(iil)),kind=sp)*KNOTS2MS ! Vx in m/s\
                   MR_SndVars_metP(iloc,itime,4,iil) = &
-                    real(WindVelocity(iil)*cos(pi + DEG2RAD*WindDirection(iil)),kind=sp)            ! Vy in m/s
-
+                    -1.0_sp*real(WindVelocity(iil)*cos(DEG2RAD*WindDirection(iil)),kind=sp)*KNOTS2MS ! Vy in m/s
+!                  write(*,*)MR_SndVars_metP(iloc,itime,1:5,iil),WindVelocity(iil),WindDirection(iil)
+!                  stop 98
                   do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                     write(outlog(io),'(7f13.5)')&
                             MR_SndVars_metP(iloc,itime,1,iil),& ! PRES Pa
@@ -1753,7 +1780,7 @@
               MR_windfile_starthour(iw_idx) = HS_hours_since_baseyear(ivalue1,ivalue2,ivalue3,&
                                               real(ivalue4,kind=dp),MR_BaseYear,MR_useLeap)
 
-            endif
+            endif ! IsGTS
             close(fid)
             ! Finished reading all the data for this file
 
@@ -3632,9 +3659,9 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       real(kind=sp) :: norm
       real(kind=sp) :: dist
       real(kind=sp) :: lenscale
-      real(kind=sp) :: domwgt
       integer :: maxstations
-      logical :: inStencil
+      !logical :: inStencil
+      !real(kind=sp) :: domwgt
       logical,dimension(:),allocatable :: StatInStencil
 
       real(kind=sp),dimension(:,:,:),allocatable :: MR_Snd2Comp_dist

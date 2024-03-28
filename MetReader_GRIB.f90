@@ -83,8 +83,8 @@
       integer(kind=4)  :: numberOfPoints
       integer(kind=4)  :: dum_int
       real(kind=8)     :: dum_dp
-      !character(len=19) :: dum_str
       character(len=20) :: dum_str
+      integer          :: gg_order
       real(kind=dp) :: x_start,y_start
       real(kind=dp) :: Lon_start,Lat_start
       real(kind=dp) :: Lon_end,Lat_end
@@ -350,6 +350,108 @@
             x_fullmet_sp(nx_fullmet+1) = x_fullmet_sp(nx_fullmet)+dx_met_const
           elseif(index(dum_str,'regular_gg').ne.0)then
             IsLatLon_MetGrid = .true.
+            ! For Gaussian grid, get the order
+            call codes_get(igribv(ir),'N',gg_order,nSTAT)
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get N ")
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"Detected regular_gg grid of order N=",gg_order
+            endif;enddo
+
+            if(gg_order.eq.128)then
+              ! this is the N128 grid (512x256) used by ERA Interim
+              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                write(outlog(io),*)"Assuming this is ERA Interim; filling lon and lat"
+              endif;enddo
+              dx_met_const = 0.7031252_sp
+              do i=1,nx_fullmet
+                x_fullmet_sp(i) = 0.0_sp+(i-1)* dx_met_const
+              enddo
+              y_fullmet_sp(1:ny_fullmet) = &
+         (/89.46282_sp, 88.76695_sp, 88.06697_sp, 87.36607_sp, 86.66480_sp, 85.96337_sp,              &
+           85.26185_sp, 84.56026_sp, 83.85863_sp, 83.15699_sp, 82.45532_sp, 81.75363_sp, 81.05194_sp, &
+           80.35023_sp, 79.64853_sp, 78.94681_sp, 78.24509_sp, 77.54337_sp, 76.84164_sp, 76.13991_sp, &
+           75.43818_sp, 74.73644_sp, 74.03471_sp, 73.33297_sp, 72.63123_sp, 71.92949_sp, 71.22775_sp, &
+           70.52601_sp, 69.82426_sp, 69.12252_sp, 68.42078_sp, 67.71903_sp, 67.01729_sp, 66.31554_sp, &
+           65.61379_sp, 64.91205_sp, 64.21030_sp, 63.50855_sp, 62.80680_sp, 62.10506_sp, 61.40331_sp, &
+           60.70156_sp, 59.99981_sp, 59.29806_sp, 58.59631_sp, 57.89456_sp, 57.19281_sp, 56.49106_sp, &
+           55.78931_sp, 55.08756_sp, 54.38581_sp, 53.68406_sp, 52.98231_sp, 52.28056_sp, 51.57881_sp, &
+           50.87706_sp, 50.17531_sp, 49.47356_sp, 48.77180_sp, 48.07005_sp, 47.36830_sp, 46.66655_sp, &
+           45.96480_sp, 45.26305_sp, 44.56129_sp, 43.85954_sp, 43.15779_sp, 42.45604_sp, 41.75429_sp, &
+           41.05254_sp, 40.35078_sp, 39.64903_sp, 38.94728_sp, 38.24553_sp, 37.54378_sp, 36.84202_sp, &
+           36.14027_sp, 35.43852_sp, 34.73677_sp, 34.03502_sp, 33.33326_sp, 32.63151_sp, 31.92976_sp, &
+           31.22800_sp, 30.52625_sp, 29.82450_sp, 29.12275_sp, 28.42099_sp, 27.71924_sp, 27.01749_sp, &
+           26.31573_sp, 25.61398_sp, 24.91223_sp, 24.21048_sp, 23.50872_sp, 22.80697_sp, 22.10522_sp, &
+           21.40347_sp, 20.70171_sp, 19.99996_sp, 19.29821_sp, 18.59645_sp, 17.89470_sp, 17.19295_sp, &
+           16.49120_sp, 15.78944_sp, 15.08769_sp, 14.38594_sp, 13.68418_sp, 12.98243_sp, 12.28068_sp, &
+           11.57893_sp, 10.87717_sp, 10.17542_sp, 9.473666_sp, 8.771913_sp,  8.07016_sp, 7.368407_sp, &
+           6.666654_sp, 5.964901_sp, 5.263148_sp, 4.561395_sp, 3.859642_sp, 3.157889_sp, 2.456136_sp, &
+           1.754383_sp,  1.05263_sp,0.3508765_sp,-0.350877_sp, -1.05263_sp,-1.754383_sp,-2.456136_sp, &
+          -3.157889_sp,-3.859642_sp,-4.561395_sp,-5.263148_sp,-5.964901_sp,-6.666654_sp,              &
+          -7.368407_sp, -8.07016_sp,-8.771913_sp,-9.473666_sp,-10.17542_sp,-10.87717_sp,              &
+          -11.57893_sp,-12.28068_sp,-12.98243_sp,-13.68418_sp,-14.38594_sp,-15.08769_sp,              &
+          -15.78944_sp,-16.49120_sp,-17.19295_sp, -17.8947_sp,-18.59645_sp,-19.29821_sp,              &
+          -19.99996_sp,-20.70171_sp,-21.40347_sp,-22.10522_sp,-22.80697_sp,-23.50872_sp,              &
+          -24.21048_sp,-24.91223_sp,-25.61398_sp,-26.31573_sp,-27.01749_sp,-27.71924_sp,              &
+          -28.42099_sp,-29.12275_sp,-29.82450_sp,-30.52625_sp,-31.22800_sp,-31.92976_sp, -32.63151_sp,&
+          -33.33326_sp,-34.03502_sp,-34.73677_sp,-35.43852_sp,-36.14027_sp,-36.84202_sp,              &
+          -37.54378_sp,-38.24553_sp,-38.94728_sp,-39.64903_sp,-40.35078_sp,-41.05254_sp,              &
+          -41.75429_sp,-42.45604_sp,-43.15779_sp,-43.85954_sp,-44.56129_sp,-45.26305_sp,              &
+          -45.96480_sp,-46.66655_sp,-47.36830_sp,-48.07005_sp,-48.77180_sp,-49.47356_sp, -50.17531_sp,&
+          -50.87706_sp,-51.57881_sp,-52.28056_sp,-52.98231_sp,-53.68406_sp,-54.38581_sp,              &
+          -55.08756_sp,-55.78931_sp,-56.49106_sp,-57.19281_sp,-57.89456_sp,-58.59631_sp,              &
+          -59.29806_sp,-59.99981_sp,-60.70156_sp,-61.40331_sp,-62.10506_sp,-62.80680_sp,              &
+          -63.50855_sp,-64.21030_sp,-64.91205_sp,-65.61379_sp,-66.31554_sp,-67.01729_sp,              &
+          -67.71903_sp,-68.42078_sp,-69.12252_sp,-69.82426_sp,-70.52601_sp,-71.22775_sp,              &
+          -71.92949_sp,-72.63123_sp,-73.33297_sp,-74.03471_sp,-74.73644_sp,-75.43818_sp,              &
+          -76.13991_sp,-76.84164_sp,-77.54337_sp,-78.24509_sp,-78.94681_sp,-79.64853_sp,              &
+          -80.35023_sp,-81.05194_sp,-81.75363_sp,-82.45532_sp,-83.15699_sp,-83.85863_sp,              &
+          -84.56026_sp,-85.26185_sp,-85.96337_sp, -86.6648_sp,-87.36607_sp,-88.06697_sp,              &
+          -88.76695_sp,-89.46282_sp /)
+            elseif(gg_order.eq.80)then
+              ! this is the N80 grid (320x160) used by ERA 20C
+              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                write(outlog(io),*)"Assuming this is ERA 20C; filling lon and lat"
+              endif;enddo
+              dx_met_const = 1.125_sp
+              do i=1,nx_fullmet
+                x_fullmet_sp(i) = 0.0_sp+(i-1)* dx_met_const
+              enddo
+              y_fullmet_sp(1:ny_fullmet) = &
+         (/89.14152_sp, 88.02943_sp, 86.91077_sp, 85.79063_sp, 84.66992_sp, 83.54895_sp,              &
+           82.42782_sp, 81.30659_sp, 80.18531_sp, 79.06398_sp, 77.94263_sp, 76.82124_sp, 75.69984_sp, &
+           74.57843_sp, 73.45701_sp, 72.33558_sp, 71.21413_sp, 70.09269_sp, 68.97124_sp, 67.84978_sp, &
+           66.72832_sp, 65.60686_sp, 64.48540_sp, 63.36393_sp, 62.24246_sp, 61.12099_sp, 59.99952_sp, &
+           58.87804_sp, 57.75657_sp, 56.63509_sp, 55.51361_sp, 54.39214_sp, 53.27066_sp, 52.14917_sp, &
+           51.02769_sp, 49.90621_sp, 48.78473_sp, 47.66325_sp, 46.54176_sp, 45.42028_sp, 44.29879_sp, &
+           43.17731_sp, 42.05582_sp, 40.93434_sp, 39.81285_sp, 38.69136_sp, 37.56988_sp, 36.44839_sp, &
+           35.32690_sp, 34.20542_sp, 33.08393_sp, 31.96244_sp, 30.84096_sp, 29.71947_sp, 28.59798_sp, &
+           27.47649_sp, 26.35500_sp, 25.23351_sp, 24.11202_sp, 22.99054_sp, 21.86905_sp, 20.74756_sp, &
+           19.62607_sp, 18.50458_sp, 17.38309_sp, 16.26160_sp, 15.14011_sp, 14.01862_sp, 12.89713_sp, &
+           11.77564_sp, 10.65415_sp,  9.53266_sp,  8.41117_sp,  7.28968_sp, 6.168194_sp, 5.046704_sp, &
+            3.92522_sp,  2.80373_sp,  1.68224_sp,  0.56074_sp, -0.56074_sp,-1.682235_sp, &
+           -2.80373_sp, -3.92522_sp, -5.04670_sp, -6.16819_sp, -7.28968_sp,-8.411174_sp, &
+           -9.53266_sp,-10.65415_sp,-11.77564_sp,-12.89713_sp,-14.01862_sp,-15.14011_sp, &
+          -16.26160_sp,-17.38309_sp,-18.50458_sp,-19.62607_sp,-20.74756_sp,-21.86905_sp, &
+          -22.99054_sp,-24.11202_sp,-25.23351_sp,-26.35500_sp,-27.47649_sp,-28.59798_sp, &
+          -29.71947_sp,-30.84096_sp,-31.96244_sp,-33.08393_sp,-34.20542_sp,-35.32690_sp, &
+          -36.44839_sp,-37.56988_sp,-38.69136_sp,-39.81285_sp,-40.93434_sp,-42.05582_sp, &
+          -43.17731_sp,-44.29879_sp,-45.42028_sp,-46.54176_sp,-47.66325_sp,-48.78473_sp, &
+          -49.90621_sp,-51.02769_sp,-52.14917_sp,-53.27066_sp,-54.39214_sp,-55.51361_sp, &
+          -56.63509_sp,-57.75657_sp,-58.87804_sp,-59.99952_sp,-61.12099_sp,-62.24246_sp, &
+          -63.36393_sp,-64.48540_sp,-65.60686_sp,-66.72832_sp,-67.84978_sp,-68.97124_sp, &
+          -70.09269_sp,-71.21413_sp,-72.33558_sp,-73.45701_sp,-74.57843_sp,-75.69984_sp, &
+          -76.82124_sp,-77.94263_sp,-79.06398_sp,-80.18531_sp,-81.30659_sp,-82.42782_sp, &
+          -83.54895_sp,-84.66992_sp,-85.79063_sp,-86.91077_sp,-88.02943_sp,-89.14152_sp /)
+            else
+              ! We currently do not have a general gaussian grid calculator.
+              ! Might incorporate this file at some point.
+              ! https://github.com/NCAR/ncl/blob/develop/ni/src/lib/nfpfort/gaus.f
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                write(errlog(io),*)"MR ERROR: Need to fix grid reading for gg grids."
+              endif;enddo
+              stop 1
+            endif
+
             !Lat_start = y_start
             !Lon_start = x_start
             y_start = Lat_start 
@@ -360,10 +462,6 @@
             allocate(values(numberOfPoints))
             call codes_get(igribv(ir),'values',values,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get values ")
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-              write(errlog(io),*)"MR ERROR: Need to fix grid reading for gg grids."
-            endif;enddo
-            stop 1
             ReadGrid = .true.
             deallocate(values)
             !call codes_get(igribv(ir),'latitudeOfLastGridPointInDegrees',dum_dp,nSTAT)

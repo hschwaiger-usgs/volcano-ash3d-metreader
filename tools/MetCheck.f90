@@ -274,6 +274,7 @@
 
       allocate(z_cc(nzmax))    ; z_cc(1:2) = (/0.0_4, 10.0_4/)
       IsPeriodic = .false.
+      IsPeriodic = .true.
 
       ! We just want to access the met grid, so set our 'comp' grid to the
       ! same projection
