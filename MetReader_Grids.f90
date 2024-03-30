@@ -1475,93 +1475,6 @@
       allocate(MR_geoH_metP_last(nx_submet,ny_submet,np_fullmet))
       allocate(MR_geoH_metP_next(nx_submet,ny_submet,np_fullmet))
 
-!      if(MR_iwindformat.eq.25)then
-!        ! The following is only needed if we are reading 2d variables from NCEP
-!        ! wind files, but we will set up the grids regardless as a precaution
-!          ! Here are the weights starting with LL then counter-clockwise
-!        allocate(amap_iwf25(nx_submet,ny_submet,4))
-!        amap_iwf25 = 0.0_sp
-!        !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + sp*(as_nxmax*as_nymax*4)
-!          ! Here is the x1,x2,y1,y2 indices
-!        allocate(imap_iwf25(nx_submet,ny_submet,4))
-!        imap_iwf25 = 0
-!        !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + sp*(as_nxmax*as_nymax*4)
-!
-!        ! These should be read directly, but for now, just hardcode it.        
-!        do i = 1,192
-!          x_in_iwf25_sp(i)=(i-1)*1.875_sp
-!        enddo
-!        y_in_iwf25_sp(1:94) = (/ &
-!         88.542_sp,  86.6531_sp,  84.7532_sp,  82.8508_sp,  80.9473_sp,   79.0435_sp,  77.1394_sp, 75.2351_sp, &
-!        73.3307_sp,  71.4262_sp,  69.5217_sp,  67.6171_sp,  65.7125_sp,   63.8079_sp,  61.9033_sp, 59.9986_sp, &
-!        58.0939_sp,  56.1893_sp,  54.2846_sp,  52.3799_sp,  50.4752_sp,   48.5705_sp,  46.6658_sp, 44.7611_sp, &
-!        42.8564_sp,  40.9517_sp,   39.047_sp,  37.1422_sp,  35.2375_sp,   33.3328_sp,  31.4281_sp, 29.5234_sp, &
-!        27.6186_sp,  25.7139_sp,  23.8092_sp,  21.9044_sp,  19.9997_sp,    18.095_sp,  16.1902_sp, 14.2855_sp, &
-!        12.3808_sp, 10.47604_sp,  8.57131_sp,  6.66657_sp,  4.76184_sp,    2.8571_sp, 0.952368_sp, &
-!      -0.952368_sp,  -2.8571_sp, -4.76184_sp, -6.66657_sp, -8.57131_sp, -10.47604_sp, -12.3808_sp, &
-!       -14.2855_sp, -16.1902_sp,  -18.095_sp, -19.9997_sp, -21.9044_sp,  -23.8092_sp, -25.7139_sp, &
-!       -27.6186_sp, -29.5234_sp, -31.4281_sp, -33.3328_sp, -35.2375_sp,  -37.1422_sp,  -39.047_sp, &
-!       -40.9517_sp, -42.8564_sp, -44.7611_sp, -46.6658_sp, -48.5705_sp,  -50.4752_sp, -52.3799_sp, &
-!       -54.2846_sp, -56.1893_sp, -58.0939_sp, -59.9986_sp, -61.9033_sp,  -63.8079_sp, -65.7125_sp, &
-!       -67.6171_sp, -69.5217_sp, -71.4262_sp, -73.3307_sp, -75.2351_sp,  -77.1394_sp, -79.0435_sp, &
-!       -80.9473_sp, -82.8508_sp, -84.7532_sp, -86.6531_sp,  -88.542_sp /)
-!
-!        do ilon = 1,nx_submet
-!          x_loc = max(0.0_sp,x_submet_sp(ilon))
-!          xfrac_sp = -1.0_sp
-!          xc_sp    = -1.0_sp
-!          do i = 1,191
-!            if(max(0.0_sp,x_in_iwf25_sp(i)).le.x_loc.and.x_in_iwf25_sp(i+1).gt.x_loc)then
-!              ix1 = i
-!              ix2 = i+1
-!              xfrac_sp = (x_loc - x_in_iwf25_sp(i))/1.875_sp
-!              xc_sp = 1.0_sp - xfrac_sp
-!              exit ! leave do loop
-!            endif
-!          enddo
-!          if(xfrac_sp.lt.0.0_sp.or.xc_sp.lt.0.0_sp)then
-!            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-!              write(errlog(io),*)"MR ERROR: i maps out of grid: ",i
-!            endif;enddo
-!            stop 1
-!          endif
-!
-!          do ilat = 1,ny_submet
-!            y_loc = y_submet_sp(ilat)
-!            write(*,*)ilat,ny_submet,y_loc
-!            yfrac_sp = -1.0_sp
-!            yc_sp    = -1.0_sp
-!            do j = 94,2,-1
-!              if(y_in_iwf25_sp(j).le.y_loc.and.y_in_iwf25_sp(j-1).gt.y_loc)then
-!                iy1 = j
-!                iy2 = j-1
-!                dely_sp = y_in_iwf25_sp(j-1)-y_in_iwf25_sp(j)
-!                yfrac_sp = (y_loc - y_in_iwf25_sp(j))/dely_sp
-!                yc_sp = 1.0_sp - yfrac_sp
-!                exit ! leave do loop
-!              endif
-!            enddo
-!            if(yfrac_sp.lt.0.0_sp.or.yc_sp.lt.0.0_sp)then
-!              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-!                write(errlog(io),*)"MR ERROR: j maps out of grid: ",j
-!              endif;enddo
-!              stop 1
-!            endif
-!
-!            imap_iwf25(ilon,ilat,1)=ix1
-!            imap_iwf25(ilon,ilat,2)=ix2
-!            imap_iwf25(ilon,ilat,3)=iy1
-!            imap_iwf25(ilon,ilat,4)=iy2
-!            amap_iwf25(ilon,ilat,1)=xc_sp*yc_sp
-!            amap_iwf25(ilon,ilat,2)=xfrac_sp*yc_sp
-!            amap_iwf25(ilon,ilat,3)=xfrac_sp*yfrac_sp
-!            amap_iwf25(ilon,ilat,4)=yfrac_sp*xc_sp
-!
-!          enddo
-!        enddo
-!
-!      endif
-
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
@@ -1595,8 +1508,8 @@
          CompPoint_on_subMet_idx,bilin_map_wgt,CompPoint_X_on_Met_sp,CompPoint_Y_on_Met_sp,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
          Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
-         y_comp_sp,x_comp_sp,nx_comp,ny_comp,IsLatLon_MetGrid,IsLatLon_CompGrid,Map_Case
-         
+         y_comp_sp,x_comp_sp,nx_comp,ny_comp,IsLatLon_MetGrid,IsLatLon_CompGrid,Map_Case, &
+         Met_proj4,Comp_proj4
 
       use projection,      only : &
            PJ_Set_Proj_Params,&
@@ -1716,6 +1629,61 @@
           endif !Comp_iprojflag
         endif !Met_iprojflag.ne.Comp_iprojflag
       endif ! Met and Comp projected
+
+      ! Write out the proj4 line for the projection of the computational grid.
+      ! This can be used in post-processing, if desired
+      if(Map_Case.eq.1)then
+        ! (1) Both Comp Grid and Met grids are Lat/Lon
+        Comp_proj4 = "LL"
+      elseif(Map_Case.eq.2)then
+        ! (2) Both Comp Grid and Met grids are the same projection
+        Comp_proj4 = Met_proj4
+      elseif(Map_Case.eq.4)then
+        ! (4) Met Grid is projected and Comp grid is Lat/Lon
+        Comp_proj4 = "LL"
+      elseif(Map_Case.eq.5.or.Map_Case.eq.5)then
+        ! (3) Met Grid is Lat/Lon and Comp grid is projected
+        ! (5) Met Grid and Comp grids have different projections
+        ! In these cases, we need to build the proj4 line.
+        if(Comp_iprojflag.eq.0)then
+          ! Both Comp and Met are non-geographic, Cartesian grids
+          Comp_proj4 = "XY"
+        elseif(Comp_iprojflag.eq.1)then
+          ! Polar stereographic
+!          Comp_proj4 = "proj +proj=stere  +lon_0=" // real(Comp_lam0,kind=sp) // &
+!                                        " +lat_0=" // real(Comp_phi0,kind=sp) // & 
+!                                        " +k_0="   // real(Comp_k0,kind=sp)   // &
+!                                        " +R="     // real(Comp_Re,kind=sp)
+          write(Comp_proj4,2010)Comp_lam0,Comp_phi0,Comp_k0,Comp_Re
+2010      format('proj +proj=stere  +lon_0=',f5.2,' +lat_0=',f5.2,' +k_0=',f5.3,' +R=',f8.3)
+          ! proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229
+        elseif(Comp_iprojflag.eq.2)then
+          ! Albers Equal Area
+!          Comp_proj4 = "proj +proj=aea +lat_1=" // real(Comp_phi0,kind=sp) // &
+!                                     " +lat_2=" // real(Comp_phi2,kind=sp)
+          write(Comp_proj4,2020)Comp_phi0,Comp_phi2
+2020      format('proj +proj=aea +lat_1='f5.2,' +lat_2=',f5.2)
+        elseif(Comp_iprojflag.eq.3)then
+          ! UTM
+          stop 1
+        elseif(Comp_iprojflag.eq.4)then
+          ! Lambert conformal conic (NARR, NAM218, NAM221)
+!          Comp_proj4 = "proj +proj=lcc +lon_0=" // real(Comp_lam0,kind=sp) // &
+!                                     " +lat_0=" // real(Comp_phi0,kind=sp) // &
+!                                     " +lat_1=" // real(Comp_phi1,kind=sp) // &
+!                                     " +lat_2=" // real(Comp_phi2,kind=sp) // &
+!                                     " +R="     // real(Comp_Re,kind=sp)
+          write(Comp_proj4,2040)Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_Re
+2040      format('proj +proj=lcc +lon_0='f5.2,' +lat_0=',f5.2,' +lat_1=',f5.2,' +lat_2=',f5.2,' +R=',f8.3)
+        elseif(Comp_iprojflag.eq.5)then
+          ! Mercator (NAM196)
+!          Comp_proj4 = "proj +proj=merc  +lat_ts=" // real(Comp_lam0,kind=sp) // &
+!                                        " +lon_0="  // real(Comp_phi0,kind=sp) // &
+!                                        " +R="     // real(Comp_Re,kind=sp)
+          write(Comp_proj4,2050)Comp_lam0,Comp_phi0,Comp_Re
+2050      format('proj +proj=merc +lat_ts='f5.2,' +lon_0=',f5.2,' +R=',f8.3)
+        endif
+      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         if(Map_Case.eq.1)then

@@ -3042,12 +3042,8 @@
 
       select case (MR_iwind)
       case(1)   ! if we're using a 1-D wind sounding
-        write(*,*)"Calling MR_Set_MetComp_Grids_ASCII_1d"
         call MR_Set_MetComp_Grids_ASCII_1d
-        write(*,*)"Called MR_Set_MetComp_Grids_ASCII_1d"
-        write(*,*)"Calling MR_Set_Comp2Met_Map"
         call MR_Set_Comp2Met_Map
-        write(*,*)"Called MR_Set_Comp2Met_Map"
       case(2)
         !call MR_Set_MetComp_Grids_ASCII_3d
       case (3:5)
