@@ -24,7 +24,7 @@
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_production,&
          IsLatLon_MetGrid,IsGlobal_MetGrid,IsRegular_MetGrid,isGridRelative,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         MR_iversion,MR_Reannalysis,Met_gridtype
+         MR_iversion,MR_Reannalysis,Met_gridtype,Met_proj4
 
       implicit none
 
@@ -61,6 +61,7 @@
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 262.5 38.5 38.5 38.5 6371.229    #Proj flags and params  
 
+        Met_proj4 = "proj +proj=lcc +lon_0=262.5 +lat_0=38.5 +lat_1=38.5 +lat_2=38.5 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -97,6 +98,7 @@
         !  radius      =  6367.47 : earth radius for spherical earth
         ! 0 4 -107.0 50.0 50.0 50.0 6367.47    #Proj flags and params  
 
+        Met_proj4 = "proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6367.47"
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -116,6 +118,7 @@
          ! Not an NCEP grid
          !  This grid is for the WRF runs (must be read from file)
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.   ! this might be reset
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -127,6 +130,7 @@
          ! Not an NCEP grid
          !  This grid is for the NASA Np
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -138,6 +142,7 @@
          ! Not an NCEP grid
          !  This grid is for the NASA GEOS-5 Cp or MERRA-2
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -149,6 +154,7 @@
          ! Not an NCEP grid
          !  This grid is for the CAM files
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -160,6 +166,7 @@
          ! Not an NCEP grid
          !  This grid is for the AFWA files
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -171,6 +178,7 @@
          ! Not an NCEP grid
          !  This grid is for the ECMWF ERA-20c
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .false.
@@ -182,6 +190,7 @@
          ! Not an NCEP grid
          !  This grid is for the ECMWF ERA5
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .false.
@@ -192,6 +201,7 @@
       elseif(igrid.eq.1027)then
          ! Not an NCEP grid
          !  This grid is for the NOAA Reanalysis
+        Met_proj4 = "LL"
         if(MR_iversion.eq.2)then
           !v2
           IsLatLon_MetGrid  = .true.
@@ -211,6 +221,7 @@
        ! Used by NCEP DOE reanalysis, NCEP-1
        !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid002.gif
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -223,6 +234,7 @@
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID3
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid003.gif
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -234,6 +246,7 @@
         ! Used by GFS forecast
          !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid003.gif
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -246,6 +259,7 @@
           !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID45
           !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid045.gif
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -299,6 +313,7 @@
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -150.0 90.0 0.933 6371.229    #Proj flags and params
 
+        Met_proj4 = "proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -337,6 +352,7 @@
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -105.0 90.0 0.933 6371.229    #Proj flags and params
 
+        Met_proj4 = "proj +proj=stere  +lon_0=255  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -355,6 +371,7 @@
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID170
         ! This is used by the ERA-Itrm data
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .false.
@@ -366,6 +383,7 @@
         ! HI N.Pacific 
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID182
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -377,6 +395,7 @@
        ! Used by GFS forecast (0.25)
        !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID193
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -420,6 +439,7 @@
         !   800.00  2480.60
         ! 0 5 198.475 20.0 0.933 6371.229    #Proj flags and params
 
+        Met_proj4 = "proj +proj=merc  +lat_ts=20.0 +lon_0=198.475 +R=6371.229"
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -478,6 +498,7 @@
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -150.0 90.0 0.933 6371.229    #Proj flags and params
 
+        Met_proj4 = "proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -514,6 +535,7 @@
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params                               
 
+        Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -551,6 +573,7 @@
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params  
 
+        Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -587,6 +610,7 @@
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -135.0 90.0 0.933 6371.229    #Proj flags and params
 
+        Met_proj4 = "proj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -622,6 +646,7 @@
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params  
 
+        Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -659,6 +684,7 @@
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 -107.0 50.0 50.0 50.0 6371.229    #Proj flags and params  
 
+        Met_proj4 = "proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -695,6 +721,7 @@
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params  
 
+        Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -731,6 +758,7 @@
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -135.0 90.0 0.933 6371.229    #Proj flags and params
 
+        Met_proj4 = "proj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.

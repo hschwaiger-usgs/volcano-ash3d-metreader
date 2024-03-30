@@ -1687,14 +1687,12 @@
                   MR_SndVars_metP(iloc,itime,1,iil) = MR_SndVars_metP(iloc,itime,1,iil) * 100.0_sp  ! mb->Ppa
                   MR_SndVars_metP(iloc,itime,2,iil) = MR_SndVars_metP(iloc,itime,2,iil) *1.0e-3_sp  !  m->km
                   MR_SndVars_metP(iloc,itime,5,iil) = MR_SndVars_metP(iloc,itime,5,iil) + 273.0_sp  !  C->K
-                  WindVelocity(iil)   = MR_SndVars_metP(iloc,itime,4,iil)            ! knt->m/s
-                  WindDirection(iil)  = MR_SndVars_metP(iloc,itime,3,iil)            ! deg
-                  MR_SndVars_metP(iloc,itime,3,iil) = &
-                    -1.0_sp*real(WindVelocity(iil)*sin(DEG2RAD*WindDirection(iil)),kind=sp)*KNOTS2MS ! Vx in m/s\
-                  MR_SndVars_metP(iloc,itime,4,iil) = &
-                    -1.0_sp*real(WindVelocity(iil)*cos(DEG2RAD*WindDirection(iil)),kind=sp)*KNOTS2MS ! Vy in m/s
-!                  write(*,*)MR_SndVars_metP(iloc,itime,1:5,iil),WindVelocity(iil),WindDirection(iil)
-!                  stop 98
+                  WindDirection(iil)                = MR_SndVars_metP(iloc,itime,3,iil)             ! deg
+                  WindVelocity(iil)                 = MR_SndVars_metP(iloc,itime,4,iil)             ! knt
+                  MR_SndVars_metP(iloc,itime,3,iil) = -1.0_sp * KNOTS2MS * &
+                     real(WindVelocity(iil) * sin(DEG2RAD*WindDirection(iil)),kind=sp) ! Vx in m/s
+                  MR_SndVars_metP(iloc,itime,4,iil) = -1.0_sp * KNOTS2MS * &
+                     real(WindVelocity(iil) * cos(DEG2RAD*WindDirection(iil)),kind=sp) ! Vy in m/s
                   do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                     write(outlog(io),'(7f13.5)')&
                             MR_SndVars_metP(iloc,itime,1,iil),& ! PRES Pa

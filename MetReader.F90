@@ -444,6 +444,7 @@
       real(kind=8),public :: Met_lam0            ! longitude of projection point
       real(kind=8),public :: Met_lam1
       real(kind=8),public :: Met_lam2
+      character(len=80),public :: Met_proj4
 
       integer     ,public :: Comp_iprojflag
       real(kind=8),public :: Comp_Re
@@ -454,6 +455,7 @@
       real(kind=8),public :: Comp_lam0           ! longitude of projection point
       real(kind=8),public :: Comp_lam1
       real(kind=8),public :: Comp_lam2
+      character(len=80),public :: Comp_proj4
 
       integer     ,public :: Map_Case
 
