@@ -59,7 +59,7 @@
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
-         Comp_iprojflag,&
+         Comp_iprojflag,MR_MAXVARS,&
          Met_iprojflag,Met_k0,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_Re,&
          dx_met_const,dy_met_const,IsLatLon_CompGrid,MR_Comp_StartHour,&
          IsLatLon_MetGrid,MR_BaseYear,MR_useLeap,MR_useCompH,nx_fullmet,ny_fullmet,&
@@ -69,13 +69,17 @@
            MR_Allocate_FullMetFileList,&
            MR_Set_CompProjection,&
            MR_Initialize_Met_Grids,&
-           MR_Set_Met_Times
+           MR_Set_Met_Times,&
+           MR_Reset_Memory,&
+           MR_FileIO_Error_Handler
 
       implicit none
 
       integer             :: nargs
-      integer             :: status
-      character (len=130) :: arg
+      integer             :: iostatus
+      integer             :: inlen
+      character(len=120)  :: iomessage
+      character(len=130)  :: arg
 
       character(len=100)  :: infile
       integer             :: intstep
@@ -102,8 +106,11 @@
       real(kind=8) :: steptime
 
       integer :: io                           ! Index for output streams
+      character(len=80)  :: linebuffer080
 
       INTERFACE
+        subroutine Print_Usage
+        end subroutine Print_Usage
         real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
           real(kind=8)          :: HoursSince
           integer               :: byear
@@ -155,56 +162,26 @@
 !     TEST READ COMMAND LINE ARGUMENTS
       nargs = command_argument_count()
       if (nargs.lt.9) then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"ERROR: insufficient command-line arguments"
-          write(errlog(io),*)"Usage: probe_Met filename tstep llflag lon lat trunc nvars ",&
-                                  "vars(nvars) iw iwf (inyear inmonth inday inhour)"
-          write(errlog(io),*)"       file         : string  : name of input file"
-          write(errlog(io),*)"       timestep     : integer : step in file"
-          write(errlog(io),*)"       llflag       : integer : 0 for using windfile grid; 1 for"
-          write(errlog(io),*)"                                  forcing Lat/Lon"
-          write(errlog(io),*)"       lon/x        : real    : longitude (or x) of sonde point"
-          write(errlog(io),*)"       lat/y        : real    : latitude (or y) of sonde point"
-          write(errlog(io),*)"       trunc flag   : char    : truncation flag (T or F)"
-          write(errlog(io),*)"                                  T = coordinates truncated to nearest met node"
-          write(errlog(io),*)"                                  F = values interpolated onto given coordinate"
-          write(errlog(io),*)"       nvars        : integer : number of pressure variables to export"
-          write(errlog(io),*)"       varID(nvars) : integers: variable ID's to read and export"
-          write(errlog(io),*)"                        1 = GPH (km)"
-          write(errlog(io),*)"                        2 = U (m/s)"
-          write(errlog(io),*)"                        3 = V (m/s)"
-          write(errlog(io),*)"                        4 = W (m/s)"
-          write(errlog(io),*)"                        5 = T (K)"
-          write(errlog(io),*)"       iw           : integer : windfile format code (3,4,5)"
-          write(errlog(io),*)"       iwf          : integer : windfile product code"
-          write(errlog(io),*)"       idf          : integer : igrid (2 for nc, 3 for grib)"
-          write(errlog(io),*)"       year         : integer : only needed for iw = 5 files"
-          write(errlog(io),*)"       month        : integer : "
-          write(errlog(io),*)"       day          : integer : "
-          write(errlog(io),*)"       hour         : real    : "
-          write(errlog(io),*)"  "
-          write(errlog(io),*)"     To probe a 0.5-degree GFS file in nc format for GPH only, use:"
-          write(errlog(io),*)"       probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 1 1 4 20 2"
-          write(errlog(io),*)"      same, but adding u,v,t"
-          write(errlog(io),*)"       probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 4 1 2 3 5 4 20 2"
-          write(errlog(io),*)"     To probe a NAM 91 grid over AK in nc format with a LL coordinate, use:"
-          write(errlog(io),*)"       probe_Met nam.tm06.grib2 1 1 190.055 52.8222 F 4 1 2 3 5 4 13 3"
-          write(errlog(io),*)"      with a projected coordinate:"
-          write(errlog(io),*)"       probe_Met nam.tm06.grib2 1 0 -1363.94 -3758.61 F 4 1 2 3 5 4 13 3"
-          write(errlog(io),*)"     To  probe the NCEP 2.5-degree data (or other iw=5), we need the"
-          write(errlog(io),*)"     full date"
-          write(errlog(io),*)"       probe_Met 2020061000_5.f006.nc 1 1 190.055 52.8222 T 1 1 4 20 2 2018 1 1 0.0"
-          write(errlog(io),*)"     Output is written to the file NWP_prof.dat"
-        endif;enddo
-        stop 1
+        ! Not enough arguments; print usage and exit
+        call Print_Usage
       else
         ! Get file name or windroot for iw=5
-        call get_command_argument(1, arg, status)
-        read(arg,*)infile
+        call get_command_argument(1, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read first command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)infile
+        linebuffer080(1:inlen) = arg
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        ! Error-check infile
         inquire( file=infile, exist=IsThere )
         if(.not.IsThere)then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-            write(errlog(io),*)"ERROR: Cannot find input file"
+            write(errlog(io),*)"MR ERROR: Cannot find input file"
           endif;enddo
           stop 1
         endif
@@ -212,15 +189,39 @@
           write(outlog(io),*)"infile = ",infile
         endif;enddo
         ! Get time step to use
-        call get_command_argument(2, arg, status)
-        read(arg,*)intstep
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-          write(outlog(io),*)"intstep = ",intstep
-        endif;enddo
+        call get_command_argument(2, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read second command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)intstep
+        linebuffer080(1:inlen) = arg
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        ! Error-check intstep
+        if(intstep.lt.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: Time-step should be a positive integer."
+            write(errlog(io),*)" intstep = ",intstep
+          endif;enddo
+          stop 1
+        endif
 
         ! Get Lat/Lon flag
-        call get_command_argument(3, arg, status)
-        read(arg,*)inLLflag
+        call get_command_argument(3, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read third command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)inLLflag
+        linebuffer080(1:inlen) = arg
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        ! Error-check inLLflag
         if(inLLflag.eq.0)then
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
             write(outlog(io),*)"Lat/Lon flag not set."
@@ -233,28 +234,76 @@
           endif;enddo
         else
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-            write(errlog(io),*)"ERROR: inLLflag must be either 0 or 1"
+            write(errlog(io),*)"MR ERROR: inLLflag must be either 0 or 1"
           endif;enddo
           stop 1
         endif
-        ! Get lon and lat
-        call get_command_argument(4, arg, status)
-        read(arg,*)inlon
+        ! Get lon
+        call get_command_argument(4, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read fourth command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)inlon
+        linebuffer080(1:inlen) = arg
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        ! Error-check inlon
+        if(inlon.lt.-360.0_4.or.&
+           inlon.gt.360.0_4)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"MR ERROR: longitude not in range -180->360"
+            write(errlog(io),*)" inlon = ",inlon
+          endif;enddo
+          stop 1
+        endif
         ! round to the nearest third decimel
-        inlon = nint(inlon * 1000.0_4) *0.001_4
+        inlon = nint(inlon * 1000.0_4)*0.001_4
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
           write(outlog(io),*)"inlon = ",inlon
         endif;enddo
-        call get_command_argument(5, arg, status)
-        read(arg,*)inlat
+        ! Get lat
+        call get_command_argument(5, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read fifth command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)inlat
+        linebuffer080(1:inlen) = arg
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        ! Error-check inlat
+        if(inlat.lt.-90.0_4.or.&
+           inlat.gt.90.0_4)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"MR ERROR: latitude not in range -90->90"
+            write(errlog(io),*)" inlat = ",inlat
+          endif;enddo
+          stop 1
+        endif
+        ! round to the nearest third decimel
         inlat = nint(inlat * 1000.0_4) *0.001_4
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
           write(outlog(io),*)"inlat = ",inlat
         endif;enddo
 
         ! Get truncation flag
-        call get_command_argument(6, arg, status)
-        read(arg,*)intrunc
+        call get_command_argument(6, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read sixth command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)intrunc
+        linebuffer080(1:inlen) = arg
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        ! No error-checking on intrunc; check for T, false otherwise
         if(intrunc.eq.'t'.or.intrunc.eq.'T')then
           Truncate = .true.
         else
@@ -272,8 +321,32 @@
         endif
 
         ! Get number of variables to read/export
-        call get_command_argument(7, arg, status)
-        read(arg,*)invars
+        call get_command_argument(7, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read seventh command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)invars
+        linebuffer080(1:inlen) = arg
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        ! Error-check invars
+        if(invars.lt.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: number of variables must be positive"
+            write(errlog(io),*)" invars = ",invars
+          endif;enddo
+          stop 1
+        endif
+        if(invars.gt.10)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: number of variables must be no more than 10"
+            write(errlog(io),*)" invars = ",invars
+          endif;enddo
+          stop 1
+        endif
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
           write(outlog(io),*)"invars = ",invars
           write(outlog(io),*)"Allocating var list of length ",invars
@@ -282,48 +355,217 @@
 
         ! Get variable IDs
         do i=1,invars
-          call get_command_argument(7+i, arg, status)
-          read(arg,*)invarlist(i)
+          call get_command_argument(7+i, arg, length=inlen, status=iostatus)
+          if(iostatus.ne.0)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR : Could not read 7+i command-line argument"
+              write(errlog(io),*)" arg = ",arg
+            endif;enddo
+            call Print_Usage
+          endif
+          read(arg,*,iostat=iostatus,iomsg=iomessage)invarlist(i)
+          linebuffer080(1:inlen) = arg
+          if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+          ! Error-check invarlist(i)
+          if(invarlist(i).le.0.or.invarlist(i).gt.MR_MAXVARS)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR: Variable ID must be in range 1-50"
+              write(errlog(io),*)" i invarlist(i) = ",i,invarlist(i)
+            endif;enddo
+            stop 1
+          endif
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
             write(outlog(io),*)" Requested variable ID ",invarlist(i)
           endif;enddo
         enddo
 
-        ! Get wind format, wind product, and data format ID's
-        call get_command_argument(8+invars, arg, status)
-        read(arg,*)iw
-        call get_command_argument(9+invars, arg, status)
-        read(arg,*)iwf
-        call get_command_argument(10+invars, arg, status)
-        read(arg,*)idf
+        ! Get wind format
+        call get_command_argument(8+invars, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read 8+nvars command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)iw
+        linebuffer080(1:inlen) = arg
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        ! Error-check iw
+        if(iw.ne.1.and.&
+           iw.ne.2.and.&
+           iw.ne.3.and.&
+           iw.ne.4.and.&
+           iw.ne.5)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: wind format must be one of 1,2,3,4, or 5"
+            write(errlog(io),*)" iw = ",iw
+          endif;enddo
+          stop 1
+        endif
+
+        ! Get wind product
+        call get_command_argument(9+invars, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read 9+nvars command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)iwf
+        linebuffer080(1:inlen) = arg
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        ! Error-check iwf
+        if(iwf.ne.0.and.&
+           iwf.ne.1.and.&
+           iwf.ne.2.and.&
+           iwf.ne.3.and.&
+           iwf.ne.4.and.&
+           iwf.ne.5.and.&
+           iwf.ne.6.and.&
+           iwf.ne.7.and.&
+           iwf.ne.8.and.&
+           iwf.ne.10.and.&
+           iwf.ne.11.and.&
+           iwf.ne.12.and.&
+           iwf.ne.13.and.&
+           iwf.ne.20.and.&
+           iwf.ne.21.and.&
+           iwf.ne.22.and.&
+           iwf.ne.23.and.&
+           iwf.ne.24.and.&
+           iwf.ne.25.and.&
+           iwf.ne.26.and.&
+           iwf.ne.27.and.&
+           iwf.ne.28.and.&
+           iwf.ne.29.and.&
+           iwf.ne.30.and.&
+           iwf.ne.32.and.&
+           iwf.ne.33.and.&
+           iwf.ne.41.and.&
+           iwf.ne.42)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: windformat not recognized"
+            write(errlog(io),*)" iwf = ",iwf
+          endif;enddo
+          stop 1
+        endif
+
+        ! Get data format ID
+        call get_command_argument(10+invars, arg, length=inlen, status=iostatus)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR : Could not read 10+nvars command-line argument"
+            write(errlog(io),*)" arg = ",arg
+          endif;enddo
+          call Print_Usage
+        endif
+        read(arg,*,iostat=iostatus,iomsg=iomessage)idf
+        linebuffer080(1:inlen) = arg
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        ! Error-check idf
+        if(idf.ne.1.and.&
+           idf.ne.2.and.&
+           idf.ne.3)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR: wind data format must be one of 1,2, or 3"
+            write(errlog(io),*)" iw = ",iw
+          endif;enddo
+          stop 1
+        endif
+
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
           write(outlog(io),*)"Expecting wind format, NWP product ID and data type:",iw,iwf,idf
         endif;enddo
 
         ! Get year, month, day, hour
         if(nargs.ge.11+invars)then
-          call get_command_argument(11+invars, arg, status)
-          read(arg,*)inyear
+          call get_command_argument(11+invars, arg, length=inlen, status=iostatus)
+          if(iostatus.ne.0)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR : Could not read 11+nvars command-line argument"
+              write(errlog(io),*)" arg = ",arg
+            endif;enddo
+            call Print_Usage
+          endif
+          read(arg,*,iostat=iostatus,iomsg=iomessage)inyear
+          linebuffer080(1:inlen) = arg
+          if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         else
           inyear=0
         endif
         if(nargs.ge.12+invars)then
-          call get_command_argument(12+invars, arg, status)
-          read(arg,*)inmonth
+          call get_command_argument(12+invars, arg, length=inlen, status=iostatus)
+          if(iostatus.ne.0)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR : Could not read 12+nvars command-line argument"
+              write(errlog(io),*)" arg = ",arg
+            endif;enddo
+            call Print_Usage
+          endif
+          read(arg,*,iostat=iostatus,iomsg=iomessage)inmonth
+          linebuffer080(1:inlen) = arg
+          if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+          ! Error-check inmonth
+          if(inmonth.lt.1.or.&
+             inmonth.gt.12)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR: month must be in range 1-12"
+              write(errlog(io),*)" inmonth = ",inmonth
+            endif;enddo
+            stop 1
+          endif
         else
           inmonth=1
         endif
         if(nargs.ge.13+invars)then
-          call get_command_argument(13+invars, arg, status)
-          read(arg,*)inday
+          call get_command_argument(13+invars, arg, length=inlen, status=iostatus)
+          if(iostatus.ne.0)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR : Could not read 13+nvars command-line argument"
+              write(errlog(io),*)" arg = ",arg
+            endif;enddo
+            call Print_Usage
+          endif
+          read(arg,*,iostat=iostatus,iomsg=iomessage)inday
+          linebuffer080(1:inlen) = arg
+          if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+          ! Error-check inday
+          if(inday.lt.1.or.&
+             inday.gt.31)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR: day must be in range 1-31"
+              write(errlog(io),*)" inday = ",inday
+            endif;enddo
+            stop 1
+          endif
         else
           inday=1
         endif
         if(nargs.ge.14+invars)then
-          call get_command_argument(14+invars, arg, status)
-          read(arg,*)inhour
+          call get_command_argument(14+invars, arg, length=inlen, status=iostatus)
+          if(iostatus.ne.0)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR : Could not read 14+nvars command-line argument"
+              write(errlog(io),*)" arg = ",arg
+            endif;enddo
+            call Print_Usage
+          endif
+          read(arg,*,iostat=iostatus,iomsg=iomessage)inhour
+          linebuffer080(1:inlen) = arg
+          if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+          ! Error-check inhour
+          if(inhour.lt.0.0_8.or.&
+             inhour.gt.24.0_8)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR: hour must be in range 0.0-24.0"
+              write(errlog(io),*)" inhour = ",inhour
+            endif;enddo
+            stop 1
+          endif
         else
-          inhour=0.0
+          inhour=0.0_8
         endif
         if(inyear.gt.0)then
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
@@ -379,9 +621,9 @@
         Comp_iprojflag    = 0
       endif
       if(IsLatLon_CompGrid)then
-        if(inlon.lt.-360.0)then
+        if(inlon.lt.-360.0_4)then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-            write(errlog(io),*)"ERROR: Longitude must be gt -360"
+            write(errlog(io),*)"MR ERROR: Longitude must be gt -360"
           endif;enddo
           stop 1
         endif
@@ -464,6 +706,8 @@
       
       call GetMetProfile(invars,invarlist)
 
+      call MR_Reset_Memory
+
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Program ended normally."
       endif;enddo
@@ -507,7 +751,8 @@
 
       real(kind=4),dimension(:,:),allocatable :: outvars
       real(kind=4),dimension(:)  ,allocatable :: u,v
-
+      !character        :: invarchar
+      !character(len=8) :: frmtstr
       integer :: io                           ! Index for output streams
 
       allocate(outvars(invars,np_fullmet))
@@ -550,14 +795,81 @@
 
       enddo
 
+      !write(invarchar,'(i1)')invars+1
+      !frmtstr = '(' // invarchar // 'F16.5)'
       open(unit=20,file='NWP_prof.dat')
       do i = 1,np_fullmet
-        write(20,*)p_fullmet_sp(i),outvars(:,i)
+        !write(20,frmtstr)p_fullmet_sp(i),outvars(1:invars,i)
+        write(20,107)p_fullmet_sp(i),outvars(1:invars,i)
       enddo
+107   format(11F16.5)
       close(20)
 
       end subroutine GetMetProfile
 
 !##############################################################################
+!##############################################################################
+!
+!  Print_Usage
+!
+!  This subroutine is called if there is an error reading the command-line.
+!  Expected usage is written to stdout and the program exits.
+!
+!##############################################################################
+
+      subroutine Print_Usage
+
+      use MetReader,       only : &
+         MR_nio,VB,verbosity_error,errlog,VB
+
+      implicit none
+
+      integer :: io
+
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"MR ERROR: insufficient command-line arguments"
+          write(errlog(io),*)"Usage: probe_Met filename tstep llflag lon lat trunc nvars ",&
+                                  "vars(nvars) iw iwf (inyear inmonth inday inhour)"
+          write(errlog(io),*)"       file         : string  : name of input file"
+          write(errlog(io),*)"       timestep     : integer : step in file"
+          write(errlog(io),*)"       llflag       : integer : 0 for using windfile grid; 1 for"
+          write(errlog(io),*)"                                  forcing Lat/Lon"
+          write(errlog(io),*)"       lon/x        : real    : longitude (or x) of sonde point"
+          write(errlog(io),*)"       lat/y        : real    : latitude (or y) of sonde point"
+          write(errlog(io),*)"       trunc flag   : char    : truncation flag (T or F)"
+          write(errlog(io),*)"                                  T = coordinates truncated to nearest met node"
+          write(errlog(io),*)"                                  F = values interpolated onto given coordinate"
+          write(errlog(io),*)"       nvars        : integer : number of pressure variables to export"
+          write(errlog(io),*)"       varID(nvars) : integers: variable ID's to read and export"
+          write(errlog(io),*)"                        1 = GPH (km)"
+          write(errlog(io),*)"                        2 = U (m/s)"
+          write(errlog(io),*)"                        3 = V (m/s)"
+          write(errlog(io),*)"                        4 = W (m/s)"
+          write(errlog(io),*)"                        5 = T (K)"
+          write(errlog(io),*)"       iw           : integer : windfile format code (3,4,5)"
+          write(errlog(io),*)"       iwf          : integer : windfile product code"
+          write(errlog(io),*)"       idf          : integer : igrid (2 for nc, 3 for grib)"
+          write(errlog(io),*)"       year         : integer : only needed for iw = 5 files"
+          write(errlog(io),*)"       month        : integer : "
+          write(errlog(io),*)"       day          : integer : "
+          write(errlog(io),*)"       hour         : real    : "
+          write(errlog(io),*)"  "
+          write(errlog(io),*)"     To probe a 0.5-degree GFS file in nc format for GPH only, use:"
+          write(errlog(io),*)"       probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 1 1 4 20 2"
+          write(errlog(io),*)"      same, but adding u,v,t"
+          write(errlog(io),*)"       probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 4 1 2 3 5 4 20 2"
+          write(errlog(io),*)"     To probe a NAM 91 grid over AK in nc format with a LL coordinate, use:"
+          write(errlog(io),*)"       probe_Met nam.tm06.grib2 1 1 190.055 52.8222 F 4 1 2 3 5 4 13 3"
+          write(errlog(io),*)"      with a projected coordinate:"
+          write(errlog(io),*)"       probe_Met nam.tm06.grib2 1 0 -1363.94 -3758.61 F 4 1 2 3 5 4 13 3"
+          write(errlog(io),*)"     To  probe the NCEP 2.5-degree data (or other iw=5), we need the"
+          write(errlog(io),*)"     full date"
+          write(errlog(io),*)"       probe_Met 2020061000_5.f006.nc 1 1 190.055 52.8222 T 1 1 4 20 2 2018 1 1 0.0"
+          write(errlog(io),*)"     Output is written to the file NWP_prof.dat"
+        endif;enddo
+        stop 1
+
+      end subroutine Print_Usage
+
 !##############################################################################
 

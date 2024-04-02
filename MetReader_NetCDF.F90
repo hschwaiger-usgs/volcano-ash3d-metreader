@@ -10,7 +10,8 @@
 !     MR_Read_MetP_Variable_netcdf
 !     MR_interp_iwf25_grid
 !     MR_NC_check_status
-
+!     MR_NC_check_var_synonyms
+!
 !##############################################################################
 !
 !     MR_Read_Met_DimVars_netcdf
@@ -36,13 +37,15 @@
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
          nlevs_fullmet,nlevs_fullmet,levs_code,nlev_coords_detected,levs_fullmet_sp,&
-         p_fullmet_sp,x_fullmet_sp,y_fullmet_sp,MR_dx_met,MR_dy_met,iwf25_scale_facs,&
-         iwf25_offsets,z_approx,dx_met_const,dy_met_const,&
+         p_fullmet_sp,x_fullmet_sp,y_fullmet_sp,MR_dx_met,MR_dy_met,&
+         z_approx,dx_met_const,dy_met_const,&
          IsGlobal_MetGrid,IsLatLon_MetGrid,IsRegular_MetGrid,MR_EPS_SMALL,MR_iversion,&
          MR_iwind,MR_iwindformat,MR_Max_geoH_metP_predicted,MR_MAXVARS,MR_Use_RDA,&
          np_fullmet,nt_fullmet,nx_fullmet,ny_fullmet,Pressure_Conv_Fac,x_inverted,&
          y_inverted,z_inverted,Met_var_zdim_idx,MR_windfiles,Met_var_IsAvailable,&
          Met_var_ndim,Met_var_NC_names,Met_dim_names,Met_var_zdim_ncid,&
+         temp1d_byte,temp1d_char,temp1d_intS,temp1d_intL,temp1d_sp,temp1d_dp,&
+!         iwf25_scale_facs,iwf25_offsets,&
            MR_Z_US_StdAtm
 
       use projection,      only : &
@@ -70,14 +73,15 @@
       character(len=NF90_MAX_NAME)  :: invar,dimname
       integer :: var_xtype,var_id,idx
       integer :: xtype, length, attnum
+      real(kind=sp):: dum_sp
       real(kind=dp), parameter :: tol = 1.0e-3_dp
       real(kind=dp) :: x_start,y_start
 
       integer,dimension(:),allocatable :: var_dimIDs
       logical :: FoundOldDim
       logical :: IsPressureDimension
-      real(kind=dp),dimension(:), allocatable :: dum1d_dp
-      real(kind=sp),dimension(:), allocatable :: dum1d_sp
+      real(kind=sp) :: var_scale_fac
+      real(kind=sp) :: var_offset
       character(len=31)  :: ustring
       logical :: IsTruncatedDim
       character(len=130)   :: infile
@@ -90,6 +94,10 @@
           integer, intent(in) :: errcode
           character(len=*), intent(in) :: operation
         end subroutine MR_NC_check_status
+        subroutine MR_NC_check_var_synonyms(ivar,ncid)
+          integer, intent(in) :: ivar
+          integer, intent(in) :: ncid
+        end subroutine MR_NC_check_var_synonyms
         subroutine MR_Get_WRF_grid
         end subroutine MR_Get_WRF_grid
         subroutine MR_Set_Met_Dims_Template_netcdf
@@ -169,21 +177,22 @@
           enddo
           MR_dy_met(ny_fullmet)    = MR_dy_met(ny_fullmet-1)
 
-          iwf25_scale_facs = 0.0_sp
-          iwf25_offsets    = 0.0_sp
-          iwf25_scale_facs(1)  = 1.0_sp    ; iwf25_offsets(1)  = 32066.0_sp   ! hgt
-          iwf25_scale_facs(2)  = 0.01_sp   ; iwf25_offsets(2)  = 202.66_sp    ! uwnd
-          iwf25_scale_facs(3)  = 0.01_sp   ; iwf25_offsets(3)  = 202.66_sp    ! vwnd
-          iwf25_scale_facs(4)  = 0.001_sp  ; iwf25_offsets(4)  = 29.765_sp    ! omega
-          iwf25_scale_facs(5)  = 0.01_sp   ; iwf25_offsets(5)  = 477.66_sp    ! air (temperature)
-          iwf25_scale_facs(6)  = 1.0_sp    ; iwf25_offsets(6)  = 0.0_sp       ! level
-          iwf25_scale_facs(20) = 10.0_sp   ; iwf25_offsets(20) = 327650.0_sp  ! pres (lcb)
-          iwf25_scale_facs(21) = 10.0_sp   ; iwf25_offsets(21) = 327650.0_sp  ! pres (lct)
-          iwf25_scale_facs(30) = 0.01_sp   ; iwf25_offsets(30) = 302.66_sp    ! rhum
-          iwf25_scale_facs(31) = 1.0e-6_sp ; iwf25_offsets(31) = 0.032666_sp  ! shum
-          iwf25_scale_facs(32) = 1.0e-6_sp ; iwf25_offsets(32) = 0.032666_sp  ! shum
-          iwf25_scale_facs(44) = 1.0e-7_sp ; iwf25_offsets(44) = 0.0032765_sp ! prate
-          iwf25_scale_facs(45) = 1.0e-7_sp ; iwf25_offsets(45) = 0.0031765_sp ! cprat
+!          iwf25_scale_facs = -9999.0_sp
+!          iwf25_offsets    = -9999.0_sp
+!          iwf25_scale_facs(1)  = 1.0_sp    ; iwf25_offsets(1)  = 32066.0_sp   ! hgt
+!          iwf25_scale_facs(2)  = 0.01_sp   ; iwf25_offsets(2)  = 202.66_sp    ! uwnd
+!          iwf25_scale_facs(3)  = 0.01_sp   ; iwf25_offsets(3)  = 202.66_sp    ! vwnd
+!          iwf25_scale_facs(4)  = 0.001_sp  ; iwf25_offsets(4)  = 29.765_sp    ! omega
+!          iwf25_scale_facs(5)  = 0.01_sp   ; iwf25_offsets(5)  = 477.66_sp    ! air (temperature)
+!          iwf25_scale_facs(6)  = 1.0_sp    ; iwf25_offsets(6)  = 0.0_sp       ! level
+!          iwf25_scale_facs(7)  = 1.0_sp    ; iwf25_offsets(7)  = 0.0_sp       ! level
+!!          iwf25_scale_facs(20) = 10.0_sp   ; iwf25_offsets(20) = 327650.0_sp  ! pres (lcb)
+!!          iwf25_scale_facs(21) = 10.0_sp   ; iwf25_offsets(21) = 327650.0_sp  ! pres (lct)
+!          iwf25_scale_facs(30) = 0.01_sp   ; iwf25_offsets(30) = 302.66_sp    ! rhum
+!          iwf25_scale_facs(31) = 1.0e-6_sp ; iwf25_offsets(31) = 0.032666_sp  ! shum
+!          iwf25_scale_facs(32) = 1.0e-6_sp ; iwf25_offsets(32) = 0.032666_sp  ! shum
+!!          iwf25_scale_facs(44) = 1.0e-7_sp ; iwf25_offsets(44) = 0.0032765_sp ! prate
+!!          iwf25_scale_facs(45) = 1.0e-7_sp ; iwf25_offsets(45) = 0.0031765_sp ! cprat
 
         elseif(MR_iwindformat.eq.26)then
          ! JRA-55 reanalysis 1.25 degree files 
@@ -369,6 +378,9 @@
 
         elseif(MR_iwindformat.eq.29)then
           ! ECMWF ERA5
+          ! RDA provides the data as 1-variable/file so iwf=5
+            ! https://rda.ucar.edu/datasets/ds633.0
+          ! If data are from CDS, use iwf=4
           maxdimlen            = 37
           nlev_coords_detected = 1
           allocate(nlevs_fullmet(nlev_coords_detected))
@@ -411,7 +423,7 @@
           MR_dy_met(ny_fullmet)    = MR_dy_met(ny_fullmet-1)
 
         elseif(MR_iwindformat.eq.30)then
-          ! ECMWF ERA=20c
+          ! ECMWF ERA-20c
           maxdimlen            = 37
           nlev_coords_detected = 1
           allocate(nlevs_fullmet(nlev_coords_detected))
@@ -460,12 +472,14 @@
         idx = Met_var_zdim_idx(1)
         p_fullmet_sp(1:nlevs_fullmet(idx)) = levs_fullmet_sp(idx,1:nlevs_fullmet(idx))
 
+        ! HFS: This is where we should put the check on variable names, but for iwind=5, we
+        !      need to open each file for each variable individually
+
       else  ! MR_iwind not equal to 5
         !--------------------------------------------------------------------------
         !  Start of all non-iwind=5 cases
         if(MR_iwindformat.eq.50)then
           ! WRF files have a special reader, but we still need to set up 
-
           call MR_Get_WRF_grid
 
         else  ! MR_iwindformat .ne. 50
@@ -474,31 +488,42 @@
           ! This is where the Netcdf and Grib subroutines can be compared
           !
           ! Checking for dimension length and values for x,y,t,p
-          !   Assume all files have the same format
+          !   Assume all files have the same format so we just work with MR_windfiles(1)
 
           maxdimlen = 0
-          infile = adjustl(trim(MR_windfiles(1)))
-          nSTAT=nf90_open(adjustl(trim(infile)),NF90_NOWRITE, ncid)
-          if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_open")
+          infile = trim(adjustl(MR_windfiles(1)))
+          nSTAT=nf90_open(trim(adjustl(infile)),NF90_NOWRITE, ncid)
+          if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_open MR_windfiles(1)")
+
           do ivar = 1,MR_MAXVARS
-            if (.not.Met_var_IsAvailable(ivar)) cycle  ! Only look at variables that are available
-            if (Met_var_ndim(ivar).ne.4) cycle         !  and only ones with a 'level' dimension (i.e. with 4 dimensions)
+            if(.not.Met_var_IsAvailable(ivar)) cycle  ! Only look at variables that are available
+            if(Met_var_ndim(ivar).ne.4) cycle         !  and only ones with a 'level' dimension (i.e. with 4 dimensions)
             invar = Met_var_NC_names(ivar)
             nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
             if(nSTAT.ne.NF90_NOERR)then
               call MR_NC_check_status(nSTAT,0,"inq_varid")
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-                write(outlog(io),*)'  Cannot find variable ',invar
-                write(outlog(io),*)'  Setting Met_var_IsAvailable to .false.'
+                write(outlog(io),*)'  Cannot find variable ',trim(adjustl(invar))
+                write(outlog(io),*)'  Testing for known synonyms'
               endif;enddo
-              Met_var_IsAvailable(ivar) = .false.
-              cycle
+              ! Checking other name options.
+              call MR_NC_check_var_synonyms(ivar,ncid)
+              ! Now try again
+              invar = Met_var_NC_names(ivar)
+              nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
+              if(nSTAT.ne.NF90_NOERR)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  write(outlog(io),*)'  Cannot find variable ',trim(adjustl(invar))
+                endif;enddo
+                Met_var_IsAvailable(ivar) = .false.
+                cycle
+              endif
             endif
             nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
                       xtype = var_xtype, &
                       ndims = var_ndims)   ! get the number of dimensions
             if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable")
-            if (var_ndims.ne.Met_var_ndim(ivar))then
+            if(var_ndims.ne.Met_var_ndim(ivar))then
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: The actual number of dimensions differs from'
                 write(errlog(io),*)'          what is expected'
@@ -508,7 +533,7 @@
               endif;enddo
               stop 1
             endif
-            allocate(var_dimIDs(var_ndims))
+            if(.not.allocated(var_dimIDs))allocate(var_dimIDs(var_ndims))
             nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
                       dimids = var_dimIDs(:var_ndims))
             if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable")
@@ -525,35 +550,107 @@
                            name =  dimname, &
                            len = dimlen)
               if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension X")
-              if(index(dimname,Met_dim_names(4)).ne.0)then
-                nx_fullmet = dimlen
-                xdim_id    = var_dimIDs(i_dim)
+              nx_fullmet = dimlen
+              xdim_id    = var_dimIDs(i_dim)
+              if(index(dimname,'x')        .eq.0.and.&  ! Check this dimension against known names
+                 index(dimname,'lon')      .eq.0.and.&
+                 index(dimname,'g0_lon_3') .eq.0.and.&
+                 index(dimname,'longitude').eq.0.and.&
+                 index(dimname,'g4_lon_3') .eq.0.and.&
+                 index(dimname,'west_east').eq.0.and.&
+                 index(dimname,trim(adjustl(Met_dim_names(4)))).eq.0)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR WARNING: Name of assumed x dimension does not'
+                  write(errlog(io),*)'            match any expected names.  Please verify'
+                  write(errlog(io),*)'            that this file is COORDS compliant.'
+                  write(errlog(io),*)'   Dimension name: ',dimname
+                endif;enddo
               endif
+              Met_dim_names(4) = trim(adjustl(dimname))
+
               nSTAT = nf90_inq_varid(ncid,dimname,var_id) ! get the variable associated with this dim
               if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable X")
-              ! Check if we need to read into a float or a double
+              ! Check what temporary array to use
               nSTAT = nf90_inquire_variable(ncid, var_id, dimname, xtype = var_xtype)
               if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable X")
               allocate(x_fullmet_sp(0:nx_fullmet+1))
-              if(var_xtype.eq.NF90_FLOAT)then
-                allocate(dum1d_sp(dimlen))
-                nSTAT = nf90_get_var(ncid,var_id,dum1d_sp, &
+              if(var_xtype.eq.NF90_BYTE)then
+                allocate(temp1d_byte(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_byte, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var X byte")
+                ! copy to local variable
+                !x_fullmet_sp(1:nx_fullmet) =  real(temp1d_byte(1:nx_fullmet),kind=sp)
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR variable x is of type BYTE, but real value expected.'
+                endif;enddo
+                stop 1
+                deallocate(temp1d_byte)
+              elseif(var_xtype.eq.NF90_CHAR)then
+                allocate(temp1d_char(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_char, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var X char")
+                ! copy to local variable
+                !x_fullmet_sp(1:nx_fullmet) =  real(temp1d_char(1:nx_fullmet),kind=sp)
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR variable x is of type CHAR, but real value expected.'
+                endif;enddo
+                stop 1
+                deallocate(temp1d_char)
+              elseif(var_xtype.eq.NF90_SHORT)then
+                ! For SHORT values, expect that values use scale/offset
+                nSTAT = nf90_get_att(ncid, var_id,"scale_factor",dum_sp)
+                var_scale_fac = dum_sp
+                nSTAT = nf90_get_att(ncid, var_id,"add_offset",dum_sp)
+                var_offset = dum_sp
+                allocate(temp1d_intS(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_intS, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var X short")
+                ! copy to local variable
+                x_fullmet_sp(1:nx_fullmet) =  real(temp1d_intS(1:nx_fullmet),kind=sp) * &
+                                               var_scale_fac + var_offset
+                deallocate(temp1d_intS)
+              elseif(var_xtype.eq.NF90_INT)then
+                allocate(temp1d_intL(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_intL, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var X int")
+                ! copy to local variable
+                x_fullmet_sp(1:nx_fullmet) =  real(temp1d_intL(1:nx_fullmet),kind=sp)
+                deallocate(temp1d_intL)
+              elseif(var_xtype.eq.NF90_FLOAT)then
+                allocate(temp1d_sp(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_sp, &
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var X flt")
                 ! copy to local variable
-                x_fullmet_sp(1:nx_fullmet) = dum1d_sp(1:nx_fullmet)
-                deallocate(dum1d_sp)
+                x_fullmet_sp(1:nx_fullmet) = temp1d_sp(1:nx_fullmet)
+                deallocate(temp1d_sp)
               elseif(var_xtype.eq.NF90_DOUBLE)then
-                allocate(dum1d_dp(dimlen))
-                nSTAT = nf90_get_var(ncid,var_id,dum1d_dp, &
+                allocate(temp1d_dp(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_dp, &
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var X dbl")
                 ! copy to local variable
-                x_fullmet_sp(1:nx_fullmet) = real(dum1d_dp(1:nx_fullmet),kind=sp)
-                deallocate(dum1d_dp)
+                x_fullmet_sp(1:nx_fullmet) = real(temp1d_dp(1:nx_fullmet),kind=sp)
+                deallocate(temp1d_dp)
               else
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: Cannot recognize variable type for x'
+                  if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
+                  if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
+                  if(var_xtype.eq.NF90_SHORT) write(errlog(io),*)"NF90_SHORT = " ,NF90_SHORT
+                  if(var_xtype.eq.NF90_INT)   write(errlog(io),*)"NF90_INT = "   ,NF90_INT
+                  if(var_xtype.eq.NF90_FLOAT) write(errlog(io),*)"NF90_FLOAT = " ,NF90_FLOAT
+                  if(var_xtype.eq.NF90_DOUBLE)write(errlog(io),*)"NF90_DOUBLE = ",NF90_DOUBLE
+                  if(var_xtype.eq.NF90_UBYTE) write(errlog(io),*)"NF90_UBYTE = " ,NF90_UBYTE
+                  if(var_xtype.eq.NF90_USHORT)write(errlog(io),*)"NF90_USHORT = ",NF90_USHORT
+                  if(var_xtype.eq.NF90_UINT)  write(errlog(io),*)"NF90_UINT = "  ,NF90_UINT
+                  if(var_xtype.eq.NF90_INT64) write(errlog(io),*)"NF90_INT64 = " ,NF90_INT64
+                  if(var_xtype.eq.NF90_UINT64)write(errlog(io),*)"NF90_UINT64 = ",NF90_UINT64
+                  if(var_xtype.eq.NF90_STRING)write(errlog(io),*)"NF90_STRING = ",NF90_STRING
                 endif;enddo
                 stop 1
               endif
@@ -607,36 +704,109 @@
                            name =  dimname, &
                            len = dimlen)
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Y")
-              if(index(dimname,Met_dim_names(3)).ne.0)then
+              !if(index(dimname,Met_dim_names(3)).ne.0)then
                 ny_fullmet = dimlen
                 ydim_id    = var_dimIDs(i_dim)
+              !endif
+              if(index(dimname,'y')        .eq.0.and.&        ! Check this dimension against known names
+                 index(dimname,'lat')      .eq.0.and.&
+                 index(dimname,'g0_lat_2') .eq.0.and.&
+                 index(dimname,'latitude') .eq.0.and.&
+                 index(dimname,'g4_lat_2') .eq.0.and.&
+                 index(dimname,'south_north').eq.0.and.&
+                 index(dimname,trim(adjustl(Met_dim_names(3)))).eq.0)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR WARNING: Name of assumed y dimension does not'
+                  write(errlog(io),*)'            match any expected names.  Please verify'
+                  write(errlog(io),*)'            that this file is COORDS compliant.'
+                  write(errlog(io),*)'   Dimension name: ',dimname
+                endif;enddo
               endif
+              Met_dim_names(3) = trim(adjustl(dimname))
 
               nSTAT = nf90_inq_varid(ncid,dimname,var_id) ! get the variable associated with this dim
               call MR_NC_check_status(nSTAT,1,"nf90_inq_varid Y")
-              ! Check if we need to read into a float or a double
+              ! Check what temporary array to use
               nSTAT = nf90_inquire_variable(ncid, var_id, dimname, xtype = var_xtype)
-              call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable Y")
-              allocate(y_fullmet_sp(ny_fullmet))
-              if(var_xtype.eq.NF90_FLOAT)then
-                allocate(dum1d_sp(dimlen))
-                nSTAT = nf90_get_var(ncid,var_id,dum1d_sp, &
+              if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable Y")
+              allocate(y_fullmet_sp(0:ny_fullmet+1))
+              if(var_xtype.eq.NF90_BYTE)then
+                allocate(temp1d_byte(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_byte, &
                        start = (/1/),count = (/dimlen/))
-                call MR_NC_check_status(nSTAT,1,"nf90_get_var Y flt")
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var Y byte")
                 ! copy to local variable
-                y_fullmet_sp(1:ny_fullmet) = dum1d_sp(1:ny_fullmet)
-                deallocate(dum1d_sp)
+                !y_fullmet_sp(1:ny_fullmet) =  real(temp1d_byte(1:ny_fullmet),kind=sp)
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR variable x is of type BYTE, but real value expected.'
+                endif;enddo
+                stop 1
+                deallocate(temp1d_byte)
+              elseif(var_xtype.eq.NF90_CHAR)then
+                allocate(temp1d_char(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_char, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var Y char")
+                ! copy to local variable
+                !y_fullmet_sp(1:ny_fullmet) =  real(temp1d_char(1:ny_fullmet),kind=sp)
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR variable x is of type CHAR, but real value expected.'
+                endif;enddo
+                stop 1
+                deallocate(temp1d_char)
+              elseif(var_xtype.eq.NF90_SHORT)then
+                ! For SHORT values, expect that values use scale/offset
+                nSTAT = nf90_get_att(ncid, var_id,"scale_factor",dum_sp)
+                var_scale_fac = dum_sp
+                nSTAT = nf90_get_att(ncid, var_id,"add_offset",dum_sp)
+                var_offset = dum_sp
+                allocate(temp1d_intS(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_intS, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var Y short")
+                ! copy to local variable
+                y_fullmet_sp(1:ny_fullmet) =  real(temp1d_intS(1:ny_fullmet),kind=sp) * &
+                                               var_scale_fac + var_offset
+                deallocate(temp1d_intS)
+              elseif(var_xtype.eq.NF90_INT)then
+                allocate(temp1d_intL(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_intL, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var Y int")
+                ! copy to local variable
+                y_fullmet_sp(1:ny_fullmet) =  real(temp1d_intL(1:ny_fullmet),kind=sp)
+                deallocate(temp1d_intL)
+              elseif(var_xtype.eq.NF90_FLOAT)then
+                allocate(temp1d_sp(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_sp, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var Y flt")
+                ! copy to local variable
+                y_fullmet_sp(1:ny_fullmet) = temp1d_sp(1:ny_fullmet)
+                deallocate(temp1d_sp)
               elseif(var_xtype.eq.NF90_DOUBLE)then
-                allocate(dum1d_dp(dimlen))
-                nSTAT = nf90_get_var(ncid,var_id,dum1d_dp, &
+                allocate(temp1d_dp(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_dp, &
                        start = (/1/),count = (/dimlen/))
-                call MR_NC_check_status(nSTAT,1,"nf90_get_var Y dbl")
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var Y dbl")
                 ! copy to local variable
-                y_fullmet_sp(1:ny_fullmet) = real(dum1d_dp(1:ny_fullmet),kind=sp)
-                deallocate(dum1d_dp)
+                y_fullmet_sp(1:ny_fullmet) = real(temp1d_dp(1:ny_fullmet),kind=sp)
+                deallocate(temp1d_dp)
               else
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: Cannot recognize variable type for y'
+                  if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
+                  if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
+                  if(var_xtype.eq.NF90_SHORT) write(errlog(io),*)"NF90_SHORT = " ,NF90_SHORT
+                  if(var_xtype.eq.NF90_INT)   write(errlog(io),*)"NF90_INT = "   ,NF90_INT
+                  if(var_xtype.eq.NF90_FLOAT) write(errlog(io),*)"NF90_FLOAT = " ,NF90_FLOAT
+                  if(var_xtype.eq.NF90_DOUBLE)write(errlog(io),*)"NF90_DOUBLE = ",NF90_DOUBLE
+                  if(var_xtype.eq.NF90_UBYTE) write(errlog(io),*)"NF90_UBYTE = " ,NF90_UBYTE
+                  if(var_xtype.eq.NF90_USHORT)write(errlog(io),*)"NF90_USHORT = ",NF90_USHORT
+                  if(var_xtype.eq.NF90_UINT)  write(errlog(io),*)"NF90_UINT = "  ,NF90_UINT
+                  if(var_xtype.eq.NF90_INT64) write(errlog(io),*)"NF90_INT64 = " ,NF90_INT64
+                  if(var_xtype.eq.NF90_UINT64)write(errlog(io),*)"NF90_UINT64 = ",NF90_UINT64
+                  if(var_xtype.eq.NF90_STRING)write(errlog(io),*)"NF90_STRING = ",NF90_STRING
                 endif;enddo
                 stop 1
               endif
@@ -696,15 +866,27 @@
                            name =  dimname, &
                            len = dimlen)
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension time")
-              if(index(dimname,Met_dim_names(1)).ne.0)then
+              !if(index(dimname,Met_dim_names(1)).ne.0)then
                 nt_fullmet = dimlen
                 tdim_id    = var_dimIDs(i_dim)
+              !endif
+               if(index(dimname,'time')        .eq.0.and.&        ! Check this dimension against known names
+                  index(dimname,'Time')        .eq.0.and.&
+                  index(dimname,trim(adjustl(Met_dim_names(1)))).eq.0)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR WARNING: Name of assumed t dimension does not'
+                  write(errlog(io),*)'            match any expected names.  Please verify'
+                  write(errlog(io),*)'            that this file is COORDS compliant.'
+                  write(errlog(io),*)'   Dimension name: ',dimname
+                endif;enddo
               endif
-  
+              Met_dim_names(1) = trim(adjustl(dimname))
+ 
             endif ! ivar.eq.1
 
-            ! Dimension variables for x,y,time were read while reading GPH, but
-            ! we need the level information for all variables.
+            ! Dimension variables for x,y,time were read while reading GPH immediately
+            ! above, but we need the level information for all variables, which may be
+            ! different than GPH.
             ! Now checking level coordinates (pressure, height, depth);
             ! This is the third dimension for COORD compliant netcdf files.
             i_dim = 3
@@ -716,21 +898,23 @@
             ! variable, we check if the 'level' coordinate is new or already
             ! noted in this file, building an indexed list
             nSTAT = nf90_inq_varid(ncid,dimname,var_id)
-            if(nSTAT.eq.NF90_NOERR.and. &   ! This first condition excludes dims with no vars
-               (index(dimname,'lev').ne.0.or.&
-                index(dimname,'isobaric').ne.0.or.&
-                index(dimname,'isobaricInhPa').ne.0.or.&
-                index(dimname,'pressure').ne.0.or.&
-                index(dimname,'height').ne.0.or.&
-                index(dimname,'depth').ne.0.or.&
-                index(dimname,'lv_ISBL1').ne.0.or.&
-                index(dimname,'bottom_top').ne.0.or.&
-                index(dimname,'bottom_top_stag').ne.0.or.&
-                index(dimname,'soil_layers_stag').ne.0))then
-
+            if(nSTAT.eq.NF90_NOERR.and. &                    ! This first condition excludes dims with no vars
+               (index(dimname,'lev')             .ne.0.or.&  ! This one catches both 'lev' and 'level'
+                index(dimname,'isobaric')        .ne.0.or.&
+                index(dimname,'isobaricInhPa')   .ne.0.or.&
+                index(dimname,'pressure')        .ne.0.or.&
+                index(dimname,'height')          .ne.0.or.&
+                index(dimname,'depth')           .ne.0.or.&
+                index(dimname,'lv_ISBL1')        .ne.0.or.&
+                index(dimname,'bottom_top')      .ne.0.or.&
+                index(dimname,'bottom_top_stag') .ne.0.or.&
+                index(dimname,'soil_layers_stag').ne.0).or.&
+                index(dimname,trim(adjustl(Met_dim_names(4)))).ne.0)then ! This last check is in case
+                                                                         ! the template file has something
+                                                                         ! non-standard
               ! Log this level coordinate if it is the first
               if (nlev_coords_detected.eq.0)then
-                nlev_coords_detected = nlev_coords_detected + 1
+                nlev_coords_detected    = nlev_coords_detected + 1
                 Met_var_zdim_idx(ivar)  = nlev_coords_detected
                 Met_var_zdim_ncid(ivar) = var_dimIDs(i_dim)
                 maxdimlen = dimlen
@@ -746,7 +930,7 @@
                   endif
                 enddo
                 if(.not.FoundOldDim)then
-                  nlev_coords_detected = nlev_coords_detected + 1
+                  nlev_coords_detected    = nlev_coords_detected + 1
                   Met_var_zdim_idx(ivar)  = nlev_coords_detected
                   Met_var_zdim_ncid(ivar) = var_dimIDs(i_dim)
                   if (maxdimlen.lt.dimlen) maxdimlen = dimlen
@@ -756,7 +940,7 @@
               call MR_NC_check_status(nSTAT,0,"nf90_inq_varid")
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: level coordinate is not in pos. 3 for ',invar
-                write(errlog(io),*)'          Expected one of: lev, isobaric, pressure,'
+                write(errlog(io),*)'          Expected one of: lev, level, isobaric, pressure,'
                 write(errlog(io),*)'            height, depth, lv_ISBL1, bottom_top,'
                 write(errlog(io),*)'            bottom_top_stag, soil_layers_stag'
                 write(errlog(io),*)'          Instead, found: ',dimname
@@ -781,28 +965,93 @@
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension level")
               idx = Met_var_zdim_idx(ivar)
               nlevs_fullmet(idx) = dimlen
+
               ! Now inquire and populate the dimension variable info
               nSTAT = nf90_inq_varid(ncid,dimname,var_id)
               call MR_NC_check_status(nSTAT,1,"nf90_inq_varid level")
-              ! Check if we need to read into a float or a double
+
+              ! Check what temporary array to use
               nSTAT = nf90_inquire_variable(ncid, var_id, dimname, xtype = var_xtype)
-              call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable level")
-              if(var_xtype.eq.NF90_FLOAT)then
-                allocate(dum1d_sp(dimlen))
-                nSTAT = nf90_get_var(ncid,var_id,dum1d_sp, &
+              if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable level")
+              if(var_xtype.eq.NF90_BYTE)then
+                allocate(temp1d_byte(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_byte, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var level byte")
+                ! copy to local variable
+                !levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_byte(1:nlevs_fullmet(idx)),kind=sp)
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR variable level is of type BYTE, but real value expected.'
+                endif;enddo
+                stop 1
+                deallocate(temp1d_byte)
+              elseif(var_xtype.eq.NF90_CHAR)then
+                allocate(temp1d_char(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_char, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var level char")
+                ! copy to local variable
+                !levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_char(1:nlevs_fullmet(idx)),kind=sp)
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR variable level is of type CHAR, but real value expected.'
+                endif;enddo
+                stop 1
+                deallocate(temp1d_char)
+              elseif(var_xtype.eq.NF90_SHORT)then
+                ! For SHORT values, expect that values use scale/offset
+                nSTAT = nf90_get_att(ncid, var_id,"scale_factor",dum_sp)
+                var_scale_fac = dum_sp
+                nSTAT = nf90_get_att(ncid, var_id,"add_offset",dum_sp)
+                var_offset = dum_sp
+                allocate(temp1d_intS(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_intS, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var level short")
+                ! copy to local variable
+                levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_intS(1:nlevs_fullmet(idx)),kind=sp)* &
+                                               var_scale_fac + var_offset
+                deallocate(temp1d_intS)
+              elseif(var_xtype.eq.NF90_INT)then
+                allocate(temp1d_intL(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_intL, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var level int")
+                ! copy to local variable
+                levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = temp1d_intL(1:nlevs_fullmet(idx))
+                deallocate(temp1d_intL)
+              elseif(var_xtype.eq.NF90_FLOAT)then
+                allocate(temp1d_sp(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_sp, &
                        start = (/1/),count = (/dimlen/))
                 call MR_NC_check_status(nSTAT,1,"nf90_get_var level flt")
                 ! copy to local variable
-                levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = dum1d_sp(1:nlevs_fullmet(idx))
-                deallocate(dum1d_sp)
+                levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = temp1d_sp(1:nlevs_fullmet(idx))
+                deallocate(temp1d_sp)
               elseif(var_xtype.eq.NF90_DOUBLE)then
-                allocate(dum1d_dp(dimlen))
-                nSTAT = nf90_get_var(ncid,var_id,dum1d_dp, &
+                allocate(temp1d_dp(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_dp, &
                        start = (/1/),count = (/dimlen/))
                 call MR_NC_check_status(nSTAT,1,"nf90_get_var level dbl")
                 ! copy to local variable
-                levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(dum1d_dp(1:nlevs_fullmet(idx)),kind=sp)
-                deallocate(dum1d_dp)
+                levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_dp(1:nlevs_fullmet(idx)),kind=sp)
+                deallocate(temp1d_dp)
+              else
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR ERROR: Cannot recognize variable type for level'
+                  if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
+                  if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
+                  if(var_xtype.eq.NF90_SHORT) write(errlog(io),*)"NF90_SHORT = " ,NF90_SHORT
+                  if(var_xtype.eq.NF90_INT)   write(errlog(io),*)"NF90_INT = "   ,NF90_INT
+                  if(var_xtype.eq.NF90_FLOAT) write(errlog(io),*)"NF90_FLOAT = " ,NF90_FLOAT
+                  if(var_xtype.eq.NF90_DOUBLE)write(errlog(io),*)"NF90_DOUBLE = ",NF90_DOUBLE
+                  if(var_xtype.eq.NF90_UBYTE) write(errlog(io),*)"NF90_UBYTE = " ,NF90_UBYTE
+                  if(var_xtype.eq.NF90_USHORT)write(errlog(io),*)"NF90_USHORT = ",NF90_USHORT
+                  if(var_xtype.eq.NF90_UINT)  write(errlog(io),*)"NF90_UINT = "  ,NF90_UINT
+                  if(var_xtype.eq.NF90_INT64) write(errlog(io),*)"NF90_INT64 = " ,NF90_INT64
+                  if(var_xtype.eq.NF90_UINT64)write(errlog(io),*)"NF90_UINT64 = ",NF90_UINT64
+                  if(var_xtype.eq.NF90_STRING)write(errlog(io),*)"NF90_STRING = ",NF90_STRING
+                endif;enddo
+                stop 1
               endif
               ! Check the units
               nSTAT = nf90_Inquire_Attribute(ncid, var_id,&
@@ -1004,6 +1253,7 @@
 !##############################################################################
 
 
+
 !##############################################################################
 !
 !     MR_Get_WRF_grid
@@ -1036,6 +1286,7 @@
          IsRegular_MetGrid,Met_iprojflag,Met_k0,Met_lam0,Met_phi0,Met_phi1,Met_phi2,&
          Met_Re,MR_Max_geoH_metP_predicted,neta_fullmet,nlev_coords_detected,&
          nt_fullmet,x_inverted,y_inverted,z_inverted,MR_windfiles,Met_dim_names,&
+         NCv_datafile,NCv_lib, &
            MR_Z_US_StdAtm
 
       use projection,      only : &
@@ -1074,7 +1325,9 @@
       real(kind=sp),dimension(:,:,:)  ,allocatable :: dum3d_sp
       real(kind=sp),dimension(:,:,:,:),allocatable :: dum4d_sp
       integer :: i
-
+      integer :: nDimensions, nVariables, nAttributes
+      integer :: unlimitedDimId
+      integer :: formatNum
       real(kind=dp) :: x_start,y_start
 
       real(kind=dp) :: lat_in,lon_in
@@ -1106,9 +1359,20 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"About to open first WRF file : ",MR_windfiles(1)
       endif;enddo
-      nSTAT=nf90_open(adjustl(trim(MR_windfiles(1))),NF90_NOWRITE, ncid)
+      nSTAT=nf90_open(trim(adjustl(MR_windfiles(1))),NF90_NOWRITE, ncid)
       call MR_NC_check_status(nSTAT,1,"nf90_open WRF file")
-      
+      ! This is the first windfile, log some info on the netcdf library and datafile
+      NCv_lib = trim(nf90_inq_libvers())
+      nSTAT=nf90_inquire(ncid, nDimensions, nVariables, nAttributes, &
+                  unlimitedDimId, formatNum)
+      call MR_NC_check_status(nSTAT,1,"nf90_inquire")
+      ! formatNum should now be one of:
+      !   nf90_format_classic
+      !   nf90_format_64bit
+      !   nf90_format_netcdf4
+      !   nf90_format_netcdf4_classic
+      NCv_datafile = formatNum
+
       Met_dim_names(1) = "Time"             ! time
       Met_dim_names(2) = "bottom_top"       ! pressure (24 levels 10 -> 1000)
       Met_dim_names(3) = "south_north"      ! y        (90.0 -> -90.0)
@@ -1506,7 +1770,7 @@
 !
 !     Called once from MR_Read_Met_DimVars 
 !
-!     This subroutine opens each netcdf file and determine the time of each
+!     This subroutine opens each netcdf file and determines the time of each
 !     time step of each file in the number of hours since MR_BaseYear.
 !     In most cases, the length of the time variable (nt_fullmet) will be 
 !     read directly from the file and overwritten (is was set in MR_Read_Met_DimVars_netcdf
@@ -1527,7 +1791,7 @@
          Met_dim_fac,Met_var_NC_names,MR_windfiles,Met_dim_IsAvailable,nt_fullmet,MR_iwindformat,&
          x_inverted,y_inverted,MR_iwind,MR_iw5_hours_per_file,MR_Comp_StartHour,MR_BaseYear,MR_useLeap,&
          MR_iw5_root,MR_iversion,MR_Comp_StartYear,MR_Comp_StartMonth,MR_Comp_StartDay,MR_DirDelim,&
-         IsRegular_MetGrid
+         IsRegular_MetGrid,NCv_lib,NCv_datafile,Met_var_IsAvailable,Met_var_ndim
 
       use netcdf
 
@@ -1544,6 +1808,8 @@
       integer :: itstart_hour,itstart_min,itstart_sec
 
       integer :: nSTAT
+      integer :: iostatus
+      character(len=120) :: iomessage
       integer :: ncid
       integer :: time_var_id = 0
       integer :: gph_var_id  = 0
@@ -1552,20 +1818,27 @@
       integer :: x_dim_id,y_dim_id,x_var_id,y_var_id
       integer :: reftimedimID
       integer :: var_ndims
+      integer :: ivar
       integer,dimension(:),allocatable :: var_dimIDs
       integer :: gph_ndims
       integer,dimension(NF90_MAX_VAR_DIMS) :: gph_DimIDs
+      integer :: dimlen,i_dim,in_var_id
 
       integer :: reftimedimlen
       real(kind=sp),dimension(:),allocatable :: filetime_in_sp
       character(len=19) :: Timestr_WRF
 
+      integer :: nDimensions, nVariables, nAttributes
+      integer :: unlimitedDimId
+      integer :: formatNum
+
+      !integer :: dimlen,maxdimlen,i_dim,tdim_id
+      character(len=NF90_MAX_NAME)  :: dimname
       integer            :: var_xtype
       character(len=NF90_MAX_NAME) :: invar
       character(len=NF90_MAX_NAME) :: indim
       integer            :: xtype, length, attnum
       character(len=31)  :: tstring2
-      !real(kind=8)       :: HS_hours_since_baseyear !,HS_HourOfDay
       real(kind=8)       :: iwf_int,iwf_tot
       integer            :: iwstep
       logical            :: TimeHasUnitsAttr = .false.
@@ -1576,10 +1849,6 @@
       integer,dimension(8)  :: values
       integer               :: Current_Year,nt_tst
       character(len=130)    :: Z_infile
-      !character(len=1)      :: answer          !for debugging
-      !integer               :: HS_YearOfEvent
-      !integer               :: HS_MonthOfEvent
-      !integer               :: HS_DayOfEvent
 
       integer :: io                           ! Index for output streams
 
@@ -1607,6 +1876,10 @@
           integer               :: byear
           logical               :: useLeaps
         end function HS_DayOfEvent
+        subroutine MR_NC_check_var_synonyms(ivar,ncid)
+          integer, intent(in) :: ivar
+          integer, intent(in) :: ncid
+        end subroutine MR_NC_check_var_synonyms
         subroutine MR_NC_check_status(nSTAT, errcode, operation)
           integer, intent(in) :: nSTAT
           integer, intent(in) :: errcode
@@ -1640,20 +1913,22 @@
         MR_Comp_StartMonth       = HS_MonthOfEvent(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
         MR_Comp_StartDay         = HS_DayOfEvent(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
 
-        ! Here the branch for when MR_iwindformat = 25, 26, 27, 29, or 30
+        ! Here is the branch for when MR_iwindformat = 25, 26, 27, 29, or 30
         ! First copy path read in to slot 2
-        !MR_iw5_root = MR_windfiles(1)
  110    format(a50,a1,i4,a1)
         write(MR_windfiles(1),110)trim(adjustl(MR_iw5_root)),MR_DirDelim, &
                                    MR_Comp_StartYear,MR_DirDelim
         MR_windfiles(1) = trim(adjustl(MR_windfiles(1)))
         if(MR_iwindformat.eq.25)then
+          ! NCEP 50-year reanalysis are 1-year files at 6-hour time steps
           iwf_int = 6.0_dp
           iwf_tot = MR_iw5_hours_per_file
         elseif(MR_iwindformat.eq.26)then
+          ! JRA-55 reanalysis are 1-month files at 6-hour time steps
           iwf_int = 6.0_dp
           iwf_tot = MR_iw5_hours_per_file
         elseif(MR_iwindformat.eq.27)then
+          ! NOAA-CIRES reanalysis are either 3 or 6-hour, depending on version
           if(MR_iversion.eq.2)then
             iwf_int = 6.0_dp
             iwf_tot = MR_iw5_hours_per_file
@@ -1662,31 +1937,38 @@
             iwf_tot = MR_iw5_hours_per_file
           endif
         elseif(MR_iwindformat.eq.29)then
+          ! ERA5 reanalysis are 1-month files at 1-hour time steps
           iwf_int = 1.0_dp
           iwf_tot = MR_iw5_hours_per_file
         elseif(MR_iwindformat.eq.30)then
+          ! ERA-20C reanalysis are 1-month files at 3-hour time steps
           iwf_int = 3.0_dp
           iwf_tot = MR_iw5_hours_per_file
         endif
         nt_fullmet = 1
         do iw = 1,MR_iwindfiles
           if(MR_iwindformat.eq.25)then
+            ! NCEP 50-year reanalysis files start on Jan. 1
             MR_windfile_starthour(iw) = &
               real(HS_hours_since_baseyear(MR_Comp_StartYear+(iw-1),1,&
                                            1,0.0_8,MR_BaseYear,MR_useLeap),kind=sp)
           elseif(MR_iwindformat.eq.26)then
+            ! JRA-55 files start at the beginning of each month
             MR_windfile_starthour(iw) = &
               real(HS_hours_since_baseyear(MR_Comp_StartYear,MR_Comp_StartMonth+(iw-1),&
                                            1,0.0_8,MR_BaseYear,MR_useLeap),kind=sp)
           elseif(MR_iwindformat.eq.27)then
+            ! NOAA-CIRES reanalysis files start on Jan. 1
             MR_windfile_starthour(iw) = &
               real(HS_hours_since_baseyear(MR_Comp_StartYear+(iw-1),1,&
                                            1,0.0_8,MR_BaseYear,MR_useLeap),kind=sp)
           elseif(MR_iwindformat.eq.29)then
+            ! ERA5 files (from RDA) start at the beginning of each month
             MR_windfile_starthour(iw) = &
               real(HS_hours_since_baseyear(MR_Comp_StartYear,MR_Comp_StartMonth,&
                                            MR_Comp_StartDay+(iw-1),0.0_8,MR_BaseYear,MR_useLeap),kind=sp)
           elseif(MR_iwindformat.eq.30)then
+            ! 30 ECMWF 20-Century (ERA-20C from RDA) start at the beginning of each month
             MR_windfile_starthour(iw) = &
               real(HS_hours_since_baseyear(MR_Comp_StartYear,MR_Comp_StartMonth+(iw-1),&
                                            1,0.0_8,MR_BaseYear,MR_useLeap),kind=sp)
@@ -1694,6 +1976,8 @@
 
           ! Building the name of the first windfile (for hgt) to inspect for nt
           call MR_Set_iwind5_filenames(MR_Comp_StartHour+(iw-1)*iwf_tot,1,Z_infile)
+          ! Open the file storing Z. We will use this to determine the time parameters and
+          ! assume the other variable files have the same time structure
           nSTAT = nf90_open(trim(adjustl(Z_infile)),NF90_NOWRITE,ncid)
           if(nSTAT.ne.NF90_NOERR)then
             call MR_NC_check_status(nSTAT,0,"nf90_open")
@@ -1715,11 +1999,175 @@
               exit
             endif
           endif
+          ! If this is the first windfile, log some info on the netcdf library and datafile
+          if(iw.eq.1)then
+            NCv_lib = trim(nf90_inq_libvers())
+            nSTAT=nf90_inquire(ncid, nDimensions, nVariables, nAttributes, &
+                        unlimitedDimId, formatNum)
+            call MR_NC_check_status(nSTAT,1,"nf90_inquire")
+            ! formatNum should now be one of:
+            !   nf90_format_classic
+            !   nf90_format_64bit
+            !   nf90_format_netcdf4
+            !   nf90_format_netcdf4_classic
+            NCv_datafile = formatNum
+          endif
+
+          ! First, we sort out the names of the variable for GPH and all the associated
+          ! dimension names.  This is a copy of the code from MR_Read_Met_DimVars_netcdf
+          ! above, but targeting the GPH variable. We need to do this because netcdf
+          ! variable/dimension names are different depending on if the netcdf file was
+          ! created by the provider or converted from grib by ncl or ncj.
+          ivar = 1 ! set variable to GPH
+          invar = Met_var_NC_names(ivar)
+          nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
+          if(nSTAT.ne.NF90_NOERR)then
+            call MR_NC_check_status(nSTAT,0,"inq_varid")
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)'  Cannot find variable ',trim(adjustl(invar))
+              write(outlog(io),*)'  Testing for known synonyms'
+            endif;enddo
+            ! Checking other name options.
+            call MR_NC_check_var_synonyms(ivar,ncid)
+            ! Now try again
+            invar = Met_var_NC_names(ivar)
+            nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
+            if(nSTAT.ne.NF90_NOERR)then
+              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                write(outlog(io),*)'  Cannot find variable ',trim(adjustl(invar))
+              endif;enddo
+              Met_var_IsAvailable(ivar) = .false.
+              cycle
+            endif
+          endif
+          ! Now that we have the name for the GPH variable, populate the other variable names
+          ! for the ECMWF products
+          if(MR_iwindformat.eq.28.or.MR_iwindformat.eq.29.or.MR_iwindformat.eq.30)then
+            if(index(Met_var_NC_names( 1),"Geopotential_isobaric").gt.0)then
+              Met_var_NC_names( 2)="U_component_of_wind_isobaric"
+              Met_var_NC_names( 3)="V_component_of_wind_isobaric"
+              Met_var_NC_names( 4)="Vertical_velocity_isobaric"
+              Met_var_NC_names( 5)="Temperature_isobaric"
+              Met_var_NC_names( 7)="Vertical_velocity_isobaric"
+              Met_var_NC_names(31)="Specific_humidity_isobaric"
+            elseif(index(Met_var_NC_names( 1),"Z_GDS0_ISBL").gt.0)then
+              Met_var_NC_names( 2)="U_GDS0_ISBL"
+              Met_var_NC_names( 3)="V_GDS0_ISBL"
+              Met_var_NC_names( 4)="W_GDS0_ISBL"
+              Met_var_NC_names( 5)="T_GDS0_ISBL"
+              Met_var_NC_names( 7)="W_GDS0_ISBL"
+              Met_var_NC_names(31)="Q_GDS0_ISBL"
+            elseif(index(Met_var_NC_names( 1),"Z").gt.0)then
+              Met_var_NC_names( 2)="U"
+              Met_var_NC_names( 3)="V"
+              Met_var_NC_names( 4)="W"
+              Met_var_NC_names( 5)="T"
+              Met_var_NC_names( 7)="W"
+              Met_var_NC_names(31)="q"
+            elseif(index(Met_var_NC_names( 1),"z").gt.0)then
+              Met_var_NC_names( 2)="u"
+              Met_var_NC_names( 3)="v"
+              Met_var_NC_names( 4)="w"
+              Met_var_NC_names( 5)="t"
+              Met_var_NC_names( 7)="w"
+              Met_var_NC_names(31)="q"
+            endif
+          endif
+
+          nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
+                    xtype = var_xtype, &
+                    ndims = var_ndims)   ! get the number of dimensions
+          if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable")
+          if(var_ndims.ne.Met_var_ndim(ivar))then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)'MR ERROR: The actual number of dimensions differs from'
+              write(errlog(io),*)'          what is expected'
+              write(errlog(io),*)'      Variable : ',ivar,Met_var_NC_names(ivar)
+              write(errlog(io),*)'      Expected : ',Met_var_ndim(ivar)
+              write(errlog(io),*)'      Found    : ',var_ndims
+            endif;enddo
+            stop 1
+          endif
+          if(.not.allocated(var_dimIDs))allocate(var_dimIDs(var_ndims))
+          nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
+                    dimids = var_dimIDs(:var_ndims))
+          if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable")
+          i_dim = 1  ! get x info
+          nSTAT = nf90_inquire_dimension(ncid,var_dimIDs(i_dim), &
+                       name =  dimname, &
+                       len = dimlen)
+          if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension X")
+          nx_fullmet = dimlen
+          x_dim_id    = var_dimIDs(i_dim)
+          if(index(dimname,'x')        .eq.0.and.&  ! Check this dimension against known names
+             index(dimname,'lon')      .eq.0.and.&
+             index(dimname,'g0_lon_3') .eq.0.and.&
+             index(dimname,'longitude').eq.0.and.&
+             index(dimname,'g4_lon_3') .eq.0.and.&
+             index(dimname,'west_east').eq.0.and.&
+             index(dimname,trim(adjustl(Met_dim_names(4)))).eq.0)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)'MR WARNING: Name of assumed x dimension does not'
+              write(errlog(io),*)'            match any expected names.  Please verify'
+              write(errlog(io),*)'            that this file is COORDS compliant.'
+              write(errlog(io),*)'   Dimension name: ',dimname
+            endif;enddo
+          endif
+          Met_dim_names(4) = trim(adjustl(dimname))
+          i_dim = 2  ! get y info
+          nSTAT = nf90_inquire_dimension(ncid,var_dimIDs(i_dim), &
+                       name =  dimname, &
+                       len = dimlen)
+          call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Y")
+          !if(index(dimname,Met_dim_names(3)).ne.0)then
+            ny_fullmet = dimlen
+            y_dim_id    = var_dimIDs(i_dim)
+          !endif
+          if(index(dimname,'y')        .eq.0.and.&        ! Check this dimension against known names
+             index(dimname,'lat')      .eq.0.and.&
+             index(dimname,'g0_lat_2') .eq.0.and.&
+             index(dimname,'latitude') .eq.0.and.&
+             index(dimname,'g4_lat_2') .eq.0.and.&
+             index(dimname,'south_north').eq.0.and.&
+             index(dimname,trim(adjustl(Met_dim_names(3)))).eq.0)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)'MR WARNING: Name of assumed y dimension does not'
+              write(errlog(io),*)'            match any expected names.  Please verify'
+              write(errlog(io),*)'            that this file is COORDS compliant.'
+              write(errlog(io),*)'   Dimension name: ',dimname
+            endif;enddo
+          endif
+          Met_dim_names(3) = trim(adjustl(dimname))
+          i_dim = 4  ! get t info
+          nSTAT = nf90_inquire_dimension(ncid,var_dimIDs(i_dim), &
+                       name =  dimname, &
+                       len = dimlen)
+          call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension time")
+          !if(index(dimname,Met_dim_names(1)).ne.0)then
+            nt_fullmet = dimlen
+            t_dim_id    = var_dimIDs(i_dim)
+          !endif
+           if(index(dimname,'time')        .eq.0.and.&        ! Check this dimension against known names
+              index(dimname,'Time')        .eq.0.and.&
+              index(dimname,trim(adjustl(Met_dim_names(1)))).eq.0)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)'MR WARNING: Name of assumed t dimension does not'
+              write(errlog(io),*)'            match any expected names.  Please verify'
+              write(errlog(io),*)'            that this file is COORDS compliant.'
+              write(errlog(io),*)'   Dimension name: ',dimname
+            endif;enddo
+          endif
+          Met_dim_names(1) = trim(adjustl(dimname))
+
+
+          
+
+
           nSTAT = nf90_inq_dimid(ncid,Met_dim_names(1),t_dim_id)
           call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid time")
           nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_tst)
           call MR_NC_check_status(nSTAT,1,"nf90_Inquire_Dimension time")
-          if(iw.eq.1.and.(.not.IsRegular_MetGrid))then ! for iwf=5, this is 27,29, or 30
+          if(iw.eq.1.and.(.not.IsRegular_MetGrid))then ! for iwind=5, this is 27,29, or 30
             ! Normally we would populate the x and y arrays in MR_Read_Met_DimVars_netcdf, but
             ! for Gaussian or otherwise irregular grids, it is easier to just read the grids
             ! directly.  We will do this now while we have the Geopotential Height file open.  
@@ -1785,25 +2233,38 @@
         do iwstep = 1,nt_fullmet
           MR_windfile_stephour(:,iwstep) = (iwstep-1)*iwf_int
         enddo
+        !  End of iwind=5 section
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       else ! MR_iwind = 3 or 4
         if(MR_iwindformat.eq.50)then
           ! Branch for WRF files
           ! Loop through all the windfiles
           do iw = 1,MR_iwindfiles
-            nSTAT = nf90_open(adjustl(trim(MR_windfiles(iw))),NF90_NOWRITE,ncid)
+            nSTAT = nf90_open(trim(adjustl(MR_windfiles(iw))),NF90_NOWRITE,ncid)
             call MR_NC_check_status(nSTAT,0,"nf90_open WRF")
             if(nSTAT.ne.NF90_NOERR)then
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: nf90_open to read header:', &
                                nf90_strerror(nSTAT)
-                write(errlog(io),*)'Could not open ',adjustl(trim(MR_windfiles(iw)))
+                write(errlog(io),*)'Could not open ',trim(adjustl(MR_windfiles(iw)))
                 write(errlog(io),*)'Exiting'
               endif;enddo
               stop 1
             endif
             if(iw.eq.1)then
+              ! If this is the first windfile, log some info on the netcdf library and datafile
+              NCv_lib = trim(nf90_inq_libvers())
+              nSTAT=nf90_inquire(ncid, nDimensions, nVariables, nAttributes, &
+                          unlimitedDimId, formatNum)
+              call MR_NC_check_status(nSTAT,1,"nf90_inquire")
+              !   nf90_format_classic
+              !   nf90_format_64bit
+              !   nf90_format_netcdf4
+              !   nf90_format_netcdf4_classic
+              NCv_datafile = formatNum
+
               ! Find the id of the time dimension
-              nSTAT = nf90_inq_dimid(ncid,adjustl(trim(Met_dim_names(1))),t_dim_id)
+              nSTAT = nf90_inq_dimid(ncid,trim(adjustl(Met_dim_names(1))),t_dim_id)
               call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid time")
               ! Get length of time dimension and allocate MR_windfile_stephour
               nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_fullmet)
@@ -1838,8 +2299,29 @@
             nSTAT = nf90_close(ncid)
             call MR_NC_check_status(nSTAT,1,"nf90_close WRF")
 
-            read(Timestr_WRF,121)itstart_year,itstart_month,itstart_day, &
+            read(Timestr_WRF,121,iostat=iostatus,iomsg=iomessage)&
+                              itstart_year,itstart_month,itstart_day, &
                               itstart_hour,itstart_min,itstart_sec
+            if(iostatus.ne.0)then
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                write(errlog(io),*)'MR ERROR:  Error reading time string from WRF file'
+                write(errlog(io),*)'           Expecting to read: iy,im,id,ih,imm,is'
+                write(errlog(io),*)'           with format: i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x'
+                write(errlog(io),*)'           From the following string: '
+                write(errlog(io),*)Timestr_WRF
+                write(errlog(io),*)'MR System Message: '
+                write(errlog(io),*)iomessage
+              endif;enddo
+              stop 1
+            endif
+            ! Check if MetReader's base year is compatible with this WRF file
+            if(itstart_year.lt.MR_BaseYear)then
+              ! reset base year to the century before
+              MR_BaseYear = itstart_year - mod(itstart_year,100)
+              do io=1,2;if(VB(io).le.verbosity_info)then
+                write(outlog(io),*)"WARNING: Resetting MR_BaseYear to ",MR_BaseYear
+              endif;enddo
+            endif
             filestart_hour = real(itstart_hour,kind=sp) + &
                              real(itstart_min,kind=sp)/60.0_sp      + &
                              real(itstart_sec,kind=sp)/3600.0_sp
@@ -1852,6 +2334,7 @@
             enddo
           enddo
         else
+          ! This branch is for non-iw=5 and non-iwf=50
           ! For all other formats, try to read the GRIB_orgReferenceTime string
           ! Loop through all the windfiles
           do iw = 1,MR_iwindfiles
@@ -1859,25 +2342,59 @@
             ! Each wind file needs a ref-time which in almost all cases is given
             ! in the 'units' attribute of the time variable
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-              write(outlog(io),*)iw,adjustl(trim(MR_windfiles(iw)))
+              write(outlog(io),*)iw,trim(adjustl(MR_windfiles(iw)))
             endif;enddo
-            nSTAT = nf90_open(adjustl(trim(MR_windfiles(iw))),NF90_NOWRITE,ncid)
+            nSTAT = nf90_open(trim(adjustl(MR_windfiles(iw))),NF90_NOWRITE,ncid)
             call MR_NC_check_status(nSTAT,0,"nf90_open")
             if(nSTAT.ne.NF90_NOERR)then
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: nf90_open to read header:', &
                                nf90_strerror(nSTAT)
-                write(errlog(io),*)'Could not open ',adjustl(trim(MR_windfiles(iw)))
+                write(errlog(io),*)'Could not open ',trim(adjustl(MR_windfiles(iw)))
                 write(errlog(io),*)'Exiting'
               endif;enddo
               stop 1
             endif
 
+            ! If this is the first windfile, log some info on the netcdf library and datafile
+            if(iw.eq.1)then
+              NCv_lib = trim(nf90_inq_libvers())
+              nSTAT=nf90_inquire(ncid, nDimensions, nVariables, nAttributes, &
+                          unlimitedDimId, formatNum)
+              call MR_NC_check_status(nSTAT,1,"nf90_inquire")
+              !   nf90_format_classic
+              !   nf90_format_64bit
+              !   nf90_format_netcdf4
+              !   nf90_format_netcdf4_classic
+              NCv_datafile = formatNum
+            endif
+
             ! Find the id of the time dimension
             !   First, search for the GPH variable and check its
             !   dimensions
-            nSTAT = nf90_inq_varid(ncid,Met_var_NC_names(1),gph_var_id)
-            call MR_NC_check_status(nSTAT,1,"nf90_inq_varid GPH")
+            ivar = 1
+            nSTAT = nf90_inq_varid(ncid,Met_var_NC_names(ivar),gph_var_id)
+            ! This might fail if the GPH name is not as expected, so search known alternatives
+            ! first before giving up.
+            if(nSTAT.ne.NF90_NOERR)then
+              call MR_NC_check_status(nSTAT,0,"inq_varid")
+              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                write(outlog(io),*)'  Cannot find variable ',Met_var_NC_names(ivar)
+                write(outlog(io),*)'  Testing for known synonyms'
+              endif;enddo
+              ! Checking other name options.
+              call MR_NC_check_var_synonyms(ivar,ncid)
+              ! Now try again
+              invar = Met_var_NC_names(ivar)
+              nSTAT = nf90_inq_varid(ncid,invar,gph_var_id)  ! get the var_id for this named variable
+              if(nSTAT.ne.NF90_NOERR)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  write(outlog(io),*)'  Cannot find variable ',invar
+                endif;enddo
+                call MR_NC_check_status(nSTAT,1,"nf90_inq_varid GPH")
+              endif
+            endif
+
             nSTAT = nf90_inquire_variable(ncid, gph_var_id, ndims = gph_ndims)
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable GPH")
             nSTAT = nf90_inquire_variable(ncid, gph_var_id, dimids = gph_DimIDs(:gph_ndims))
@@ -1900,13 +2417,28 @@
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension level")
               ! It may be worth checking subsequent iw to make sure the
               ! names are the same (isobaric1 vs isobaric2 or something)
-            if(iw.eq.1)Met_dim_names(2)= trim(adjustl(indim))
+            if(iw.eq.1)then
+              Met_dim_names(2)= trim(adjustl(indim))
+            else
+              if(trim(adjustl(Met_dim_names(2))).ne.trim(adjustl(indim)))then
+                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  write(outlog(io),*)" MR WARNING: level dimension name changed from first file."
+                endif;enddo
+              endif
+            endif
             nSTAT = nf90_inquire_dimension(ncid,gph_DimIDs(4),indim)
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Time")
               ! Same comment as above but for time1 vs time.
-            if(iw.eq.1)Met_dim_names(1)= trim(adjustl(indim))
-
-            nSTAT = nf90_inq_dimid(ncid,trim(adjustl(Met_dim_names(1))),t_dim_id)
+            if(iw.eq.1)then
+              Met_dim_names(1)= trim(adjustl(indim))
+            else
+              if(trim(adjustl(Met_dim_names(1))).ne.trim(adjustl(indim)))then
+                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  write(outlog(io),*)" MR WARNING: time dimension name changed from first file."
+                endif;enddo
+              endif
+            endif
+            nSTAT = nf90_inq_dimid(ncid,trim(adjustl(indim)),t_dim_id)
             call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid Time")
             if(iw.eq.1)then
               ! Get length of time dimension and allocate MR_windfile_stephour
@@ -1921,7 +2453,7 @@
             endif
 
             ! get variable id for time
-            nSTAT = nf90_inq_varid(ncid,trim(adjustl(Met_dim_names(1))),time_var_id)
+            nSTAT = nf90_inq_varid(ncid,trim(adjustl(indim)),time_var_id)
             call MR_NC_check_status(nSTAT,1,"nf90_inq_varid Time")
             ! We need the reftime for this file, check time variable for 'units'
             nSTAT = nf90_Inquire_Attribute(ncid, time_var_id,&
@@ -1956,8 +2488,39 @@
                   !  time:units = "days since 0001-01-01 00:00:00" ;
                   if(tstring2(i:i+5).eq.'since ')then
                     ii = i+6
-                    read(tstring2(ii:31),103)itstart_year,itstart_month,itstart_day, &
+                    read(tstring2(ii:31),103,iostat=iostatus,iomsg=iomessage)&
+                                      itstart_year,itstart_month,itstart_day, &
                                       itstart_hour,itstart_min,itstart_sec
+                    if(iostatus.ne.0)then
+                      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                        write(errlog(io),*)'MR ERROR:  Error reading time string from NetCDF file'
+                        write(errlog(io),*)'           Expecting to read: iy,im,id,ih,imm,is'
+                        write(errlog(io),*)'           with format: i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2'
+                        write(errlog(io),*)'           From the following string: '
+                        write(errlog(io),*)tstring2(ii:31)
+                        write(errlog(io),*)'MR System Message: '
+                        write(errlog(io),*)iomessage
+                      endif;enddo
+                      stop 1
+                    endif
+                    ! Check if MetReader's base year is compatible with this file
+                    if(itstart_year.lt.MR_BaseYear)then
+                      if(iw.eq.1)then
+                        ! If this is the first file, reset base year to the century before
+                        MR_BaseYear = itstart_year - mod(itstart_year,100)
+                        do io=1,2;if(VB(io).le.verbosity_info)then
+                          write(outlog(io),*)"WARNING: Resetting MR_BaseYear to ",MR_BaseYear
+                        endif;enddo
+                      else
+                        ! If the base year of subsequent files changes, issue an error
+                        do io=1,2;if(VB(io).le.verbosity_error)then
+                          write(outlog(io),*)"MR ERROR: BaseYear of this file does not agree with previous."
+                          write(outlog(io),*)"   BaseYear of file ",1,MR_BaseYear
+                          write(outlog(io),*)"   BaseYear of file ",iw,itstart_year
+                        endif;enddo
+                        stop 1
+                      endif
+                    endif
                     do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                       write(outlog(io),2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
                                                itstart_hour,itstart_min,itstart_sec
@@ -1985,7 +2548,7 @@
               endif
 
               var_ndims = 1
-              allocate(var_dimIDs(1))
+              if(.not.allocated(var_dimIDs))allocate(var_dimIDs(1))
               nSTAT = nf90_inquire_variable(ncid, reftime_var_id, invar, &
                         dimids = var_dimIDs(:var_ndims))
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable reftime")
@@ -2008,8 +2571,39 @@
                     do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                       write(outlog(io),*)"Found reference time: ",tstring2(i:reftimedimlen)
                     endif;enddo
-                    read(tstring2(i:reftimedimlen),103)itstart_year,itstart_month,itstart_day, &
+                    read(tstring2(i:reftimedimlen),103,iostat=iostatus,iomsg=iomessage)&
+                                      itstart_year,itstart_month,itstart_day, &
                                       itstart_hour,itstart_min,itstart_sec
+                    if(iostatus.ne.0)then
+                      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                        write(errlog(io),*)'MR ERROR:  Error reading time string from NetCDF file'
+                        write(errlog(io),*)'           Expecting to read: iy,im,id,ih,imm,is'
+                        write(errlog(io),*)'           with format: i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2'
+                        write(errlog(io),*)'           From the following string: '
+                        write(errlog(io),*)tstring2(i:reftimedimlen)
+                        write(errlog(io),*)'MR System Message: '
+                        write(errlog(io),*)iomessage
+                      endif;enddo
+                      stop 1
+                    endif
+                    ! Check if MetReader's base year is compatible with this file
+                    if(itstart_year.lt.MR_BaseYear)then
+                      if(iw.eq.1)then
+                        ! If this is the first file, reset base year to the century before
+                        MR_BaseYear = itstart_year - mod(itstart_year,100)
+                        do io=1,2;if(VB(io).le.verbosity_info)then
+                          write(outlog(io),*)"WARNING: Resetting MR_BaseYear to ",MR_BaseYear
+                        endif;enddo
+                      else
+                        ! If the base year of subsequent files changes, issue an error
+                        do io=1,2;if(VB(io).le.verbosity_error)then
+                          write(outlog(io),*)"MR ERROR: BaseYear of this file does not agree with previous."
+                          write(outlog(io),*)"   BaseYear of file ",1,MR_BaseYear
+                          write(outlog(io),*)"   BaseYear of file ",iw,itstart_year
+                        endif;enddo
+                        stop 1
+                      endif
+                    endif
                     do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                       write(outlog(io),2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
                                                itstart_hour,itstart_min,itstart_sec
@@ -2031,7 +2625,20 @@
             ! Check if we need to read into an int, float or a double
             nSTAT = nf90_inquire_variable(ncid, time_var_id, name = invar, xtype = var_xtype)
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable reftime")
-            if(var_xtype.eq.NF90_FLOAT)then
+            !if(var_xtype.eq.NF90_BYTE)then
+            !elseif(var_xtype.eq.NF90_CHAR)then
+            !elseif(var_xtype.eq.NF90_SHORT)then
+            !elseif(var_xtype.eq.NF90_INT)then
+            if(var_xtype.eq.NF90_INT)then
+              allocate(dum1d_int4(nt_fullmet))
+              nSTAT = nf90_get_var(ncid,time_var_id,dum1d_int4, &
+                     start = (/1/),count = (/nt_fullmet/))
+              call MR_NC_check_status(nSTAT,1,"nf90_get_var reftime int")
+              ! copy to local variable
+              MR_windfile_stephour(iw,1:nt_fullmet) = real(dum1d_int4(1:nt_fullmet),kind=4)* &
+                                                           Met_dim_fac(1)
+              deallocate(dum1d_int4)
+            elseif(var_xtype.eq.NF90_FLOAT)then
               allocate(dum1d_sp(nt_fullmet))
               nSTAT = nf90_get_var(ncid,time_var_id,dum1d_sp, &
                      start = (/1/),count = (/nt_fullmet/))
@@ -2049,18 +2656,21 @@
               MR_windfile_stephour(iw,1:nt_fullmet) = real(dum1d_dp(1:nt_fullmet),kind=4)* &
                                                            Met_dim_fac(1)
               deallocate(dum1d_dp)
-            elseif(var_xtype.eq.NF90_INT)then
-              allocate(dum1d_int4(nt_fullmet))
-              nSTAT = nf90_get_var(ncid,time_var_id,dum1d_int4, &
-                     start = (/1/),count = (/nt_fullmet/))
-              call MR_NC_check_status(nSTAT,1,"nf90_get_var reftime int")
-              ! copy to local variable
-              MR_windfile_stephour(iw,1:nt_fullmet) = real(dum1d_int4(1:nt_fullmet),kind=4)* &
-                                                           Met_dim_fac(1)
-              deallocate(dum1d_int4)
             else
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                 write(errlog(io),*)"MR ERROR: Unexpected time variable type ",Met_dim_names(i)
+                if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
+                if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
+                if(var_xtype.eq.NF90_SHORT) write(errlog(io),*)"NF90_SHORT = " ,NF90_SHORT
+                if(var_xtype.eq.NF90_INT)   write(errlog(io),*)"NF90_INT = "   ,NF90_INT
+                if(var_xtype.eq.NF90_FLOAT) write(errlog(io),*)"NF90_FLOAT = " ,NF90_FLOAT
+                if(var_xtype.eq.NF90_DOUBLE)write(errlog(io),*)"NF90_DOUBLE = ",NF90_DOUBLE
+                if(var_xtype.eq.NF90_UBYTE) write(errlog(io),*)"NF90_UBYTE = " ,NF90_UBYTE
+                if(var_xtype.eq.NF90_USHORT)write(errlog(io),*)"NF90_USHORT = ",NF90_USHORT
+                if(var_xtype.eq.NF90_UINT)  write(errlog(io),*)"NF90_UINT = "  ,NF90_UINT
+                if(var_xtype.eq.NF90_INT64) write(errlog(io),*)"NF90_INT64 = " ,NF90_INT64
+                if(var_xtype.eq.NF90_UINT64)write(errlog(io),*)"NF90_UINT64 = ",NF90_UINT64
+                if(var_xtype.eq.NF90_STRING)write(errlog(io),*)"NF90_STRING = ",NF90_STRING
               endif;enddo
               stop 1
             endif
@@ -2076,7 +2686,6 @@
       endif  ! MR_iwind = 5 v.s. 3/4
       ! Finished setting up the start time of each wind file in HoursSince : MR_windfile_starthour(iw)
       !  and the forecast (offset from start of file) for each step        : MR_windfile_stephour(iw,iwstep)
-
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         if (MR_iwind.ne.5)then
           write(outlog(io),*)"  File,  step,        Ref,     Offset,  HoursSince"
@@ -2089,6 +2698,7 @@
           enddo
         endif
       endif;enddo
+
  800  format(i7,i7,3f12.2)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
@@ -2115,8 +2725,9 @@
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug1,&
-         Met_var_NC_names,MR_BaseYear,MR_useLeap,MR_Use_RDA,MR_iwindformat,MR_iw5_prefix,MR_iw5_root,&
-         MR_DirDelim,MR_DirDelim,MR_iw5_suffix1,MR_iw5_suffix2,MR_iversion,&
+         Met_var_NC_names,MR_BaseYear,MR_useLeap,MR_iwindformat,MR_iw5_prefix,MR_iw5_root,&
+         MR_DirDelim,MR_DirDelim,MR_iw5_suffix1,MR_iw5_suffix2,&
+         MR_Use_RDA,MR_RDAcode,MR_iversion,&
          MR_Comp_StartYear
 
       implicit none
@@ -2129,7 +2740,6 @@
       integer               :: dum_i1,dum_i2,dum_i3
 
       integer :: thisYear,thisMonth,thisDay
-      logical :: Use_ds630 = .false.
 
       integer :: io                           ! Index for output streams
 
@@ -2157,7 +2767,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Set_iwind5_filenames            ----------"
-        write(outlog(io),*)inhour,ivar,infile
+        write(outlog(io),*)inhour,ivar
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -2325,7 +2935,7 @@
         dum_i1 = thisDay                  ! Start day in file
         dum_i2 = thisDay                  ! End day in file
         dum_i3 = 23                                ! End hour in file
-        if (Use_ds630) then
+        if (MR_RDAcode.eq.630) then
           ! Dataset https://rda.ucar.edu/datasets/ds630.0/
           !  uses the following format:
           ! YYYY/e5.oper.an.pl.128_129_z.regn320sc.2018062000_2018062023.nc
@@ -2342,7 +2952,7 @@
           elseif(ivar.eq.7)then
             write(MR_iw5_prefix,291)'e5.oper.an.pl.128_135_w.regn320sc.'
           endif
-        else
+        else ! assume MR_RDAcode=633
           !  whereas https://rda.ucar.edu/datasets/ds633.0
           !  uses the following format:
           ! YYYY/e5.oper.an.pl.128_129_z.ll025sc.2018062000_2018062023.nc
@@ -2398,11 +3008,11 @@
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+        write(outlog(io),*)" Set filename to : ",trim(adjustl(infile))
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       end subroutine MR_Set_iwind5_filenames
-
 
 !##############################################################################
 
@@ -2433,8 +3043,6 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
-      !real(kind=sp), parameter :: tol = 1.0e-7_sp
 
       integer :: iw,i
 
@@ -2500,7 +3108,7 @@
       !  9 = extra pressure dimension
 
       ! Time
-      !  This will be repeated in MR_Set_Met_Times_netcdf where the time values
+      !  This will be repeated in MR_Read_Met_Times_netcdf where the time values
       !  are read, but for now, we just want the dimension size
       i = 1
       if(.not.Met_dim_IsAvailable(i))then
@@ -2564,13 +3172,14 @@
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_debug1,&
          MR_geoH_metP_next,MR_geoH_metP_last,levs_fullmet_sp,Met_var_zdim_idx,nlevs_fullmet,&
-         temp3d_sp,MR_MetStep_File,Met_var_NC_names,MR_MetStep_tindex,&
+         temp3d_sp,temp3d_dp,MR_MetStep_File,Met_var_NC_names,MR_MetStep_tindex,&
          MR_MetStep_findex,Met_var_IsAvailable,wrapgrid,z_inverted,MR_MetStep_Hour_since_baseyear,&
-         y_inverted,MR_dum3d_metP,MR_EPS_SMALL,nx_submet,Met_var_conversion_factor,tmpsurf2d_short,&
-         temp2d_sp,nx_submet,ny_submet,iwf25_scale_facs,np_fullmet,MR_iwindformat,iwf25_offsets,&
+         y_inverted,MR_dum3d_metP,MR_EPS_SMALL,nx_submet,Met_var_conversion_factor,&
+         temp2d_sp,nx_submet,ny_submet,np_fullmet,MR_iwindformat,&
          MR_iwind,Met_var_NC_names,MR_iMetStep_Now,Met_var_NC_names,&
-         istart,ilhalf_nx,irhalf_nx,irhalf_fm_l,temp3d_short,temp2d_int,&
+         istart,ilhalf_nx,irhalf_nx,irhalf_fm_l,temp3d_short,temp2d_int,NCv_datafile,&
          MR_dum2d_met_int,ilhalf_fm_l,jstart,fill_value_sp,Met_var_NC_names,MR_dum2d_met,&
+!         tmpsurf2d_short,iwf25_offsets,iwf25_scale_facs,&
            MR_Temp_US_StdAtm,&
            MR_Z_US_StdAtm,&
            MR_QC_3dvar
@@ -2580,7 +3189,7 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
+      integer, parameter :: dp        = 8 ! single precision
 
       integer,intent(in) :: ivar
       integer,intent(in) :: istep
@@ -2588,7 +3197,7 @@
       integer :: iw,iwstep
       integer :: np_met_loc
       character(len=130) :: infile
-      character(len=71)  :: invar
+      character(len=80)  :: invar
       character(len=40)  :: fileposstr
 
       integer :: ncid       = 0
@@ -2607,7 +3216,10 @@
       logical :: IsCategorical
 
       integer :: var_xtype
-      integer :: NC_version
+      real(kind=dp) :: var_scale_fac = 0.0_dp
+      real(kind=dp) :: var_offset    = 0.0_dp
+      !real(kind=sp) :: dum_sp
+      real(kind=dp) :: dum_dp
 
       real(kind=sp),dimension(:,:,:,:),allocatable :: dum3d_metP_aux
       real(kind=sp) :: theta,cofac
@@ -2629,14 +3241,14 @@
           integer           ,intent(in)  :: ivar
           character(len=130),intent(out) :: infile
         end subroutine MR_Set_iwind5_filenames
-        subroutine MR_interp_iwf25_grid(imax,jmax,invar,outvar,scale_fac,offset)
-          integer, parameter :: sp        = 4 ! single precision
-          integer         ,intent(in)  :: imax,jmax
-          integer(kind=sp),intent(in)  :: invar(192,94,1)
-          real(kind=sp)   ,intent(out) :: outvar(imax,jmax)
-          real(kind=sp)   ,intent(in)  :: scale_fac
-          real(kind=sp)   ,intent(in)  :: offset
-        end subroutine MR_interp_iwf25_grid
+!        subroutine MR_interp_iwf25_grid(imax,jmax,invar,outvar,scale_fac,offset)
+!          integer, parameter :: sp        = 4 ! single precision
+!          integer         ,intent(in)  :: imax,jmax
+!          integer(kind=sp),intent(in)  :: invar(192,94,1)
+!          real(kind=sp)   ,intent(out) :: outvar(imax,jmax)
+!          real(kind=sp)   ,intent(in)  :: scale_fac
+!          real(kind=sp)   ,intent(in)  :: offset
+!        end subroutine MR_interp_iwf25_grid
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
@@ -2726,11 +3338,11 @@
       endif
 
       if(MR_iwind.eq.5)then
-          ! Files are hard-coded
+          ! Files have hard-coded paths
         call MR_Set_iwind5_filenames(MR_MetStep_Hour_since_baseyear(istep),ivar,infile)
         infile = trim(adjustl(infile))
       else
-          ! Files are provided directly by calling program, not hard-coded
+          ! Files are provided directly by calling program, not hard-coded paths
         infile = trim(adjustl(MR_MetStep_File(istep)))
       endif
       np_met_loc = nlevs_fullmet(Met_var_zdim_idx(ivar))
@@ -2773,22 +3385,25 @@
       endif
 
       nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+
+
+
       call MR_NC_check_status(nSTAT,0,"nf90_inq_varid")
       nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
                 xtype = var_xtype)
-      call MR_NC_check_status(nSTAT,0,"nf90_inquire_variable")
 
-      ! Test for version 3 vs 4 NCEP files
-      if(var_xtype.eq.NF90_FLOAT)then
-        NC_version = 4
-      elseif(var_xtype.eq.NF90_SHORT)then
-        NC_version = 3
-      endif
+      call MR_NC_check_status(nSTAT,0,"nf90_inquire_variable")
 
       if(Dimension_of_Variable.eq.3)then
         MR_dum3d_metP = 0.0_sp
         if(MR_iwindformat.ne.50)then
-          allocate(temp3d_sp(nx_submet,ny_submet,np_met_loc,1))
+          ! the single-precision form is needed regardless of var_xtype
+          allocate(temp3d_sp(nx_submet,ny_submet,np_met_loc,1)); temp3d_sp(:,:,:,:)=0.0_sp
+          if(var_xtype.eq.NF90_SHORT)then
+            allocate(temp3d_short(nx_submet,ny_submet,np_met_loc,1)); temp3d_short(:,:,:,:)=0
+          elseif(var_xtype.eq.NF90_DOUBLE)then
+            allocate(temp3d_dp(nx_submet,ny_submet,np_met_loc,1)); temp3d_dp(:,:,:,:)=0.0_sp
+          endif
         else
             ! For MR_iwindformat = 50 (WRF), we need an extra point in p
             ! Allocate auxiliary array
@@ -2817,32 +3432,69 @@
             allocate(temp3d_sp(nx_submet,ny_submet,np_met_loc,1))
             allocate(dum3d_metP_aux(nx_submet,ny_submet,np_met_loc,1))
           endif
+          temp3d_sp(:,:,:,:)=0.0_sp
           dum3d_metP_aux(:,:,:,:)=0.0_sp
         endif ! MR_iwindformat.ne.50
-        temp3d_sp(:,:,:,:)=0.0_sp
 
         do i=1,ict        !read subgrid at current time step
-          ! Branch on four cases: (1) iw=5, NCEP with NetCDFv3
-          !                       (2) All other iw=5
-          !                       (3) WRF iwf=50
-          !                       (4) All other iw=3/4
-          if(MR_iwind.eq.5.and.MR_iwindformat.eq.25.and.var_xtype.eq.NF90_SHORT)then
-            ! NCEP reanalysis files are now NCv4 (stored as float), but the
-            ! older version, NCv3 (stored as short) might still be around.
-            if(i.eq.1)allocate(temp3d_short(nx_submet,ny_submet,np_met_loc,1))
-            nSTAT = nf90_get_var(ncid,in_var_id,temp3d_short(ileft(i):iright(i),:,:,:), &
-                     start = (/iistart(i),jstart,1,iwstep/),       &
-                     count = (/iicount(i),ny_submet,np_met_loc,1/))
-            call MR_NC_check_status(nSTAT,0,"nf90_get_var iw5 wf25 short")
-          elseif(MR_iwind.eq.5.and.(MR_iwindformat.eq.25.or.&
-                                    MR_iwindformat.eq.26.or.&
-                                    MR_iwindformat.eq.27.or.&
-                                    MR_iwindformat.eq.29.or.&
-                                    MR_iwindformat.eq.30))then
-            nSTAT = nf90_get_var(ncid,in_var_id,temp3d_sp(ileft(i):iright(i),:,:,:), &
-                     start = (/iistart(i),jstart,1,iwstep/),       &
-                     count = (/iicount(i),ny_submet,np_met_loc,1/))
-            call MR_NC_check_status(nSTAT,0,"nf90_get_var iw5")
+          ! Branch on three cases: (1) iw=5
+          !                        (2) WRF iwf=50
+          !                        (3) All other iw=3/4
+          if(MR_iwind.eq.5)then
+            ! Double-check that the iwindformat is one of the supported iw=5 types
+            if(MR_iwindformat.ne.25.and.&
+               MR_iwindformat.ne.26.and.&
+               MR_iwindformat.ne.27.and.&
+               MR_iwindformat.ne.29.and.&
+               MR_iwindformat.ne.30)then
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                write(errlog(io),*)'MR ERROR: expecting to read iw=5 with an incompatible'
+                write(errlog(io),*)'          iwindforamt.'
+                write(errlog(io),*)'iwind       = ',MR_iwind
+                write(errlog(io),*)'iwindformat = ',MR_iwindformat
+              endif;enddo
+              stop 1
+            endif
+            ! Note that most variables will be NF90_FLOAT, but some older NCEP reanlysis
+            ! files are NF90_SHORT
+            if(var_xtype.eq.NF90_SHORT)then
+              ! For SHORT values, expect that values use scale/offset
+              nSTAT = nf90_get_var(ncid,in_var_id,temp3d_short(ileft(i):iright(i),:,:,:), &
+                       start = (/iistart(i),jstart,1,iwstep/),       &
+                       count = (/iicount(i),ny_submet,np_met_loc,1/))
+              call MR_NC_check_status(nSTAT,0,"nf90_get_var iw5 wf25 short")
+
+              nSTAT = nf90_get_att(ncid, in_var_id,"scale_factor",dum_dp)
+              var_scale_fac = dum_dp
+              nSTAT = nf90_get_att(ncid, in_var_id,"add_offset",dum_dp)
+              var_offset = dum_dp
+            elseif(var_xtype.eq.NF90_FLOAT)then
+              nSTAT = nf90_get_var(ncid,in_var_id,temp3d_sp(ileft(i):iright(i),:,:,:), &
+                       start = (/iistart(i),jstart,1,iwstep/),       &
+                       count = (/iicount(i),ny_submet,np_met_loc,1/))
+              call MR_NC_check_status(nSTAT,0,"nf90_get_var iw5")
+            !elseif(var_xtype.eq.NF90_DOUBLE)then
+            !  This is a place-holder for a NWP file that stores variables as doubles
+            else
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                write(errlog(io),*)'MR ERROR: Cannot recognize variable type for x'
+                if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
+                if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
+                if(var_xtype.eq.NF90_SHORT) write(errlog(io),*)"NF90_SHORT = " ,NF90_SHORT
+                if(var_xtype.eq.NF90_INT)   write(errlog(io),*)"NF90_INT = "   ,NF90_INT
+                if(var_xtype.eq.NF90_FLOAT) write(errlog(io),*)"NF90_FLOAT = " ,NF90_FLOAT
+                if(var_xtype.eq.NF90_DOUBLE)write(errlog(io),*)"NF90_DOUBLE = ",NF90_DOUBLE
+                if(var_xtype.eq.NF90_UBYTE) write(errlog(io),*)"NF90_UBYTE = " ,NF90_UBYTE
+                if(var_xtype.eq.NF90_USHORT)write(errlog(io),*)"NF90_USHORT = ",NF90_USHORT
+                if(var_xtype.eq.NF90_UINT)  write(errlog(io),*)"NF90_UINT = "  ,NF90_UINT
+                if(var_xtype.eq.NF90_INT64) write(errlog(io),*)"NF90_INT64 = " ,NF90_INT64
+                if(var_xtype.eq.NF90_UINT64)write(errlog(io),*)"NF90_UINT64 = ",NF90_UINT64
+                if(var_xtype.eq.NF90_STRING)write(errlog(io),*)"NF90_STRING = ",NF90_STRING
+              endif;enddo
+              stop 1
+            endif
+
+          ! Not wht WRF files (iwf=50)
           elseif(MR_iwindformat.eq.50)then
             ! Now read the data and convert if necessary
             if(ivar.eq.1)then
@@ -2963,23 +3615,66 @@
               MR_dum3d_metP(:,:,:) = temp3d_sp(:,:,:,1)
             else
             ! for any other 3d WRF variable, assume non-staggered grid
-
+              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                write(outlog(io),*)istep,"Reading ","ivar"," from file : ",trim(adjustl(infile))
+              endif;enddo
+              !varname = 
+              !nSTAT = nf90_inq_varid(ncid,varname,in_var_id1)
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR ERROR: Need varname for WRF variable > ivar=6'
+              endif;enddo
+              stop 1
+              call MR_NC_check_status(nSTAT,0,"nf90_inq_varid ivar")
+              nSTAT = nf90_get_var(ncid,in_var_id1,temp3d_sp(ileft(i):iright(i),:,:,:), &
+                       start = (/iistart(i),jstart,1,iwstep/),       &
+                       count = (/iicount(i),ny_submet,np_met_loc,1/))
+              call MR_NC_check_status(nSTAT,0,"nf90_get_var ivar")
+              MR_dum3d_metP(:,:,:) = temp3d_sp(:,:,:,1)
             endif
 
           else ! end of MR_iwind=5 and iwf=50 (WRF) sections
-
-            ! for any other 3d variable (non-WRF, non-NCEP/2.5 reanalysis)
-            nSTAT = nf90_get_var(ncid,in_var_id,temp3d_sp(ileft(i):iright(i),:,:,:), &
-                     start = (/iistart(i),jstart,1,iwstep/),       &
-                     count = (/iicount(i),ny_submet,np_met_loc,1/))
-            call MR_NC_check_status(nSTAT,0,"nf90_get_var")
-            if(nSTAT.ne.NF90_NOERR)then
+            ! for any other 3d variable (non-WRF and iwf.ne.5)
+            if(var_xtype.eq.NF90_SHORT)then
+              nSTAT = nf90_get_var(ncid,in_var_id,temp3d_short(ileft(i):iright(i),:,:,:), &
+                       start = (/iistart(i),jstart,1,iwstep/),       &
+                       count = (/iicount(i),ny_submet,np_met_loc,1/))
+              call MR_NC_check_status(nSTAT,0,"nf90_get_var short")
+              nSTAT = nf90_get_att(ncid, in_var_id,"scale_factor",dum_dp)
+              var_scale_fac = dum_dp
+              nSTAT = nf90_get_att(ncid, in_var_id,"add_offset",dum_dp)
+              var_offset = dum_dp
+            elseif(var_xtype.eq.NF90_FLOAT)then
+              nSTAT = nf90_get_var(ncid,in_var_id,temp3d_sp(ileft(i):iright(i),:,:,:), &
+                       start = (/iistart(i),jstart,1,iwstep/),       &
+                       count = (/iicount(i),ny_submet,np_met_loc,1/))
+              call MR_NC_check_status(nSTAT,0,"nf90_get_var float")
+              if(nSTAT.ne.NF90_NOERR)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR ERROR: get_var: ',nf90_strerror(nSTAT)
+                  write(errlog(io),*)i
+                  write(errlog(io),*)ileft(i),iright(i)
+                  write(errlog(io),*)iistart(i),jstart,1,iwstep
+                  write(errlog(io),*)iicount(i),ny_submet,np_met_loc,1
+                endif;enddo
+                stop 1
+              endif
+            !elseif(var_xtype.eq.NF90_DOUBLE)then
+            !  This is a place-holder for a NWP file that stores variables as doubles
+            else
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-                write(errlog(io),*)'MR ERROR: get_var: ',nf90_strerror(nSTAT)
-                write(errlog(io),*)i
-                write(errlog(io),*)ileft(i),iright(i)
-                write(errlog(io),*)iistart(i),jstart,1,iwstep
-                write(errlog(io),*)iicount(i),ny_submet,np_met_loc,1
+                write(errlog(io),*)'MR ERROR: Cannot recognize variable type for x'
+                if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
+                if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
+                if(var_xtype.eq.NF90_SHORT) write(errlog(io),*)"NF90_SHORT = " ,NF90_SHORT
+                if(var_xtype.eq.NF90_INT)   write(errlog(io),*)"NF90_INT = "   ,NF90_INT
+                if(var_xtype.eq.NF90_FLOAT) write(errlog(io),*)"NF90_FLOAT = " ,NF90_FLOAT
+                if(var_xtype.eq.NF90_DOUBLE)write(errlog(io),*)"NF90_DOUBLE = ",NF90_DOUBLE
+                if(var_xtype.eq.NF90_UBYTE) write(errlog(io),*)"NF90_UBYTE = " ,NF90_UBYTE
+                if(var_xtype.eq.NF90_USHORT)write(errlog(io),*)"NF90_USHORT = ",NF90_USHORT
+                if(var_xtype.eq.NF90_UINT)  write(errlog(io),*)"NF90_UINT = "  ,NF90_UINT
+                if(var_xtype.eq.NF90_INT64) write(errlog(io),*)"NF90_INT64 = " ,NF90_INT64
+                if(var_xtype.eq.NF90_UINT64)write(errlog(io),*)"NF90_UINT64 = ",NF90_UINT64
+                if(var_xtype.eq.NF90_STRING)write(errlog(io),*)"NF90_STRING = ",NF90_STRING
               endif;enddo
               stop 1
             endif
@@ -2992,23 +3687,50 @@
           do j=1,ny_submet
             itmp = ny_submet-j+1
             !reverse the j indices (since they increment from N to S)
-            if(MR_iwindformat.eq.25)then
-              if(var_xtype.eq.NF90_FLOAT)then
-                  ! No scaling/offset needed
+
+            if(var_xtype.eq.NF90_SHORT)then
+              if(y_inverted)then
                 MR_dum3d_metP(1:nx_submet,j,1:np_met_loc) = &
-                                      real(temp3d_sp(:,itmp,:,1),kind=sp)
-              elseif(var_xtype.eq.NF90_SHORT)then
-                  ! NC_version = 3 :: need to scale and offset shorts to get float
+                                      real(temp3d_short(1:nx_submet,itmp,1:np_met_loc,1) * &
+                                       var_scale_fac + var_offset, kind=sp)
+              else
                 MR_dum3d_metP(1:nx_submet,j,1:np_met_loc) = &
-                                      real(temp3d_short(1:nx_submet,itmp,1:np_met_loc,1),kind=sp) * &
-                                    iwf25_scale_facs(ivar) + iwf25_offsets(ivar)
+                                      real(temp3d_short(1:nx_submet,j,1:np_met_loc,1) * &
+                                       var_scale_fac + var_offset,kind=sp)
+              endif
+            elseif(var_xtype.eq.NF90_FLOAT)then
+              if(y_inverted)then
+                MR_dum3d_metP(1:nx_submet,j,1:np_met_loc) = &
+                                      temp3d_sp(1:nx_submet,itmp,1:np_met_loc,1)
+              else
+                MR_dum3d_metP(1:nx_submet,j,1:np_met_loc) = &
+                                      temp3d_sp(1:nx_submet,j,1:np_met_loc,1)
+              endif
+            elseif(var_xtype.eq.NF90_DOUBLE)then
+              if(y_inverted)then
+                MR_dum3d_metP(1:nx_submet,j,1:np_met_loc) = &
+                                      real(temp3d_dp(1:nx_submet,itmp,1:np_met_loc,1),kind=sp)
+              else
+                MR_dum3d_metP(1:nx_submet,j,1:np_met_loc) = &
+                                      real(temp3d_dp(1:nx_submet,j,1:np_met_loc,1),kind=sp)
               endif
             else
-              if(y_inverted)then
-                MR_dum3d_metP(1:nx_submet,j,1:np_met_loc)  = temp3d_sp(1:nx_submet,itmp,1:np_met_loc,1)
-              else
-                MR_dum3d_metP(1:nx_submet,j,1:np_met_loc)  = temp3d_sp(1:nx_submet,j,1:np_met_loc,1)
-              endif
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                write(errlog(io),*)'MR ERROR: Cannot recognize variable type for x'
+                if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
+                if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
+                if(var_xtype.eq.NF90_SHORT) write(errlog(io),*)"NF90_SHORT = " ,NF90_SHORT
+                if(var_xtype.eq.NF90_INT)   write(errlog(io),*)"NF90_INT = "   ,NF90_INT
+                if(var_xtype.eq.NF90_FLOAT) write(errlog(io),*)"NF90_FLOAT = " ,NF90_FLOAT
+                if(var_xtype.eq.NF90_DOUBLE)write(errlog(io),*)"NF90_DOUBLE = ",NF90_DOUBLE
+                if(var_xtype.eq.NF90_UBYTE) write(errlog(io),*)"NF90_UBYTE = " ,NF90_UBYTE
+                if(var_xtype.eq.NF90_USHORT)write(errlog(io),*)"NF90_USHORT = ",NF90_USHORT
+                if(var_xtype.eq.NF90_UINT)  write(errlog(io),*)"NF90_UINT = "  ,NF90_UINT
+                if(var_xtype.eq.NF90_INT64) write(errlog(io),*)"NF90_INT64 = " ,NF90_INT64
+                if(var_xtype.eq.NF90_UINT64)write(errlog(io),*)"NF90_UINT64 = ",NF90_UINT64
+                if(var_xtype.eq.NF90_STRING)write(errlog(io),*)"NF90_STRING = ",NF90_STRING
+              endif;enddo
+              stop 1
             endif
           enddo
           if(z_inverted)then ! reverse the vertical coordinate
@@ -3020,17 +3742,18 @@
           endif
         endif !MR_iwindformat.eq.50, MR_iwindformat.eq.25, else
 
-        if(MR_iwind.eq.5.and.MR_iwindformat.eq.25)then
 #ifdef USEPOINTERS
-          if(associated(temp3d_short)) deallocate(temp3d_short)
+        if(associated(temp3d_short)) deallocate(temp3d_short)
+        if(associated(temp3d_sp))    deallocate(temp3d_sp)
+        if(associated(temp3d_dp))    deallocate(temp3d_dp)
 #else
-          if(allocated(temp3d_short)) deallocate(temp3d_short)
+        if(allocated(temp3d_short)) deallocate(temp3d_short)
+        if(allocated(temp3d_sp))    deallocate(temp3d_sp)
+        if(allocated(temp3d_dp))    deallocate(temp3d_dp)
 #endif
-        endif
         if(MR_iwindformat.eq.50)then
           deallocate(dum3d_metP_aux)
         endif
-        deallocate(temp3d_sp)
 
       elseif(Dimension_of_Variable.eq.2)then
         if(IsCategorical)then
@@ -3062,26 +3785,28 @@
           endif
   
           do i=1,ict        !read subgrid at current time step
-            if(MR_iwindformat.eq.25)then
-              allocate(tmpsurf2d_short(192,94,1))
-              if(NC_version.eq.4)then
-                nSTAT = nf90_get_var(ncid,in_var_id,temp2d_sp(:,:,1), &
-                         start = (/1,1,iwstep/),       &
-                         count = (/192,94,1/))
-                call MR_NC_check_status(nSTAT,0,"nf90_get_var NCEP 2d non-cat ncv4")
-                call MR_interp_iwf25_grid(nx_submet,ny_submet,tmpsurf2d_short,temp2d_sp,&
-                                    iwf25_scale_facs(ivar),iwf25_offsets(ivar))
-                MR_dum2d_met(1:nx_submet,:) = temp2d_sp(1:nx_submet,:,1)
-              else
-                nSTAT = nf90_get_var(ncid,in_var_id,tmpsurf2d_short(:,:,1), &
-                         start = (/1,1,iwstep/),       &
-                         count = (/192,94,1/))
-                call MR_NC_check_status(nSTAT,0,"nf90_get_var NCEP 2d non-cat ncv3")
-                call MR_interp_iwf25_grid(nx_submet,ny_submet,tmpsurf2d_short,temp2d_sp,&
-                                    iwf25_scale_facs(ivar),iwf25_offsets(ivar))
-                MR_dum2d_met(1:nx_submet,:) = temp2d_sp(1:nx_submet,:,1)
-              endif
-            else  ! Not MR_iwindformat.eq.25
+            !if(MR_iwindformat.eq.25)then
+            !  allocate(tmpsurf2d_short(192,94,1))
+            !  if(NCv_datafile.eq.1)then
+            !    ! This is for nf90_format_classic old-style NCEP files
+            !    nSTAT = nf90_get_var(ncid,in_var_id,tmpsurf2d_short(:,:,1), &
+            !             start = (/1,1,iwstep/),       &
+            !             count = (/192,94,1/))
+            !    call MR_NC_check_status(nSTAT,0,"nf90_get_var NCEP 2d non-cat ncv3")
+         ! H!FS get rid of the iwf25_scale_facs
+            !    call MR_interp_iwf25_grid(nx_submet,ny_submet,tmpsurf2d_short,temp2d_sp,&
+            !                        iwf25_scale_facs(ivar),iwf25_offsets(ivar))
+            !    MR_dum2d_met(1:nx_submet,:) = temp2d_sp(1:nx_submet,:,1)
+            !  else
+            !    nSTAT = nf90_get_var(ncid,in_var_id,temp2d_sp(:,:,1), &
+            !             start = (/1,1,iwstep/),       &
+            !             count = (/192,94,1/))
+            !    call MR_NC_check_status(nSTAT,0,"nf90_get_var NCEP 2d non-cat ncv4")
+            !    call MR_interp_iwf25_grid(nx_submet,ny_submet,tmpsurf2d_short,temp2d_sp,&
+            !                        iwf25_scale_facs(ivar),iwf25_offsets(ivar))
+            !    MR_dum2d_met(1:nx_submet,:) = temp2d_sp(1:nx_submet,:,1)
+            !  endif
+            !else  ! Not MR_iwindformat.eq.25
               ! 2d variables for iwf .ne. 25
               if(ivar.eq.11.or.ivar.eq.12)then
                 ! Surface velocities do have a z dimension
@@ -3097,7 +3822,7 @@
                     MR_dum2d_met(1:nx_submet,j)  = temp3d_sp(1:nx_submet,j,1,1)
                   endif
                 enddo
-              else  ! not MR_iwindformat.eq.25 and not ivar.eq.11.or.ivar.eq.12
+              else  ! not ivar.eq.11.or.ivar.eq.12
                 nSTAT = nf90_get_var(ncid,in_var_id,temp2d_sp(ileft(i):iright(i),:,:), &
                          start = (/iistart(i),jstart,iwstep/),       &
                          count = (/iicount(i),ny_submet,1/))
@@ -3111,11 +3836,11 @@
                   endif
                 enddo
               endif
-            endif
+            !endif
           enddo
           deallocate(temp2d_sp)
           if(ivar.eq.11.or.ivar.eq.12) deallocate(temp3d_sp)
-          if(MR_iwindformat.eq.25) deallocate(tmpsurf2d_short)
+          !if(MR_iwindformat.eq.25) deallocate(tmpsurf2d_short)
         endif ! IsCategorical
       endif ! Dimension_of_Variable.eq.2
 
@@ -3264,7 +3989,7 @@
       call MR_NC_check_status(nSTAT,0,"nf90_close")
 
       MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_met_loc) =  &
-      MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_met_loc) * Met_var_conversion_factor(ivar)
+        MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_met_loc) * Met_var_conversion_factor(ivar)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -3277,48 +4002,47 @@
 !     MR_interp_iwf25_grid
 !
 !##############################################################################
-
-      subroutine MR_interp_iwf25_grid(imax,jmax,invar,outvar,scale_fac,offset)
-
-      use MetReader,       only : &
-         imap_iwf25,amap_iwf25
-
-      implicit none
-
-      integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
-
-      integer         ,intent(in)  :: imax,jmax
-      integer(kind=sp),intent(in)  :: invar(192,94,1)
-      real(kind=sp)   ,intent(out) :: outvar(imax,jmax)
-      real(kind=sp)   ,intent(in)  :: scale_fac
-      real(kind=sp)   ,intent(in)  :: offset
-
-      real(kind=sp)    :: a1,a2,a3,a4
-      real(kind=sp)    :: v1,v2,v3,v4
-
-      integer :: ilon,ilat
-
-      do ilon = 1,imax
-        do ilat = 1,jmax
-          a1 = amap_iwf25(ilon,ilat,1)
-          a2 = amap_iwf25(ilon,ilat,2)
-          a3 = amap_iwf25(ilon,ilat,3)
-          a4 = amap_iwf25(ilon,ilat,4)
-          v1 = invar(imap_iwf25(ilon,ilat,1),imap_iwf25(ilon,ilat,3),1) &
-                 * scale_fac + offset
-          v2 = invar(imap_iwf25(ilon,ilat,2),imap_iwf25(ilon,ilat,3),1) &
-                 * scale_fac + offset
-          v3 = invar(imap_iwf25(ilon,ilat,2),imap_iwf25(ilon,ilat,4),1) &
-                 * scale_fac + offset
-          v4 = invar(imap_iwf25(ilon,ilat,1),imap_iwf25(ilon,ilat,4),1) &
-                 * scale_fac + offset
-
-          outvar(ilon,ilat) = a1*v1 + a2*v2 + a3*v3 + a4*v4
-        enddo
-      enddo
-
-      end subroutine MR_interp_iwf25_grid
+!
+!      subroutine MR_interp_iwf25_grid(imax,jmax,invar,outvar,scale_fac,offset)
+!
+!      use MetReader,       only : &
+!         imap_iwf25,amap_iwf25
+!
+!      implicit none
+!
+!      integer, parameter :: sp        = 4 ! single precision
+!
+!      integer         ,intent(in)  :: imax,jmax
+!      integer(kind=sp),intent(in)  :: invar(192,94,1)
+!      real(kind=sp)   ,intent(out) :: outvar(imax,jmax)
+!      real(kind=sp)   ,intent(in)  :: scale_fac
+!      real(kind=sp)   ,intent(in)  :: offset
+!
+!      real(kind=sp)    :: a1,a2,a3,a4
+!      real(kind=sp)    :: v1,v2,v3,v4
+!
+!      integer :: ilon,ilat
+!
+!      do ilon = 1,imax
+!        do ilat = 1,jmax
+!          a1 = amap_iwf25(ilon,ilat,1)
+!          a2 = amap_iwf25(ilon,ilat,2)
+!          a3 = amap_iwf25(ilon,ilat,3)
+!          a4 = amap_iwf25(ilon,ilat,4)
+!          v1 = invar(imap_iwf25(ilon,ilat,1),imap_iwf25(ilon,ilat,3),1) &
+!                 * scale_fac + offset
+!          v2 = invar(imap_iwf25(ilon,ilat,2),imap_iwf25(ilon,ilat,3),1) &
+!                 * scale_fac + offset
+!          v3 = invar(imap_iwf25(ilon,ilat,2),imap_iwf25(ilon,ilat,4),1) &
+!                 * scale_fac + offset
+!          v4 = invar(imap_iwf25(ilon,ilat,1),imap_iwf25(ilon,ilat,4),1) &
+!                 * scale_fac + offset
+!
+!          outvar(ilon,ilat) = a1*v1 + a2*v2 + a3*v3 + a4*v4
+!        enddo
+!      enddo
+!
+!      end subroutine MR_interp_iwf25_grid
 
 !##############################################################################
 !
@@ -3337,7 +4061,7 @@
       subroutine MR_NC_check_status(nSTAT, errcode, operation)
 
       use MetReader,       only : &
-         MR_nio,VB,errlog,verbosity_error
+         MR_nio,VB,outlog,errlog,verbosity_error
 
       use netcdf
 
@@ -3347,19 +4071,23 @@
       integer, intent(in) :: errcode
       character(len=*), intent(in) :: operation
 
-      character(len=9) :: severity
+      character(len=12) :: severity
 
       integer :: io                           ! Index for output streams
 
       if (errcode.eq.0)then
-        severity = "WARNING: "
+        severity = "MR WARNING: "
        else
-        severity = "ERROR:   "
+        severity = "MR ERROR:   "
       endif
 
       if (nSTAT == nf90_noerr) return
       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io) ,*)severity,errcode,operation,' ',adjustl(trim(nf90_strerror(nSTAT)))
+        if (errcode.eq.0)then
+          write(outlog(io) ,*)severity,errcode,operation,' :: ',trim(adjustl(nf90_strerror(nSTAT)))
+        else
+          write(errlog(io) ,*)severity,errcode,operation,' :: ',trim(adjustl(nf90_strerror(nSTAT)))
+        endif
       endif;enddo
 
       ! If user-supplied error code is 0, then consider this a warning,
@@ -3368,4 +4096,445 @@
 
       end subroutine MR_NC_check_status
 
+!##############################################################################
+!
+!     MR_NC_check_var_synonyms
+!
+!     ivar   = variable ID
+!
+!     This subroutine is called from MR_Read_Met_DimVars_netcdf if the expected
+!     variable name is not found. Then all synonyms for that variable are
+!     checked.  If the variable is found, then Met_var_NC_names is updated.
+!
+!##############################################################################
+
+      subroutine MR_NC_check_var_synonyms(ivar,ncid)
+
+      use MetReader,       only : &
+         Met_var_NC_names,Met_var_IsAvailable,Met_gridtype,MR_nio,&
+         VB,verbosity_production,outlog
+
+      use netcdf
+
+      implicit none
+
+      integer, intent(in) :: ivar
+      integer, intent(in) :: ncid
+
+      integer :: nSTAT
+      character(len=NF90_MAX_NAME)  :: invar
+      integer :: slen
+      integer :: in_var_id
+      integer :: io
+
+      ! We are here because we could not find the expected variable name, so reset it
+      Met_var_NC_names(ivar) = "reset"
+      if(ivar.eq.1)then ! Geopotential height
+        invar = "Geopotential_height_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "H"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "hgt"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "HGT_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "gh"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Geopotential_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "z"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Z"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Z_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Z_GDS4_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Z3"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "HGT_P0_L100_" // Met_gridtype
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+      elseif(ivar.eq.2)then ! U-component of wind
+        invar = "u-component_of_wind_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "u_wind_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "U"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "uwnd"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "UGRD_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "U_GRD_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "u"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "U_component_of_wind_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "U_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "U_GDS4_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "UGRD_P0_L100_" // Met_gridtype
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+      elseif(ivar.eq.3)then ! V-component of wind
+        invar = "v-component_of_wind_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "v_wind_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "V"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "vwnd"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "VGRD_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "V_GRD_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "v"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "V_component_of_wind_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "V_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "V_GDS4_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "VGRD_P0_L100_" // Met_gridtype
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+      elseif(ivar.eq.4.or.ivar.eq.7)then ! Vertical velocity (pressure)
+        invar = "Vertical_velocity_pressure_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Pressure_vertical_velocity_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Vertical_velocity_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "OMEGA"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Pressure_vertical_velocity_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "omega"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "VVEL_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "V_VEL_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "W"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "w"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "W_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "W_GDS4_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "VVEL_P0_L100_" // Met_gridtype
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+      elseif(ivar.eq.5)then ! Temperature
+        invar = "Temperature_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Temp_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "T"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "air"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "TMP_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "t"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "T_GDS0_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "T_GDS4_ISBL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "TMP_P0_L100_" // Met_gridtype
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+      elseif(ivar.eq.11)then ! Velocity component in x (or E) direction at 10 m above ground surface  (m/s)
+        invar = "u-component_of_wind_height_above_ground"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "u_wind_height_above_ground"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "U10"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "UGRD_P0_L103_" // Met_gridtype
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+      elseif(ivar.eq.12)then ! Velocity component in y (or N) direction at 10 m above ground surface  (m/s)
+        invar = "v-component_of_wind_height_above_ground"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "v_wind_height_above_ground"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "V10"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "VGRD_P0_L103_" // Met_gridtype
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+      elseif(ivar.eq.16)then ! Soil Moisture  (fraction)
+        invar = "Volumetric_Soil_Moisture_Content_depth_below_surface_layer"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Volumetric_Soil_Moisture_Content"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Soil_moisture_content_depth_below_surface_layer"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "SMOIS"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "SOILW_P0_2L106_" // Met_gridtype
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+      elseif(ivar.eq.30)then ! Relative humidity  (%)
+        invar = "Relative_humidity_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "RH"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "rhum"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "RELHUM"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "RH_P0_L100_" // Met_gridtype
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+      elseif(ivar.eq.31)then ! Specific humidity  (kg/kg)
+        invar = "Specific_humidity_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "QV"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "shum"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Q"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "q"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "QVAPOR"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "SPFH_P0_L100_" // Met_gridtype
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+      elseif(ivar.eq.32)then ! Cloud water mixing ratio  (kg/kg)
+        invar = "Cloud_mixing_ratio_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Cloud_water_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "shum"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "QL"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "clwc"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        !invar = "crwc"
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "CLWMR_P0_L100_" // Met_gridtype
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+      elseif(ivar.eq.33)then ! Snow mixing ratio  (kg/kg)
+        invar = "Snow_mixing_ratio_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Cloud_water_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Ice_mixing_ratio_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "QI"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "ciwc"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "cswc"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "SNMR_P0_L100_" // Met_gridtype
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+      endif
+      if(index(Met_var_NC_names(ivar),'reset').ne.0)then
+        ! If this variable still contains 'reset', then we couldn't find a
+        ! synonym. Flag as unavailable
+        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+          write(outlog(io),*)'  Setting Met_var_IsAvailable to .false.'
+        endif;enddo
+        Met_var_IsAvailable(ivar) = .false.
+      else
+        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+          write(outlog(io),*)'  Variable name has been reset to: ',Met_var_NC_names(ivar)
+        endif;enddo
+      endif
+
+      end subroutine MR_NC_check_var_synonyms
+
+!##############################################################################
 

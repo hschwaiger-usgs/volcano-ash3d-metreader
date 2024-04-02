@@ -24,7 +24,7 @@
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_production,&
          IsLatLon_MetGrid,IsGlobal_MetGrid,IsRegular_MetGrid,isGridRelative,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         MR_iversion,MR_Reannalysis
+         MR_iversion,MR_Reannalysis,Met_gridtype
 
       implicit none
 
@@ -66,6 +66,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  262.5_8
         Met_phi0          =  38.5_8
@@ -102,6 +103,7 @@
         isGridRelative    = .false.
         MR_Reannalysis    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  -107.0_8
         Met_phi0          =  50.0_8
@@ -119,6 +121,8 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.1041)then
          ! Not an NCEP grid
          !  This grid is for the NASA Np
@@ -127,6 +131,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.1040.or.igrid.eq.1024)then
          ! Not an NCEP grid
@@ -137,6 +143,8 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.1033)then
          ! Not an NCEP grid
          !  This grid is for the CAM files
@@ -145,6 +153,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.1032)then
          ! Not an NCEP grid
@@ -155,6 +165,8 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.1030)then
          ! Not an NCEP grid
          !  This grid is for the ECMWF ERA-20c
@@ -163,6 +175,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .false.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.1029)then
          ! Not an NCEP grid
@@ -173,6 +187,8 @@
         IsRegular_MetGrid = .false.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.1027)then
          ! Not an NCEP grid
          !  This grid is for the NOAA Reanalysis
@@ -182,12 +198,14 @@
           IsGlobal_MetGrid  = .true.
           IsRegular_MetGrid = .true.
           isGridRelative    = .true.
+          Met_gridtype      = "GLL0"
         elseif(MR_iversion.eq.3)then
           !v3
           IsLatLon_MetGrid  = .true.
           IsGlobal_MetGrid  = .true.
           IsRegular_MetGrid = .false.
           isGridRelative    = .true.
+          Met_gridtype      = "GLL0"
         endif
       elseif(igrid.eq.2)then
        ! Used by NCEP DOE reanalysis, NCEP-1
@@ -197,6 +215,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.3)then
         ! Used by GFS forecast
@@ -208,6 +228,8 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.4)then
         ! Used by GFS forecast
          !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid003.gif
@@ -216,6 +238,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.45)then
         ! Used by JMA 55
@@ -226,6 +250,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.91)then
         ! NAM 3-km Polar Stereographic
@@ -278,6 +304,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GST0"
         Met_iprojflag     = 1
         Met_lam0          = -150.0_8
         Met_phi0          =  90.0_8
@@ -315,6 +342,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GST0"
         Met_iprojflag     = 1
         Met_lam0          = -105.0_8
         Met_phi0          =  90.0_8
@@ -332,6 +360,8 @@
         IsRegular_MetGrid = .false.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.182)then
         ! HI N.Pacific 
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID182
@@ -341,6 +371,8 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.193)then
        ! Used by GFS forecast (0.25)
        !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID193
@@ -349,6 +381,8 @@
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.196)then
         ! HI 2.5-km Mercator
@@ -391,6 +425,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GME0"
         Met_iprojflag     = 5
         Met_lam0          = 198.475_8
         Met_phi0          =  20.0_8
@@ -448,6 +483,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GST0"
         Met_iprojflag     = 1
         Met_lam0          = -150.0_8
         Met_phi0          =  90.0_8
@@ -483,6 +519,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  265.0_8
         Met_phi0          =  25.0_8
@@ -519,6 +556,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  265.0_8
         Met_phi0          =  25.0_8
@@ -554,6 +592,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GST0"
         Met_iprojflag     = 1
         Met_lam0          = -135.0_8
         Met_phi0          =  90.0_8
@@ -588,6 +627,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  265.0_8
         Met_phi0          =  25.0_8
@@ -624,6 +664,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  -107.0_8
         Met_phi0          =  50.0_8
@@ -659,6 +700,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
         Met_lam0          =  265.0_8
         Met_phi0          =  25.0_8
@@ -694,6 +736,7 @@
         IsRegular_MetGrid = .true.
         isGridRelative    = .true.
 
+        Met_gridtype      = "GST0"
         Met_iprojflag     = 1
         Met_lam0          = -135.0_8
         Met_phi0          =  90.0_8
@@ -749,14 +792,15 @@
          MR_dum2d_comp_int,MR_dum2d_comp,MR_dum3d_compP,MR_dum3d_compH,&
          MR_geoH_metP_last,MR_geoH_metP_next,ilhalf_fm_l,ilhalf_nx,irhalf_fm_l,irhalf_nx,&
          istart,jstart,MR_v_ER_metP,MR_dum3d_compH_2,MR_dum3d_compP_2,theta_Comp,&
-         amap_iwf25,imap_iwf25,y_in_iwf25_sp,x_fullmet_sp,y_fullmet_sp,MR_dx_met,&
-         MR_dy_met,x_in_iwf25_sp,y_comp_sp,iend,ilhalf_fm_r,IsGlobal_MetGrid,&
+         x_fullmet_sp,y_fullmet_sp,MR_dx_met,&
+         MR_dy_met,y_comp_sp,iend,ilhalf_fm_r,IsGlobal_MetGrid,&
          Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
          isGridRelative,bilin_map_wgt,CompPoint_on_subMet_idx,y_pad_South,y_pad_North,&
          y_inverted,wrapgrid,UseFullMetGrid,ny_fullmet,ny_comp,nx_comp,nx_fullmet,&
          irhalf_fm_r,IsLatLon_MetGrid,IsPeriodic_CompGrid,jend,Map_Case,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         MR_iwindformat,MR_useCompH,MR_useCompP,np_fullmet,nz_comp
+         !x_in_iwf25_sp,amap_iwf25,imap_iwf25,y_in_iwf25_sp,&
+         MR_useCompH,MR_useCompP,np_fullmet,nz_comp
 
       use projection,      only : &
            PJ_Set_Proj_Params,&
@@ -775,8 +819,8 @@
       real(kind=sp) :: xLL,yLL
       real(kind=sp) :: xUR,yUR
 
-      real(kind=sp) :: dely_sp,x_loc,y_loc,xc_sp,yc_sp,xfrac_sp,yfrac_sp
-      integer :: ilat,ilon,ix1,ix2,iy1,iy2
+      !real(kind=sp) :: dely_sp,x_loc,y_loc,xc_sp,yc_sp,xfrac_sp,yfrac_sp
+      !integer :: ilat,ilon,ix1,ix2,iy1,iy2
 
       real(kind=dp) :: ptlon,ptlat,xin,yin,de_x,de_y
 
@@ -929,8 +973,8 @@
         endif;enddo
       endif
 
-      !SEE if COMPUTATIONAL REGION STRADDLES THE BREAK IN THE WIND FILE
-      !  (EITHER THE PRIME OR ANTI-MERIDIAN)
+      ! See if computational region straddles the break in the wind file
+      !  (either the prime or anti-meridian)
       if(iend.le.nx_fullmet)then        !yes
         wrapgrid = .false.
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
@@ -991,8 +1035,8 @@
         write(outlog(io),*)"-------------"
       endif;enddo
 
-      !SEE IF THE MODEL DOMAIN EXTENDS NORTH OR SOUTH OF THE MESOSCALE DOMAIN
-      If(UseFullMetGrid)then
+      ! See if the model domain extends north or south of the mesoscale domain
+      if(UseFullMetGrid)then
           ! This is the special case where the comp grid equals the Met grid
         jstart = 1
         jend = ny_fullmet
@@ -1125,8 +1169,7 @@
       allocate( y_submet_sp(1:ny_submet))
       allocate( MR_dy_submet(1:ny_submet))
 
-      ! POPULATE THE X AND Y ARRAYS (Z ARRAY WILL BE POPULATED DIFFERENTLY
-      ! AT EACH POINT, IN READ4DWINDARRAY.F90)
+      ! Populate the x and y arrays
       if (wrapgrid) then
         x_submet_sp(          1:ilhalf_nx) = x_fullmet_sp(ilhalf_fm_l:ilhalf_fm_l+ilhalf_nx-1)
         x_submet_sp(ilhalf_nx+1:nx_submet) = x_fullmet_sp(irhalf_fm_l:irhalf_fm_l+irhalf_nx-1) + 360.0_sp
@@ -1404,91 +1447,92 @@
       allocate(MR_geoH_metP_last(nx_submet,ny_submet,np_fullmet))
       allocate(MR_geoH_metP_next(nx_submet,ny_submet,np_fullmet))
 
-      if(MR_iwindformat.eq.25)then
-        ! The following is only needed if we are reading 2d variables from NCEP
-        ! wind files, but we will set up the grids regardless as a precaution
-          ! Here are the weights starting with LL then counter-clockwise
-        allocate(amap_iwf25(nx_submet,ny_submet,4))
-        amap_iwf25 = 0.0_sp
-        !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + sp*(as_nxmax*as_nymax*4)
-          ! Here is the x1,x2,y1,y2 indices
-        allocate(imap_iwf25(nx_submet,ny_submet,4))
-        imap_iwf25 = 0
-        !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + sp*(as_nxmax*as_nymax*4)
-
-        ! These should be read directly, but for now, just hardcode it.        
-        do i = 1,192
-          x_in_iwf25_sp(i)=(i-1)*1.875_sp
-        enddo
-        y_in_iwf25_sp(1:94) = (/ &
-         88.542_sp,  86.6531_sp,  84.7532_sp,  82.8508_sp,  80.9473_sp,   79.0435_sp,  77.1394_sp, 75.2351_sp, &
-        73.3307_sp,  71.4262_sp,  69.5217_sp,  67.6171_sp,  65.7125_sp,   63.8079_sp,  61.9033_sp, 59.9986_sp, &
-        58.0939_sp,  56.1893_sp,  54.2846_sp,  52.3799_sp,  50.4752_sp,   48.5705_sp,  46.6658_sp, 44.7611_sp, &
-        42.8564_sp,  40.9517_sp,   39.047_sp,  37.1422_sp,  35.2375_sp,   33.3328_sp,  31.4281_sp, 29.5234_sp, &
-        27.6186_sp,  25.7139_sp,  23.8092_sp,  21.9044_sp,  19.9997_sp,    18.095_sp,  16.1902_sp, 14.2855_sp, &
-        12.3808_sp, 10.47604_sp,  8.57131_sp,  6.66657_sp,  4.76184_sp,    2.8571_sp, 0.952368_sp, &
-      -0.952368_sp,  -2.8571_sp, -4.76184_sp, -6.66657_sp, -8.57131_sp, -10.47604_sp, -12.3808_sp, &
-       -14.2855_sp, -16.1902_sp,  -18.095_sp, -19.9997_sp, -21.9044_sp,  -23.8092_sp, -25.7139_sp, &
-       -27.6186_sp, -29.5234_sp, -31.4281_sp, -33.3328_sp, -35.2375_sp,  -37.1422_sp,  -39.047_sp, &
-       -40.9517_sp, -42.8564_sp, -44.7611_sp, -46.6658_sp, -48.5705_sp,  -50.4752_sp, -52.3799_sp, &
-       -54.2846_sp, -56.1893_sp, -58.0939_sp, -59.9986_sp, -61.9033_sp,  -63.8079_sp, -65.7125_sp, &
-       -67.6171_sp, -69.5217_sp, -71.4262_sp, -73.3307_sp, -75.2351_sp,  -77.1394_sp, -79.0435_sp, &
-       -80.9473_sp, -82.8508_sp, -84.7532_sp, -86.6531_sp,  -88.542_sp /)
-
-        do ilon = 1,nx_submet
-          x_loc = max(0.0_sp,x_submet_sp(ilon))
-          xfrac_sp = -1.0_sp
-          xc_sp    = -1.0_sp
-          do i = 1,191
-            if(max(0.0_sp,x_in_iwf25_sp(i)).le.x_loc.and.x_in_iwf25_sp(i+1).gt.x_loc)then
-              ix1 = i
-              ix2 = i+1
-              xfrac_sp = (x_loc - x_in_iwf25_sp(i))/1.875_sp
-              xc_sp = 1.0_sp - xfrac_sp
-              exit ! leave do loop
-            endif
-          enddo
-          if(xfrac_sp.lt.0.0_sp.or.xc_sp.lt.0.0_sp)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-              write(errlog(io),*)"MR ERROR: i maps out of grid: ",i
-            endif;enddo
-            stop 1
-          endif
-
-          do ilat = 1,ny_submet
-            y_loc = y_submet_sp(ilat)
-            yfrac_sp = -1.0_sp
-            yc_sp    = -1.0_sp
-            do j = 94,2,-1
-              if(y_in_iwf25_sp(j).le.y_loc.and.y_in_iwf25_sp(j-1).gt.y_loc)then
-                iy1 = j
-                iy2 = j-1
-                dely_sp = y_in_iwf25_sp(j-1)-y_in_iwf25_sp(j)
-                yfrac_sp = (y_loc - y_in_iwf25_sp(j))/dely_sp
-                yc_sp = 1.0_sp - yfrac_sp
-                exit ! leave do loop
-              endif
-            enddo
-            if(yfrac_sp.lt.0.0_sp.or.yc_sp.lt.0.0_sp)then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-                write(errlog(io),*)"MR ERROR: i maps out of grid: ",i
-              endif;enddo
-              stop 1
-            endif
-
-            imap_iwf25(ilon,ilat,1)=ix1
-            imap_iwf25(ilon,ilat,2)=ix2
-            imap_iwf25(ilon,ilat,3)=iy1
-            imap_iwf25(ilon,ilat,4)=iy2
-            amap_iwf25(ilon,ilat,1)=xc_sp*yc_sp
-            amap_iwf25(ilon,ilat,2)=xfrac_sp*yc_sp
-            amap_iwf25(ilon,ilat,3)=xfrac_sp*yfrac_sp
-            amap_iwf25(ilon,ilat,4)=yfrac_sp*xc_sp
-
-          enddo
-        enddo
-
-      endif
+!      if(MR_iwindformat.eq.25)then
+!        ! The following is only needed if we are reading 2d variables from NCEP
+!        ! wind files, but we will set up the grids regardless as a precaution
+!          ! Here are the weights starting with LL then counter-clockwise
+!        allocate(amap_iwf25(nx_submet,ny_submet,4))
+!        amap_iwf25 = 0.0_sp
+!        !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + sp*(as_nxmax*as_nymax*4)
+!          ! Here is the x1,x2,y1,y2 indices
+!        allocate(imap_iwf25(nx_submet,ny_submet,4))
+!        imap_iwf25 = 0
+!        !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + sp*(as_nxmax*as_nymax*4)
+!
+!        ! These should be read directly, but for now, just hardcode it.        
+!        do i = 1,192
+!          x_in_iwf25_sp(i)=(i-1)*1.875_sp
+!        enddo
+!        y_in_iwf25_sp(1:94) = (/ &
+!         88.542_sp,  86.6531_sp,  84.7532_sp,  82.8508_sp,  80.9473_sp,   79.0435_sp,  77.1394_sp, 75.2351_sp, &
+!        73.3307_sp,  71.4262_sp,  69.5217_sp,  67.6171_sp,  65.7125_sp,   63.8079_sp,  61.9033_sp, 59.9986_sp, &
+!        58.0939_sp,  56.1893_sp,  54.2846_sp,  52.3799_sp,  50.4752_sp,   48.5705_sp,  46.6658_sp, 44.7611_sp, &
+!        42.8564_sp,  40.9517_sp,   39.047_sp,  37.1422_sp,  35.2375_sp,   33.3328_sp,  31.4281_sp, 29.5234_sp, &
+!        27.6186_sp,  25.7139_sp,  23.8092_sp,  21.9044_sp,  19.9997_sp,    18.095_sp,  16.1902_sp, 14.2855_sp, &
+!        12.3808_sp, 10.47604_sp,  8.57131_sp,  6.66657_sp,  4.76184_sp,    2.8571_sp, 0.952368_sp, &
+!      -0.952368_sp,  -2.8571_sp, -4.76184_sp, -6.66657_sp, -8.57131_sp, -10.47604_sp, -12.3808_sp, &
+!       -14.2855_sp, -16.1902_sp,  -18.095_sp, -19.9997_sp, -21.9044_sp,  -23.8092_sp, -25.7139_sp, &
+!       -27.6186_sp, -29.5234_sp, -31.4281_sp, -33.3328_sp, -35.2375_sp,  -37.1422_sp,  -39.047_sp, &
+!       -40.9517_sp, -42.8564_sp, -44.7611_sp, -46.6658_sp, -48.5705_sp,  -50.4752_sp, -52.3799_sp, &
+!       -54.2846_sp, -56.1893_sp, -58.0939_sp, -59.9986_sp, -61.9033_sp,  -63.8079_sp, -65.7125_sp, &
+!       -67.6171_sp, -69.5217_sp, -71.4262_sp, -73.3307_sp, -75.2351_sp,  -77.1394_sp, -79.0435_sp, &
+!       -80.9473_sp, -82.8508_sp, -84.7532_sp, -86.6531_sp,  -88.542_sp /)
+!
+!        do ilon = 1,nx_submet
+!          x_loc = max(0.0_sp,x_submet_sp(ilon))
+!          xfrac_sp = -1.0_sp
+!          xc_sp    = -1.0_sp
+!          do i = 1,191
+!            if(max(0.0_sp,x_in_iwf25_sp(i)).le.x_loc.and.x_in_iwf25_sp(i+1).gt.x_loc)then
+!              ix1 = i
+!              ix2 = i+1
+!              xfrac_sp = (x_loc - x_in_iwf25_sp(i))/1.875_sp
+!              xc_sp = 1.0_sp - xfrac_sp
+!              exit ! leave do loop
+!            endif
+!          enddo
+!          if(xfrac_sp.lt.0.0_sp.or.xc_sp.lt.0.0_sp)then
+!            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+!              write(errlog(io),*)"MR ERROR: i maps out of grid: ",i
+!            endif;enddo
+!            stop 1
+!          endif
+!
+!          do ilat = 1,ny_submet
+!            y_loc = y_submet_sp(ilat)
+!            write(*,*)ilat,ny_submet,y_loc
+!            yfrac_sp = -1.0_sp
+!            yc_sp    = -1.0_sp
+!            do j = 94,2,-1
+!              if(y_in_iwf25_sp(j).le.y_loc.and.y_in_iwf25_sp(j-1).gt.y_loc)then
+!                iy1 = j
+!                iy2 = j-1
+!                dely_sp = y_in_iwf25_sp(j-1)-y_in_iwf25_sp(j)
+!                yfrac_sp = (y_loc - y_in_iwf25_sp(j))/dely_sp
+!                yc_sp = 1.0_sp - yfrac_sp
+!                exit ! leave do loop
+!              endif
+!            enddo
+!            if(yfrac_sp.lt.0.0_sp.or.yc_sp.lt.0.0_sp)then
+!              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+!                write(errlog(io),*)"MR ERROR: j maps out of grid: ",j
+!              endif;enddo
+!              stop 1
+!            endif
+!
+!            imap_iwf25(ilon,ilat,1)=ix1
+!            imap_iwf25(ilon,ilat,2)=ix2
+!            imap_iwf25(ilon,ilat,3)=iy1
+!            imap_iwf25(ilon,ilat,4)=iy2
+!            amap_iwf25(ilon,ilat,1)=xc_sp*yc_sp
+!            amap_iwf25(ilon,ilat,2)=xfrac_sp*yc_sp
+!            amap_iwf25(ilon,ilat,3)=xfrac_sp*yfrac_sp
+!            amap_iwf25(ilon,ilat,4)=yfrac_sp*xc_sp
+!
+!          enddo
+!        enddo
+!
+!      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -1985,8 +2029,8 @@
          Met_var_zdim_idx,Met_var_conversion_factor,Met_dim_names,Met_dim_fac,&
          Met_dim_IsAvailable,MR_useLeap,MR_MAXVARS,MR_iwf_template,&
          Met_iprojflag,Met_lam0,Met_lam1,Met_lam2,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         IsLatLon_MetGrid,IsGlobal_MetGrid
-
+         IsLatLon_MetGrid,IsGlobal_MetGrid,&
+           MR_FileIO_Error_Handler
 
       use projection,      only : &
          PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
@@ -1999,14 +2043,17 @@
 
       integer, parameter :: fid       = 110
 
-      logical      :: IsThere
-      character(len=130) :: linebuffer130
+      integer :: iostatus
+      character(len=120) :: iomessage
+
+      logical            :: IsThere
+      character(len=130) :: linebuffer130       ! We need to accommodate very long variable names
       character(len=80)  :: Met_projection_line
 
-      integer :: ioerr
       character(len=3)   :: useLeap_str
       integer :: ndims_custom, nvars_custom
       integer :: i
+      integer :: idx
       character     :: dv_char
       integer       :: dimID,varID,zindx,vndim
       real(kind=sp) :: fac
@@ -2017,19 +2064,21 @@
 
       integer :: io                           ! Index for output streams
 
-      inquire( file=adjustl(trim(MR_iwf_template)), exist=IsThere )
+      inquire( file=trim(adjustl(MR_iwf_template)), exist=IsThere )
       if(.not.IsThere)then
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then        
           write(errlog(io),*)"MR ERROR: Could not find NWP template file ",&
-                     adjustl(trim(MR_iwf_template))
+                     trim(adjustl(MR_iwf_template))
           write(errlog(io),*)"          Make sure the calling program sets MR_iwf_template"
           write(errlog(io),*)"          and that it is linked to the cwd."
         endif;enddo
         stop 1
       endif
 
-      open(unit=fid,file=adjustl(trim(MR_iwf_template)),status='old',action='read')
-      read(fid,'(a130)')linebuffer130
+      open(unit=fid,file=trim(adjustl(MR_iwf_template)),status='old',action='read')
+      read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+
       Met_projection_line = linebuffer130(1:80)
       call PJ_Set_Proj_Params(Met_projection_line)
 
@@ -2054,10 +2103,23 @@
       Met_k0        = PJ_k0
       Met_Re        = PJ_Re
 
-      read(fid,'(a130)')linebuffer130
-      read(linebuffer130,*,iostat=ioerr)StepInterval,useLeap_str
-
-      if (ioerr.eq.0)then
+      read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+      read(linebuffer130,*,iostat=iostatus,iomsg=iomessage)StepInterval
+      if(iostatus.ne.0)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)'MR ERROR:  Error reading time step interval from template'
+          write(errlog(io),*)'           Expecting to read: StepInterval (real*8)'
+          write(errlog(io),*)'           with format: *'
+          write(errlog(io),*)'           From the following string: '
+          write(errlog(io),*)linebuffer130
+          write(errlog(io),*)'MR System Message: '
+          write(errlog(io),*)iomessage
+        endif;enddo
+        stop 1
+      endif
+      read(linebuffer130,*,iostat=iostatus,iomsg=iomessage)StepInterval,useLeap_str
+      if (iostatus.eq.0)then
         ! Two values read, process useLeap_str to determine T or F
         if(useLeap_str(1:1).eq.'F'.or.useLeap_str(1:1).eq.'f')then
           MR_useLeap = .false.
@@ -2066,23 +2128,45 @@
             write(outlog(io),*)"be used.  Resetting MR_useLeap = .false."
           endif;enddo
         endif
-      else
-        ! default will be whatever is set in the host program or in
-        ! MetReader.f90 if the calling program doesn't specify
-        read(linebuffer130,*,iostat=ioerr)StepInterval
       endif
-      read(fid,'(a130)')linebuffer130
-      read(linebuffer130,*,err=2002)ndims_custom,nvars_custom
-
+      read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
+      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+      read(linebuffer130,*,iostat=iostatus,iomsg=iomessage)ndims_custom,nvars_custom
+      if(iostatus.ne.0)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)'MR ERROR:  Error reading number of dims and vars from template'
+          write(errlog(io),*)'           Expecting to read: ndims_custom,nvars_custom'
+          write(errlog(io),*)'           with format: *'
+          write(errlog(io),*)'           From the following string: '
+          write(errlog(io),*)linebuffer130
+          write(errlog(io),*)'MR System Message: '
+          write(errlog(io),*)iomessage
+        endif;enddo
+        stop 1
+      endif
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"  Reading dimensions: ",ndims_custom
       endif;enddo
       do i = 1,ndims_custom
-        read(fid,'(a130)')linebuffer130
-        read(linebuffer130,1501)dv_char,dimID,fac,dname
+        read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+        read(linebuffer130,1501,iostat=iostatus,iomsg=iomessage)dv_char,dimID,fac,dname
+1501    format(a1,i9,f9.2,a30)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)'MR ERROR:  Error reading dimension specifiers from template'
+            write(errlog(io),*)'           Expecting to read: dv_char,dimID,fac,dname'
+            write(errlog(io),*)'           with format: a1,i9,f9.2,a30'
+            write(errlog(io),*)'           From the following string: '
+            write(errlog(io),*)linebuffer130
+            write(errlog(io),*)'MR System Message: '
+            write(errlog(io),*)iomessage
+          endif;enddo
+          stop 1
+        endif
         if(dv_char.ne.'d')then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-            write(errlog(io),*)"MR ERROR : Trying to read variable into dimension"
+            write(errlog(io),*)"MR ERROR : Expecting to read dimension, but dimension identifier not found."
             write(errlog(io),*)"dv_char = ",dv_char
             write(errlog(io),*)"dimID   = ",dimID
             write(errlog(io),*)"fac     = ",fac
@@ -2092,7 +2176,12 @@
         endif
         if(dimID.le.9)then
           Met_dim_IsAvailable(dimID) = .true.
-          Met_dim_names(dimID)       = adjustl(trim(dname))
+          Met_dim_names(dimID)       = trim(adjustl(dname))
+          idx=index(Met_dim_names(dimID),' ')
+          if(idx.gt.1)then
+            linebuffer130 = Met_dim_names(dimID)
+            Met_dim_names(dimID)       = linebuffer130(1:idx)
+          endif
           Met_dim_fac(i)             = fac
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
             write(outlog(io),*)dimID,' ',Met_dim_names(dimID)
@@ -2108,12 +2197,27 @@
         write(outlog(io),*)"  Reading variables: ",nvars_custom
       endif;enddo
       do i = 1,nvars_custom
-        read(fid,'(a130)')linebuffer130
-        read(linebuffer130,1511)dv_char,vndim,zindx,varID, &
+        read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
+        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+        read(linebuffer130,1511,iostat=iostatus,iomsg=iomessage)&
+                                dv_char,vndim,zindx,varID, &
                                 fac,vname_WMO,vname
+1511    format(a1,i3,i3,i3,f9.2,a7,a71)
+        if(iostatus.ne.0)then
+          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            write(errlog(io),*)'MR ERROR:  Error reading variable specifiers from template'
+            write(errlog(io),*)'           Expecting to read: dv_char,vndim,zindx,varID,fac,vname_WMO,vname'
+            write(errlog(io),*)'           with format: a1,i3,i3,i3,f9.2,a7,a71'
+            write(errlog(io),*)'           From the following string: '
+            write(errlog(io),*)linebuffer130
+            write(errlog(io),*)'MR System Message: '
+            write(errlog(io),*)iomessage
+          endif;enddo
+          stop 1
+        endif
         if(dv_char.ne.'v')then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-            write(errlog(io),*)"MR ERROR : Trying to read dimension into variable"
+            write(errlog(io),*)"MR ERROR : Expecting to read variable, but variable identifier not found."
             write(errlog(io),*)"dv_char   = ",dv_char
             write(errlog(io),*)"vndim     = ",vndim
             write(errlog(io),*)"zindx     = ",zindx
@@ -2127,8 +2231,13 @@
 
         if(varID.le.MR_MAXVARS)then
           Met_var_IsAvailable(varID)       = .true.
-          Met_var_NC_names(varID)          = adjustl(trim(vname))
-          Met_var_WMO_names(varID)         = adjustl(trim(vname_WMO))
+          Met_var_NC_names(varID)          = trim(adjustl(vname))
+          Met_var_WMO_names(varID)         = trim(adjustl(vname_WMO))
+          idx=index(Met_var_NC_names(varID),' ')
+          if(idx.gt.1)then
+            linebuffer130 = Met_var_NC_names(varID)
+            Met_var_NC_names(varID)          = linebuffer130(1:idx)
+          endif
           Met_var_ndim(varID)              = vndim
           Met_var_zdim_idx(varID)          = zindx
           Met_var_conversion_factor(varID) = fac
@@ -2142,7 +2251,7 @@
           stop 1
         endif
       enddo
-      ! copy availibility of VVEL and W
+      ! copy availability of VVEL and W
       if(Met_var_IsAvailable(4))then
         Met_var_IsAvailable(7)       = Met_var_IsAvailable(4)
         Met_var_NC_names(7)          = Met_var_NC_names(4)
@@ -2163,17 +2272,4 @@
 
       return
 
-1501  format(a1,i9     ,f9.2,a30)
-1511  format(a1,i3,i3,i3,f9.2,a7,a71)
-
-!2001  write(outlog(io),*)  'error reading ForecastInterval'
-!      write(outlog(io),*)linebuffer130
-!      stop 1
-2002  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io),*)  'error reading number of custom dims and vars.'
-        write(errlog(io),*)linebuffer130
-      endif;enddo
-      stop 1
-
       end subroutine MR_Read_Met_Template
-
