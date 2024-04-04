@@ -54,12 +54,13 @@
         !      3246.974 4372.859
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 262.5 38.5 38.5 38.5 6371.229    #Proj flags and params  
+        ! -JL262.5/38.5/38.5/38.5/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=262.5 +lat_0=38.5 +lat_1=38.5 +lat_2=38.5 +R=6371.229"
         IsLatLon_MetGrid  = .false.
@@ -91,12 +92,13 @@
         !      5661.26  4344.51
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6367.47 : earth radius for spherical earth
         ! 0 4 -107.0 50.0 50.0 50.0 6367.47    #Proj flags and params  
+        ! -JL-107/50/50/50/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6367.47"
         IsLatLon_MetGrid  = .false.   
@@ -307,11 +309,12 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 1         : polar stereographic projection
-        !  lam0     = -150.0    : longitude of projection point
+        !  lam0        = -150.0    : longitude of projection point
         !  phi0        =  90.0     : latitude of projection point
         !  k0          =  0.933    : scale factor at projection point
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -150.0 90.0 0.933 6371.229    #Proj flags and params
+        ! -JS-150/90/12c
 
         Met_proj4 = "proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.   
@@ -346,11 +349,12 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 1         : polar stereographic projection
-        !  lam0     = -105.0    : longitude of projection point
+        !  lam0        = -105.0    : longitude of projection point
         !  phi0        =  90.0     : latitude of projection point
         !  k0          =  0.933    : scale factor at projection point
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -105.0 90.0 0.933 6371.229    #Proj flags and params
+        ! -JS-105/90/12c
 
         Met_proj4 = "proj +proj=stere  +lon_0=255  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.   
@@ -438,6 +442,7 @@
         ! 206.131 23.088
         !   800.00  2480.60
         ! 0 5 198.475 20.0 0.933 6371.229    #Proj flags and params
+        ! -JM198.475/20.0/12c
 
         Met_proj4 = "proj +proj=merc  +lat_ts=20.0 +lon_0=198.475 +R=6371.229"
         IsLatLon_MetGrid  = .false.   
@@ -492,11 +497,12 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 1         : polar stereographic projection
-        !  lam0     = -150.0    : longitude of projection point
+        !  lam0        = -150.0    : longitude of projection point
         !  phi0        =  90.0     : latitude of projection point
         !  k0          =  0.933    : scale factor at projection point
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -150.0 90.0 0.933 6371.229    #Proj flags and params
+        ! -JS-150/90/12c
 
         Met_proj4 = "proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.   
@@ -528,12 +534,13 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params                               
+        ! -JL265/25/25/25/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
@@ -566,12 +573,13 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params  
+        ! -JL265/25/25/25/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
@@ -604,11 +612,12 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 1         : polar stereographic projection
-        !  lam0     = -135.0    : longitude of projection point
+        !  lam0        = -135.0    : longitude of projection point
         !  phi0        =  90.0     : latitude of projection point
         !  k0          =  0.933    : scale factor at projection point
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -135.0 90.0 0.933 6371.229    #Proj flags and params
+        ! -JS-135/90/12c
 
         Met_proj4 = "proj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.
@@ -639,12 +648,13 @@
         !      3246.974 4372.859
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params  
+        ! -JL-107/50/50/50/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
@@ -677,12 +687,13 @@
         !      5664.457 4347.222
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 -107.0 50.0 50.0 50.0 6371.229    #Proj flags and params  
+        ! -JL-107/50/50/50/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
@@ -714,12 +725,13 @@
         !      3250.81  4368.72
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params  
+        ! -JL265/25/25/25/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
@@ -752,11 +764,12 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 1         : polar stereographic projection
-        !  lam0     = -135.0    : longitude of projection point
+        !  lam0        = -135.0    : longitude of projection point
         !  phi0        =  90.0     : latitude of projection point
         !  k0          =  0.933    : scale factor at projection point
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -135.0 90.0 0.933 6371.229    #Proj flags and params
+        ! -JS-135/90/12c
 
         Met_proj4 = "proj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.
