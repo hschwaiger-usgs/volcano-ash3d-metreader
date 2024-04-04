@@ -827,7 +827,6 @@
          y_inverted,wrapgrid,UseFullMetGrid,ny_fullmet,ny_comp,nx_comp,nx_fullmet,&
          irhalf_fm_r,IsLatLon_MetGrid,IsPeriodic_CompGrid,jend,Map_Case,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         !x_in_iwf25_sp,amap_iwf25,imap_iwf25,y_in_iwf25_sp,&
          MR_useCompH,MR_useCompP,np_fullmet,nz_comp
 
       use projection,      only : &
@@ -847,10 +846,9 @@
       real(kind=sp) :: xLL,yLL
       real(kind=sp) :: xUR,yUR
 
-      !real(kind=sp) :: dely_sp,x_loc,y_loc,xc_sp,yc_sp,xfrac_sp,yfrac_sp
-      !integer :: ilat,ilon,ix1,ix2,iy1,iy2
-
-      real(kind=dp) :: ptlon,ptlat,xin,yin,de_x,de_y
+      real(kind=dp) :: ptlon,ptlat,xin,yin
+      real(kind=dp) :: de_x,de_y,dn_x,dn_y,dw_x,dw_y,ds_x,ds_y,ddeg
+      real(kind=dp) :: ate,atw,atn,ats
 
       real(kind=sp) :: xc,xfrac,yc,yfrac,px,py
       real(kind=sp) :: x_start_sub,y_start_sub
@@ -1400,8 +1398,7 @@
                                                   ! Met grid and the earth grid; used for rotating
                                                   ! grid velocities to Earth-Relative, or in the
                                                   ! special NARR case, rotating ER to GR
-
-          !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + ip*(nc_nxmax*nc_nymax)
+        ddeg = 1.0_dp/60.0_dp
         do i=1,nx_submet
           do j=1,ny_submet
               ! Get lon/lat of point in question
@@ -1411,13 +1408,36 @@
                           Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
                            ptlon,ptlat)
               ! Get projected coordinate of de at the current point
-            call PJ_proj_for(ptlon+1.0_dp/60.0_dp,ptlat, Met_iprojflag, &
+            call PJ_proj_for(ptlon+ddeg,ptlat, Met_iprojflag, &
                        Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
                        xout,yout)
             de_x = xout-xin
             de_y = yout-yin
-              ! Now recover the angle between de and x (of map grid)
-            theta_Met(i,j) = atan(de_y/de_x)
+            ate  = atan2(de_y,de_x)
+              ! Get projected coordinate of dw at the current point
+            call PJ_proj_for(ptlon-ddeg,ptlat, Met_iprojflag, &
+                       Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                       xout,yout)
+            dw_x = xout-xin
+            dw_y = yout-yin
+            atw  = atan2(dw_y,dw_x) - 3.141592653589793_dp
+              ! Get projected coordinate of dn at the current point
+            call PJ_proj_for(ptlon,ptlat+ddeg, Met_iprojflag, &
+                       Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                       xout,yout)
+            dn_x = xout-xin
+            dn_y = yout-yin
+            atn  = atan2(dn_y,dn_x) - 3.141592653589793_dp/2.0_dp
+              ! Get projected coordinate of ds at the current point
+            call PJ_proj_for(ptlon,ptlat-ddeg, Met_iprojflag, &
+                       Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                       xout,yout)
+            ds_x = xout-xin
+            ds_y = yout-yin
+            ats  = atan2(ds_y,ds_x) + 3.141592653589793_dp/2.0_dp
+              ! Now recover the angle between angle of rotation as the average angle
+              ! for all of the coordinate directions
+            theta_Met(i,j) = (ate + atw + atn + ats)*0.25_dp
           enddo
         enddo
       endif
@@ -1448,13 +1468,37 @@
                             Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
                              ptlon,ptlat)
                 ! Get projected coordinate of de at the current point
-              call PJ_proj_for(ptlon+1.0_dp/60.0_dp,ptlat, Comp_iprojflag, &
+              call PJ_proj_for(ptlon+ddeg,ptlat, Comp_iprojflag, &
                          Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
                          xout,yout)
               de_x = xout-xin
               de_y = yout-yin
-                ! Again, we want the angle between de and x (but now, of comp grid)
-              theta_Comp(i,j) = atan(de_y/de_x)
+              ate  = atan2(de_y,de_x)
+                ! Get projected coordinate of dw at the current point
+              call PJ_proj_for(ptlon-ddeg,ptlat, Comp_iprojflag, &
+                         Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
+                         xout,yout)
+              dw_x = xout-xin
+              dw_y = yout-yin
+              atw  = atan2(dw_y,dw_x) - 3.141592653589793_dp
+                ! Get projected coordinate of dn at the current point
+              call PJ_proj_for(ptlon,ptlat+ddeg, Comp_iprojflag, &
+                         Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
+                         xout,yout)
+              dn_x = xout-xin
+              dn_y = yout-yin
+              atn  = atan2(dn_y,dn_x) - 3.141592653589793_dp/2.0_dp
+                ! Get projected coordinate of ds at the current point
+              call PJ_proj_for(ptlon,ptlat-ddeg, Comp_iprojflag, &
+                         Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
+                         xout,yout)
+              ds_x = xout-xin
+              ds_y = yout-yin
+              ats  = atan2(ds_y,ds_x) + 3.141592653589793_dp/2.0_dp
+
+                ! Again recover the angle between angle of rotation as the average angle
+                ! for all of the coordinate directions (but now, of comp grid)
+              theta_Comp(i,j) = (ate + atw + atn + ats)*0.25_dp
             enddo
           enddo
         endif
@@ -1662,7 +1706,7 @@
 !          Comp_proj4 = "proj +proj=aea +lat_1=" // real(Comp_phi0,kind=sp) // &
 !                                     " +lat_2=" // real(Comp_phi2,kind=sp)
           write(Comp_proj4,2020)Comp_phi0,Comp_phi2
-2020      format('proj +proj=aea +lat_1='f5.2,' +lat_2=',f5.2)
+2020      format('proj +proj=aea +lat_1=',f5.2,' +lat_2=',f5.2)
         elseif(Comp_iprojflag.eq.3)then
           ! UTM
           stop 1
@@ -1674,14 +1718,14 @@
 !                                     " +lat_2=" // real(Comp_phi2,kind=sp) // &
 !                                     " +R="     // real(Comp_Re,kind=sp)
           write(Comp_proj4,2040)Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_Re
-2040      format('proj +proj=lcc +lon_0='f5.2,' +lat_0=',f5.2,' +lat_1=',f5.2,' +lat_2=',f5.2,' +R=',f8.3)
+2040      format('proj +proj=lcc +lon_0=',f5.2,' +lat_0=',f5.2,' +lat_1=',f5.2,' +lat_2=',f5.2,' +R=',f8.3)
         elseif(Comp_iprojflag.eq.5)then
           ! Mercator (NAM196)
 !          Comp_proj4 = "proj +proj=merc  +lat_ts=" // real(Comp_lam0,kind=sp) // &
 !                                        " +lon_0="  // real(Comp_phi0,kind=sp) // &
 !                                        " +R="     // real(Comp_Re,kind=sp)
           write(Comp_proj4,2050)Comp_lam0,Comp_phi0,Comp_Re
-2050      format('proj +proj=merc +lat_ts='f5.2,' +lon_0=',f5.2,' +R=',f8.3)
+2050      format('proj +proj=merc +lat_ts=',f5.2,' +lon_0=',f5.2,' +R=',f8.3)
         endif
       endif
 

@@ -4431,9 +4431,9 @@
 
       integer             :: i,j,k
 
-      real(kind=sp) :: vx_old,vy_old
-      real(kind=sp) :: vx_new,vy_new
-      real(kind=sp) :: rotang
+      real(kind=sp)                :: rotang
+      real(kind=sp),dimension(2)   :: v_old, v_new
+      real(kind=sp),dimension(2,2) :: rotmat
 
       integer :: io                           ! Index for output streams
 
@@ -4464,19 +4464,17 @@
       do i=1,nx_submet
         do j=1,ny_submet
           ! The angle theta for the Earth to Grid conversion was
-          ! precalculated in Set_MetComp_Grids_netcdf
-          rotang = real(theta_Met(i,j),kind=sp)
+          ! precalculated in Set_MetComp_Grids
+          rotang = -1.0_sp*real(theta_Met(i,j),kind=sp)
+          rotmat(1,1) = cos(rotang)
+          rotmat(2,1) = sin(rotang)
+          rotmat(1,2) = rotmat(2,1)*(-1.0_sp)
+          rotmat(2,2) = rotmat(1,1)
           do k=1,np_fullmet
-            vx_old = MR_u_ER_metP(i,j,k)
-            vy_old = MR_v_ER_metP(i,j,k)
-          ! Project vx_old onto grid
-            vx_new = vx_old * cos(rotang)
-            vy_new = vx_old * sin(rotang)
-          ! Add projection of vel_old
-            vx_new = vx_new - vy_old * sin(rotang)
-            vy_new = vy_new + vy_old * cos(rotang)
-            MR_u_ER_metP(i,j,k) = vx_new
-            MR_v_ER_metP(i,j,k) = vy_new
+            v_old(1:2) = (/MR_u_ER_metP(i,j,k),MR_v_ER_metP(i,j,k)/)
+            v_new = matmul(rotmat(1:2,1:2),v_old(1:2))
+            MR_u_ER_metP(i,j,k) = v_new(1)
+            MR_v_ER_metP(i,j,k) = v_new(2)
           enddo
         enddo
       enddo
@@ -4548,9 +4546,9 @@
 
       integer             :: i,j,k
 
-      real(kind=sp) :: vx_old,vy_old
-      real(kind=sp) :: vx_new,vy_new
-      real(kind=sp) :: rotang1
+      real(kind=sp)                :: rotang
+      real(kind=sp),dimension(2)   :: v_old, v_new
+      real(kind=sp),dimension(2,2) :: rotmat
 
       integer :: io                           ! Index for output streams
 
@@ -4602,18 +4600,17 @@
       do i=1,nx_comp
         do j=1,ny_comp
           ! The angle theta for the Earth to Grid conversion was
-          ! precalculated in Set_MetComp_Grids_netcdf
-          rotang1 = real(theta_Comp(i,j),kind=sp)
-
+          ! precalculated in Set_MetComp_Grids
+          rotang = -1.0_sp*real(theta_Comp(i,j),kind=sp)
+          rotmat(1,1) = cos(rotang)
+          rotmat(2,1) = sin(rotang)
+          rotmat(1,2) = rotmat(2,1)*(-1.0_sp)
+          rotmat(2,2) = rotmat(1,1)
           do k=1,nz_comp
-            vx_old = MR_dum3d_compH(i,j,k)
-            vy_old = MR_dum3d_compH_2(i,j,k)
-
-            vx_new = vx_old * cos(rotang1) - vy_old * sin(rotang1)
-            vy_new = vx_old * sin(rotang1) + vy_old * cos(rotang1)
-
-            MR_dum3d_compH(i,j,k) = vx_new
-            MR_dum3d_compH_2(i,j,k) = vy_new
+            v_old(1:2) = (/MR_dum3d_compH(i,j,k),MR_dum3d_compH_2(i,j,k)/)
+            v_new = matmul(rotmat(1:2,1:2),v_old(1:2))
+            MR_dum3d_compH(i,j,k) = v_new(1)
+            MR_dum3d_compH_2(i,j,k) = v_new(2)
           enddo
         enddo
       enddo
