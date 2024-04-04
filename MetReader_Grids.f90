@@ -1712,7 +1712,7 @@
 !                                        " +k_0="   // real(Comp_k0,kind=sp)   // &
 !                                        " +R="     // real(Comp_Re,kind=sp)
           write(Comp_proj4,2010)Comp_lam0,Comp_phi0,Comp_k0,Comp_Re
-2010      format('proj +proj=stere  +lon_0=',f5.2,' +lat_0=',f5.2,' +k_0=',f5.3,' +R=',f8.3)
+2010      format('proj +proj=stere  +lon_0=',f6.2,' +lat_0=',f5.2,' +k_0=',f5.3,' +R=',f8.3)
           ! proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229
         elseif(Comp_iprojflag.eq.2)then
           ! Albers Equal Area
@@ -1731,14 +1731,14 @@
 !                                     " +lat_2=" // real(Comp_phi2,kind=sp) // &
 !                                     " +R="     // real(Comp_Re,kind=sp)
           write(Comp_proj4,2040)Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_Re
-2040      format('proj +proj=lcc +lon_0=',f5.2,' +lat_0=',f5.2,' +lat_1=',f5.2,' +lat_2=',f5.2,' +R=',f8.3)
+2040      format('proj +proj=lcc +lon_0=',f6.2,' +lat_0=',f5.2,' +lat_1=',f5.2,' +lat_2=',f5.2,' +R=',f8.3)
         elseif(Comp_iprojflag.eq.5)then
           ! Mercator (NAM196)
 !          Comp_proj4 = "proj +proj=merc  +lat_ts=" // real(Comp_lam0,kind=sp) // &
 !                                        " +lon_0="  // real(Comp_phi0,kind=sp) // &
 !                                        " +R="     // real(Comp_Re,kind=sp)
           write(Comp_proj4,2050)Comp_lam0,Comp_phi0,Comp_Re
-2050      format('proj +proj=merc +lat_ts=',f5.2,' +lon_0=',f5.2,' +R=',f8.3)
+2050      format('proj +proj=merc +lat_ts=',f5.2,' +lon_0=',f6.2,' +R=',f8.3)
         endif
       endif
 

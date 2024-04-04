@@ -4601,7 +4601,7 @@
         do j=1,ny_comp
           ! The angle theta for the Earth to Grid conversion was
           ! precalculated in Set_MetComp_Grids
-          rotang = -1.0_sp*real(theta_Comp(i,j),kind=sp)
+          rotang = real(theta_Comp(i,j),kind=sp)
           rotmat(1,1) = cos(rotang)
           rotmat(2,1) = sin(rotang)
           rotmat(1,2) = rotmat(2,1)*(-1.0_sp)
