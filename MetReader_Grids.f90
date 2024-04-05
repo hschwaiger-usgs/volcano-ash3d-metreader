@@ -1583,7 +1583,7 @@
       integer :: i,j
       real(kind=dp) :: x_in ,y_in
       real(kind=dp) :: x_out,y_out
-
+      character(len=8) :: fltstr
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
@@ -1707,38 +1707,45 @@
           Comp_proj4 = "XY"
         elseif(Comp_iprojflag.eq.1)then
           ! Polar stereographic
-!          Comp_proj4 = "proj +proj=stere  +lon_0=" // real(Comp_lam0,kind=sp) // &
-!                                        " +lat_0=" // real(Comp_phi0,kind=sp) // & 
-!                                        " +k_0="   // real(Comp_k0,kind=sp)   // &
-!                                        " +R="     // real(Comp_Re,kind=sp)
-          write(Comp_proj4,2010)Comp_lam0,Comp_phi0,Comp_k0,Comp_Re
-2010      format('proj +proj=stere  +lon_0=',f6.2,' +lat_0=',f5.2,' +k_0=',f5.3,' +R=',f8.3)
           ! proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229
+          write(fltstr,'(f6.1)')Comp_lam0
+          Comp_proj4 = "proj +proj=stere  +lon_0=" // trim(adjustl(fltstr))
+          write(fltstr,'(f5.1)')Comp_phi0
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +lat_0=" // trim(adjustl(fltstr))
+          write(fltstr,'(f5.3)')Comp_k0
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +k_0=" // trim(adjustl(fltstr))
+          write(fltstr,'(f8.3)')Comp_Re
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +R=" // trim(adjustl(fltstr))
         elseif(Comp_iprojflag.eq.2)then
           ! Albers Equal Area
 !          Comp_proj4 = "proj +proj=aea +lat_1=" // real(Comp_phi0,kind=sp) // &
 !                                     " +lat_2=" // real(Comp_phi2,kind=sp)
           write(Comp_proj4,2020)Comp_phi0,Comp_phi2
-2020      format('proj +proj=aea +lat_1=',f5.2,' +lat_2=',f5.2)
+2020      format('proj +proj=aea +lat_1=',f5.1,' +lat_2=',f5.1)
         elseif(Comp_iprojflag.eq.3)then
           ! UTM
           stop 1
         elseif(Comp_iprojflag.eq.4)then
           ! Lambert conformal conic (NARR, NAM218, NAM221)
-!          Comp_proj4 = "proj +proj=lcc +lon_0=" // real(Comp_lam0,kind=sp) // &
-!                                     " +lat_0=" // real(Comp_phi0,kind=sp) // &
-!                                     " +lat_1=" // real(Comp_phi1,kind=sp) // &
-!                                     " +lat_2=" // real(Comp_phi2,kind=sp) // &
-!                                     " +R="     // real(Comp_Re,kind=sp)
-          write(Comp_proj4,2040)Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_Re
-2040      format('proj +proj=lcc +lon_0=',f6.2,' +lat_0=',f5.2,' +lat_1=',f5.2,' +lat_2=',f5.2,' +R=',f8.3)
+          ! proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6371.229
+          write(fltstr,'(f6.1)')Comp_lam0
+          Comp_proj4 = "proj +proj=lcc  +lon_0=" // trim(adjustl(fltstr))
+          write(fltstr,'(f5.1)')Comp_phi0
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +lat_0=" // trim(adjustl(fltstr))
+          write(fltstr,'(f5.1)')Comp_phi1
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +lat_1=" // trim(adjustl(fltstr))
+          write(fltstr,'(f5.1)')Comp_phi2
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +lat_2=" // trim(adjustl(fltstr))
+          write(fltstr,'(f8.3)')Comp_Re
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +R=" // trim(adjustl(fltstr))
         elseif(Comp_iprojflag.eq.5)then
           ! Mercator (NAM196)
-!          Comp_proj4 = "proj +proj=merc  +lat_ts=" // real(Comp_lam0,kind=sp) // &
-!                                        " +lon_0="  // real(Comp_phi0,kind=sp) // &
-!                                        " +R="     // real(Comp_Re,kind=sp)
-          write(Comp_proj4,2050)Comp_lam0,Comp_phi0,Comp_Re
-2050      format('proj +proj=merc +lat_ts=',f5.2,' +lon_0=',f6.2,' +R=',f8.3)
+          write(fltstr,'(f5.1)')Comp_phi0
+          Comp_proj4 = "proj +proj=merc  +lat_ts=" // trim(adjustl(fltstr))
+          write(fltstr,'(f6.1)')Comp_lam0
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +lon_0=" // trim(adjustl(fltstr))
+          write(fltstr,'(f8.3)')Comp_Re
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +R=" // trim(adjustl(fltstr))
         endif
       endif
 
