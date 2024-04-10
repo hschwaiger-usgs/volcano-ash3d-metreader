@@ -2008,7 +2008,6 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
 
       integer                     ,intent(in)  :: nzm
       real(kind=sp),dimension(nzm),intent(in)  :: z_met
@@ -2039,7 +2038,6 @@
         ! For each comp point, check which met interval it is in, starting from
         ! the last interval found
         do km = km_interv,nzm-1
-        !do km = 1,nzm-1
           if(z1.ge.z_met(km).and.z1.le.z_met(km+1))then
             found_interv = .true.
             km_interv = km

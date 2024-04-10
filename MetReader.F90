@@ -36,15 +36,15 @@
 !        subroutine MR_Set_Met_Times(eStartHour,Duration)
 !        subroutine MR_Read_HGT_arrays(istep,reset_first_time)
 !        subroutine MR_Read_3d_MetP_Variable(ivar,istep)
-!        subroutine MR_Read_3d_MetH_Variable(ivar,istep)
-!        subroutine MR_Read_3d_Met_Variable_to_CompH(ivar,istep,IsNext)
+!        subroutine MR_Read_3d_MetH_Variable(ivar,istep,[useScaled])
 !        subroutine MR_Read_3d_Met_Variable_to_CompP(ivar,istep,IsNext)
+!        subroutine MR_Read_3d_Met_Variable_to_CompH(ivar,istep,IsNext,[useScaled])
 !        subroutine MR_Read_2d_Met_Variable(ivar,istep)
 !        subroutine MR_Read_2d_Met_Variable_to_CompGrid(ivar,istep)
 !        subroutine MR_Rotate_UV_GR2ER_Met(istep,SetComp)
 !        subroutine MR_Rotate_UV_ER2GR_Comp(istep)
-!        subroutine MR_Regrid_MetP_to_CompH(istep)
-!        subroutine MR_Regrid_MetP_to_MetH(istep)
+!        subroutine MR_Regrid_MetP_to_CompH(istep,[useScaled])
+!        subroutine MR_Regrid_MetP_to_MetH(istep,[useScaled])
 !        subroutine MR_Regrid_Met2d_to_Comp2d()
 !        subroutine MR_DelMetP_Dx()
 !        subroutine MR_DelMetP_Dy()
@@ -68,9 +68,9 @@
 
         ! Publicly available subroutines/functions
       public MR_Reset_Memory,MR_Allocate_FullMetFileList,MR_Set_CompProjection,&
-             MR_Read_Met_DimVars,MR_Set_Met_Times,MR_Initialize_Met_Grids,&
-             MR_Read_HGT_arrays,MR_Read_3d_Met_Variable_to_CompH,MR_Read_3d_Met_Variable_to_CompP,&
-             MR_Read_3d_MetH_Variable,MR_Read_3d_MetP_Variable,&
+             MR_Read_Met_DimVars,MR_Set_Met_Times,MR_Initialize_Met_Grids,MR_Read_HGT_arrays,&
+             MR_Read_3d_Met_Variable_to_CompP,MR_Read_3d_Met_Variable_to_CompH,&
+             MR_Read_3d_MetP_Variable,MR_Read_3d_MetH_Variable,&
              MR_Read_2d_Met_Variable,MR_Read_2d_Met_Variable_to_CompGrid,&
              MR_Rotate_UV_GR2ER_Met,MR_Rotate_UV_ER2GR_Comp,&
              MR_Regrid_MetP_to_CompH,MR_Regrid_MetP_to_MetH,MR_Regrid_Met2d_to_Comp2d,&
@@ -128,6 +128,7 @@
       logical          ,public :: MR_useCompTime         = .true. ! Reset this to .false. if you only need the time of the file
       logical          ,public :: MR_useCompH            = .true.
       logical          ,public :: MR_useCompP            = .true.
+      logical          ,public :: MR_useCompS            = .false.
 
       integer,public :: MR_iwind       !     MR_IWIND specifies the type of wind input to the model:
                              !   MR_IWIND=1 if a 1-D wind sounding is use, 
@@ -511,7 +512,8 @@
       ! Here are a few variables needed for sigma-altitude coordinates
       logical          ,public :: MR_useTopo             = .false.
       integer          ,public :: MR_ZScaling_ID    = 0  ! = 0 for no scaling (i.e. s = z)
-                                                         ! = 1 for sigma-altitude (s=(z-surf)/(top-surf))
+                                                         ! = 1 for scaled-altitude (s=z-zsurf)
+                                                         ! = 2 for sigma-altitude (s=(z-zsurf)/(ztop-zsurf))
       real(kind=sp)    ,public :: MR_ztop
 #ifdef USEPOINTERS
       real(kind=sp),dimension(:)   ,pointer, public :: s_comp_sp     => null() ! s-coordinates (scaled z) of comp. grid
@@ -523,7 +525,7 @@
       real(kind=sp),dimension(:)   ,allocatable, public :: s_comp_sp ! s-coordinates (scaled z) of computational grid
       real(kind=sp),dimension(:,:) ,allocatable, public :: MR_Topo_met
       real(kind=sp),dimension(:,:) ,allocatable, public :: MR_Topo_comp
-      real(kind=sp),dimension(:,:) ,allocatable, public :: MR_jacob_met  ! Jacobian of trans. = MR_ztop-MR_zsurf
+      real(kind=sp),dimension(:,:) ,allocatable, public :: MR_jacob_met  ! Jacobian of trans. = MR_ztop-MR_Topo_met
       real(kind=sp),dimension(:,:) ,allocatable, public :: MR_jacob_comp
 #endif
 
@@ -3125,11 +3127,12 @@
       endif
 
       if(MR_useTopo)then
+        write(*,*)MR_Ztop
         allocate(s_comp_sp(nz_comp))
         allocate(MR_Topo_met(nx_submet,ny_submet));  MR_Topo_met(:,:)   = 0.0_sp
-        allocate(MR_jacob_met(nx_submet,ny_submet)); MR_jacob_met(:,:)  = 1.0_sp
+        allocate(MR_jacob_met(nx_submet,ny_submet)); MR_jacob_met(:,:)  = MR_Ztop - MR_Topo_met(:,:)
         allocate(MR_Topo_comp(nx_comp,ny_comp));     MR_Topo_comp(:,:)  = 0.0_sp
-        allocate(MR_jacob_comp(nx_comp,ny_comp));    MR_jacob_comp(:,:) = 1.0_sp
+        allocate(MR_jacob_comp(nx_comp,ny_comp));    MR_jacob_comp(:,:) = MR_Ztop - MR_Topo_comp(:,:)
       endif
 
       CALLED_MR_Initialize_Met_Grids = .true.
@@ -3147,11 +3150,10 @@
 !##############################################################################
 
       subroutine MR_Set_SigmaAlt_Scaling(nx,ny,nz, &
-                                         dum_sp, dumz_sp, dumxy1_sp, &
+                                         dumz_sp, dumxy1_sp, &
                                          dum_int)
 
       integer      ,intent(in) :: nx,ny,nz
-      real(kind=sp),intent(in) :: dum_sp
       real(kind=sp),intent(in) :: dumz_sp(nz)
       real(kind=sp),intent(in) :: dumxy1_sp(nx,ny)
       integer      ,intent(in) :: dum_int
@@ -3171,14 +3173,24 @@
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
-      MR_ztop            = dum_sp
       MR_ZScaling_ID     = dum_int
       s_comp_sp(1:nz) = dumz_sp(1:nz)
       if(MR_ZScaling_ID.eq.0)then
         ! no topo
         MR_jacob_comp(1:nx,1:ny) = 1.0_sp
       elseif(MR_ZScaling_ID.eq.1)then
-        ! sigma-altitude (s=(z-surf)/(top-surf))
+        ! scaled-altitude (s=z-zsurf)
+        ! HFS check this
+        MR_jacob_comp(1:nx,1:ny) = MR_ztop - MR_Topo_comp(1:nx,1:ny)
+      elseif(MR_ZScaling_ID.eq.2)then
+        ! sigma-altitude (s=(z-zsurf)/(top-surf))
+        !  Note: this is not the same as in Jacobson Eq 5.89, but we want the orientation of the
+        !        vertical coordinate to be the same (-> positive Jacobian). Effect of topography
+        !        diminishes with altitude.
+        !        Alternatively, we could use s=z-zsurf which has both the same orientation and units,
+        !        but the constant s level have the same topographic influence throughout.
+
+        ! Just set the s-values for now without appling topography
         MR_jacob_comp(1:nx,1:ny) = MR_ztop - MR_Topo_comp(1:nx,1:ny)
       else
         do io=1,MR_nio;if(VB(io).le.verbosity_production)then
@@ -3888,16 +3900,19 @@
 !     The values extracted are just on the needed subgrid of the full met
 !     grid remapped on height coordinates.
 !
-!     Takes as input :: ivar  :: specifies which variable to read
-!                       istep :: specified the met step
+!     Takes as input :: ivar      :: specifies which variable to read
+!                       istep     :: specified the met step
+!                       useScaled :: T works on s grid
+!                                    F (or missing) works on z grid
 !     Reads : MR_dum3d_metP
 !     Sets  : MR_dum3d_metH
 !##############################################################################
 
-      subroutine MR_Read_3d_MetH_Variable(ivar,istep)
+      subroutine MR_Read_3d_MetH_Variable(ivar,istep,useScaled)
 
-      integer,intent(in)        :: ivar
-      integer,intent(in)        :: istep
+      integer,intent(in)             :: ivar
+      integer,intent(in)             :: istep
+      logical,intent(inout),optional :: useScaled
 
       real(kind=sp),dimension(:),allocatable :: z_col_metP
       real(kind=sp),dimension(:),allocatable :: var_col_metP
@@ -3909,12 +3924,24 @@
 
       integer :: io                           ! Index for output streams
 
+      if (.not.present(useScaled))then
+        useScaled = .false.
+      endif
+
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_3d_MetH_Variable                     ----------"
-        write(outlog(io),*)ivar,istep
+        write(outlog(io),*)ivar,istep,useScaled
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
+
+      if(useScaled.and..not.MR_useTopo)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"Scaled coordinates requested, but MR_useTopo=F"
+          write(errlog(io),*)"Setting useScaled=F"
+        endif;enddo
+        useScaled = .false.
+      endif
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -3939,7 +3966,7 @@
       allocate(var_col_metH(nz_comp))        ;    var_col_metH(:) = 0.0_sp
       allocate(dumVertCoord_sp(nz_comp))     ; dumVertCoord_sp(:) = 0.0_sp
 
-!     CREATE 1-D ARRAYS IN P, AND REGRID THEM INTO 1-D ARRAYS IN z
+      ! Create 1d arrays in P and regrid them into 1d arrays in z or s
       do i=1,nx_submet
         do j=1,ny_submet
             ! copy the column of z values for this i,j
@@ -3993,20 +4020,19 @@
             endif
           endif
 
-!          if (MR_useTopo)then
-!              ! this recovers the real-world z coordinate from the sigma level and topography
-!            dumVertCoord_sp(1:nz_comp) = MR_Topo_comp(i,j) + &
-!                                           s_comp_sp(1:nz_comp) * MR_jacob_comp(i,j)
-!          else
+          if (useScaled)then
+              ! this recovers the real-world z coordinate from the sigma level and topography
+            dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
+                                           s_comp_sp(1:nz_comp) * MR_jacob_met(i,j)
+          else
             dumVertCoord_sp(1:nz_comp) = z_comp_sp(1:nz_comp)
-!          endif
+          endif
 
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !   Interpolate these values to a regular grid with
           !   spacing equal to the simulation grid
           call MR_Regrid_P2H_linear(np_fullmet+2, z_col_metP,       var_col_metP, & 
                                     nz_comp,      dumVertCoord_sp,  var_col_metH)
-
           MR_dum3d_metH(i,j,:) = var_col_metH
 
         enddo ! j
@@ -4033,31 +4059,48 @@
 !            -> Read_3d_MetP_Variable_[format]  (direct read of variable in
 !                                                whatever format : nc,grib1/2,ascii)
 !
-!     Takes as input :: ivar  :: specifies which variable to read
-!                       istep :: specified the met step
+!     Takes as input :: ivar      :: specifies which variable to read
+!                       istep     :: specified the met step
+!                       IsNext    :: T for saving velocity values
+!                                    F default
+!                       useScaled :: T works on s grid
+!                                    F (or missing) works on z grid
 !     Sets  : MR_dum3d_compH
 !               MR_dum3d_metH and MR_dum3d_metP are also filled in the course of
 !               generating MR_dum3d_compH
 !
 !##############################################################################
 
-      subroutine MR_Read_3d_Met_Variable_to_CompH(ivar,istep,IsNext)
+      subroutine MR_Read_3d_Met_Variable_to_CompH(ivar,istep,IsNext,useScaled)
 
-      integer,intent(in)           :: ivar
-      integer,intent(in)           :: istep
-      logical, optional,intent(in) :: IsNext
+      integer,intent(in)             :: ivar
+      integer,intent(in)             :: istep
+      logical,optional,intent(in)    :: IsNext
+      logical,optional,intent(inout) :: useScaled
 
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
 
       integer :: io                           ! Index for output streams
 
+      if (.not.present(useScaled))then
+        useScaled = .false.
+      endif
+
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_3d_Met_Variable_to_CompH             ----------"
-        write(outlog(io),*)ivar,istep,IsNext
+        write(outlog(io),*)ivar,istep,IsNext,useScaled
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
+
+      if(useScaled.and..not.MR_useTopo)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"Scaled coordinates requested, but MR_useTopo=F"
+          write(errlog(io),*)"Setting useScaled=F"
+        endif;enddo
+        useScaled = .false.
+      endif
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -4067,29 +4110,31 @@
                                  .true.,  &  ! CALLED_MR_Initialize_Met_Grids        (this check is needed)
                                  .true.)     ! CALLED_MR_Set_Met_Times               (this check is needed)
 
-        ! First get the variable on the height coordinate
-      call MR_Read_3d_MetH_Variable(ivar,istep)
+        ! First get the variable on the height coordinate (or s)
+      call MR_Read_3d_MetH_Variable(ivar,istep,useScaled)
 
       if(MR_Save_Velocities)then
         ! Note: this flag for saving the velocity values is useful in special
         ! cased such where the velocities might be read and used for a local
         ! calculation, but then can be used later.  Variable diffusivity uses
         ! this.
-        if(present(IsNext)) then
-          ! MR_dum3d_metP still contains the variable just read
-          if(ivar.eq.2)then
-            if(IsNext)then
-              MR_vx_metP_last = MR_vx_metP_next
-              MR_vx_metP_next = MR_dum3d_metP
-            else
-              MR_vx_metP_last = MR_dum3d_metP
-            endif
-          elseif(ivar.eq.3)then
-            if(IsNext)then
-              MR_vy_metP_last = MR_vy_metP_next
-              MR_vy_metP_next = MR_dum3d_metP
-            else
-              MR_vy_metP_last = MR_dum3d_metP
+        if(present(IsNext)) then ! First check if this parameter was provided
+          if(IsNext) then  ! second, check if it is true
+            ! MR_dum3d_metP still contains the variable just read
+            if(ivar.eq.2)then
+              if(IsNext)then
+                MR_vx_metP_last = MR_vx_metP_next
+                MR_vx_metP_next = MR_dum3d_metP
+              else
+                MR_vx_metP_last = MR_dum3d_metP
+              endif
+            elseif(ivar.eq.3)then
+              if(IsNext)then
+                MR_vy_metP_last = MR_vy_metP_next
+                MR_vy_metP_next = MR_dum3d_metP
+              else
+                MR_vy_metP_last = MR_dum3d_metP
+              endif
             endif
           endif
         endif
@@ -4120,18 +4165,6 @@
         enddo
         MR_dum3d_compH(:,:,k) = tmp_regrid2d_sp(:,:)
       enddo
-      !if (MR_use_SigmaAlt) then
-      !  ! If we are using sigma-altitude coordinates, then MR_dum3d_compH is returned on the
-      !  ! s-grid, but we might need to scale the variable
-      !  if(ivar.eq.4)then
-      !    ! vertical velocity is scaled by jacobian
-      !    do i=1,nx_comp
-      !      do j=1,ny_comp
-      !        MR_dum3d_compH(i,j,:)=MR_dum3d_compH(i,j,:)/MR_jacob(i,j)
-      !      enddo
-      !    enddo
-      !  endif
-      !endif
 
       deallocate(tmp_regrid2d_sp)
 
@@ -4158,8 +4191,10 @@
 !                                                whatever format :
 !                                                nc,grib1/2,ascii)
 !
-!     Takes as input :: ivar  :: specifies which variable to read
-!                       istep :: specified the met step
+!     Takes as input :: ivar      :: specifies which variable to read
+!                       istep     :: specified the met step
+!                       IsNext    :: T for saving velocity values
+!                                    F default
 !     Sets  : MR_dum3d_compP
 !               MR_dum3d_metP is also filled in the course of
 !               generating MR_dum3d_compP
@@ -4283,8 +4318,6 @@
 
       subroutine MR_Read_2d_Met_Variable(ivar,istep)
 
-      !integer, parameter :: sp        = 4 ! single precision
-
       integer,intent(in)        :: ivar
       integer,intent(in)        :: istep   
 
@@ -4387,7 +4420,6 @@
         ! ASCII profile data with multiple locations
         call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum2d_met(1:nx_submet,1:ny_submet),       &
                                      nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
-        !stop 4
       else
         ! All other cases
         call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum2d_met(1:nx_submet,1:ny_submet),       &
@@ -4629,26 +4661,42 @@
 !     This is regridded onto MR_dum3d_metH by the subroutine Regrid_MetP_to_MetH.
 !     MR_dum3d_metH is then regridded onto MR_dum3d_compH
 !
-!     Takes as input :: istep :: specified the met step
+!     Takes as input :: istep     :: specified the met step
+!                       useScaled :: T works on s grid
+!                                    F (or missing) works on z grid
+!
 !     Sets  : MR_dum3d_compH and MR_dum3d_compP
 !
 !##############################################################################
 
-      subroutine MR_Regrid_MetP_to_CompH(istep)
+      subroutine MR_Regrid_MetP_to_CompH(istep,useScaled)
 
       integer,intent(in)  :: istep
+      logical,optional,intent(inout) :: useScaled
 
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
 
       integer :: io                           ! Index for output streams
 
+      if (.not.present(useScaled))then
+        useScaled = .false.
+      endif
+
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_MetP_to_CompH                      ----------"
-        write(outlog(io),*)istep
+        write(outlog(io),*)istep,useScaled
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
+
+      if(useScaled.and..not.MR_useTopo)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"Scaled coordinates requested, but MR_useTopo=F"
+          write(errlog(io),*)"Setting useScaled=F"
+        endif;enddo
+        useScaled = .false.
+      endif
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -4660,7 +4708,7 @@
 
       if(MR_useCompH)then
         ! convert MR_dum3d_MetP to MR_dum3d_metH
-        call MR_Regrid_MetP_to_MetH(istep)
+        call MR_Regrid_MetP_to_MetH(istep,useScaled)
       endif
 
         ! Now we have MR_dum3d_metH; interpolate onto computational grid
@@ -4704,7 +4752,6 @@
             ! ASCII profile data with multiple locations
             call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
                                          nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
-            !stop 6
           else
             ! All other cases
             call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
@@ -4736,31 +4783,47 @@
 !     This subroutine expects the calling program to populate MR_dum3d_metP.
 !     This is regridded onto MR_dum3d_metH .
 !
-!     Takes as input :: istep :: specified the met step
+!     Takes as input :: istep     :: specified the met step
+!                       useScaled :: T works on s grid
+!                                    F (or missing) works on z grid
+!
 !     Sets  : MR_dum3d_metH
 !
 !##############################################################################
 
-      subroutine MR_Regrid_MetP_to_MetH(istep)
+      subroutine MR_Regrid_MetP_to_MetH(istep,useScaled)
 
-      !integer, parameter :: sp        = 4 ! single precision
 
       integer,intent(in)  :: istep
+      logical,optional,intent(inout) :: useScaled
 
       real(kind=sp),dimension(:),allocatable :: z_col_metP
       real(kind=sp),dimension(:),allocatable :: var_col_metP
       real(kind=sp),dimension(:),allocatable :: var_col_metH
       integer :: i,j,k
       integer :: kc,knext
+      real(kind=sp),dimension(:),allocatable :: dumVertCoord_sp
 
       integer :: io                           ! Index for output streams
+
+      if (.not.present(useScaled))then
+        useScaled = .false.
+      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_MetP_to_MetH                       ----------"
-        write(outlog(io),*)istep
+        write(outlog(io),*)istep,useScaled
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
+
+      if(useScaled.and..not.MR_useTopo)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"Scaled coordinates requested, but MR_useTopo=F"
+          write(errlog(io),*)"Setting useScaled=F"
+        endif;enddo
+        useScaled = .false.
+      endif
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -4777,8 +4840,9 @@
       allocate(  z_col_metP(np_fullmet+2));   z_col_metP(:)=0.0_sp
       allocate(var_col_metP(np_fullmet+2)); var_col_metP(:)=0.0_sp
       allocate(var_col_metH(nz_comp))     ; var_col_metH(:)=0.0_sp
+      allocate(dumVertCoord_sp(nz_comp))     ; dumVertCoord_sp(:) = 0.0_sp
 
-!     CREATE 1-D ARRAYS IN P, AND REGRID THEM INTO 1-D ARRAYS IN z
+      ! Create 1d arrays in p, and regrid them into 1d arrays in z or s
       do i=1,nx_submet
         do j=1,ny_submet
             ! copy the column of z values for this i,j
@@ -4826,12 +4890,21 @@
           z_col_metP(np_fullmet+2) = max(z_comp_sp(nz_comp)+1.0_sp,z_col_metP(np_fullmet+1)+1.0_sp)
           var_col_metP(np_fullmet+2) = var_col_metP(np_fullmet+1)
 
+          if (useScaled) then
+              ! this recovers the real-world z coordinate from the sigma level and topography
+            dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
+                                           s_comp_sp(1:nz_comp) * MR_jacob_met(i,j)
+          else
+            dumVertCoord_sp(1:nz_comp) = z_comp_sp(1:nz_comp)
+          endif
+
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !   Interpolate these values to a regular grid with
           !   spacing equal to the simulation grid
-          call MR_Regrid_P2H_linear(np_fullmet+2, z_col_metP,  var_col_metP, & !vx
-                                    nz_comp,       z_comp_sp,  var_col_metH)
+          call MR_Regrid_P2H_linear(np_fullmet+2, z_col_metP,       var_col_metP, &
+                                    nz_comp,      dumVertCoord_sp,  var_col_metH)
           MR_dum3d_metH(i,j,:) = var_col_metH
+
         enddo ! j
       enddo  ! i
 
@@ -4842,7 +4915,6 @@
       return
 
       end subroutine MR_Regrid_MetP_to_MetH
-
 
 !##############################################################################
 !

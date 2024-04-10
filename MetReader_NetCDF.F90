@@ -8,7 +8,6 @@
 !     MR_Set_iwind5_filenames
 !     MR_Set_Met_Dims_Template_netcdf
 !     MR_Read_MetP_Variable_netcdf
-!     MR_interp_iwf25_grid
 !     MR_NC_check_status
 !     MR_NC_check_var_synonyms
 !
@@ -45,7 +44,6 @@
          y_inverted,z_inverted,Met_var_zdim_idx,MR_windfiles,Met_var_IsAvailable,&
          Met_var_ndim,Met_var_NC_names,Met_dim_names,Met_var_zdim_ncid,&
          temp1d_byte,temp1d_char,temp1d_intS,temp1d_intL,temp1d_sp,temp1d_dp,&
-!         iwf25_scale_facs,iwf25_offsets,&
            MR_Z_US_StdAtm
 
       use projection,      only : &
@@ -176,23 +174,6 @@
             MR_dy_met(i) = y_fullmet_sp(i+1)-y_fullmet_sp(i)
           enddo
           MR_dy_met(ny_fullmet)    = MR_dy_met(ny_fullmet-1)
-
-!          iwf25_scale_facs = -9999.0_sp
-!          iwf25_offsets    = -9999.0_sp
-!          iwf25_scale_facs(1)  = 1.0_sp    ; iwf25_offsets(1)  = 32066.0_sp   ! hgt
-!          iwf25_scale_facs(2)  = 0.01_sp   ; iwf25_offsets(2)  = 202.66_sp    ! uwnd
-!          iwf25_scale_facs(3)  = 0.01_sp   ; iwf25_offsets(3)  = 202.66_sp    ! vwnd
-!          iwf25_scale_facs(4)  = 0.001_sp  ; iwf25_offsets(4)  = 29.765_sp    ! omega
-!          iwf25_scale_facs(5)  = 0.01_sp   ; iwf25_offsets(5)  = 477.66_sp    ! air (temperature)
-!          iwf25_scale_facs(6)  = 1.0_sp    ; iwf25_offsets(6)  = 0.0_sp       ! level
-!          iwf25_scale_facs(7)  = 1.0_sp    ; iwf25_offsets(7)  = 0.0_sp       ! level
-!!          iwf25_scale_facs(20) = 10.0_sp   ; iwf25_offsets(20) = 327650.0_sp  ! pres (lcb)
-!!          iwf25_scale_facs(21) = 10.0_sp   ; iwf25_offsets(21) = 327650.0_sp  ! pres (lct)
-!          iwf25_scale_facs(30) = 0.01_sp   ; iwf25_offsets(30) = 302.66_sp    ! rhum
-!          iwf25_scale_facs(31) = 1.0e-6_sp ; iwf25_offsets(31) = 0.032666_sp  ! shum
-!          iwf25_scale_facs(32) = 1.0e-6_sp ; iwf25_offsets(32) = 0.032666_sp  ! shum
-!!          iwf25_scale_facs(44) = 1.0e-7_sp ; iwf25_offsets(44) = 0.0032765_sp ! prate
-!!          iwf25_scale_facs(45) = 1.0e-7_sp ; iwf25_offsets(45) = 0.0031765_sp ! cprat
 
         elseif(MR_iwindformat.eq.26)then
          ! JRA-55 reanalysis 1.25 degree files 
@@ -3179,7 +3160,6 @@
          MR_iwind,Met_var_NC_names,MR_iMetStep_Now,Met_var_NC_names,&
          istart,ilhalf_nx,irhalf_nx,irhalf_fm_l,temp3d_short,temp2d_int,NCv_datafile,&
          MR_dum2d_met_int,ilhalf_fm_l,jstart,fill_value_sp,Met_var_NC_names,MR_dum2d_met,&
-!         tmpsurf2d_short,iwf25_offsets,iwf25_scale_facs,&
            MR_Temp_US_StdAtm,&
            MR_Z_US_StdAtm,&
            MR_QC_3dvar
@@ -3241,14 +3221,6 @@
           integer           ,intent(in)  :: ivar
           character(len=130),intent(out) :: infile
         end subroutine MR_Set_iwind5_filenames
-!        subroutine MR_interp_iwf25_grid(imax,jmax,invar,outvar,scale_fac,offset)
-!          integer, parameter :: sp        = 4 ! single precision
-!          integer         ,intent(in)  :: imax,jmax
-!          integer(kind=sp),intent(in)  :: invar(192,94,1)
-!          real(kind=sp)   ,intent(out) :: outvar(imax,jmax)
-!          real(kind=sp)   ,intent(in)  :: scale_fac
-!          real(kind=sp)   ,intent(in)  :: offset
-!        end subroutine MR_interp_iwf25_grid
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
@@ -3785,62 +3757,38 @@
           endif
   
           do i=1,ict        !read subgrid at current time step
-            !if(MR_iwindformat.eq.25)then
-            !  allocate(tmpsurf2d_short(192,94,1))
-            !  if(NCv_datafile.eq.1)then
-            !    ! This is for nf90_format_classic old-style NCEP files
-            !    nSTAT = nf90_get_var(ncid,in_var_id,tmpsurf2d_short(:,:,1), &
-            !             start = (/1,1,iwstep/),       &
-            !             count = (/192,94,1/))
-            !    call MR_NC_check_status(nSTAT,0,"nf90_get_var NCEP 2d non-cat ncv3")
-         ! H!FS get rid of the iwf25_scale_facs
-            !    call MR_interp_iwf25_grid(nx_submet,ny_submet,tmpsurf2d_short,temp2d_sp,&
-            !                        iwf25_scale_facs(ivar),iwf25_offsets(ivar))
-            !    MR_dum2d_met(1:nx_submet,:) = temp2d_sp(1:nx_submet,:,1)
-            !  else
-            !    nSTAT = nf90_get_var(ncid,in_var_id,temp2d_sp(:,:,1), &
-            !             start = (/1,1,iwstep/),       &
-            !             count = (/192,94,1/))
-            !    call MR_NC_check_status(nSTAT,0,"nf90_get_var NCEP 2d non-cat ncv4")
-            !    call MR_interp_iwf25_grid(nx_submet,ny_submet,tmpsurf2d_short,temp2d_sp,&
-            !                        iwf25_scale_facs(ivar),iwf25_offsets(ivar))
-            !    MR_dum2d_met(1:nx_submet,:) = temp2d_sp(1:nx_submet,:,1)
-            !  endif
-            !else  ! Not MR_iwindformat.eq.25
-              ! 2d variables for iwf .ne. 25
-              if(ivar.eq.11.or.ivar.eq.12)then
-                ! Surface velocities do have a z dimension
-                nSTAT = nf90_get_var(ncid,in_var_id,temp3d_sp(ileft(i):iright(i),:,:,:), &
-                         start = (/iistart(i),jstart,1,iwstep/),       &
-                         count = (/iicount(i),ny_submet,1,1/))
-                call MR_NC_check_status(nSTAT,0,"nf90_get_var surface_vel")
-                do j=1,ny_submet
-                  itmp = ny_submet-j+1
-                  if(y_inverted)then
-                    MR_dum2d_met(1:nx_submet,j)  = temp3d_sp(1:nx_submet,itmp,1,1)
-                  else
-                    MR_dum2d_met(1:nx_submet,j)  = temp3d_sp(1:nx_submet,j,1,1)
-                  endif
-                enddo
-              else  ! not ivar.eq.11.or.ivar.eq.12
-                nSTAT = nf90_get_var(ncid,in_var_id,temp2d_sp(ileft(i):iright(i),:,:), &
-                         start = (/iistart(i),jstart,iwstep/),       &
-                         count = (/iicount(i),ny_submet,1/))
-                call MR_NC_check_status(nSTAT,0,"nf90_get_var non-surface_vel")
-                do j=1,ny_submet
-                  itmp = ny_submet-j+1
-                  if(y_inverted)then
-                    MR_dum2d_met(1:nx_submet,j)  = temp2d_sp(1:nx_submet,itmp,1)
-                  else
-                    MR_dum2d_met(1:nx_submet,j)  = temp2d_sp(1:nx_submet,j,1)
-                  endif
-                enddo
-              endif
-            !endif
+            ! 2d variables for iwf .ne. 25
+            if(ivar.eq.11.or.ivar.eq.12)then
+              ! Surface velocities do have a z dimension
+              nSTAT = nf90_get_var(ncid,in_var_id,temp3d_sp(ileft(i):iright(i),:,:,:), &
+                       start = (/iistart(i),jstart,1,iwstep/),       &
+                       count = (/iicount(i),ny_submet,1,1/))
+              call MR_NC_check_status(nSTAT,0,"nf90_get_var surface_vel")
+              do j=1,ny_submet
+                itmp = ny_submet-j+1
+                if(y_inverted)then
+                  MR_dum2d_met(1:nx_submet,j)  = temp3d_sp(1:nx_submet,itmp,1,1)
+                else
+                  MR_dum2d_met(1:nx_submet,j)  = temp3d_sp(1:nx_submet,j,1,1)
+                endif
+              enddo
+            else  ! not ivar.eq.11.or.ivar.eq.12
+              nSTAT = nf90_get_var(ncid,in_var_id,temp2d_sp(ileft(i):iright(i),:,:), &
+                       start = (/iistart(i),jstart,iwstep/),       &
+                       count = (/iicount(i),ny_submet,1/))
+              call MR_NC_check_status(nSTAT,0,"nf90_get_var non-surface_vel")
+              do j=1,ny_submet
+                itmp = ny_submet-j+1
+                if(y_inverted)then
+                  MR_dum2d_met(1:nx_submet,j)  = temp2d_sp(1:nx_submet,itmp,1)
+                else
+                  MR_dum2d_met(1:nx_submet,j)  = temp2d_sp(1:nx_submet,j,1)
+                endif
+              enddo
+            endif
           enddo
           deallocate(temp2d_sp)
           if(ivar.eq.11.or.ivar.eq.12) deallocate(temp3d_sp)
-          !if(MR_iwindformat.eq.25) deallocate(tmpsurf2d_short)
         endif ! IsCategorical
       endif ! Dimension_of_Variable.eq.2
 
@@ -3996,53 +3944,6 @@
       endif;enddo
 
       end subroutine MR_Read_MetP_Variable_netcdf
-
-!##############################################################################
-!
-!     MR_interp_iwf25_grid
-!
-!##############################################################################
-!
-!      subroutine MR_interp_iwf25_grid(imax,jmax,invar,outvar,scale_fac,offset)
-!
-!      use MetReader,       only : &
-!         imap_iwf25,amap_iwf25
-!
-!      implicit none
-!
-!      integer, parameter :: sp        = 4 ! single precision
-!
-!      integer         ,intent(in)  :: imax,jmax
-!      integer(kind=sp),intent(in)  :: invar(192,94,1)
-!      real(kind=sp)   ,intent(out) :: outvar(imax,jmax)
-!      real(kind=sp)   ,intent(in)  :: scale_fac
-!      real(kind=sp)   ,intent(in)  :: offset
-!
-!      real(kind=sp)    :: a1,a2,a3,a4
-!      real(kind=sp)    :: v1,v2,v3,v4
-!
-!      integer :: ilon,ilat
-!
-!      do ilon = 1,imax
-!        do ilat = 1,jmax
-!          a1 = amap_iwf25(ilon,ilat,1)
-!          a2 = amap_iwf25(ilon,ilat,2)
-!          a3 = amap_iwf25(ilon,ilat,3)
-!          a4 = amap_iwf25(ilon,ilat,4)
-!          v1 = invar(imap_iwf25(ilon,ilat,1),imap_iwf25(ilon,ilat,3),1) &
-!                 * scale_fac + offset
-!          v2 = invar(imap_iwf25(ilon,ilat,2),imap_iwf25(ilon,ilat,3),1) &
-!                 * scale_fac + offset
-!          v3 = invar(imap_iwf25(ilon,ilat,2),imap_iwf25(ilon,ilat,4),1) &
-!                 * scale_fac + offset
-!          v4 = invar(imap_iwf25(ilon,ilat,1),imap_iwf25(ilon,ilat,4),1) &
-!                 * scale_fac + offset
-!
-!          outvar(ilon,ilat) = a1*v1 + a2*v2 + a3*v3 + a4*v4
-!        enddo
-!      enddo
-!
-!      end subroutine MR_interp_iwf25_grid
 
 !##############################################################################
 !
