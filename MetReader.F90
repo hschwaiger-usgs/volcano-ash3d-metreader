@@ -36,15 +36,15 @@
 !        subroutine MR_Set_Met_Times(eStartHour,Duration)
 !        subroutine MR_Read_HGT_arrays(istep,reset_first_time)
 !        subroutine MR_Read_3d_MetP_Variable(ivar,istep)
-!        subroutine MR_Read_3d_MetH_Variable(ivar,istep,[useScaled])
+!        subroutine MR_Read_3d_MetH_Variable(ivar,istep)
 !        subroutine MR_Read_3d_Met_Variable_to_CompP(ivar,istep,IsNext)
-!        subroutine MR_Read_3d_Met_Variable_to_CompH(ivar,istep,IsNext,[useScaled])
+!        subroutine MR_Read_3d_Met_Variable_to_CompH(ivar,istep,IsNext)
 !        subroutine MR_Read_2d_Met_Variable(ivar,istep)
 !        subroutine MR_Read_2d_Met_Variable_to_CompGrid(ivar,istep)
 !        subroutine MR_Rotate_UV_GR2ER_Met(istep,SetComp)
 !        subroutine MR_Rotate_UV_ER2GR_Comp(istep)
-!        subroutine MR_Regrid_MetP_to_CompH(istep,[useScaled])
-!        subroutine MR_Regrid_MetP_to_MetH(istep,[useScaled])
+!        subroutine MR_Regrid_MetP_to_CompH(istep)
+!        subroutine MR_Regrid_MetP_to_MetH(istep)
 !        subroutine MR_Regrid_Met2d_to_Comp2d()
 !        subroutine MR_DelMetP_Dx()
 !        subroutine MR_DelMetP_Dy()
@@ -3902,17 +3902,14 @@
 !
 !     Takes as input :: ivar      :: specifies which variable to read
 !                       istep     :: specified the met step
-!                       useScaled :: T works on s grid
-!                                    F (or missing) works on z grid
 !     Reads : MR_dum3d_metP
 !     Sets  : MR_dum3d_metH
 !##############################################################################
 
-      subroutine MR_Read_3d_MetH_Variable(ivar,istep,useScaled)
+      subroutine MR_Read_3d_MetH_Variable(ivar,istep)
 
       integer,intent(in)             :: ivar
       integer,intent(in)             :: istep
-      logical,intent(inout),optional :: useScaled
 
       real(kind=sp),dimension(:),allocatable :: z_col_metP
       real(kind=sp),dimension(:),allocatable :: var_col_metP
@@ -3921,27 +3918,21 @@
       integer :: kc,knext
       integer :: np_fully_padded
       real(kind=sp),dimension(:),allocatable :: dumVertCoord_sp
-
+      logical :: useScaled
       integer :: io                           ! Index for output streams
 
-      if (.not.present(useScaled))then
+      if (MR_ZScaling_ID.gt.0.and.MR_useTopo) then
+        useScaled = .true.
+      else
         useScaled = .false.
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_3d_MetH_Variable                     ----------"
-        write(outlog(io),*)ivar,istep,useScaled
+        write(outlog(io),*)ivar,istep
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
-
-      if(useScaled.and..not.MR_useTopo)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"Scaled coordinates requested, but MR_useTopo=F"
-          write(errlog(io),*)"Setting useScaled=F"
-        endif;enddo
-        useScaled = .false.
-      endif
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -4063,44 +4054,36 @@
 !                       istep     :: specified the met step
 !                       IsNext    :: T for saving velocity values
 !                                    F default
-!                       useScaled :: T works on s grid
-!                                    F (or missing) works on z grid
 !     Sets  : MR_dum3d_compH
 !               MR_dum3d_metH and MR_dum3d_metP are also filled in the course of
 !               generating MR_dum3d_compH
 !
 !##############################################################################
 
-      subroutine MR_Read_3d_Met_Variable_to_CompH(ivar,istep,IsNext,useScaled)
+      subroutine MR_Read_3d_Met_Variable_to_CompH(ivar,istep,IsNext)
 
       integer,intent(in)             :: ivar
       integer,intent(in)             :: istep
       logical,optional,intent(in)    :: IsNext
-      logical,optional,intent(inout) :: useScaled
 
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
+      logical :: useScaled
 
       integer :: io                           ! Index for output streams
 
-      if (.not.present(useScaled))then
+      if (MR_ZScaling_ID.gt.0.and.MR_useTopo) then
+        useScaled = .true.
+      else
         useScaled = .false.
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_3d_Met_Variable_to_CompH             ----------"
-        write(outlog(io),*)ivar,istep,IsNext,useScaled
+        write(outlog(io),*)ivar,istep,IsNext
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
-
-      if(useScaled.and..not.MR_useTopo)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"Scaled coordinates requested, but MR_useTopo=F"
-          write(errlog(io),*)"Setting useScaled=F"
-        endif;enddo
-        useScaled = .false.
-      endif
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -4111,7 +4094,7 @@
                                  .true.)     ! CALLED_MR_Set_Met_Times               (this check is needed)
 
         ! First get the variable on the height coordinate (or s)
-      call MR_Read_3d_MetH_Variable(ivar,istep,useScaled)
+      call MR_Read_3d_MetH_Variable(ivar,istep)
 
       if(MR_Save_Velocities)then
         ! Note: this flag for saving the velocity values is useful in special
@@ -4662,41 +4645,32 @@
 !     MR_dum3d_metH is then regridded onto MR_dum3d_compH
 !
 !     Takes as input :: istep     :: specified the met step
-!                       useScaled :: T works on s grid
-!                                    F (or missing) works on z grid
 !
 !     Sets  : MR_dum3d_compH and MR_dum3d_compP
 !
 !##############################################################################
 
-      subroutine MR_Regrid_MetP_to_CompH(istep,useScaled)
+      subroutine MR_Regrid_MetP_to_CompH(istep)
 
       integer,intent(in)  :: istep
-      logical,optional,intent(inout) :: useScaled
 
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
-
+      logical :: useScaled
       integer :: io                           ! Index for output streams
 
-      if (.not.present(useScaled))then
+      if (MR_ZScaling_ID.gt.0.and.MR_useTopo) then
+        useScaled = .true.
+      else
         useScaled = .false.
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_MetP_to_CompH                      ----------"
-        write(outlog(io),*)istep,useScaled
+        write(outlog(io),*)istep
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
-
-      if(useScaled.and..not.MR_useTopo)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"Scaled coordinates requested, but MR_useTopo=F"
-          write(errlog(io),*)"Setting useScaled=F"
-        endif;enddo
-        useScaled = .false.
-      endif
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
@@ -4708,7 +4682,7 @@
 
       if(MR_useCompH)then
         ! convert MR_dum3d_MetP to MR_dum3d_metH
-        call MR_Regrid_MetP_to_MetH(istep,useScaled)
+        call MR_Regrid_MetP_to_MetH(istep)
       endif
 
         ! Now we have MR_dum3d_metH; interpolate onto computational grid
@@ -4784,18 +4758,15 @@
 !     This is regridded onto MR_dum3d_metH .
 !
 !     Takes as input :: istep     :: specified the met step
-!                       useScaled :: T works on s grid
-!                                    F (or missing) works on z grid
 !
 !     Sets  : MR_dum3d_metH
 !
 !##############################################################################
 
-      subroutine MR_Regrid_MetP_to_MetH(istep,useScaled)
+      subroutine MR_Regrid_MetP_to_MetH(istep)
 
 
       integer,intent(in)  :: istep
-      logical,optional,intent(inout) :: useScaled
 
       real(kind=sp),dimension(:),allocatable :: z_col_metP
       real(kind=sp),dimension(:),allocatable :: var_col_metP
@@ -4803,27 +4774,21 @@
       integer :: i,j,k
       integer :: kc,knext
       real(kind=sp),dimension(:),allocatable :: dumVertCoord_sp
-
+      logical :: useScaled
       integer :: io                           ! Index for output streams
 
-      if (.not.present(useScaled))then
+      if (MR_ZScaling_ID.gt.0.and.MR_useTopo) then
+        useScaled = .true.
+      else
         useScaled = .false.
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_MetP_to_MetH                       ----------"
-        write(outlog(io),*)istep,useScaled
+        write(outlog(io),*)istep
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
-
-      if(useScaled.and..not.MR_useTopo)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-          write(errlog(io),*)"Scaled coordinates requested, but MR_useTopo=F"
-          write(errlog(io),*)"Setting useScaled=F"
-        endif;enddo
-        useScaled = .false.
-      endif
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
