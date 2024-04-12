@@ -512,7 +512,7 @@
       ! Here are a few variables needed for sigma-altitude coordinates
       logical          ,public :: MR_useTopo             = .false.
       integer          ,public :: MR_ZScaling_ID    = 0  ! = 0 for no scaling (i.e. s = z)
-                                                         ! = 1 for scaled-altitude (s=z-zsurf)
+                                                         ! = 1 for shifted-altitude (s=z-zsurf)
                                                          ! = 2 for sigma-altitude (s=(z-zsurf)/(ztop-zsurf))
       real(kind=sp)    ,public :: MR_ztop
 #ifdef USEPOINTERS
@@ -3179,7 +3179,7 @@
         ! no topo
         MR_jacob_comp(1:nx,1:ny) = 1.0_sp
       elseif(MR_ZScaling_ID.eq.1)then
-        ! scaled-altitude (s=z-zsurf)
+        ! shifted-altitude (s=z-zsurf)
         ! HFS check this
         MR_jacob_comp(1:nx,1:ny) = MR_ztop - MR_Topo_comp(1:nx,1:ny)
       elseif(MR_ZScaling_ID.eq.2)then
