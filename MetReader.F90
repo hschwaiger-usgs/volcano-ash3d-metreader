@@ -3130,9 +3130,9 @@
         write(*,*)MR_Ztop
         allocate(s_comp_sp(nz_comp))
         allocate(MR_Topo_met(nx_submet,ny_submet));  MR_Topo_met(:,:)   = 0.0_sp
-        allocate(MR_jacob_met(nx_submet,ny_submet)); MR_jacob_met(:,:)  = MR_Ztop - MR_Topo_met(:,:)
+        allocate(MR_jacob_met(nx_submet,ny_submet)); MR_jacob_met(:,:)  = 1.0_sp
         allocate(MR_Topo_comp(nx_comp,ny_comp));     MR_Topo_comp(:,:)  = 0.0_sp
-        allocate(MR_jacob_comp(nx_comp,ny_comp));    MR_jacob_comp(:,:) = MR_Ztop - MR_Topo_comp(:,:)
+        allocate(MR_jacob_comp(nx_comp,ny_comp));    MR_jacob_comp(:,:) = 1.0_sp
       endif
 
       CALLED_MR_Initialize_Met_Grids = .true.
@@ -3178,10 +3178,11 @@
       if(MR_ZScaling_ID.eq.0)then
         ! no topo
         MR_jacob_comp(1:nx,1:ny) = 1.0_sp
+        MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
       elseif(MR_ZScaling_ID.eq.1)then
         ! shifted-altitude (s=z-zsurf)
-        ! HFS check this
-        MR_jacob_comp(1:nx,1:ny) = MR_ztop - MR_Topo_comp(1:nx,1:ny)
+        MR_jacob_comp(1:nx,1:ny) = 1.0_sp
+        MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
       elseif(MR_ZScaling_ID.eq.2)then
         ! sigma-altitude (s=(z-zsurf)/(top-surf))
         !  Note: this is not the same as in Jacobson Eq 5.89, but we want the orientation of the
@@ -3192,12 +3193,14 @@
 
         ! Just set the s-values for now without appling topography
         MR_jacob_comp(1:nx,1:ny) = MR_ztop - MR_Topo_comp(1:nx,1:ny)
+        MR_jacob_met(1:nx_submet,1:ny_submet) = MR_ztop - MR_Topo_met(1:nx_submet,1:ny_submet)
       else
         do io=1,MR_nio;if(VB(io).le.verbosity_production)then
           write(outlog(io),*)"MR WARNING: Topography scheme not recognized."
           write(outlog(io),*)"            Reverting to altitude."
         endif;enddo
         MR_jacob_comp(1:nx,1:ny) = 1.0_sp
+        MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
