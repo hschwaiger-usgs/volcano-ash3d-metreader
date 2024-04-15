@@ -70,7 +70,7 @@
       public MR_Reset_Memory,MR_Allocate_FullMetFileList,MR_Set_CompProjection,&
              MR_Read_Met_DimVars,MR_Set_Met_Times,MR_Initialize_Met_Grids,MR_Read_HGT_arrays,&
              MR_Read_3d_Met_Variable_to_CompP,MR_Read_3d_Met_Variable_to_CompH,&
-             MR_Read_3d_MetP_Variable,MR_Read_3d_MetH_Variable,&
+             MR_Set_SigmaAlt_Scaling,MR_Read_3d_MetP_Variable,MR_Read_3d_MetH_Variable,&
              MR_Read_2d_Met_Variable,MR_Read_2d_Met_Variable_to_CompGrid,&
              MR_Rotate_UV_GR2ER_Met,MR_Rotate_UV_ER2GR_Comp,&
              MR_Regrid_MetP_to_CompH,MR_Regrid_MetP_to_MetH,MR_Regrid_Met2d_to_Comp2d,&
@@ -3149,14 +3149,12 @@
 
 !##############################################################################
 
-      subroutine MR_Set_SigmaAlt_Scaling(nx,ny,nz, &
-                                         dumz_sp, dumxy1_sp, &
-                                         dum_int)
+      subroutine MR_Set_SigmaAlt_Scaling()
 
-      integer      ,intent(in) :: nx,ny,nz
-      real(kind=sp),intent(in) :: dumz_sp(nz)
-      real(kind=sp),intent(in) :: dumxy1_sp(nx,ny)
-      integer      ,intent(in) :: dum_int
+!      integer      ,intent(in) :: nx,ny,nz
+!      real(kind=sp),intent(in) :: dumz_sp(nz)
+!      real(kind=sp),intent(in) :: dumxy1_sp(nx,ny)
+!      integer      ,intent(in) :: dum_int
 
       integer :: io                           ! Index for output streams
 
@@ -3173,15 +3171,15 @@
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
-      MR_ZScaling_ID     = dum_int
-      s_comp_sp(1:nz) = dumz_sp(1:nz)
+!      MR_ZScaling_ID     = dum_int
+!      s_comp_sp(1:nz) = dumz_sp(1:nz)
       if(MR_ZScaling_ID.eq.0)then
         ! no topo
-        MR_jacob_comp(1:nx,1:ny) = 1.0_sp
+        MR_jacob_comp(1:nx_comp,1:ny_comp) = 1.0_sp
         MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
       elseif(MR_ZScaling_ID.eq.1)then
         ! shifted-altitude (s=z-zsurf)
-        MR_jacob_comp(1:nx,1:ny) = 1.0_sp
+        MR_jacob_comp(1:nx_comp,1:ny_comp) = 1.0_sp
         MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
       elseif(MR_ZScaling_ID.eq.2)then
         ! sigma-altitude (s=(z-zsurf)/(top-surf))
@@ -3192,14 +3190,14 @@
         !        but the constant s level have the same topographic influence throughout.
 
         ! Just set the s-values for now without appling topography
-        MR_jacob_comp(1:nx,1:ny) = MR_ztop - MR_Topo_comp(1:nx,1:ny)
+        MR_jacob_comp(1:nx_comp,1:ny_comp) = MR_ztop - MR_Topo_comp(1:nx_comp,1:ny_comp)
         MR_jacob_met(1:nx_submet,1:ny_submet) = MR_ztop - MR_Topo_met(1:nx_submet,1:ny_submet)
       else
         do io=1,MR_nio;if(VB(io).le.verbosity_production)then
           write(outlog(io),*)"MR WARNING: Topography scheme not recognized."
           write(outlog(io),*)"            Reverting to altitude."
         endif;enddo
-        MR_jacob_comp(1:nx,1:ny) = 1.0_sp
+        MR_jacob_comp(1:nx_comp,1:ny_comp) = 1.0_sp
         MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
       endif
 
@@ -4021,13 +4019,27 @@
           else
             dumVertCoord_sp(1:nz_comp) = z_comp_sp(1:nz_comp)
           endif
-
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !   Interpolate these values to a regular grid with
           !   spacing equal to the simulation grid
           call MR_Regrid_P2H_linear(np_fullmet+2, z_col_metP,       var_col_metP, & 
                                     nz_comp,      dumVertCoord_sp,  var_col_metH)
           MR_dum3d_metH(i,j,:) = var_col_metH
+
+!          if(MR_Topo_met(i,j).gt.1.3.and.j.gt.2)then
+!            write(*,*)i,j,maxval(MR_Topo_met),MR_Topo_met(i,j)
+!            write(*,*)"-------------------------"
+!            write(*,*)var_col_metP
+!            write(*,*)"-------------------------"
+!            write(*,*)z_col_metP
+!            write(*,*)"-------------------------"
+!            write(*,*)dumVertCoord_sp
+!            write(*,*)"-------------------------"
+!            write(*,*)var_col_metH
+!            write(*,*)"-------------------------"
+!            stop 44
+!          endif
+
 
         enddo ! j
       enddo  ! i
