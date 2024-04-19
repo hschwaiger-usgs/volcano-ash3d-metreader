@@ -32,7 +32,7 @@
 !        subroutine MR_Read_Met_DimVars(iy)
 !        subroutine MR_Set_CompProjection(LL_flag,ipf,lam0,phi0,phi1,phi2,ko,Re)
 !        subroutine MR_Initialize_Met_Grids(nx,ny,nz,dumx_sp,dumy_sp,dumz_sp,periodic)
-!        subroutine MR_Set_SigmaAlt_Scaling(nx,ny,nz,dum_sp,dumz_sp,dumxy1_sp,dum_int)
+!        subroutine MR_Set_SigmaAlt_Scaling(nz,dums_sp)
 !        subroutine MR_Set_Met_Times(eStartHour,Duration)
 !        subroutine MR_Read_HGT_arrays(istep,reset_first_time)
 !        subroutine MR_Read_3d_MetP_Variable(ivar,istep)
@@ -3000,6 +3000,7 @@
       allocate(x_comp_sp(nx_comp))
       allocate(y_comp_sp(ny_comp))
       allocate(z_comp_sp(nz_comp))
+      allocate(s_comp_sp(nz_comp))
       if(MR_useCompGrid.eqv..false.)then
         ! This is the case where we will not be interpolating to a computational grid, but want access
         ! to the full met grid.  All parameters to this subroutine should have been dummy values
@@ -3009,10 +3010,12 @@
         y_comp_sp(ny) = max(y_fullmet_sp(1),y_fullmet_sp(ny_fullmet))
         z_comp_sp(1)  = 0.0_sp
         z_comp_sp(nz) = 1.1_sp*MR_Max_geoH_metP_predicted
+        s_comp_sp = z_comp_sp   ! Initialize s to z.  This might be changed in MR_Set_SigmaAlt_Scaling
       else
         x_comp_sp = dumx_sp
         y_comp_sp = dumy_sp
         z_comp_sp = dumz_sp
+        s_comp_sp = z_comp_sp
       endif
       ! Do some error-checking on these grids to make sure they are
       ! strictly increasing
@@ -3020,7 +3023,7 @@
         if(x_comp_sp(i).gt.x_comp_sp(i+1))then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR:  x_comp not strictly increasing"
-            write(errlog(io),*)s_comp_sp
+            write(errlog(io),*)x_comp_sp
           endif;enddo
           stop 1
         endif
@@ -3127,8 +3130,6 @@
       endif
 
       if(MR_useTopo)then
-        write(*,*)MR_Ztop
-        allocate(s_comp_sp(nz_comp))
         allocate(MR_Topo_met(nx_submet,ny_submet));  MR_Topo_met(:,:)   = 0.0_sp
         allocate(MR_jacob_met(nx_submet,ny_submet)); MR_jacob_met(:,:)  = 1.0_sp
         allocate(MR_Topo_comp(nx_comp,ny_comp));     MR_Topo_comp(:,:)  = 0.0_sp
@@ -3149,12 +3150,10 @@
 
 !##############################################################################
 
-      subroutine MR_Set_SigmaAlt_Scaling()
+      subroutine MR_Set_SigmaAlt_Scaling(nz,dums_sp)
 
-!      integer      ,intent(in) :: nx,ny,nz
-!      real(kind=sp),intent(in) :: dumz_sp(nz)
-!      real(kind=sp),intent(in) :: dumxy1_sp(nx,ny)
-!      integer      ,intent(in) :: dum_int
+      integer      ,intent(in) :: nz
+      real(kind=sp),intent(in) :: dums_sp(nz)
 
       integer :: io                           ! Index for output streams
 
@@ -3171,8 +3170,7 @@
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
-!      MR_ZScaling_ID     = dum_int
-!      s_comp_sp(1:nz) = dumz_sp(1:nz)
+      s_comp_sp(1:nz) = dums_sp(1:nz)
       if(MR_ZScaling_ID.eq.0)then
         ! no topo
         MR_jacob_comp(1:nx_comp,1:ny_comp) = 1.0_sp
