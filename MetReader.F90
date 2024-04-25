@@ -2733,7 +2733,7 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"  Verifying existance of windfiles:"
       endif;enddo
-     ! Note MR_iwind=5 cases have the number of windfiles (MR_iwindfiles)
+      ! Note MR_iwind=5 cases have the number of windfiles (MR_iwindfiles)
       ! modified in MR_Allocate_FullMetFileList to be the number of
       ! anticipated files based on the length of the simulation and the number
       ! of steps per file.

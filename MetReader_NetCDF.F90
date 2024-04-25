@@ -2708,8 +2708,7 @@
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug1,&
          Met_var_NC_names,MR_BaseYear,MR_useLeap,MR_iwindformat,MR_iw5_prefix,MR_iw5_root,&
          MR_DirDelim,MR_DirDelim,MR_iw5_suffix1,MR_iw5_suffix2,&
-         MR_Use_RDA,MR_RDAcode,MR_iversion,&
-         MR_Comp_StartYear
+         MR_Use_RDA,MR_RDAcode,MR_iversion
 
       implicit none
 
@@ -2832,7 +2831,7 @@
         write(MR_iw5_suffix2,326)thisYear,thisMonth,dum_i1,'00_',&
                                  thisYear,thisMonth,dum_i2,dum_i3,'.nc'
 
-        write(infile,426)trim(adjustl(MR_iw5_root)),MR_DirDelim,MR_Comp_StartYear,MR_DirDelim, &
+        write(infile,426)trim(adjustl(MR_iw5_root)),MR_DirDelim,thisYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
  261    format(a17)
@@ -2953,7 +2952,7 @@
         endif
         write(MR_iw5_suffix1,329)thisYear,thisMonth,dum_i1,'00_',&
                                  thisYear,thisMonth,dum_i2,dum_i3,'.nc'
-        write(infile,429)trim(adjustl(MR_iw5_root)),MR_DirDelim,MR_Comp_StartYear,MR_DirDelim, &
+        write(infile,429)trim(adjustl(MR_iw5_root)),MR_DirDelim,thisYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
  291    format(a34)
@@ -2980,7 +2979,7 @@
         endif
         write(MR_iw5_suffix1,330)thisYear,thisMonth,dum_i1,'00_',&
                                  thisYear,thisMonth,dum_i2,dum_i3,'.nc'
-        write(infile,430)trim(adjustl(MR_iw5_root)),MR_DirDelim,MR_Comp_StartYear,MR_DirDelim, &
+        write(infile,430)trim(adjustl(MR_iw5_root)),MR_DirDelim,thisYear,MR_DirDelim, &
                          trim(adjustl(MR_iw5_prefix)),   &
                          trim(adjustl(MR_iw5_suffix1))
  230    format(a39)

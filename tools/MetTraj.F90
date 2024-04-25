@@ -88,7 +88,7 @@
 
       real(kind=8)        :: starty
 
-      logical      :: IsGlobal
+      logical             :: IsGlobal
 
       integer :: io                           ! Index for output streams
 
@@ -1125,7 +1125,7 @@
        !   This will be used to determine if gfs or NCEP winds are to be used
       call date_and_time(date,time2,zone,values)
       read(zone,'(i3)') timezone
-        ! FIND TIME IN UTC
+        ! Find time in UTC
       StartHour = real(values(5)-timezone,kind=8) + &
                   real(values(6)/60.0_8,kind=8)
         ! find time in hours since BaseYear
