@@ -4035,6 +4035,10 @@
         slen = len(invar)
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Geopotential_height"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
         invar = "H"
         slen = len(invar)
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
@@ -4088,6 +4092,10 @@
         slen = len(invar)
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "u_wind"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
         invar = "U"
         slen = len(invar)
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
@@ -4130,6 +4138,10 @@
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
         invar = "v_wind_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "v_wind"
         slen = len(invar)
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
@@ -4190,6 +4202,10 @@
         slen = len(invar)
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Pressure_vertical_velocity"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
         invar = "omega"
         slen = len(invar)
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
@@ -4224,6 +4240,10 @@
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
       elseif(ivar.eq.5)then ! Temperature
         invar = "Temperature_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Temperature"
         slen = len(invar)
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
@@ -4337,6 +4357,10 @@
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
       elseif(ivar.eq.31)then ! Specific humidity  (kg/kg)
         invar = "Specific_humidity_isobaric"
+        slen = len(invar)
+        nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
+        if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
+        invar = "Specific_humidity"
         slen = len(invar)
         nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
         if(nSTAT.eq.0)Met_var_NC_names(ivar)=invar(1:slen)
