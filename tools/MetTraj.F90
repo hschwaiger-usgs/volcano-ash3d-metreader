@@ -205,22 +205,46 @@
       IsGlobal = .false.
       ! Define grid padding based on the integration time
       if(Simtime_in_hours.le.8.0_8)then
-        ! +-15 in lon ; +-10 in lat
-        xwidth = 30.0_4
-        ywidth = 20.0_4
+        if(IsLatLon)then
+          ! +-15 in lon ; +-10 in lat
+          xwidth = 30.0_4
+          ywidth = 20.0_4
+        else
+          ! +-300km in x ; +-300 in y
+          xwidth = 300.0_4
+          ywidth = 300.0_4
+        endif
       elseif(Simtime_in_hours.le.16.0_8)then
-        ! +-25 in lon ; +-15 in lat
-        xwidth = 50.0_4
-        ywidth = 30.0_4
+        if(IsLatLon)then
+          ! +-25 in lon ; +-15 in lat
+          xwidth = 50.0_4
+          ywidth = 30.0_4
+        else
+          ! +-600km in x ; +-600 in y
+          xwidth = 600.0_4
+          ywidth = 600.0_4
+        endif
       elseif(Simtime_in_hours.le.24.0_8)then
-        ! +-35 in lon ; +-20 in lat
-        xwidth = 70.0_4
-        ywidth = 40.0_4
+        if(IsLatLon)then
+          ! +-35 in lon ; +-20 in lat
+          xwidth = 70.0_4
+          ywidth = 40.0_4
+        else
+          ! +-1000km in x ; +-1000 in y
+          xwidth = 1000.0_4
+          ywidth = 1000.0_4
+        endif
       else
-        ! Full globe
-        xwidth = 360.0_4
-        ywidth = 180.0_4
-        IsGlobal = .true.
+        if(IsLatLon)then
+          ! Full globe
+          xwidth = 360.0_4
+          ywidth = 180.0_4
+          IsGlobal = .true.
+        else
+          ! +-1500km in x ; +-1500 in y
+          xwidth = 1500.0_4
+          ywidth = 1500.0_4
+        endif
       endif
 
       if(iw.eq.1)then
@@ -359,12 +383,13 @@
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
-         MR_BaseYear,MR_useLeap,MR_useCompH,&
+         MR_BaseYear,MR_useLeap,MR_useCompH,Comp_lam1,Comp_lam2,&
+         Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
            MR_Set_CompProjection,&
            MR_FileIO_Error_Handler
 
       use projection,      only : &
-         PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
+         PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
            PJ_Set_Proj_Params
 
       implicit none
@@ -709,6 +734,9 @@
         endif
         open(unit=fid_ctrlfile,file=infile,status='old',err=1900)
         ! Line 1: lon, lat
+        !  Note that input coordinates are always lon,lat.
+        !  If the windfile is projected, travectories will be calcualted on the projected
+        !  grid and reported back as lon,lat or whatever is the projection on line 8
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) inlon, inlat
@@ -836,6 +864,15 @@
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         Comp_projection_line = linebuffer080
         call PJ_Set_Proj_Params(Comp_projection_line)
+        Comp_iprojflag  = PJ_iprojflag
+        Comp_k0         = PJ_k0
+        Comp_Re         = PJ_Re
+        Comp_lam0       = PJ_lam0
+        Comp_lam1       = PJ_lam1
+        Comp_lam2       = PJ_lam2
+        Comp_phi0       = PJ_phi0
+        Comp_phi1       = PJ_phi1
+        Comp_phi2       = PJ_phi2
         if (PJ_ilatlonflag.eq.0)then
           IsLatLon          = .false.
         else
