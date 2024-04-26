@@ -25,7 +25,7 @@
 ! 3.05, 6.10, 9.14, 12.19, 15.24 km; corresponding to 5000, 10000, 20000, 30000,
 ! 40000, and 50000 ft.
 !
-! The full set of options, including streamline vs streakine, projected grids,
+! The full set of options, including streamline vs streakline, projected grids,
 ! etc. are available using a control file.
 !
 ! This program was designed for short-term trajectory plots, so it includes some
@@ -139,7 +139,7 @@
           integer         ,intent(in) :: GFS_FC_TotHours
         end subroutine GetWindFile
         subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
-                                Simtime_in_hours,TrajFlag,ntraj)
+                                Simtime_in_hours,TrajFlag,ntraj,output_interv)
           integer,parameter   :: dp        = 8 ! double precision
           logical      , intent(in)      :: IsGlobal
           real(kind=dp), intent(in)      :: inlon
@@ -151,6 +151,7 @@
           real(kind=dp), intent(in)      :: Simtime_in_hours
           integer      , intent(in)      :: TrajFlag
           integer      , intent(in)      :: ntraj
+          integer      , intent(in)      :: output_interv
         end subroutine Integrate_ConstH_Traj
       END INTERFACE
 
@@ -303,7 +304,7 @@
         write(outlog(io),*)"Now integrating from start point"
       endif;enddo
       call Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
-                                Simtime_in_hours,TrajFlag,ntraj)
+                                Simtime_in_hours,TrajFlag,ntraj,OutStepInc_Minutes)
 
       call MR_Reset_Memory
 
@@ -1497,7 +1498,7 @@
 !##############################################################################
 
       subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
-                                Simtime_in_hours,TrajFlag,ntraj)
+                                Simtime_in_hours,TrajFlag,ntraj,output_interv)
 
       use MetReader,       only : &
          MR_nio,VB,outlog,verbosity_info,&
@@ -1521,6 +1522,7 @@
       real(kind=8), intent(in)      :: Simtime_in_hours
       integer     , intent(in)      :: TrajFlag
       integer     , intent(in)      :: ntraj
+      integer     , intent(in)      :: output_interv
 
       real(kind=8), parameter :: PI        = 3.141592653589793
       real(kind=8), parameter :: DEG2RAD   = 1.7453292519943295e-2
@@ -1808,8 +1810,8 @@
         enddo
 
         t1 = t1 + dt
-        !if(mod(ti,OutStepInc_Minutes).eq.0)then
-        if(mod(ti,60).eq.0)then
+        if(mod(ti,output_interv).eq.0)then
+        !if(mod(ti,60).eq.0)then
           do kk = 1,ntraj
             if(kk.eq.1)write(21,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
             if(kk.eq.2)write(22,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
