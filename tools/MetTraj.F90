@@ -47,7 +47,7 @@
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
-         dx_met_const,dy_met_const,&
+         dx_met_const,dy_met_const,IsLatLon_CompGrid,IsLatLon_MetGrid,&
            MR_Initialize_Met_Grids,&
            MR_Reset_Memory,&
            MR_FileIO_Error_Handler
@@ -205,7 +205,7 @@
       IsGlobal = .false.
       ! Define grid padding based on the integration time
       if(Simtime_in_hours.le.8.0_8)then
-        if(IsLatLon)then
+        if(IsLatLon_CompGrid)then
           ! +-15 in lon ; +-10 in lat
           xwidth = 30.0_4
           ywidth = 20.0_4
@@ -215,7 +215,7 @@
           ywidth = 300.0_4
         endif
       elseif(Simtime_in_hours.le.16.0_8)then
-        if(IsLatLon)then
+        if(IsLatLon_CompGrid)then
           ! +-25 in lon ; +-15 in lat
           xwidth = 50.0_4
           ywidth = 30.0_4
@@ -225,7 +225,7 @@
           ywidth = 600.0_4
         endif
       elseif(Simtime_in_hours.le.24.0_8)then
-        if(IsLatLon)then
+        if(IsLatLon_CompGrid)then
           ! +-35 in lon ; +-20 in lat
           xwidth = 70.0_4
           ywidth = 40.0_4
@@ -235,7 +235,7 @@
           ywidth = 1000.0_4
         endif
       else
-        if(IsLatLon)then
+        if(IsLatLon_CompGrid)then
           ! Full globe
           xwidth = 360.0_4
           ywidth = 180.0_4
@@ -385,6 +385,7 @@
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
          MR_BaseYear,MR_useLeap,MR_useCompH,Comp_lam1,Comp_lam2,&
          Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
+         IsLatLon_CompGrid,IsLatLon_MetGrid,&
            MR_Set_CompProjection,&
            MR_FileIO_Error_Handler
 
@@ -415,7 +416,7 @@
       integer                   ,intent(out) :: FC_freq
       integer                   ,intent(out) :: GFS_Archive_Days
 
-      logical             :: IsLatLon
+      !logical             :: IsLatLon
       integer             :: nargs
       integer             :: iostatus
       integer             :: inlen
@@ -458,7 +459,7 @@
         OutStepInc_Minutes = 60     ! Minutes between output points
         ntraj              = 0      ! Number of trajectories (can be changed on command-line)
         ! OutputLevels : this is allocated once ntraj is locked in
-        IsLatLon           = .true. ! Assume LonLat output coordinates
+        IsLatLon_CompGrid  = .true. ! Assume LonLat output coordinates
         autoflag           = 1      ! This command-line branch necesarily means auto windfile selection
                                     !  with all the hard-wired paths to GFS and NCEP
         FC_freq            = 12     ! Number of hours between GFS package downloads
@@ -874,9 +875,9 @@
         Comp_phi1       = PJ_phi1
         Comp_phi2       = PJ_phi2
         if (PJ_ilatlonflag.eq.0)then
-          IsLatLon          = .false.
+          IsLatLon_CompGrid = .false.
         else
-          IsLatLon          = .true.
+          IsLatLon_CompGrid = .true.
         endif
 
         ! Line 9: iwind iwindformat iformat
@@ -942,7 +943,7 @@
         close(fid_ctrlfile)
       endif
 
-      call MR_Set_CompProjection(IsLatLon,PJ_iprojflag,PJ_lam0,&
+      call MR_Set_CompProjection(IsLatLon_CompGrid,PJ_iprojflag,PJ_lam0,&
                                  PJ_phi0,PJ_phi1,PJ_phi2,&
                                  PJ_k0,PJ_Re)
 
@@ -963,7 +964,7 @@
           tmp_4 = real(OutputLevels(i),kind=4)
           write(outlog(io),*)"                  ",i," at ",tmp_4,"km (",tmp_4*3280.8_4," ft)."
         enddo
-        write(outlog(io),*)"IsLatLon           = ",IsLatLon
+        write(outlog(io),*)"IsLatLon           = ",IsLatLon_CompGrid
         write(outlog(io),*)"iw                 = ",iw
         write(outlog(io),*)"iwf                = ",iwf
         write(outlog(io),*)"igrid              = ",igrid

@@ -3159,11 +3159,13 @@
          MR_iwind,Met_var_NC_names,MR_iMetStep_Now,Met_var_NC_names,&
          istart,ilhalf_nx,irhalf_nx,irhalf_fm_l,temp3d_short,temp2d_int,NCv_datafile,&
          MR_dum2d_met_int,ilhalf_fm_l,jstart,fill_value_sp,Met_var_NC_names,MR_dum2d_met,&
+         x_submet_sp,y_submet_sp,p_fullmet_sp,&
            MR_Temp_US_StdAtm,&
            MR_Z_US_StdAtm,&
            MR_QC_3dvar
 
       use netcdf
+      use,intrinsic :: ieee_arithmetic
 
       implicit none
 
@@ -3797,6 +3799,16 @@
         do i=1,nx_submet
           do j=1,ny_submet
             do k=1,np_met_loc
+              if(ieee_is_nan(MR_dum3d_metP(i,j,k)))then
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR ERROR: Domain contains NaN values'
+                  write(errlog(io),*)'   Please inspect the NWP file for valid doamin.'
+                  write(errlog(io),*)'   i=',i,x_submet_sp(i)
+                  write(errlog(io),*)'   j=',j,y_submet_sp(j)
+                  write(errlog(io),*)'   k=',k,p_fullmet_sp(k)
+                endif;enddo
+                stop 1
+              endif
               if(abs(MR_dum3d_metP(i,j,k)-fill_value_sp).lt.MR_EPS_SMALL.or.&
                      MR_dum3d_metP(i,j,k).lt.0.0_sp)then  ! also flag value as to be reset if it
                                                           ! maps below sea level
