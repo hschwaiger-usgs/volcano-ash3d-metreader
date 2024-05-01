@@ -3507,6 +3507,7 @@
                   "At or after END OF SIM  "
             endif;enddo
           endif
+          if(Found_Last_Step)exit
         enddo
       enddo
 

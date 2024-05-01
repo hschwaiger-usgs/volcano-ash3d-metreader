@@ -2140,10 +2140,6 @@
           endif
           Met_dim_names(1) = trim(adjustl(dimname))
 
-
-          
-
-
           nSTAT = nf90_inq_dimid(ncid,Met_dim_names(1),t_dim_id)
           call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid time")
           nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_tst)
@@ -2191,9 +2187,10 @@
 
            ! Set this (and subsequent) iw to the current number of timesteps
           MR_windfiles_nt_fullmet(iw:) = nt_tst
-          if(nt_tst.gt.nt_fullmet) nt_fullmet = nt_tst
+          !if(nt_tst.gt.nt_fullmet) nt_fullmet = nt_tst
         enddo
-        
+
+        nt_fullmet = maxval(MR_windfiles_nt_fullmet(:))
         if(MR_iwindformat.eq.25)then
           ! Getting current year
           call date_and_time(VALUES=values)
