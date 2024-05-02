@@ -25,7 +25,7 @@
 ! 3.05, 6.10, 9.14, 12.19, 15.24 km; corresponding to 5000, 10000, 20000, 30000,
 ! 40000, and 50000 ft.
 !
-! The full set of options, including streamline vs streakine, projected grids,
+! The full set of options, including streamline vs streakline, projected grids,
 ! etc. are available using a control file.
 !
 ! This program was designed for short-term trajectory plots, so it includes some
@@ -47,7 +47,7 @@
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
-         dx_met_const,dy_met_const,&
+         dx_met_const,dy_met_const,IsLatLon_CompGrid,IsLatLon_MetGrid,&
            MR_Initialize_Met_Grids,&
            MR_Reset_Memory,&
            MR_FileIO_Error_Handler
@@ -88,7 +88,7 @@
 
       real(kind=8)        :: starty
 
-      logical      :: IsGlobal
+      logical             :: IsGlobal
 
       integer :: io                           ! Index for output streams
 
@@ -139,7 +139,7 @@
           integer         ,intent(in) :: GFS_FC_TotHours
         end subroutine GetWindFile
         subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
-                                Simtime_in_hours,TrajFlag,ntraj)
+                                Simtime_in_hours,TrajFlag,ntraj,output_interv)
           integer,parameter   :: dp        = 8 ! double precision
           logical      , intent(in)      :: IsGlobal
           real(kind=dp), intent(in)      :: inlon
@@ -151,6 +151,7 @@
           real(kind=dp), intent(in)      :: Simtime_in_hours
           integer      , intent(in)      :: TrajFlag
           integer      , intent(in)      :: ntraj
+          integer      , intent(in)      :: output_interv
         end subroutine Integrate_ConstH_Traj
       END INTERFACE
 
@@ -204,22 +205,46 @@
       IsGlobal = .false.
       ! Define grid padding based on the integration time
       if(Simtime_in_hours.le.8.0_8)then
-        ! +-15 in lon ; +-10 in lat
-        xwidth = 30.0_4
-        ywidth = 20.0_4
+        if(IsLatLon_CompGrid)then
+          ! +-15 in lon ; +-10 in lat
+          xwidth = 30.0_4
+          ywidth = 20.0_4
+        else
+          ! +-300km in x ; +-300 in y
+          xwidth = 300.0_4
+          ywidth = 300.0_4
+        endif
       elseif(Simtime_in_hours.le.16.0_8)then
-        ! +-25 in lon ; +-15 in lat
-        xwidth = 50.0_4
-        ywidth = 30.0_4
+        if(IsLatLon_CompGrid)then
+          ! +-25 in lon ; +-15 in lat
+          xwidth = 50.0_4
+          ywidth = 30.0_4
+        else
+          ! +-600km in x ; +-600 in y
+          xwidth = 600.0_4
+          ywidth = 600.0_4
+        endif
       elseif(Simtime_in_hours.le.24.0_8)then
-        ! +-35 in lon ; +-20 in lat
-        xwidth = 70.0_4
-        ywidth = 40.0_4
+        if(IsLatLon_CompGrid)then
+          ! +-35 in lon ; +-20 in lat
+          xwidth = 70.0_4
+          ywidth = 40.0_4
+        else
+          ! +-1000km in x ; +-1000 in y
+          xwidth = 1000.0_4
+          ywidth = 1000.0_4
+        endif
       else
-        ! Full globe
-        xwidth = 360.0_4
-        ywidth = 180.0_4
-        IsGlobal = .true.
+        if(IsLatLon_CompGrid)then
+          ! Full globe
+          xwidth = 360.0_4
+          ywidth = 180.0_4
+          IsGlobal = .true.
+        else
+          ! +-1500km in x ; +-1500 in y
+          xwidth = 1500.0_4
+          ywidth = 1500.0_4
+        endif
       endif
 
       if(iw.eq.1)then
@@ -303,7 +328,7 @@
         write(outlog(io),*)"Now integrating from start point"
       endif;enddo
       call Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
-                                Simtime_in_hours,TrajFlag,ntraj)
+                                Simtime_in_hours,TrajFlag,ntraj,OutStepInc_Minutes)
 
       call MR_Reset_Memory
 
@@ -358,12 +383,14 @@
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
-         MR_BaseYear,MR_useLeap,MR_useCompH,&
+         MR_BaseYear,MR_useLeap,MR_useCompH,Comp_lam1,Comp_lam2,&
+         Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
+         IsLatLon_CompGrid,IsLatLon_MetGrid,&
            MR_Set_CompProjection,&
            MR_FileIO_Error_Handler
 
       use projection,      only : &
-         PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
+         PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
            PJ_Set_Proj_Params
 
       implicit none
@@ -389,7 +416,7 @@
       integer                   ,intent(out) :: FC_freq
       integer                   ,intent(out) :: GFS_Archive_Days
 
-      logical             :: IsLatLon
+      !logical             :: IsLatLon
       integer             :: nargs
       integer             :: iostatus
       integer             :: inlen
@@ -432,7 +459,7 @@
         OutStepInc_Minutes = 60     ! Minutes between output points
         ntraj              = 0      ! Number of trajectories (can be changed on command-line)
         ! OutputLevels : this is allocated once ntraj is locked in
-        IsLatLon           = .true. ! Assume LonLat output coordinates
+        IsLatLon_CompGrid  = .true. ! Assume LonLat output coordinates
         autoflag           = 1      ! This command-line branch necesarily means auto windfile selection
                                     !  with all the hard-wired paths to GFS and NCEP
         FC_freq            = 12     ! Number of hours between GFS package downloads
@@ -708,6 +735,9 @@
         endif
         open(unit=fid_ctrlfile,file=infile,status='old',err=1900)
         ! Line 1: lon, lat
+        !  Note that input coordinates are always lon,lat.
+        !  If the windfile is projected, travectories will be calcualted on the projected
+        !  grid and reported back as lon,lat or whatever is the projection on line 8
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) inlon, inlat
@@ -835,10 +865,19 @@
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         Comp_projection_line = linebuffer080
         call PJ_Set_Proj_Params(Comp_projection_line)
+        Comp_iprojflag  = PJ_iprojflag
+        Comp_k0         = PJ_k0
+        Comp_Re         = PJ_Re
+        Comp_lam0       = PJ_lam0
+        Comp_lam1       = PJ_lam1
+        Comp_lam2       = PJ_lam2
+        Comp_phi0       = PJ_phi0
+        Comp_phi1       = PJ_phi1
+        Comp_phi2       = PJ_phi2
         if (PJ_ilatlonflag.eq.0)then
-          IsLatLon          = .false.
+          IsLatLon_CompGrid = .false.
         else
-          IsLatLon          = .true.
+          IsLatLon_CompGrid = .true.
         endif
 
         ! Line 9: iwind iwindformat iformat
@@ -904,7 +943,7 @@
         close(fid_ctrlfile)
       endif
 
-      call MR_Set_CompProjection(IsLatLon,PJ_iprojflag,PJ_lam0,&
+      call MR_Set_CompProjection(IsLatLon_CompGrid,PJ_iprojflag,PJ_lam0,&
                                  PJ_phi0,PJ_phi1,PJ_phi2,&
                                  PJ_k0,PJ_Re)
 
@@ -925,7 +964,7 @@
           tmp_4 = real(OutputLevels(i),kind=4)
           write(outlog(io),*)"                  ",i," at ",tmp_4,"km (",tmp_4*3280.8_4," ft)."
         enddo
-        write(outlog(io),*)"IsLatLon           = ",IsLatLon
+        write(outlog(io),*)"IsLatLon           = ",IsLatLon_CompGrid
         write(outlog(io),*)"iw                 = ",iw
         write(outlog(io),*)"iwf                = ",iwf
         write(outlog(io),*)"igrid              = ",igrid
@@ -1125,7 +1164,7 @@
        !   This will be used to determine if gfs or NCEP winds are to be used
       call date_and_time(date,time2,zone,values)
       read(zone,'(i3)') timezone
-        ! FIND TIME IN UTC
+        ! Find time in UTC
       StartHour = real(values(5)-timezone,kind=8) + &
                   real(values(6)/60.0_8,kind=8)
         ! find time in hours since BaseYear
@@ -1497,7 +1536,7 @@
 !##############################################################################
 
       subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
-                                Simtime_in_hours,TrajFlag,ntraj)
+                                Simtime_in_hours,TrajFlag,ntraj,output_interv)
 
       use MetReader,       only : &
          MR_nio,VB,outlog,verbosity_info,&
@@ -1521,6 +1560,7 @@
       real(kind=8), intent(in)      :: Simtime_in_hours
       integer     , intent(in)      :: TrajFlag
       integer     , intent(in)      :: ntraj
+      integer     , intent(in)      :: output_interv
 
       real(kind=8), parameter :: PI        = 3.141592653589793
       real(kind=8), parameter :: DEG2RAD   = 1.7453292519943295e-2
@@ -1808,8 +1848,8 @@
         enddo
 
         t1 = t1 + dt
-        !if(mod(ti,OutStepInc_Minutes).eq.0)then
-        if(mod(ti,60).eq.0)then
+        if(mod(ti,output_interv).eq.0)then
+        !if(mod(ti,60).eq.0)then
           do kk = 1,ntraj
             if(kk.eq.1)write(21,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
             if(kk.eq.2)write(22,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
