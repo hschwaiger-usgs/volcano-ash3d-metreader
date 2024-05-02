@@ -41,6 +41,14 @@ echo "------------------------------------------------------------"
 t0=`date`
 
 case ${NAM} in
+ 181)
+  # Caribbean 0.108 degrees
+  HourMax=36
+  HourStep=3
+  #        nam.t00z.hawaiinest.hiresf00.tm00.grib2
+  FilePre="nam.t${FChour}z.afwaca"
+  FilePost=".tm00.grib2"
+  ;;
  196)
   # HI 2.5 km
   HourMax=36
