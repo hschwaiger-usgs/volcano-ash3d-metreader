@@ -39,6 +39,9 @@ NAM=$1
 FC=$2
 
 case ${NAM} in
+ 181)
+  echo "Caribbean 0.108 deg"
+  ;;
  196)
   echo "HI 2.5 km"
   ;;
