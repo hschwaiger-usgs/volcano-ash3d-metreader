@@ -11,7 +11,7 @@ other programs in addition to Ash3d, this interface to NWP files is provided
 as a separate repository that can either be compiled as a library or simply
 compiled directly with other source code.
 
-NWP data are generally made available by agencies (NCEP, NOAA, NASA, etc.)
+NWP data are generally made available by agencies (NCEP, NOAA, NASA, ECMWF, etc.)
 in a variety of formats (NetCDF, GRIB, ASCII); each product having
 its own data structure, naming convention, units, etc.  This library 
 isolates the calling program from the peculiarities of interfacing with

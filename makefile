@@ -222,6 +222,7 @@ install:
 	install -m 644 *.mod $(INSTALLDIR)/include/
 	install -m 755 $(EXEC) $(INSTALLDIR)/bin/
 	install -m 755 $(AUTOSCRIPTS) $(INSTALLDIR)/bin/autorun_scripts/
+	install -m 755 tools/GMT_plot_traj.sh $(INSTALLDIR)/bin/
 	install -m 644 share/volc_NOVAC.txt $(INSTALLDIR)/share/volc_NOVAC.txt
 
 uninstall:

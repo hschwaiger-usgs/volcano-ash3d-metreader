@@ -24,7 +24,7 @@
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_production,&
          IsLatLon_MetGrid,IsGlobal_MetGrid,IsRegular_MetGrid,isGridRelative,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         MR_iversion,MR_Reannalysis,Met_gridtype
+         MR_iversion,MR_Reannalysis,Met_gridtype,Met_proj4
 
       implicit none
 
@@ -54,13 +54,15 @@
         !      3246.974 4372.859
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 262.5 38.5 38.5 38.5 6371.229    #Proj flags and params  
+        ! -JL262.5/38.5/38.5/38.5/12c
 
+        Met_proj4 = "proj +proj=lcc +lon_0=262.5 +lat_0=38.5 +lat_1=38.5 +lat_2=38.5 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -90,13 +92,15 @@
         !      5661.26  4344.51
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6367.47 : earth radius for spherical earth
         ! 0 4 -107.0 50.0 50.0 50.0 6367.47    #Proj flags and params  
+        ! -JL-107/50/50/50/12c
 
+        Met_proj4 = "proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6367.47"
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -116,6 +120,7 @@
          ! Not an NCEP grid
          !  This grid is for the WRF runs (must be read from file)
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.   ! this might be reset
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -127,6 +132,7 @@
          ! Not an NCEP grid
          !  This grid is for the NASA Np
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -138,6 +144,7 @@
          ! Not an NCEP grid
          !  This grid is for the NASA GEOS-5 Cp or MERRA-2
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -149,6 +156,7 @@
          ! Not an NCEP grid
          !  This grid is for the CAM files
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -160,6 +168,7 @@
          ! Not an NCEP grid
          !  This grid is for the AFWA files
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -171,6 +180,7 @@
          ! Not an NCEP grid
          !  This grid is for the ECMWF ERA-20c
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .false.
@@ -182,6 +192,7 @@
          ! Not an NCEP grid
          !  This grid is for the ECMWF ERA5
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .false.
@@ -192,6 +203,7 @@
       elseif(igrid.eq.1027)then
          ! Not an NCEP grid
          !  This grid is for the NOAA Reanalysis
+        Met_proj4 = "LL"
         if(MR_iversion.eq.2)then
           !v2
           IsLatLon_MetGrid  = .true.
@@ -211,6 +223,7 @@
        ! Used by NCEP DOE reanalysis, NCEP-1
        !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid002.gif
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -223,6 +236,7 @@
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID3
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid003.gif
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -234,6 +248,7 @@
         ! Used by GFS forecast
          !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid003.gif
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -246,6 +261,7 @@
           !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID45
           !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid045.gif
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -293,12 +309,14 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 1         : polar stereographic projection
-        !  lam0     = -150.0    : longitude of projection point
+        !  lam0        = -150.0    : longitude of projection point
         !  phi0        =  90.0     : latitude of projection point
         !  k0          =  0.933    : scale factor at projection point
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -150.0 90.0 0.933 6371.229    #Proj flags and params
+        ! -JS-150/90/12c
 
+        Met_proj4 = "proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -331,12 +349,14 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 1         : polar stereographic projection
-        !  lam0     = -105.0    : longitude of projection point
+        !  lam0        = -105.0    : longitude of projection point
         !  phi0        =  90.0     : latitude of projection point
         !  k0          =  0.933    : scale factor at projection point
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -105.0 90.0 0.933 6371.229    #Proj flags and params
+        ! -JS-105/90/12c
 
+        Met_proj4 = "proj +proj=stere  +lon_0=255  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -355,6 +375,7 @@
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID170
         ! This is used by the ERA-Itrm data
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .false.
@@ -366,6 +387,7 @@
         ! HI N.Pacific 
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID182
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -377,6 +399,7 @@
        ! Used by GFS forecast (0.25)
        !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID193
 
+        Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
@@ -419,7 +442,9 @@
         ! 206.131 23.088
         !   800.00  2480.60
         ! 0 5 198.475 20.0 0.933 6371.229    #Proj flags and params
+        ! -JM198.475/20.0/12c
 
+        Met_proj4 = "proj +proj=merc  +lat_ts=20.0 +lon_0=198.475 +R=6371.229"
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -472,12 +497,14 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 1         : polar stereographic projection
-        !  lam0     = -150.0    : longitude of projection point
+        !  lam0        = -150.0    : longitude of projection point
         !  phi0        =  90.0     : latitude of projection point
         !  k0          =  0.933    : scale factor at projection point
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -150.0 90.0 0.933 6371.229    #Proj flags and params
+        ! -JS-150/90/12c
 
+        Met_proj4 = "proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -507,13 +534,15 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params                               
+        ! -JL265/25/25/25/12c
 
+        Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -544,13 +573,15 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params  
+        ! -JL265/25/25/25/12c
 
+        Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -581,12 +612,14 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 1         : polar stereographic projection
-        !  lam0     = -135.0    : longitude of projection point
+        !  lam0        = -135.0    : longitude of projection point
         !  phi0        =  90.0     : latitude of projection point
         !  k0          =  0.933    : scale factor at projection point
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -135.0 90.0 0.933 6371.229    #Proj flags and params
+        ! -JS-135/90/12c
 
+        Met_proj4 = "proj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -615,13 +648,15 @@
         !      3246.974 4372.859
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params  
+        ! -JL-107/50/50/50/12c
 
+        Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -652,13 +687,15 @@
         !      5664.457 4347.222
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 -107.0 50.0 50.0 50.0 6371.229    #Proj flags and params  
+        ! -JL-107/50/50/50/12c
 
+        Met_proj4 = "proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -688,13 +725,15 @@
         !      3250.81  4368.72
         !  latlonflag  = 0         : projected grid
         !  projflag    = 4         : Lambert conformal conic
-        !  lam0     = 265.0     : longitude of projection point
+        !  lam0        = 265.0     : longitude of projection point
         !  phi0        =  25.0     : latitude of projection point
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params  
+        ! -JL265/25/25/25/12c
 
+        Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -725,12 +764,14 @@
         !
         !  latlonflag  = 0         : projected grid
         !  projflag    = 1         : polar stereographic projection
-        !  lam0     = -135.0    : longitude of projection point
+        !  lam0        = -135.0    : longitude of projection point
         !  phi0        =  90.0     : latitude of projection point
         !  k0          =  0.933    : scale factor at projection point
         !  radius      =  6371.229 : earth radius for spherical earth
         ! 0 1 -135.0 90.0 0.933 6371.229    #Proj flags and params
+        ! -JS-135/90/12c
 
+        Met_proj4 = "proj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.933 +R=6371.229"
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
@@ -799,7 +840,6 @@
          y_inverted,wrapgrid,UseFullMetGrid,ny_fullmet,ny_comp,nx_comp,nx_fullmet,&
          irhalf_fm_r,IsLatLon_MetGrid,IsPeriodic_CompGrid,jend,Map_Case,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         !x_in_iwf25_sp,amap_iwf25,imap_iwf25,y_in_iwf25_sp,&
          MR_useCompH,MR_useCompP,np_fullmet,nz_comp
 
       use projection,      only : &
@@ -819,10 +859,9 @@
       real(kind=sp) :: xLL,yLL
       real(kind=sp) :: xUR,yUR
 
-      !real(kind=sp) :: dely_sp,x_loc,y_loc,xc_sp,yc_sp,xfrac_sp,yfrac_sp
-      !integer :: ilat,ilon,ix1,ix2,iy1,iy2
-
-      real(kind=dp) :: ptlon,ptlat,xin,yin,de_x,de_y
+      real(kind=dp) :: ptlon,ptlat,xin,yin
+      real(kind=dp) :: de_x,de_y,dn_x,dn_y,dw_x,dw_y,ds_x,ds_y,ddeg
+      real(kind=dp) :: ate,atw,atn,ats
 
       real(kind=sp) :: xc,xfrac,yc,yfrac,px,py
       real(kind=sp) :: x_start_sub,y_start_sub
@@ -1372,8 +1411,7 @@
                                                   ! Met grid and the earth grid; used for rotating
                                                   ! grid velocities to Earth-Relative, or in the
                                                   ! special NARR case, rotating ER to GR
-
-          !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + ip*(nc_nxmax*nc_nymax)
+        ddeg = 1.0_dp/60.0_dp
         do i=1,nx_submet
           do j=1,ny_submet
               ! Get lon/lat of point in question
@@ -1383,13 +1421,36 @@
                           Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
                            ptlon,ptlat)
               ! Get projected coordinate of de at the current point
-            call PJ_proj_for(ptlon+1.0_dp/60.0_dp,ptlat, Met_iprojflag, &
+            call PJ_proj_for(ptlon+ddeg,ptlat, Met_iprojflag, &
                        Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
                        xout,yout)
             de_x = xout-xin
             de_y = yout-yin
-              ! Now recover the angle between de and x (of map grid)
-            theta_Met(i,j) = atan(de_y/de_x)
+            ate  = atan2(de_y,de_x)
+              ! Get projected coordinate of dw at the current point
+            call PJ_proj_for(ptlon-ddeg,ptlat, Met_iprojflag, &
+                       Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                       xout,yout)
+            dw_x = xout-xin
+            dw_y = yout-yin
+            atw  = atan2(dw_y,dw_x) - 3.141592653589793_dp
+              ! Get projected coordinate of dn at the current point
+            call PJ_proj_for(ptlon,ptlat+ddeg, Met_iprojflag, &
+                       Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                       xout,yout)
+            dn_x = xout-xin
+            dn_y = yout-yin
+            atn  = atan2(dn_y,dn_x) - 3.141592653589793_dp/2.0_dp
+              ! Get projected coordinate of ds at the current point
+            call PJ_proj_for(ptlon,ptlat-ddeg, Met_iprojflag, &
+                       Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                       xout,yout)
+            ds_x = xout-xin
+            ds_y = yout-yin
+            ats  = atan2(ds_y,ds_x) + 3.141592653589793_dp/2.0_dp
+              ! Now recover the angle between angle of rotation as the average angle
+              ! for all of the coordinate directions
+            theta_Met(i,j) = (ate + atw + atn + ats)*0.25_dp
           enddo
         enddo
       endif
@@ -1420,13 +1481,37 @@
                             Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
                              ptlon,ptlat)
                 ! Get projected coordinate of de at the current point
-              call PJ_proj_for(ptlon+1.0_dp/60.0_dp,ptlat, Comp_iprojflag, &
+              call PJ_proj_for(ptlon+ddeg,ptlat, Comp_iprojflag, &
                          Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
                          xout,yout)
               de_x = xout-xin
               de_y = yout-yin
-                ! Again, we want the angle between de and x (but now, of comp grid)
-              theta_Comp(i,j) = atan(de_y/de_x)
+              ate  = atan2(de_y,de_x)
+                ! Get projected coordinate of dw at the current point
+              call PJ_proj_for(ptlon-ddeg,ptlat, Comp_iprojflag, &
+                         Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
+                         xout,yout)
+              dw_x = xout-xin
+              dw_y = yout-yin
+              atw  = atan2(dw_y,dw_x) - 3.141592653589793_dp
+                ! Get projected coordinate of dn at the current point
+              call PJ_proj_for(ptlon,ptlat+ddeg, Comp_iprojflag, &
+                         Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
+                         xout,yout)
+              dn_x = xout-xin
+              dn_y = yout-yin
+              atn  = atan2(dn_y,dn_x) - 3.141592653589793_dp/2.0_dp
+                ! Get projected coordinate of ds at the current point
+              call PJ_proj_for(ptlon,ptlat-ddeg, Comp_iprojflag, &
+                         Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
+                         xout,yout)
+              ds_x = xout-xin
+              ds_y = yout-yin
+              ats  = atan2(ds_y,ds_x) + 3.141592653589793_dp/2.0_dp
+
+                ! Again recover the angle between angle of rotation as the average angle
+                ! for all of the coordinate directions (but now, of comp grid)
+              theta_Comp(i,j) = (ate + atw + atn + ats)*0.25_dp
             enddo
           enddo
         endif
@@ -1446,93 +1531,6 @@
       !  grid.
       allocate(MR_geoH_metP_last(nx_submet,ny_submet,np_fullmet))
       allocate(MR_geoH_metP_next(nx_submet,ny_submet,np_fullmet))
-
-!      if(MR_iwindformat.eq.25)then
-!        ! The following is only needed if we are reading 2d variables from NCEP
-!        ! wind files, but we will set up the grids regardless as a precaution
-!          ! Here are the weights starting with LL then counter-clockwise
-!        allocate(amap_iwf25(nx_submet,ny_submet,4))
-!        amap_iwf25 = 0.0_sp
-!        !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + sp*(as_nxmax*as_nymax*4)
-!          ! Here is the x1,x2,y1,y2 indices
-!        allocate(imap_iwf25(nx_submet,ny_submet,4))
-!        imap_iwf25 = 0
-!        !Tot_Bytes_on_Heap = Tot_Bytes_on_Heap + sp*(as_nxmax*as_nymax*4)
-!
-!        ! These should be read directly, but for now, just hardcode it.        
-!        do i = 1,192
-!          x_in_iwf25_sp(i)=(i-1)*1.875_sp
-!        enddo
-!        y_in_iwf25_sp(1:94) = (/ &
-!         88.542_sp,  86.6531_sp,  84.7532_sp,  82.8508_sp,  80.9473_sp,   79.0435_sp,  77.1394_sp, 75.2351_sp, &
-!        73.3307_sp,  71.4262_sp,  69.5217_sp,  67.6171_sp,  65.7125_sp,   63.8079_sp,  61.9033_sp, 59.9986_sp, &
-!        58.0939_sp,  56.1893_sp,  54.2846_sp,  52.3799_sp,  50.4752_sp,   48.5705_sp,  46.6658_sp, 44.7611_sp, &
-!        42.8564_sp,  40.9517_sp,   39.047_sp,  37.1422_sp,  35.2375_sp,   33.3328_sp,  31.4281_sp, 29.5234_sp, &
-!        27.6186_sp,  25.7139_sp,  23.8092_sp,  21.9044_sp,  19.9997_sp,    18.095_sp,  16.1902_sp, 14.2855_sp, &
-!        12.3808_sp, 10.47604_sp,  8.57131_sp,  6.66657_sp,  4.76184_sp,    2.8571_sp, 0.952368_sp, &
-!      -0.952368_sp,  -2.8571_sp, -4.76184_sp, -6.66657_sp, -8.57131_sp, -10.47604_sp, -12.3808_sp, &
-!       -14.2855_sp, -16.1902_sp,  -18.095_sp, -19.9997_sp, -21.9044_sp,  -23.8092_sp, -25.7139_sp, &
-!       -27.6186_sp, -29.5234_sp, -31.4281_sp, -33.3328_sp, -35.2375_sp,  -37.1422_sp,  -39.047_sp, &
-!       -40.9517_sp, -42.8564_sp, -44.7611_sp, -46.6658_sp, -48.5705_sp,  -50.4752_sp, -52.3799_sp, &
-!       -54.2846_sp, -56.1893_sp, -58.0939_sp, -59.9986_sp, -61.9033_sp,  -63.8079_sp, -65.7125_sp, &
-!       -67.6171_sp, -69.5217_sp, -71.4262_sp, -73.3307_sp, -75.2351_sp,  -77.1394_sp, -79.0435_sp, &
-!       -80.9473_sp, -82.8508_sp, -84.7532_sp, -86.6531_sp,  -88.542_sp /)
-!
-!        do ilon = 1,nx_submet
-!          x_loc = max(0.0_sp,x_submet_sp(ilon))
-!          xfrac_sp = -1.0_sp
-!          xc_sp    = -1.0_sp
-!          do i = 1,191
-!            if(max(0.0_sp,x_in_iwf25_sp(i)).le.x_loc.and.x_in_iwf25_sp(i+1).gt.x_loc)then
-!              ix1 = i
-!              ix2 = i+1
-!              xfrac_sp = (x_loc - x_in_iwf25_sp(i))/1.875_sp
-!              xc_sp = 1.0_sp - xfrac_sp
-!              exit ! leave do loop
-!            endif
-!          enddo
-!          if(xfrac_sp.lt.0.0_sp.or.xc_sp.lt.0.0_sp)then
-!            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-!              write(errlog(io),*)"MR ERROR: i maps out of grid: ",i
-!            endif;enddo
-!            stop 1
-!          endif
-!
-!          do ilat = 1,ny_submet
-!            y_loc = y_submet_sp(ilat)
-!            write(*,*)ilat,ny_submet,y_loc
-!            yfrac_sp = -1.0_sp
-!            yc_sp    = -1.0_sp
-!            do j = 94,2,-1
-!              if(y_in_iwf25_sp(j).le.y_loc.and.y_in_iwf25_sp(j-1).gt.y_loc)then
-!                iy1 = j
-!                iy2 = j-1
-!                dely_sp = y_in_iwf25_sp(j-1)-y_in_iwf25_sp(j)
-!                yfrac_sp = (y_loc - y_in_iwf25_sp(j))/dely_sp
-!                yc_sp = 1.0_sp - yfrac_sp
-!                exit ! leave do loop
-!              endif
-!            enddo
-!            if(yfrac_sp.lt.0.0_sp.or.yc_sp.lt.0.0_sp)then
-!              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-!                write(errlog(io),*)"MR ERROR: j maps out of grid: ",j
-!              endif;enddo
-!              stop 1
-!            endif
-!
-!            imap_iwf25(ilon,ilat,1)=ix1
-!            imap_iwf25(ilon,ilat,2)=ix2
-!            imap_iwf25(ilon,ilat,3)=iy1
-!            imap_iwf25(ilon,ilat,4)=iy2
-!            amap_iwf25(ilon,ilat,1)=xc_sp*yc_sp
-!            amap_iwf25(ilon,ilat,2)=xfrac_sp*yc_sp
-!            amap_iwf25(ilon,ilat,3)=xfrac_sp*yfrac_sp
-!            amap_iwf25(ilon,ilat,4)=yfrac_sp*xc_sp
-!
-!          enddo
-!        enddo
-!
-!      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -1567,8 +1565,8 @@
          CompPoint_on_subMet_idx,bilin_map_wgt,CompPoint_X_on_Met_sp,CompPoint_Y_on_Met_sp,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
          Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
-         y_comp_sp,x_comp_sp,nx_comp,ny_comp,IsLatLon_MetGrid,IsLatLon_CompGrid,Map_Case
-         
+         y_comp_sp,x_comp_sp,nx_comp,ny_comp,IsLatLon_MetGrid,IsLatLon_CompGrid,Map_Case, &
+         Met_proj4,Comp_proj4
 
       use projection,      only : &
            PJ_Set_Proj_Params,&
@@ -1585,7 +1583,7 @@
       integer :: i,j
       real(kind=dp) :: x_in ,y_in
       real(kind=dp) :: x_out,y_out
-
+      character(len=8) :: fltstr
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
@@ -1688,6 +1686,68 @@
           endif !Comp_iprojflag
         endif !Met_iprojflag.ne.Comp_iprojflag
       endif ! Met and Comp projected
+
+      ! Write out the proj4 line for the projection of the computational grid.
+      ! This can be used in post-processing, if desired
+      if(Map_Case.eq.1)then
+        ! (1) Both Comp Grid and Met grids are Lat/Lon
+        Comp_proj4 = "LL"
+      elseif(Map_Case.eq.2)then
+        ! (2) Both Comp Grid and Met grids are the same projection
+        Comp_proj4 = Met_proj4
+      elseif(Map_Case.eq.4)then
+        ! (4) Met Grid is projected and Comp grid is Lat/Lon
+        Comp_proj4 = "LL"
+      elseif(Map_Case.eq.5.or.Map_Case.eq.5)then
+        ! (3) Met Grid is Lat/Lon and Comp grid is projected
+        ! (5) Met Grid and Comp grids have different projections
+        ! In these cases, we need to build the proj4 line.
+        if(Comp_iprojflag.eq.0)then
+          ! Both Comp and Met are non-geographic, Cartesian grids
+          Comp_proj4 = "XY"
+        elseif(Comp_iprojflag.eq.1)then
+          ! Polar stereographic
+          ! proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229
+          write(fltstr,'(f6.1)')Comp_lam0
+          Comp_proj4 = "proj +proj=stere  +lon_0=" // trim(adjustl(fltstr))
+          write(fltstr,'(f5.1)')Comp_phi0
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +lat_0=" // trim(adjustl(fltstr))
+          write(fltstr,'(f5.3)')Comp_k0
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +k_0=" // trim(adjustl(fltstr))
+          write(fltstr,'(f8.3)')Comp_Re
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +R=" // trim(adjustl(fltstr))
+        elseif(Comp_iprojflag.eq.2)then
+          ! Albers Equal Area
+!          Comp_proj4 = "proj +proj=aea +lat_1=" // real(Comp_phi0,kind=sp) // &
+!                                     " +lat_2=" // real(Comp_phi2,kind=sp)
+          write(Comp_proj4,2020)Comp_phi0,Comp_phi2
+2020      format('proj +proj=aea +lat_1=',f5.1,' +lat_2=',f5.1)
+        elseif(Comp_iprojflag.eq.3)then
+          ! UTM
+          stop 1
+        elseif(Comp_iprojflag.eq.4)then
+          ! Lambert conformal conic (NARR, NAM218, NAM221)
+          ! proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6371.229
+          write(fltstr,'(f6.1)')Comp_lam0
+          Comp_proj4 = "proj +proj=lcc  +lon_0=" // trim(adjustl(fltstr))
+          write(fltstr,'(f5.1)')Comp_phi0
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +lat_0=" // trim(adjustl(fltstr))
+          write(fltstr,'(f5.1)')Comp_phi1
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +lat_1=" // trim(adjustl(fltstr))
+          write(fltstr,'(f5.1)')Comp_phi2
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +lat_2=" // trim(adjustl(fltstr))
+          write(fltstr,'(f8.3)')Comp_Re
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +R=" // trim(adjustl(fltstr))
+        elseif(Comp_iprojflag.eq.5)then
+          ! Mercator (NAM196)
+          write(fltstr,'(f5.1)')Comp_phi0
+          Comp_proj4 = "proj +proj=merc  +lat_ts=" // trim(adjustl(fltstr))
+          write(fltstr,'(f6.1)')Comp_lam0
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +lon_0=" // trim(adjustl(fltstr))
+          write(fltstr,'(f8.3)')Comp_Re
+          Comp_proj4 = trim(adjustl(Comp_proj4)) // " +R=" // trim(adjustl(fltstr))
+        endif
+      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         if(Map_Case.eq.1)then
@@ -1948,7 +2008,6 @@
       implicit none
 
       integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
 
       integer                     ,intent(in)  :: nzm
       real(kind=sp),dimension(nzm),intent(in)  :: z_met
@@ -1979,7 +2038,6 @@
         ! For each comp point, check which met interval it is in, starting from
         ! the last interval found
         do km = km_interv,nzm-1
-        !do km = 1,nzm-1
           if(z1.ge.z_met(km).and.z1.le.z_met(km+1))then
             found_interv = .true.
             km_interv = km
