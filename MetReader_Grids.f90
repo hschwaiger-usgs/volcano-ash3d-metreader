@@ -1998,7 +1998,6 @@
 !
 !##############################################################################
 
-
       subroutine MR_Regrid_P2H_linear(nzm,z_met ,var_met, &
                                       nzc,z_comp,var_comp)
 
