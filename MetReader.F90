@@ -598,19 +598,6 @@
         ! Variables needed by netcdf reader
       real(kind=sp),public :: iwf25_scale_facs(MR_MAXVARS)
       real(kind=sp),public :: iwf25_offsets(MR_MAXVARS)
-!      real(kind=sp),public :: x_in_iwf25_sp(192)
-!      real(kind=sp),public :: y_in_iwf25_sp(94)
-        ! Here is the mapping for bilinear weighting coefficients (amap) and
-        ! indices (imap) from the 1.875-deg 2d grid to the 2.5-deg 
-!#ifdef USEPOINTERS
-!      real(kind=sp)   ,dimension(:,:,:),pointer,public :: amap_iwf25      => null()
-!      integer         ,dimension(:,:,:),pointer,public :: imap_iwf25      => null()
-!      integer(kind=sp),dimension(:,:,:),pointer,public :: tmpsurf2d_short => null()
-!#else
-!      real(kind=sp)   ,dimension(:,:,:),allocatable,public :: amap_iwf25
-!      integer         ,dimension(:,:,:),allocatable,public :: imap_iwf25
-!      integer(kind=sp),dimension(:,:,:),allocatable,public :: tmpsurf2d_short
-!#endif
 
       integer,public :: istart
       integer,public :: iend
@@ -748,8 +735,6 @@
        if(associated(CompPoint_Y_on_Met_sp         ))deallocate(CompPoint_Y_on_Met_sp)
        if(associated(CompPoint_on_subMet_idx       ))deallocate(CompPoint_on_subMet_idx)
        if(associated(bilin_map_wgt                 ))deallocate(bilin_map_wgt)
-!       if(associated(amap_iwf25                    ))deallocate(amap_iwf25)
-!       if(associated(imap_iwf25                    ))deallocate(imap_iwf25)
        if(associated(s_comp_sp                     ))deallocate(s_comp_sp)
        if(associated(MR_Topo_met                   ))deallocate(MR_Topo_met)
        if(associated(MR_jacob_met                  ))deallocate(MR_jacob_met)
@@ -759,7 +744,6 @@
        if(associated(MR_v_ER_metP                  ))deallocate(MR_v_ER_metP)
        if(associated(theta_Met                     ))deallocate(theta_Met)
        if(associated(theta_Comp                    ))deallocate(theta_Comp)
-!       if(associated(tmpsurf2d_short               ))deallocate(tmpsurf2d_short)
        if(associated(temp1d_sp                     ))deallocate(temp1d_sp)
        if(associated(temp2d_sp                     ))deallocate(temp2d_sp)
        if(associated(temp3d_sp                     ))deallocate(temp3d_sp)
@@ -839,8 +823,6 @@
        if(allocated(CompPoint_Y_on_Met_sp         ))deallocate(CompPoint_Y_on_Met_sp)
        if(allocated(CompPoint_on_subMet_idx       ))deallocate(CompPoint_on_subMet_idx)
        if(allocated(bilin_map_wgt                 ))deallocate(bilin_map_wgt)
-!       if(allocated(amap_iwf25                    ))deallocate(amap_iwf25)
-!       if(allocated(imap_iwf25                    ))deallocate(imap_iwf25)
        if(allocated(s_comp_sp                     ))deallocate(s_comp_sp)
        if(allocated(MR_Topo_met                   ))deallocate(MR_Topo_met)
        if(allocated(MR_jacob_met                  ))deallocate(MR_jacob_met)
@@ -850,7 +832,6 @@
        if(allocated(MR_v_ER_metP                  ))deallocate(MR_v_ER_metP)
        if(allocated(theta_Met                     ))deallocate(theta_Met)
        if(allocated(theta_Comp                    ))deallocate(theta_Comp)
-!       if(allocated(tmpsurf2d_short               ))deallocate(tmpsurf2d_short)
        if(allocated(temp1d_sp                     ))deallocate(temp1d_sp)
        if(allocated(temp2d_sp                     ))deallocate(temp2d_sp)
        if(allocated(temp3d_sp                     ))deallocate(temp3d_sp)
@@ -3147,7 +3128,18 @@
 !##############################################################################
 !
 !     MR_Set_SigmaAlt_Scaling
-
+!
+!     This subroutine sets local copies of the necessary variables for vertical
+!     grid modifications when including topography. No action is taken unless
+!     the variable MR_useTopo is set to true. MR_ZScaling_ID must also be set:
+!       MR_ZScaling = 0 :: no topography, lower boundary is s=z=0 everywhere
+!       MR_ZScaling = 1 :: grid is altitude shifted; s = z-zsurf
+!       MR_ZScaling = 2 :: grid is altitude scaled;  s = (z-zsurf)/(ztop-zsurf)
+!     Takes as input :: vertical grid specification
+!     Sets: s_comp_sp
+!           MR_jacob_comp
+!           MR_jacob_met
+!
 !##############################################################################
 
       subroutine MR_Set_SigmaAlt_Scaling(nz,dums_sp)
@@ -3661,7 +3653,7 @@
         stephour = MR_MetStep_Hour_since_baseyear(istep)
       enddo
 
-!     MAKE SURE THE WIND MODEL TIME WINDOW COVERS THE ENTIRE SIMULATION TIME
+      ! Make sure the wind model time window covers the entire simulation time
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then  
         write(outlog(io),99)
       endif;enddo
@@ -3841,6 +3833,7 @@
 !     Takes as input :: ivar  :: specifies which variable to read
 !                       istep :: specified the met step
 !     Sets: dum3d_metP
+!
 !##############################################################################
 
       subroutine MR_Read_3d_MetP_Variable(ivar,istep)
@@ -3904,6 +3897,7 @@
 !                       istep     :: specified the met step
 !     Reads : MR_dum3d_metP
 !     Sets  : MR_dum3d_metH
+!
 !##############################################################################
 
       subroutine MR_Read_3d_MetH_Variable(ivar,istep)
@@ -4024,21 +4018,6 @@
           call MR_Regrid_P2H_linear(np_fullmet+2, z_col_metP,       var_col_metP, & 
                                     nz_comp,      dumVertCoord_sp,  var_col_metH)
           MR_dum3d_metH(i,j,:) = var_col_metH
-
-!          if(MR_Topo_met(i,j).gt.1.3.and.j.gt.2)then
-!            write(*,*)i,j,maxval(MR_Topo_met),MR_Topo_met(i,j)
-!            write(*,*)"-------------------------"
-!            write(*,*)var_col_metP
-!            write(*,*)"-------------------------"
-!            write(*,*)z_col_metP
-!            write(*,*)"-------------------------"
-!            write(*,*)dumVertCoord_sp
-!            write(*,*)"-------------------------"
-!            write(*,*)var_col_metH
-!            write(*,*)"-------------------------"
-!            stop 44
-!          endif
-
 
         enddo ! j
       enddo  ! i
@@ -5278,10 +5257,6 @@
                  dum_array_sp,             &
                  fill_val_sp,              &
                  bc_low_sp, bc_high_sp)
-
-
-      !integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
 
       integer               ,intent(in)    :: ivar
       integer               ,intent(in)    :: nx_max,ny_max,nz1_max
