@@ -1,7 +1,5 @@
 !##############################################################################
-!##############################################################################
-!##############################################################################
-
+!
 !     MR_Read_Met_DimVars_netcdf
 !     MR_Get_WRF_grid
 !     MR_Read_Met_Times_netcdf
@@ -453,8 +451,8 @@
         idx = Met_var_zdim_idx(1)
         p_fullmet_sp(1:nlevs_fullmet(idx)) = levs_fullmet_sp(idx,1:nlevs_fullmet(idx))
 
-        ! HFS: This is where we should put the check on variable names, but for iwind=5, we
-        !      need to open each file for each variable individually
+        !  This is where we should put the check on variable names, but for iwind=5, we
+        !  need to open each file for each variable individually
 
       else  ! MR_iwind not equal to 5
         !--------------------------------------------------------------------------
@@ -1232,8 +1230,6 @@
       end subroutine MR_Read_Met_DimVars_netcdf
 
 !##############################################################################
-
-
 
 !##############################################################################
 !
@@ -3154,7 +3150,7 @@
          y_inverted,MR_dum3d_metP,MR_EPS_SMALL,nx_submet,Met_var_conversion_factor,&
          temp2d_sp,nx_submet,ny_submet,np_fullmet,MR_iwindformat,&
          MR_iwind,Met_var_NC_names,MR_iMetStep_Now,Met_var_NC_names,&
-         istart,ilhalf_nx,irhalf_nx,irhalf_fm_l,temp3d_short,temp2d_int,NCv_datafile,&
+         istart,ilhalf_nx,irhalf_nx,irhalf_fm_l,temp3d_short,temp2d_int,&
          MR_dum2d_met_int,ilhalf_fm_l,jstart,fill_value_sp,Met_var_NC_names,MR_dum2d_met,&
          x_submet_sp,y_submet_sp,p_fullmet_sp,&
            MR_Temp_US_StdAtm,&

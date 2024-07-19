@@ -47,7 +47,7 @@
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
-         dx_met_const,dy_met_const,IsLatLon_CompGrid,IsLatLon_MetGrid,&
+         dx_met_const,dy_met_const,IsLatLon_CompGrid,&
            MR_Initialize_Met_Grids,&
            MR_Reset_Memory,&
            MR_FileIO_Error_Handler
@@ -385,7 +385,7 @@
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
          MR_BaseYear,MR_useLeap,MR_useCompH,Comp_lam1,Comp_lam2,&
          Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
-         IsLatLon_CompGrid,IsLatLon_MetGrid,&
+         IsLatLon_CompGrid,&
            MR_Set_CompProjection,&
            MR_FileIO_Error_Handler
 
