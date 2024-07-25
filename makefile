@@ -212,7 +212,7 @@ clean:
 	rm -f lib*.a
 	rm -f $(EXEC)
 
-install:
+install: all
 	install -d $(INSTALLDIR)/lib/
 	install -d $(INSTALLDIR)/include/
 	install -d $(INSTALLDIR)/bin/
