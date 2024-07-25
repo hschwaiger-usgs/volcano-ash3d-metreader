@@ -11,22 +11,23 @@
       "licenses": [
         {
           "name": "Public Domain, CC0-1.0",
-          "URL": "https://github.com/DOI-USGS/volcano-ash3d-metreader/blob/master/LICENSE.md"
+          "URL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-metreader/-/raw/1.0.0/LICENSE.md"
         }
       ]
     },
 
-    "homepageURL": "https://github.com/DOI-USGS/volcano-ash3d-metreader/",
-    "downloadURL": "https://github.com/DOI-USGS/volcano-ash3d-metreader/archive/master.zip",
-    "disclaimerURL": "https://github.com/DOI-USGS/volcano-ash3d-metreader/blob/master/DISCLAIMER.md",
-    "repositoryURL": "https://github.com/DOI-USGS/volcano-ash3d-metreader.git",
+    "homepageURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-metreader/",
+    "downloadURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-metreader/-/archive/1.0.0/volcano-ash3d-metreader-1.0.0.zip",
+    "disclaimerURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-metreader/-/raw/1.0.0/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-metreader.git",
     "vcs": "git",
 
     "laborHours": 0,
 
     "tags": [
+      "USGS",
       "Ash3d",
-      "USGS"
+      "AVOG2S"
     ],
 
     "languages": [
@@ -39,7 +40,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2019-02-05"
+      "metadataLastUpdated": "2024-07-25"
     }
   }
 ]
