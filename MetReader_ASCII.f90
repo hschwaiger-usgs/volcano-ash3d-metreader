@@ -340,7 +340,7 @@
       ! and loads the data.  All data for all time steps are loaded here into the
       ! variable MR_SndVars_metP(MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,nrows)
       ! The if statement sorts into the following cases:
-      !   1 : ascii sonde file with either 3, 5, or a custom number of columns of data
+      !   1 : ASCII sonde file with either 3, 5, or a custom number of columns of data
       !   2 : radio sonde data either the clear text variety or the WMO/GTS encoded
       if(MR_iwind.eq.1.and.MR_iwindformat.eq.1)then
         ! We are reading just one windfile with the following format
@@ -1930,7 +1930,7 @@
 
       if(MR_iwind.eq.1.and.MR_iwindformat.eq.1.or.&
          MR_iwind.eq.1.and.MR_iwindformat.eq.2)then
-          ! 1d ascii file or Radiosonde case
+          ! 1d ASCII file or Radiosonde case
         nx_submet     = MR_nSnd_Locs ! put all sonde data in x-dimension
         ny_submet     = 1
         allocate(x_submet_sp(1:nx_submet));  x_submet_sp(:)  = 0.0_sp
@@ -2008,7 +2008,7 @@
 !      integer, parameter :: dp        = 8 ! double precision
 !
 !      If(MR_iwind.eq.1.and.MR_iwindformat.eq.1)then
-!          ! 1d ascii file
+!          ! 1d ASCII file
 !        allocate(MR_MetStep_File(2))
 !        allocate(MR_MetStep_tindex(2))
 !        allocate(MR_MetStep_Hour_since_baseyear(2))
@@ -2026,7 +2026,7 @@
 !      elseif(MR_iwind.eq.1.and.MR_iwindformat.eq.2)then
 !        ! Radiosonde case
 !      elseif(MR_iwind.eq.2.and.MR_iwindformat.eq.1)then
-!        ! 3d ascii windfiles
+!        ! 3d ASCII windfiles
 !      else
 !        write(outlog(io),*)"Unknown ASCII wind file format."
 !        write(outlog(io),*)"  MR_iwind = ",MR_iwind

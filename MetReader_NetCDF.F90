@@ -263,7 +263,7 @@
                  250.0_sp, 200.0_sp, 150.0_sp, 100.0_sp,  70.0_sp, &
                   50.0_sp,  30.0_sp,  20.0_sp,  10.0_sp /)
             if(MR_Use_RDA)then
-              ! Files from rda.ucar.edu/datasets/ds131.2/ converted from grib with ncl_convert2nc
+              ! Files from rda.ucar.edu/datasets/ds131.2/ converted from GRIB with ncl_convert2nc
               ! are top down
               z_inverted = .true.
             else
@@ -639,7 +639,7 @@
               if(nSTAT.ne.NF90_NOERR)then
                 call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute")
                 do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-                  write(outlog(io),*)'MR WARNING: cannot file units ',dimname,nf90_strerror(nSTAT)
+                  write(outlog(io),*)'MR WARNING: Cannot find units ',dimname,nf90_strerror(nSTAT)
                 endif;enddo
               else
                 nSTAT = nf90_get_att(ncid, var_id,"units",ustring)
@@ -669,7 +669,7 @@
               dx_met_const = x_fullmet_sp(2)-x_fullmet_sp(1)
               x_fullmet_sp(0)            = x_fullmet_sp(1)          - dx_met_const
               x_fullmet_sp(nx_fullmet+1) = x_fullmet_sp(nx_fullmet) + dx_met_const
-              if(abs(x_fullmet_sp(nx_fullmet+1)-360.0-x_fullmet_sp(1)).lt.0.1*dx_met_const)then
+              if(abs(x_fullmet_sp(nx_fullmet+1)-360.0_sp-x_fullmet_sp(1)).lt.0.1_sp*dx_met_const)then
                 IsGlobal_MetGrid = .true.
               else
                 IsGlobal_MetGrid = .false.
@@ -795,7 +795,7 @@
               if(nSTAT.ne.NF90_NOERR)then
                 call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute Y units")
                 do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-                  write(outlog(io),*)'MR WARNING: cannot file units ',dimname,nf90_strerror(nSTAT)
+                  write(outlog(io),*)'MR WARNING: Cannot find units ',dimname,nf90_strerror(nSTAT)
                 endif;enddo
               else
                 nSTAT = nf90_get_att(ncid, var_id,"units",ustring)
@@ -867,7 +867,7 @@
             ! above, but we need the level information for all variables, which may be
             ! different than GPH.
             ! Now checking level coordinates (pressure, height, depth);
-            ! This is the third dimension for COORD compliant netcdf files.
+            ! This is the third dimension for COORD compliant NetCDF files.
             i_dim = 3
             nSTAT = nf90_inquire_dimension(ncid,var_dimIDs(i_dim), &
                          name =  dimname, & 
@@ -1338,7 +1338,7 @@
       endif;enddo
       nSTAT=nf90_open(trim(adjustl(MR_windfiles(1))),NF90_NOWRITE, ncid)
       call MR_NC_check_status(nSTAT,1,"nf90_open WRF file")
-      ! This is the first windfile, log some info on the netcdf library and datafile
+      ! This is the first windfile, log some info on the NetCDF library and datafile
       NCv_lib = trim(nf90_inq_libvers())
       nSTAT=nf90_inquire(ncid, nDimensions, nVariables, nAttributes, &
                   unlimitedDimId, formatNum)
@@ -1747,7 +1747,7 @@
 !
 !     Called once from MR_Read_Met_DimVars 
 !
-!     This subroutine opens each netcdf file and determines the time of each
+!     This subroutine opens each NetCDF file and determines the time of each
 !     time step of each file in the number of hours since MR_BaseYear.
 !     In most cases, the length of the time variable (nt_fullmet) will be 
 !     read directly from the file and overwritten (is was set in MR_Read_Met_DimVars_netcdf
@@ -1992,9 +1992,9 @@
 
           ! First, we sort out the names of the variable for GPH and all the associated
           ! dimension names.  This is a copy of the code from MR_Read_Met_DimVars_netcdf
-          ! above, but targeting the GPH variable. We need to do this because netcdf
-          ! variable/dimension names are different depending on if the netcdf file was
-          ! created by the provider or converted from grib by ncl or ncj.
+          ! above, but targeting the GPH variable. We need to do this because NetCDF
+          ! variable/dimension names are different depending on if the NetCDF file was
+          ! created by the provider or converted from GRIB by ncl or ncj.
           ivar = 1 ! set variable to GPH
           invar = Met_var_NC_names(ivar)
           nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
@@ -2226,7 +2226,7 @@
               stop 1
             endif
             if(iw.eq.1)then
-              ! If this is the first windfile, log some info on the netcdf library and datafile
+              ! If this is the first windfile, log some info on the NetCDF library and datafile
               NCv_lib = trim(nf90_inq_libvers())
               nSTAT=nf90_inquire(ncid, nDimensions, nVariables, nAttributes, &
                           unlimitedDimId, formatNum)
@@ -2330,7 +2330,7 @@
               stop 1
             endif
 
-            ! If this is the first windfile, log some info on the netcdf library and datafile
+            ! If this is the first windfile, log some info on the NetCDF library and datafile
             if(iw.eq.1)then
               NCv_lib = trim(nf90_inq_libvers())
               nSTAT=nf90_inquire(ncid, nDimensions, nVariables, nAttributes, &
@@ -2774,7 +2774,7 @@
       if(MR_iwindformat.eq.25)then   ! Not needed for iwf=25
         ! YYYY/hgt.2018.nc
         dum_i1 = 1                                 ! Start day in file
-        dum_i2 = DaysInMonth(thisMonth)   ! End day in file
+        dum_i2 = DaysInMonth(thisMonth)            ! End day in file
         dum_i3 = 18                                ! End hour in file
         if(ivar.eq.1)then
           write(MR_iw5_prefix ,251)'hgt.'
@@ -2804,7 +2804,7 @@
       elseif(MR_iwindformat.eq.26)then
         ! YYYY/anl_p125.007_hgt.2018060100_2018063018.nc
         dum_i1 = 1                                 ! Start day in file
-        dum_i2 = DaysInMonth(thisMonth)   ! End day in file
+        dum_i2 = DaysInMonth(thisMonth)            ! End day in file
         dum_i3 = 18                                ! End hour in file
         if(ivar.eq.1)then
           write(MR_iw5_prefix ,261)'anl_p125.007_hgt.'
@@ -2907,7 +2907,7 @@
       elseif(MR_iwindformat.eq.29)then
         dum_i1 = thisDay                  ! Start day in file
         dum_i2 = thisDay                  ! End day in file
-        dum_i3 = 23                                ! End hour in file
+        dum_i3 = 23                       ! End hour in file
         if (MR_RDAcode.eq.630) then
           ! Dataset https://rda.ucar.edu/datasets/ds630.0/
           !  uses the following format:
@@ -2955,7 +2955,7 @@
       elseif(MR_iwindformat.eq.30)then
         ! YYYY/e20c.oper.an.pl.3hr.128_129_z.regn80sc.1912060100_1912063021.nc
         dum_i1 = 1                                 ! Start day in file
-        dum_i2 = DaysInMonth(thisMonth)   ! End day in file
+        dum_i2 = DaysInMonth(thisMonth)            ! End day in file
         dum_i3 = 21                                ! End hour in file
         if(ivar.eq.1)then
           write(MR_iw5_prefix ,230)'e20c.oper.an.pl.3hr.128_129_z.regn80sc.'
@@ -3099,7 +3099,7 @@
       ! Need to get fill_value.  If we can't find it, fill_value will remain as initialized
       ! according to the MR_iwindformat (probably -9999.0_sp)
       ! We'll look in variables 1,2,3 (GPH, U, V) and assume if it is found, that the
-      ! value is used throughout the file
+      ! value is used throughout the file.
       FoundFillVAttr = .false.
       do ivar=1,3
         nSTAT = nf90_inq_varid(ncid,Met_var_NC_names(ivar),var_id)
@@ -3953,7 +3953,7 @@
 !
 !     MR_NC_check_status
 !
-!     nSTAT   = error code returned from netcdf call
+!     nSTAT   = error code returned from NetCDF call
 !     errcode = user-supplied return value on stopping of code
 !     operation = string descriptor of function call causing error
 !

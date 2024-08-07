@@ -11,10 +11,12 @@ LIBS = $(COMPLIBS) $(COMPINC)
 ifeq ($(RUN), DEBUG)
     FFLAGS = -debug full -g3 -O0 -CB -init:snan,arrays -warn all -gen-interfaces -traceback -check all -check bounds -ftrapuv
 endif
+
 # Profiling flags
 ifeq ($(RUN), PROF)
     FFLAGS = -g2 -pg
 endif
+
 # Production run flags
 ifeq ($(RUN), OPT)
     FFLAGS = -O3 -unroll -unroll-aggressive -ftz -inline-forceinline -finline-functions -ipo -ip
@@ -24,4 +26,5 @@ endif
 FPPFLAGS =  -fpp $(ncFPPFLAG) $(grbFPPFLAG) $(memFPPFLAG)
   # Extra flags
 EXFLAGS =
+
 ###############################################################################
