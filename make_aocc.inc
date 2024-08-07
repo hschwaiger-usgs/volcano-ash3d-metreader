@@ -11,10 +11,12 @@ LIBS = $(COMPLIBS) $(COMPINC)
 ifeq ($(RUN), DEBUG)
     FFLAGS = -O0 -g3 -Wall -Mstandard -fPIC -v
 endif
+
 # Profiling flags
 ifeq ($(RUN), PROF)
     FFLAGS = -g2 -pg -fPIC
 endif
+
 # Production run flags
 ifeq ($(RUN), OPT)
     #FFLAGS = -O3 -zopt -ftz -w -ipo
@@ -25,4 +27,5 @@ endif
 FPPFLAGS =  -Mpreprocess $(ncFPPFLAG) $(grbFPPFLAG) $(memFPPFLAG)
   # Extra flags
 EXFLAGS =
+
 ###############################################################################

@@ -1,7 +1,7 @@
 !##############################################################################
 !##############################################################################
 !##############################################################################
-! Note: you can inspect the grib header using grib_dump tmp.grib2 > header.txt
+! Note: you can inspect the GRIB header using grib_dump tmp.grib2 > header.txt
 
 
 !     MR_Read_Met_DimVars_GRIB
@@ -94,7 +94,7 @@
 
       integer(kind=4)  :: typeOfFirstFixedSurface
       integer            :: count1=0
-        ! Stores values of keys read from grib file
+        ! Stores values of keys read from GRIB file
       character(len=6) :: grb_shortName
       character(len=36):: grb_longName
       character(len=4) :: grb_typeSfc
@@ -146,10 +146,10 @@
           !
           ! Checking for dimension length and values for x,y,t,p
           !   Assume all files have the same format
-          ! Note: you can inspect the grib header using grib_dump tmp.grib2 > header.txt
+          ! Note: you can inspect the GRIB header using grib_dump tmp.grib2 > header.txt
 
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-          write(outlog(io),*)"Opening grib file to find version number"
+          write(outlog(io),*)"Opening GRIB file to find version number"
         endif;enddo
         iw = 1
 
@@ -173,7 +173,7 @@
       !   Assume all files have the same format
       maxdimlen = 0
 
-      ! Loop through all the grib messages,
+      ! Loop through all the GRIB messages,
       ! If we find a message that matches a variable criterion, then log the level to 
       !  a dummy array.
       ! Finally sort the pressure values and evaluate the distinct pressure coordinates
@@ -190,7 +190,7 @@
         count1=count1+1
         if (count1.gt.MAXGRIBREC) then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-            write(errlog(io),*)"MR ERROR: too many grib messages"
+            write(errlog(io),*)"MR ERROR: too many GRIB messages"
             write(errlog(io),*)"          current limit set to ",MAXGRIBREC
           endif;enddo
           stop 1
@@ -625,7 +625,7 @@
             call codes_get(igribv(ir),'table2Version',grb_Table,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get table2Version ")
 
-            ! Loop through all the variables and see if we have a match with this grib record
+            ! Loop through all the variables and see if we have a match with this GRIB record
             do ivar = 1,MR_MAXVARS
               if (.not.Met_var_IsAvailable(ivar)) cycle
               iv_ParamN = Met_var_GRIB1_Param(ivar)
@@ -667,7 +667,7 @@
                  grb_scaledValueOfFirstFixedSurface,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get scaledValueOfFirstFixedSurface ")
 
-            ! Loop through all the variables and see if we have a match with this grib record
+            ! Loop through all the variables and see if we have a match with this GRIB record
             do ivar = 1,MR_MAXVARS
               if (.not.Met_var_IsAvailable(ivar)) cycle
               iv_discpl = Met_var_GRIB2_DPcPnSt(ivar,1)
@@ -1021,7 +1021,7 @@
           MR_windfile_stephour(:,iwstep) = (iwstep-1)*6.0_4
         enddo
       else
-        ! For all other formats, try to read the first grib message and get
+        ! For all other formats, try to read the first GRIB message and get
         ! dataDate, dataTime and forecastTime
         ! Loop through all the windfiles
         do iw = 1,MR_iwindfiles
@@ -1037,7 +1037,7 @@
             nt_fullmet = 1
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
               write(outlog(io),*)"  Assuming all NWP files have the same number of steps."
-              write(outlog(io),*)"   For grib, assume one time step per file."
+              write(outlog(io),*)"   For GRIB, assume one time step per file."
               write(outlog(io),*)"   Allocating time arrays for ",MR_iwindfiles,"file(s)"
               write(outlog(io),*)"                              ",nt_fullmet,"step(s) each"
             endif;enddo
@@ -1187,7 +1187,7 @@
       integer(kind=4)  :: Ni
       integer(kind=4)  :: Nj
       integer(kind=4)  :: typeOfFirstFixedSurface
-        ! Stores values of keys read from grib file
+        ! Stores values of keys read from GRIB file
       !character(len=7) :: grb_marsParam
       character(len=4) :: grb_typeSfc
       integer(kind=4)  :: grb_discipline
@@ -1263,7 +1263,7 @@
       endif
 
       if(MR_GRIB_Version.eq.1)then
-        ! grib1 uses an index based on Param
+        ! GRIB1 uses an index based on Param
         iv_paramN  = Met_var_GRIB1_Param(ivar)
         iv_Table   = Met_var_GRIB1_Table(ivar)
         iv_typeSfc = Met_var_GRIB1_St(ivar)
@@ -1614,7 +1614,7 @@
                   enddo
                   deallocate(values)
 
-                  ! There is no guarantee that grib levels are in order so...
+                  ! There is no guarantee that GRIB levels are in order so...
                   ! Now loop through the pressure values for this variable and put
                   ! this slice at the correct level.
                   call codes_get(igrib,'level',grb_level,nSTAT)
@@ -1643,7 +1643,7 @@
         else ! Non-index Grib1 case
 
           ! We don't have/(can't make) the index file so scan all messages of the
-          ! grib1 file
+          ! GRIB1 file
           write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&
                          ", file = ",iw,&
                          ", slice = ",iwstep
@@ -1710,7 +1710,7 @@
               enddo
               deallocate(values)
 
-               ! There is no guarantee that grib levels are in order so...
+               ! There is no guarantee that GRIB levels are in order so...
                ! Now loop through the pressure values for this variable and put
                ! this slice at the correct level.
                call codes_get(igrib,'level',grb_level,nSTAT)
@@ -1850,7 +1850,7 @@
                 enddo
                 deallocate(values)
         
-               ! There is no guarantee that grib levels are in order so...
+               ! There is no guarantee that GRIB levels are in order so...
                ! Now loop through the pressure values for this variable and put this
                ! slice at the correct level.
                do kk = 1,np_met_loc
@@ -1877,7 +1877,7 @@
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_release ")
         else
           ! We don't have/(can't make) the index file so scan all messages of the
-          ! grib2 file
+          ! GRIB2 file
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
             write(outlog(io),*)&
                istep,ivar,"Reading ",trim(adjustl(invar))," from file : ",&
@@ -1947,7 +1947,7 @@
               enddo
               deallocate(values)
   
-               ! There is no guarantee that grib levels are in order so...
+               ! There is no guarantee that GRIB levels are in order so...
                ! Now loop through the pressure values for this variable and put
                ! this slice at the correct level.
                if(ivar.eq.16)grb_level = grb_scaledValueOfFirstFixedSurface
