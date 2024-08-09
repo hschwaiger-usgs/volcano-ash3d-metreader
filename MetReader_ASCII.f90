@@ -88,7 +88,7 @@
          Snd_Have_PT,nt_fullmet,MR_BaseYear,MR_useLeap,MR_Snd_nt_fullmet,MR_Snd_nvars,Snd_Have_Coord,&
          MR_Max_geoH_metP_predicted,MR_iwind,MR_iwindformat,IsGlobal_MetGrid,IsLatLon_MetGrid,IsRegular_MetGrid,&
          Met_iprojflag,Met_k0,Met_lam0,Met_lam1,Met_lam2,Met_phi0,Met_phi1,Met_phi2,Met_Re,MR_EPS_SMALL,&
-         MR_Comp_StartYear,MR_Comp_StartMonth,MR_nstat,&
+         MR_Comp_StartYear,MR_Comp_StartMonth,MR_nstat,MR_dx_met,MR_dy_met,&
            MR_Z_US_StdAtm,&
            MR_Temp_US_StdAtm,&
            MR_Pres_US_StdAtm, &
@@ -354,6 +354,8 @@
         ! x and y fullmet array will just be the coordinates in the order listed
         allocate(x_fullmet_sp(MR_nSnd_Locs))
         allocate(y_fullmet_sp(MR_nSnd_Locs))
+        allocate(MR_dx_met(MR_nSnd_Locs))
+        allocate(MR_dy_met(MR_nSnd_Locs))
         allocate(Snd_idx(MR_nSnd_Locs))
         ! The number of time steps/file is fixed to 1
         nt_fullmet = 1
@@ -858,6 +860,8 @@
         ! x and y fullmet array will just be the coordinates in the order listed
         allocate(x_fullmet_sp(MR_nSnd_Locs))
         allocate(y_fullmet_sp(MR_nSnd_Locs))
+        allocate(MR_dx_met(MR_nSnd_Locs))
+        allocate(MR_dy_met(MR_nSnd_Locs))
         allocate(Snd_idx(MR_nSnd_Locs))
         ! The number of time steps/file is fixed to 1
         nt_fullmet = 1
@@ -1829,6 +1833,9 @@
         endif;enddo
         stop 1
       endif
+      ! There is no grid for the ascii cases
+      MR_dx_met(1:MR_nSnd_Locs) = 0.0_sp
+      MR_dy_met(1:MR_nSnd_Locs) = 0.0_sp
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Sonde data read:"
@@ -3547,7 +3554,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
            lonUR.gt.MR_Snd_ln(i))then
           if(nSnd_InDomain.eq.0)then
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-              write(outlog(io),*)" Stations found in domain:"
+              write(outlog(io),*)" Additional stations found in domain:"
             endif;enddo
             nSnd_InDomain = nSnd_InDomain + 1
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then

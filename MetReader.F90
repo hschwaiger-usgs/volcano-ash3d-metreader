@@ -3112,8 +3112,14 @@
       endif
 
       if(MR_useTopo)then
-        allocate(MR_Topo_met(nx_submet,ny_submet));  MR_Topo_met(:,:)   = 0.0_sp
-        allocate(MR_jacob_met(nx_submet,ny_submet)); MR_jacob_met(:,:)  = 1.0_sp
+        if(MR_iwind.eq.1)then
+          ! There is no grid for ASCII input, so just use comp grid
+          allocate(MR_Topo_met(nx_comp,ny_comp));  MR_Topo_met(:,:)   = 0.0_sp
+          allocate(MR_jacob_met(nx_comp,ny_comp)); MR_jacob_met(:,:)  = 1.0_sp
+        else
+          allocate(MR_Topo_met(nx_submet,ny_submet));  MR_Topo_met(:,:)   = 0.0_sp
+          allocate(MR_jacob_met(nx_submet,ny_submet)); MR_jacob_met(:,:)  = 1.0_sp
+        endif
         allocate(MR_Topo_comp(nx_comp,ny_comp));     MR_Topo_comp(:,:)  = 0.0_sp
         allocate(MR_jacob_comp(nx_comp,ny_comp));    MR_jacob_comp(:,:) = 1.0_sp
       endif
@@ -3167,11 +3173,19 @@
       if(MR_ZScaling_ID.eq.0)then
         ! no topo
         MR_jacob_comp(1:nx_comp,1:ny_comp) = 1.0_sp
-        MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
+        if(MR_iwind.eq.1)then
+          MR_jacob_met = MR_jacob_comp
+        else
+          MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
+        endif
       elseif(MR_ZScaling_ID.eq.1)then
         ! shifted-altitude (s=z-zsurf)
         MR_jacob_comp(1:nx_comp,1:ny_comp) = 1.0_sp
-        MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
+        if(MR_iwind.eq.1)then
+          MR_jacob_met = MR_jacob_comp
+        else
+          MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
+        endif
       elseif(MR_ZScaling_ID.eq.2)then
         ! sigma-altitude (s=(z-zsurf)/(top-surf))
         !  Note: this is not the same as in Jacobson Eq 5.89, but we want the orientation of the
@@ -3182,14 +3196,22 @@
 
         ! Just set the s-values for now without appling topography
         MR_jacob_comp(1:nx_comp,1:ny_comp) = MR_ztop - MR_Topo_comp(1:nx_comp,1:ny_comp)
-        MR_jacob_met(1:nx_submet,1:ny_submet) = MR_ztop - MR_Topo_met(1:nx_submet,1:ny_submet)
+        if(MR_iwind.eq.1)then
+          MR_jacob_met = MR_jacob_comp
+        else
+          MR_jacob_met(1:nx_submet,1:ny_submet) = MR_ztop - MR_Topo_met(1:nx_submet,1:ny_submet)
+        endif
       else
         do io=1,MR_nio;if(VB(io).le.verbosity_production)then
           write(outlog(io),*)"MR WARNING: Topography scheme not recognized."
           write(outlog(io),*)"            Reverting to altitude."
         endif;enddo
         MR_jacob_comp(1:nx_comp,1:ny_comp) = 1.0_sp
-        MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
+        if(MR_iwind.eq.1)then
+          MR_jacob_met = MR_jacob_comp
+        else
+          MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
+        endif
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
@@ -4008,6 +4030,11 @@
 
           if (useScaled)then
               ! this recovers the real-world z coordinate from the sigma level and topography
+            if(MR_iwind.eq.1)then
+              ! this is incorrect (should be MR_jacob_met(i,j)), but this isn't set for iwind=1
+              dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
+                                             s_comp_sp(1:nz_comp) * MR_jacob_comp(1,1)
+            endif
             dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
                                            s_comp_sp(1:nz_comp) * MR_jacob_met(i,j)
           else
