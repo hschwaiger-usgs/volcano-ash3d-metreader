@@ -64,7 +64,7 @@ to point to your installation.
 Additionally, the default \texttt{makefile} will build MetReader with both NetCDF and GRIB
 interfaces enabled.  If either of these libraries are unavailable on your system, you will need to
 deactivate those options by setting the corresponding flags to \texttt{F} in the makefile.
-On a Redhat systems (Fedora, RHEL, CentOS, Rocky), you can install the data
+On a Red Hat systems (Fedora, RHEL, CentOS, Rocky), you can install the data
 format libraries by typing
 \begin{verbatim}
      sudo yum install netcdf netcdf-devel netcdf-fortran netcdf-fortran-devel
@@ -95,13 +95,13 @@ the data to a user-specified grid; then write out regridded point, line, sheet, 
 and writes a file with temperature vs height from GFS or NCEP data.
 \item \texttt{MetCheck} : This program tests the windfiles to make sure all variable values
 are within the expected ranges.
-\item \texttt{gen\_GRIB\_index} : This tool builds a grib index to facilitate reading of grib
+\item \texttt{gen\_GRIB\_index} : This tool builds a GRIB index to facilitate reading of GRIB
 files.
-\item \texttt{MetProbe} : This is a more general version of \texttt{MetSonde} controled by
+\item \texttt{MetProbe} : This is a more general version of \texttt{MetSonde} controlled by
 an input file that can handle more NWP data types.
 \item \texttt{MR\_ASCII\_check} : This tool takes two ESRI ASCII input files and compares them,
 returning an error if the files differ by more than a threshold value.
-\item \texttt{MetTraj\_F} : This tool will generate foreward trajectories based on the
+\item \texttt{MetTraj\_F} : This tool will generate forward trajectories based on the
 time-series NWP data.
 \item \texttt{MetTraj\_B} : This tool will generate backward trajectories based on the
 time-series NWP data.
@@ -117,10 +117,10 @@ This will run four tests using the radiosonde data (found in \texttt{examples/Up
 followed by four tests using the NCEP 50-year reanalysis data.  The four tests for
 each wind data type are: \texttt{MetProbe}, \texttt{MetTraj\_F}, \texttt{MetRegrid} (vertical slice)
 and  \texttt{MetRegrid} (map view).
-Output data file are compared with saved datafiles in \texttt{tests/output[Sonde,NCEP][1-4]}.
+Output data file are compared with saved data files in \texttt{tests/output[Sonde,NCEP][1-4]}.
 If \texttt{bc} and \texttt{awk} are installed on the system, the values in the output files are
 compared within a tolerance.  Otherwise the files are compared
-using the unix \texttt{cmp} command, in which case small differences
+using the Unix \texttt{cmp} command, in which case small differences
 can be present in output files depending on if \texttt{OPT} or \texttt{DEBUG} was used
 when building the tools.
 
@@ -184,7 +184,7 @@ Logical flag to build NetCDF interface.
 Logical flag to build GRIB2 interface.
 \item \texttt{USEPOINTERS} : \texttt{T} or \texttt{F}\\
 Logical flag to define public work arrays as pointer or allocatable space. There is no
-real proformance impact for either choice. Older \texttt{gfortran} compilers
+real performance impact for either choice. Older \texttt{gfortran} compilers
 required allocatable arrays, but pointers facilitate access from \texttt{C} programs.
 
 Once installed, the download scripts will copy NWP data to the default location:
@@ -265,7 +265,8 @@ set of NWP files is needed, this subroutine can be called to free all allocated 
 This allocates the variable \texttt{MR\_windfiles(1:MR\_iwindfiles)}.
 
 \paragraph{Step 2:} The calling program must now fill the list of file names \texttt{MR\_windfiles()}
-with each name not exceeding 130 characters in length.  For the special cases of one-variable files (\texttt{MR\_iwind}=5),
+with each name not exceeding 130 characters in length.  For the special cases of
+one-variable files (\texttt{MR\_iwind}=5),
 %for the NCEP/NCAR
 %Reanalysis 1 or the NOAA-CIRES 20th Century Reanalysis (\texttt{MR_iwindformat=}25 or 27),
 MetReader expects
@@ -401,7 +402,7 @@ be downloaded, but must be converted to NetCDF to be read by MetReader, either b
 \texttt{ncl\_convert2nc -L} or netcdf-java via the provided script \texttt{autorun\_scripts/grib2nc.sh}.
 Data from this site are provided with all requested variables in the same file 
 (\texttt{MR\_iwind=}3 or 4) and do not require the specific filename structure outlined above.
-Since these NetCDF files can be from so many souce sites and/or conversion tools, MetReader
+Since these NetCDF files can be from so many source sites and/or conversion tools, MetReader
 assumes variable and dimension names, but checks against all known names if the default
 names are not present in the file.  If MetReader is still unable to determine the variable
 and dimension names, you will need to convert the NetCDF files, renaming the variables, or
@@ -829,7 +830,7 @@ however any recent version should work.  Older versions create NetCDF files with
 different variable names. GRIB files can also be converted to NetCDF using the NCAR Command
 Language tools (\texttt{ncl}), available from \url{https://www.ncl.ucar.edu}.  The
 command \texttt{ncl\_convert2nc -L} will convert GRIB to NetCDF, but will produce
-files with different variable and dimension names, which may be incompatable.
+files with different variable and dimension names, which may be incompatible.
 
 Many of the forecast and reanalysis products are built in to MetReader where the
 grid geometry, variable list, and pressure levels are preset.  These include all
@@ -987,7 +988,7 @@ NCEP
 Line 1 specifies the projection of the computational grid, in this case, the
 \texttt{LatLonFlag=1} indicating
 a latitude-longitude grid (subsequent parameters on this first line are ignored).
-Line 2 give the $x$, $y$, $z$ coordinate of the bottom lower-left corner of the compuataional
+Line 2 give the $x$, $y$, $z$ coordinate of the bottom lower-left corner of the computational
 grid.
 Line 3 gives the total width in the three coordinate directions.  
 Line 4 gives the grid spacing in each dimension.  For lines 2-4, the $x$ and $y$ (or $lat$ and $lon$)
@@ -998,7 +999,7 @@ Line 5 is the iHeightHandler flag which determines if the program should stop if
 grid requires data above that provided by the NWP file (\texttt{iHeightHandler=2}) or if those nodes
 should be populated using the top-most data of the NWP file (\texttt{iHeightHandler=1}).
 Line 6 specifies the year, month, day and hour of the output.
-Line 7 contains an integer flag specifing the output grid type
+Line 7 contains an integer flag specifying the output grid type
 (\texttt{compH}, \texttt{compP}, \texttt{metH}, \texttt{metP}).
 Line 8 contains the integer specifying the variable to regrid and export (see Table \ref{ApVar}).
 Line 9 specifies the output dimension (0, 1, 2, or 3) and optionally a flag to indicate ASCII should be
@@ -1057,7 +1058,7 @@ Usage:\\
 \verb|  MetSonde lon lat YYYY MM DD HH [WIND_ROOT]|
 
 The program assumes that the GFS and NCEP files are placed in the default directory, or
-at least in default subdirectories off of \texttt{WIND\_ROOT}.  Values are interpolated
+at least in default sub-directories off of \texttt{WIND\_ROOT}.  Values are interpolated
 onto the requested point and time and are written to a file (\texttt{GFS\_prof.dat}) in
 the current working directory.  This 3-column file contains the height (in $\mathrm{km}$),
 pressure (in $\mathrm{Pa}$) and temperature (in $^{\circ}\mathrm{C}$).
@@ -1092,7 +1093,7 @@ GPH, U, V, and T.
 This will write output data to the file \texttt{NWP\_prof.dat}.
 If the truncation flag is set to \texttt{T}, then data are not interpolated onto
 the requested point, but instead the data corresponding to the node of the NWP
-grid on the lower-left of the cell containing the point will be writen to the output file.
+grid on the lower-left of the cell containing the point will be written to the output file.
 
 \subsection{\texttt{MetTraj}}
 
@@ -1169,7 +1170,7 @@ The first two lines specify the start point in space and time.  Line 3 gives the
 in hours for the trajectory forecast.  Note that GPH values at the start point are
 used throughout the simulation so longer simulation times will lead to greater errors in
 assumed GPH values.  Line 4 is an integer flag specifying streamlines (1) where the winds
-evolve in time along the trajectory, or streakline (0) where a static initial wind
+evolve in time along the trajectory, or streak-line (0) where a static initial wind
 field is used.
 Line 5 allows users to specify the output interval in minutes (default is 60).  Line 6
 is the number of output trajectory levels (up to 10).  In line 7, the altitudes of
@@ -1177,7 +1178,7 @@ these trajectories is specified.
 Line 8 specifies the coordinate system of the output grid.
 Line 9 gives the windfile descriptions
 (\texttt{MR\_iwind MR\_iwindformat MR\_iGridCode MR\_idataFormat}).
-Line 10 allows windfiles to be spelected automatically, similar to when this utility
+Line 10 allows windfiles to be selected automatically, similar to when this utility
 is run with command-line options only.  Alternatively, line 11 will specify the number
 of windfiles to read, followed by the windfile names in lines 12+.
 Examples of several command files are given in the folder, \texttt{examples} with some
@@ -1186,7 +1187,7 @@ select output shown in Figure \ref{FigTraj}
  \includegraphics[angle=0,scale=0.3]{Figs/trajectory_NCEP.pdf}
  \includegraphics[angle=0,scale=0.3]{Figs/trajectory_Sonde.pdf}
  \parbox{15cm}{\caption{\label{FigTraj}
- Example of foreward trajectory output using NCEP reanalysis (\texttt{MR\_iwindformat=25}) and
+ Example of forward trajectory output using NCEP reanalysis (\texttt{MR\_iwindformat=25}) and
  6-point radiosonde data (left and right, respectively) using \texttt{RegridMet} with control files
  from the \texttt{examples} folder.  The start time for both these trajectory simulations is
  May 18, 1980, 15:30 UTC. Because \texttt{MR\_iHeightHandler=2} by default, the trajectories for 30,000
@@ -1198,7 +1199,7 @@ select output shown in Figure \ref{FigTraj}
 This utility takes two arguments (\texttt{infile} and \texttt{outfile})
 and generates a \texttt{ncml} file that can be used when converting
 GRIB files to NetCDF.  The \texttt{ncml} provides the conversion tool a template
-for identifying which variables to exclued when writing the netcdf file.
+for identifying which variables to excluded when writing the NetCDF file.
 
 \subsection{\texttt{MR\_ASCII\_check}}
 This utility takes two ESRI ASCII files are input arguments and calculates the L2 norm of
@@ -1246,7 +1247,7 @@ for converting GRIB files to NetCDF using \texttt{netcdf-java}.
 \subsubsection{Sonde}
 \subsubsection{NCEP}
 
-\subsection{Windfile intercomparison}
+\subsection{Windfile inter-comparison}
 \begin{figure}[htbp]\begin{center}
  \includegraphics[angle=-90,scale=0.8]{Figs/Depo_Compar_221.pdf}
  \parbox{15cm}{\caption{\label{FigSpurrDepoComp}
