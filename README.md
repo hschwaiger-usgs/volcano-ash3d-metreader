@@ -1,7 +1,7 @@
 MetReader
 ==========
 
-MetReader is a library written in fortran 90 that provides an interface to
+MetReader is a library written in Fortran 90 that provides an interface to
 numerical weather prediction (NWP) data, or other forms of meteorological
 data, such as radiosonde or other 1-d data.  
 
@@ -60,7 +60,7 @@ the makefile (the default is `/opt/USGS`) and type:
   `make install`
 
 This will also install scripts that can be used to download the 0.5 degree GFS
-forecast files and the NCEP 2.5-degree Reannalysis files.
+forecast files and the NCEP 2.5-degree Reanalysis files.
 
 You will need to have write permission in `${INSTALLDIR}` or install as root.
 
