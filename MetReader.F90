@@ -3114,14 +3114,14 @@
       if(MR_useTopo)then
         if(MR_iwind.eq.1)then
           ! There is no grid for ASCII input, so just use comp grid
-          allocate(MR_Topo_met(nx_comp,ny_comp));  MR_Topo_met(:,:)   = 0.0_sp
-          allocate(MR_jacob_met(nx_comp,ny_comp)); MR_jacob_met(:,:)  = 1.0_sp
+          allocate(MR_Topo_met(-1:nx_comp+2,-1:ny_comp+2));  MR_Topo_met(:,:)   = 0.0_sp
+          allocate(MR_jacob_met(-1:nx_comp+2,-1:ny_comp+2)); MR_jacob_met(:,:)  = 1.0_sp
         else
           allocate(MR_Topo_met(nx_submet,ny_submet));  MR_Topo_met(:,:)   = 0.0_sp
           allocate(MR_jacob_met(nx_submet,ny_submet)); MR_jacob_met(:,:)  = 1.0_sp
         endif
-        allocate(MR_Topo_comp(nx_comp,ny_comp));     MR_Topo_comp(:,:)  = 0.0_sp
-        allocate(MR_jacob_comp(nx_comp,ny_comp));    MR_jacob_comp(:,:) = 1.0_sp
+        allocate(MR_Topo_comp(-1:nx_comp+2,-1:ny_comp+2));     MR_Topo_comp(:,:)  = 0.0_sp
+        allocate(MR_jacob_comp(-1:nx_comp+2,-1:ny_comp+2));    MR_jacob_comp(:,:) = 1.0_sp
       endif
 
       CALLED_MR_Initialize_Met_Grids = .true.
@@ -3180,33 +3180,31 @@
         endif
       elseif(MR_ZScaling_ID.eq.1)then
         ! shifted-altitude (s=z-zsurf)
-        MR_jacob_comp(1:nx_comp,1:ny_comp) = 1.0_sp
+        MR_jacob_comp(-1:nx_comp+2,-1:ny_comp+2) = 1.0_sp
         if(MR_iwind.eq.1)then
           MR_jacob_met = MR_jacob_comp
         else
           MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
         endif
       elseif(MR_ZScaling_ID.eq.2)then
-        ! sigma-altitude (s=(z-zsurf)/(top-surf))
+        ! sigma-altitude (s=Ztop*(z-zsurf)/(Ztop-zsurf))
         !  Note: this is not the same as in Jacobson Eq 5.89, but we want the orientation of the
         !        vertical coordinate to be the same (-> positive Jacobian). Effect of topography
         !        diminishes with altitude.
-        !        Alternatively, we could use s=z-zsurf which has both the same orientation and units,
-        !        but the constant s level have the same topographic influence throughout.
 
-        ! Just set the s-values for now without appling topography
-        MR_jacob_comp(1:nx_comp,1:ny_comp) = MR_ztop - MR_Topo_comp(1:nx_comp,1:ny_comp)
+        ! Just set the s-values for now without applying topography
+        MR_jacob_comp(-1:nx_comp+2,-1:ny_comp+2) = (MR_ztop - MR_Topo_comp(-1:nx_comp+2,-1:ny_comp+2))/MR_ztop
         if(MR_iwind.eq.1)then
           MR_jacob_met = MR_jacob_comp
         else
-          MR_jacob_met(1:nx_submet,1:ny_submet) = MR_ztop - MR_Topo_met(1:nx_submet,1:ny_submet)
+          MR_jacob_met(1:nx_submet,1:ny_submet) = (MR_ztop - MR_Topo_met(1:nx_submet,1:ny_submet))/MR_ztop
         endif
       else
         do io=1,MR_nio;if(VB(io).le.verbosity_production)then
           write(outlog(io),*)"MR WARNING: Topography scheme not recognized."
           write(outlog(io),*)"            Reverting to altitude."
         endif;enddo
-        MR_jacob_comp(1:nx_comp,1:ny_comp) = 1.0_sp
+        MR_jacob_comp(-1:nx_comp+2,-1:ny_comp+2) = 1.0_sp
         if(MR_iwind.eq.1)then
           MR_jacob_met = MR_jacob_comp
         else
@@ -4028,21 +4026,30 @@
             endif
           endif
 
-          if (useScaled)then
+          if(MR_ZScaling_ID.eq.0)then
+            dumVertCoord_sp(1:nz_comp) = z_comp_sp(1:nz_comp)
+          elseif(MR_ZScaling_ID.eq.1)then
+            dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + s_comp_sp(1:nz_comp)
+          elseif(MR_ZScaling_ID.eq.2)then
               ! this recovers the real-world z coordinate from the sigma level and topography
             if(MR_iwind.eq.1)then
               ! this is incorrect (should be MR_jacob_met(i,j)), but this isn't set for iwind=1
               dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
                                              s_comp_sp(1:nz_comp) * MR_jacob_comp(1,1)
+            else
+              dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
+                                             s_comp_sp(1:nz_comp) * MR_jacob_met(i,j)
             endif
-            dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
-                                           s_comp_sp(1:nz_comp) * MR_jacob_met(i,j)
-          else
-            dumVertCoord_sp(1:nz_comp) = z_comp_sp(1:nz_comp)
           endif
+
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !   Interpolate these values to a regular grid with
           !   spacing equal to the simulation grid
+          do io=1,MR_nio;if(VB(io).le.verbosity_debug2)then
+            write(outlog(io),*)
+            write(outlog(io),*)"Callling MR_Regrid_P2H_linear from MR_Read_3d_MetH_Variable for ",i,j
+          endif;enddo
+
           call MR_Regrid_P2H_linear(np_fullmet+2, z_col_metP,       var_col_metP, & 
                                     nz_comp,      dumVertCoord_sp,  var_col_metH)
           MR_dum3d_metH(i,j,:) = var_col_metH
@@ -4876,17 +4883,32 @@
           z_col_metP(np_fullmet+2) = max(z_comp_sp(nz_comp)+1.0_sp,z_col_metP(np_fullmet+1)+1.0_sp)
           var_col_metP(np_fullmet+2) = var_col_metP(np_fullmet+1)
 
-          if (useScaled) then
-              ! this recovers the real-world z coordinate from the sigma level and topography
-            dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
-                                           s_comp_sp(1:nz_comp) * MR_jacob_met(i,j)
-          else
+          if(MR_ZScaling_ID.eq.0)then
             dumVertCoord_sp(1:nz_comp) = z_comp_sp(1:nz_comp)
+          elseif(MR_ZScaling_ID.eq.1)then
+            dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + s_comp_sp(1:nz_comp)
+          elseif(MR_ZScaling_ID.eq.2)then
+              ! this recovers the real-world z coordinate from the sigma level and topography
+            if(MR_iwind.eq.1)then
+              ! this is incorrect (should be MR_jacob_met(i,j)), but this isn't set for iwind=1
+              dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
+                                             s_comp_sp(1:nz_comp) * MR_jacob_comp(1,1)
+            else
+              dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
+                                             s_comp_sp(1:nz_comp) * MR_jacob_met(i,j)
+            endif
           endif
 
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !   Interpolate these values to a regular grid with
           !   spacing equal to the simulation grid
+
+
+          do io=1,MR_nio;if(VB(io).le.verbosity_debug2)then
+            write(outlog(io),*)
+            write(outlog(io),*)"Callling MR_Regrid_P2H_linear from MR_Regrid_MetP_to_MetH for ",i,j
+          endif;enddo
+
           call MR_Regrid_P2H_linear(np_fullmet+2, z_col_metP,       var_col_metP, &
                                     nz_comp,      dumVertCoord_sp,  var_col_metH)
           MR_dum3d_metH(i,j,:) = var_col_metH
