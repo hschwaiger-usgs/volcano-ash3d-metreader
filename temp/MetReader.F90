@@ -3281,15 +3281,7 @@
       elseif(MR_ZScaling_ID.eq.1)then
         ! shifted-altitude (s=z-zsurf)
         MR_jacob_comp(-1:nx_comp+2,-1:ny_comp+2) = 1.0_sp
-<<<<<<< HEAD
         MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
-=======
-        if(MR_iwind.eq.1)then
-          MR_jacob_met = MR_jacob_comp
-        else
-          MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
-        endif
->>>>>>> 073a27e (Updated scaled-z calculation.)
       elseif(MR_ZScaling_ID.eq.2)then
         ! sigma-altitude (s=Ztop*(z-zsurf)/(Ztop-zsurf))
         !  Note: this is not the same as in Jacobson Eq 5.89, but we want the orientation of the
@@ -4143,11 +4135,8 @@
               dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
                                              s_comp_sp(1:nz_comp) * MR_jacob_met(i,j)
             endif
-<<<<<<< HEAD
           else
             dumVertCoord_sp(1:nz_comp) = z_comp_sp(1:nz_comp)
-=======
->>>>>>> 073a27e (Updated scaled-z calculation.)
           endif
 
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
