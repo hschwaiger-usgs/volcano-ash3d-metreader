@@ -331,6 +331,9 @@
                                 Simtime_in_hours,TrajFlag,ntraj,OutStepInc_Minutes)
 
       call MR_Reset_Memory
+      if(allocated(        z_cc)) deallocate(z_cc)
+      if(allocated(    lon_grid)) deallocate(lon_grid)
+      if(allocated(    lat_grid)) deallocate(lat_grid)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Program ended normally."
@@ -487,7 +490,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inlon
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inlon
         if(inlon.lt.-360.0_8.or.&
@@ -509,7 +512,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inlat
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inlat
         if(inlat.lt.-90.0_4.or.&
@@ -530,7 +533,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inyear
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
 
         call get_command_argument(4, arg, length=inlen, status=iostatus)
@@ -542,7 +545,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inmonth
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inmonth
         if(inmonth.lt.1.or.&
@@ -563,7 +566,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inday
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inday
         if(inday.lt.1.or.&
@@ -584,7 +587,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inhour
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inhour
         if(inhour.lt.0.0_8.or.&
@@ -607,7 +610,7 @@
             call Print_Usage
           endif
           read(arg,*,iostat=iostatus,iomsg=iomessage)Simtime_in_hours
-          linebuffer080(1:inlen) = arg
+          linebuffer080 = arg(1:80)
           if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
           ! Error-checkSimtime_in_hours
           if(Simtime_in_hours.lt.0.0_8)then
@@ -635,7 +638,7 @@
               call Print_Usage
             endif
             read(arg,*,iostat=iostatus,iomsg=iomessage)ntraj
-            linebuffer080(1:inlen) = arg
+            linebuffer080 = arg(1:80)
             if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
             if(ntraj.le.0)then
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
@@ -673,7 +676,7 @@
                 call Print_Usage
               endif
               read(arg,*,iostat=iostatus,iomsg=iomessage)OutputLevels(i)
-              linebuffer080(1:inlen) = arg
+              linebuffer080 = arg(1:80)
               if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
               if(OutputLevels(i).le.0.0.or.OutputLevels(i).gt.30.0)then
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then 
@@ -724,7 +727,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage) infile
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         inquire( file=infile, exist=IsThere )
         if(.not.IsThere)then

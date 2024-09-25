@@ -150,7 +150,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)iwf
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check iwf
         if(iwf.ne.3.and.&
@@ -195,7 +195,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)idf
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check idf
         if(idf.ne.2.and.&
@@ -231,7 +231,7 @@
             call Print_Usage
           endif
           read(arg,*,iostat=iostatus,iomsg=iomessage)iy
-          linebuffer080(1:inlen) = arg
+          linebuffer080 = arg(1:80)
           if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         else
           iy = Current_Year
