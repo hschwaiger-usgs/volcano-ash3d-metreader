@@ -679,6 +679,12 @@
       close(fid_outfile)
 
       call MR_Reset_Memory
+      if(allocated(    x_cc)) deallocate(x_cc)
+      if(allocated(    y_cc)) deallocate(y_cc)
+      if(allocated(    z_cc)) deallocate(z_cc)
+      if(allocated(out3d_t1)) deallocate(out3d_t1)
+      if(allocated(out3d_t2)) deallocate(out3d_t2)
+      if(allocated(out3d   )) deallocate(out3d)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Program ended normally."
@@ -818,7 +824,7 @@
       endif
 
       read(arg,*,iostat=iostatus,iomsg=iomessage) infile
-      linebuffer080(1:inlen) = arg
+      linebuffer080 = arg(1:80)
       if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
       ! Error-check infile
       inquire( file=infile, exist=IsThere )

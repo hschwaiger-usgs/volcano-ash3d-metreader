@@ -383,6 +383,18 @@
 
         Met_gridtype      = "GLL0"
 
+      elseif(igrid.eq.181)then
+        ! Caribbean
+        ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID181
+
+        Met_proj4 = "LL"
+        IsLatLon_MetGrid  = .true.
+        IsGlobal_MetGrid  = .false.
+        IsRegular_MetGrid = .true.
+        isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.182)then
         ! HI N.Pacific 
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID182

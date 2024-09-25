@@ -103,6 +103,7 @@
       logical :: IsThere
       logical :: Truncate = .false.
       integer :: i
+      integer :: dum_i
       real(kind=8) :: steptime
 
       integer :: io                           ! Index for output streams
@@ -175,7 +176,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)infile
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check infile
         inquire( file=infile, exist=IsThere )
@@ -198,7 +199,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)intstep
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check intstep
         if(intstep.lt.0)then
@@ -219,7 +220,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inLLflag
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inLLflag
         if(inLLflag.eq.0)then
@@ -248,7 +249,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inlon
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inlon
         if(inlon.lt.-360.0_4.or.&
@@ -274,7 +275,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inlat
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inlat
         if(inlat.lt.-90.0_4.or.&
@@ -301,7 +302,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)intrunc
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! No error-checking on intrunc; check for T, false otherwise
         if(intrunc.eq.'t'.or.intrunc.eq.'T')then
@@ -330,7 +331,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)invars
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check invars
         if(invars.lt.0)then
@@ -355,7 +356,8 @@
 
         ! Get variable IDs
         do i=1,invars
-          call get_command_argument(7+i, arg, length=inlen, status=iostatus)
+          dum_i = 7+i
+          call get_command_argument(dum_i, arg, length=inlen, status=iostatus)
           if(iostatus.ne.0)then
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR : Could not read 7+i command-line argument"
@@ -364,7 +366,7 @@
             call Print_Usage
           endif
           read(arg,*,iostat=iostatus,iomsg=iomessage)invarlist(i)
-          linebuffer080(1:inlen) = arg
+          linebuffer080 = arg(1:80)
           if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
           ! Error-check invarlist(i)
           if(invarlist(i).le.0.or.invarlist(i).gt.MR_MAXVARS)then
@@ -378,7 +380,6 @@
             write(outlog(io),*)" Requested variable ID ",invarlist(i)
           endif;enddo
         enddo
-
         ! Get wind format
         call get_command_argument(8+invars, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
@@ -389,7 +390,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)iw
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check iw
         if(iw.ne.1.and.&
@@ -414,7 +415,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)iwf
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check iwf
         if(iwf.ne.0.and.&
@@ -462,7 +463,7 @@
           call Print_Usage
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)idf
-        linebuffer080(1:inlen) = arg
+        linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check idf
         if(idf.ne.1.and.&
@@ -490,7 +491,7 @@
             call Print_Usage
           endif
           read(arg,*,iostat=iostatus,iomsg=iomessage)inyear
-          linebuffer080(1:inlen) = arg
+          linebuffer080 = arg(1:80)
           if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         else
           inyear=0
@@ -505,7 +506,7 @@
             call Print_Usage
           endif
           read(arg,*,iostat=iostatus,iomsg=iomessage)inmonth
-          linebuffer080(1:inlen) = arg
+          linebuffer080 = arg(1:80)
           if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
           ! Error-check inmonth
           if(inmonth.lt.1.or.&
@@ -529,7 +530,7 @@
             call Print_Usage
           endif
           read(arg,*,iostat=iostatus,iomsg=iomessage)inday
-          linebuffer080(1:inlen) = arg
+          linebuffer080 = arg(1:80)
           if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
           ! Error-check inday
           if(inday.lt.1.or.&
@@ -553,7 +554,7 @@
             call Print_Usage
           endif
           read(arg,*,iostat=iostatus,iomsg=iomessage)inhour
-          linebuffer080(1:inlen) = arg
+          linebuffer080 = arg(1:80)
           if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
           ! Error-check inhour
           if(inhour.lt.0.0_8.or.&
@@ -707,6 +708,10 @@
       call GetMetProfile(invars,invarlist)
 
       call MR_Reset_Memory
+      if(allocated(invarlist)) deallocate(invarlist)
+      if(allocated(     z_cc)) deallocate(z_cc)
+      if(allocated( lon_grid)) deallocate(lon_grid)
+      if(allocated( lat_grid)) deallocate(lat_grid)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Program ended normally."

@@ -163,6 +163,7 @@
                                        ! 28 ECMWF Interim Reanalysis (ERA-Interim)  :: ds627.0  requires catted GRIB files
                                        ! 29 ECMWF ERA5                              :: ds633.0  iwind=5
                                        ! 30 ECMWF 20-Century (ERA-20C)              :: ds626.0  iwind=5
+                                       ! 31 NAM Caribbean 181 (0.108 deg)
                                        ! 32 Air Force Weather Agency subcenter = 0
                                        ! 33 CCSM3.0 Community Atmosphere Model (CAM)
                                        ! 40 NASA-GEOS Cp
@@ -511,10 +512,10 @@
 #endif
 
       ! Here are a few variables needed for sigma-altitude coordinates
-      logical          ,public :: MR_useTopo             = .false.
+      logical          ,public :: MR_useTopo        = .false.
       integer          ,public :: MR_ZScaling_ID    = 0  ! = 0 for no scaling (i.e. s = z)
                                                          ! = 1 for shifted-altitude (s=z-zsurf)
-                                                         ! = 2 for sigma-altitude (s=(z-zsurf)/(ztop-zsurf))
+                                                         ! = 2 for sigma-altitude (s=Ztop*(z-zsurf)/(ztop-zsurf))
       real(kind=sp)    ,public :: MR_ztop
 #ifdef USEPOINTERS
       real(kind=sp),dimension(:)   ,pointer, public :: s_comp_sp     => null() ! s-coordinates (scaled z) of comp. grid
@@ -1806,6 +1807,55 @@
 
         fill_value_sp = -9999.0_sp
 
+!      elseif (MR_iwindformat.eq.15) then
+!        ! NAM Caribbean 181 (0.108 degrees)
+!          !  
+!          !  nam.t00z.afwaca00.tm00.grib2.nc
+!
+!        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
+!        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+!          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+!                    "NAM Caribbean 0.108 degree"
+!        endif;enddo
+!
+!        MR_iGridCode = 181
+!        call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
+!        MR_Reannalysis = .false.
+!
+!        ! Mechanical / State variables
+!        Met_var_IsAvailable(1)=.true.
+!        Met_var_IsAvailable(2)=.true.
+!        Met_var_IsAvailable(3)=.true.
+!        Met_var_IsAvailable(4)=.true.
+!        Met_var_IsAvailable(5)=.true.
+!        Met_var_IsAvailable(7)=.true.
+!        ! Surface
+!        Met_var_IsAvailable(10)=.true.
+!        Met_var_IsAvailable(11)=.true.
+!        Met_var_IsAvailable(12)=.true.
+!        Met_var_IsAvailable(13)=.true.
+!        Met_var_IsAvailable(15)=.true.
+!        Met_var_IsAvailable(16)=.true.
+!        !Met_var_IsAvailable(17)=.true.
+!        !Met_var_IsAvailable(18)=.true.
+!        ! Atmospheric Structure
+!        Met_var_IsAvailable(20)=.true.
+!        Met_var_IsAvailable(21)=.true.
+!        Met_var_IsAvailable(23)=.true.
+!        ! Moisture
+!        Met_var_IsAvailable(30)=.true.
+!        Met_var_IsAvailable(31)=.true.
+!        Met_var_IsAvailable(32)=.true.
+!        Met_var_IsAvailable(33)=.true.
+!        ! Precipitation
+!        Met_var_IsAvailable(40)=.true.
+!        Met_var_IsAvailable(41)=.true.
+!        Met_var_IsAvailable(42)=.true.
+!        Met_var_IsAvailable(43)=.true.
+!        !Met_var_IsAvailable(44)=.true.
+!
+!        fill_value_sp = -9999.0_sp
+
       elseif (MR_iwindformat.eq.20)then
         ! GFS 0.5 deg
           !  http://www.nco.ncep.noaa.gov/pmb/products/gfs/
@@ -2291,6 +2341,55 @@
         fill_value_sp = -9999.0_sp
 
         Met_var_conversion_factor(1) = 1.0_sp/9.81_sp
+
+      elseif (MR_iwindformat.eq.31) then
+        ! NAM Caribbean 181 (0.108 degrees)
+          !  
+          !  nam.t00z.afwaca00.tm00.grib2.nc
+
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NAM Caribbean 0.108 degree"
+        endif;enddo
+
+        MR_iGridCode = 181
+        call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
+        MR_Reannalysis = .false.
+
+        ! Mechanical / State variables
+        Met_var_IsAvailable(1)=.true.
+        Met_var_IsAvailable(2)=.true.
+        Met_var_IsAvailable(3)=.true.
+        Met_var_IsAvailable(4)=.true.
+        Met_var_IsAvailable(5)=.true.
+        Met_var_IsAvailable(7)=.true.
+        ! Surface
+        Met_var_IsAvailable(10)=.true.
+        Met_var_IsAvailable(11)=.true.
+        Met_var_IsAvailable(12)=.true.
+        Met_var_IsAvailable(13)=.true.
+        Met_var_IsAvailable(15)=.true.
+        Met_var_IsAvailable(16)=.true.
+        !Met_var_IsAvailable(17)=.true.
+        !Met_var_IsAvailable(18)=.true.
+        ! Atmospheric Structure
+        Met_var_IsAvailable(20)=.true.
+        Met_var_IsAvailable(21)=.true.
+        Met_var_IsAvailable(23)=.true.
+        ! Moisture
+        Met_var_IsAvailable(30)=.true.
+        Met_var_IsAvailable(31)=.true.
+        Met_var_IsAvailable(32)=.true.
+        Met_var_IsAvailable(33)=.true.
+        ! Precipitation
+        Met_var_IsAvailable(40)=.true.
+        Met_var_IsAvailable(41)=.true.
+        Met_var_IsAvailable(42)=.true.
+        Met_var_IsAvailable(43)=.true.
+        !Met_var_IsAvailable(44)=.true.
+
+        fill_value_sp = -9999.0_sp
 
       elseif (MR_iwindformat.eq.32)then
          ! Air Force Weather Agency subcenter = 0
