@@ -150,7 +150,11 @@
       real(kind=sp) :: vbot,vtop,zbot,ztop,zhere
       integer :: scl_idx
       real(kind=sp),dimension(7) :: scl_m,scl_a
-      real(kind=sp) :: SurfPres,SurfTemp,SurfDewPoint,SurfWindDir,SurfWindSpeed
+      real(kind=sp) :: SurfPres
+      real(kind=sp) :: SurfTemp
+      real(kind=sp) :: SurfDewPoint
+      real(kind=sp) :: SurfWindDir
+      real(kind=sp) :: SurfWindSpeed
       integer :: SurfTemp_int
       logical :: In_hPa = .true.
       integer :: indx1,indx2,indx3
@@ -569,7 +573,7 @@
                     ! that so we know ' 0 ' will be in the string, but the first or
                     ! second coordinate could have this string too.  Need a better way.
 
-           ! HFS: compress repeated white spaces then look for the second space
+                    ! ToDo: Need to compress repeated white spaces then look for the second space
 
                     indx1 = index(linebuffer080,' 0 ')
                     indx2 = index(linebuffer080,'#')   ! Check for the comment marker
