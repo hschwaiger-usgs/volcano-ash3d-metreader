@@ -6,7 +6,7 @@
       implicit none
 
       integer             :: nargs
-      integer             :: status
+      integer             :: iostatus
       character (len=100) :: arg
       character(len=130)  :: grib_file
 
@@ -25,7 +25,7 @@
         !endif;enddo
         stop 1
       else
-        call get_command_argument(1, arg, status)
+        call get_command_argument(number=1, value=arg, status=iostatus)
         read(arg,*)grib_file
         call MR_Set_Gen_Index_GRIB(grib_file)
       endif

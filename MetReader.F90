@@ -3360,35 +3360,35 @@
 
       INTERFACE
         real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_HourOfDay
         integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_YearOfEvent
         integer function HS_MonthOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_MonthOfEvent
 
         integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_DayOfEvent
         integer function HS_DayOfYear(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_DayOfYear
         character (len=13) function HS_yyyymmddhhmm_since(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8) ,intent(in):: HoursSince
+          integer      ,intent(in):: byear
+          logical      ,intent(in):: useLeaps
         end function HS_yyyymmddhhmm_since
 
       END INTERFACE
@@ -3623,6 +3623,14 @@
         enddo
       enddo
 
+      ! If we went through all the steps and didn't find the first step, then issue an error message
+      if(.not.Found_First_Step)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"MR ERROR:  Something is wrong.  Could not find the first MetStep needed for"
+          write(errlog(io),*)"           the simulation."
+        endif;enddo
+        stop 1
+      endif
       ! If we went through all the steps and didn't find the last step, and if poststep=T, then
       ! increment istep and set nMetSteps_Comp
       if(.not.Found_Last_Step)then
@@ -4032,14 +4040,7 @@
       integer :: kc,knext
       integer :: np_fully_padded
       real(kind=sp),dimension(:),allocatable :: dumVertCoord_sp
-      logical :: useScaled
       integer :: io                           ! Index for output streams
-
-      if (MR_ZScaling_ID.gt.0.and.MR_useTopo) then
-        useScaled = .true.
-      else
-        useScaled = .false.
-      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -4195,15 +4196,7 @@
 
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
-      logical :: useScaled
-
       integer :: io                           ! Index for output streams
-
-      if (MR_ZScaling_ID.gt.0.and.MR_useTopo) then
-        useScaled = .true.
-      else
-        useScaled = .false.
-      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -4783,14 +4776,7 @@
 
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
-      logical :: useScaled
       integer :: io                           ! Index for output streams
-
-      if (MR_ZScaling_ID.gt.0.and.MR_useTopo) then
-        useScaled = .true.
-      else
-        useScaled = .false.
-      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -4901,14 +4887,7 @@
       integer :: i,j,k
       integer :: kc,knext
       real(kind=sp),dimension(:),allocatable :: dumVertCoord_sp
-      logical :: useScaled
       integer :: io                           ! Index for output streams
-
-      if (MR_ZScaling_ID.gt.0.and.MR_useTopo) then
-        useScaled = .true.
-      else
-        useScaled = .false.
-      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"

@@ -102,6 +102,7 @@ while [ "$t" -le ${HourMax} ]; do
   fileURL=${SERVER}/nam.${yearmonthday}/$INFILE
   time wget ${fileURL}
   /opt/USGS/bin/gen_GRIB2_index $INFILE
+  /opt/USGS/bin/autorun_scripts/grib2nc $INFILE
   t=$(($t+${HourStep}))
 done
 

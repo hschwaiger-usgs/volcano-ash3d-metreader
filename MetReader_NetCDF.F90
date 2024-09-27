@@ -1831,27 +1831,27 @@
 
       INTERFACE
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
-          integer            :: iyear
-          integer            :: imonth
-          integer            :: iday
-          real(kind=8)       :: hours
-          integer            :: byear
-          logical            :: useLeaps
+          integer     ,intent(in) :: iyear
+          integer     ,intent(in) :: imonth
+          integer     ,intent(in) :: iday
+          real(kind=8),intent(in) :: hours
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_hours_since_baseyear
         integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_YearOfEvent
         integer function HS_MonthOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_MonthOfEvent
         integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_DayOfEvent
         subroutine MR_NC_check_var_synonyms(ivar,ncid)
           integer, intent(in) :: ivar
@@ -2718,22 +2718,22 @@
 
       INTERFACE
         logical function HS_IsLeapYear(iyear)
-          integer            :: iyear
+          integer     ,intent(in) :: iyear
         end function HS_IsLeapYear
         integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_YearOfEvent
         integer function HS_MonthOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_MonthOfEvent
         integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_DayOfEvent
       END INTERFACE
 
