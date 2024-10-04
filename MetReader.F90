@@ -590,7 +590,7 @@
                                                                             ! discpln,param_cat,param_num,surf_class
       integer          ,dimension(MR_MAXVARS),public   :: Met_var_GRIB1_Param      !   indicatorOfParameter
       integer          ,dimension(MR_MAXVARS),public   :: Met_var_GRIB1_Table      !   table2Version
-      character(len=3) ,dimension(MR_MAXVARS),public   :: Met_var_GRIB1_St         ! level type (pl, src, 116 etc)
+      character(len=3) ,dimension(MR_MAXVARS),public   :: Met_var_GRIB1_St         ! level type: pl (100), sfc (001), etc
       integer                                ,public   :: MR_GRIB_Version  = 0
 
       real(kind=sp)    ,dimension(MR_MAXVARS),public   :: Met_var_conversion_factor
@@ -1212,7 +1212,7 @@
       Met_var_WMO_names(44)         = "PRATE"
       Met_var_GRIB2_DPcPnSt(44,1:4) = (/0, 1, 7, 1/)
       Met_var_GRIB1_Param(44)       = 59
-      Met_var_GRIB1_St(44)          = "pl"
+      Met_var_GRIB1_St(44)          = "1"
       Met_var_ndim(44)              = 3
         ! Convective liquid precipitation rate at surface  (kg/m2/s)
       Met_var_NC_names(45)          = "Precip.rate convective  (liquid)"
@@ -1220,19 +1220,19 @@
       Met_var_GRIB2_DPcPnSt(45,1:4) = (/0, 1, 196, 1/)
       Met_var_WMO_names(45)         = "CPRAT"
       Met_var_GRIB1_Param(45)       = 0
-      Met_var_GRIB1_St(45)          = "cprat"
+      Met_var_GRIB1_St(45)          = "1"
       Met_var_ndim(45)              = 3
         ! Large-scale precipitation rate at surface  (kg/m2/s)
       Met_var_NC_names(46)          = "Precip.rate large-scale (ice)"
       Met_var_WMO_names(46)         = ""
       Met_var_GRIB1_Param(46)       = 0
-      Met_var_GRIB1_St(46)          = ""
+      Met_var_GRIB1_St(46)          = "1"
       Met_var_ndim(46)              = 3
         ! Convective frozen precipitation rate at surface for (kg/m2/s)
       Met_var_NC_names(47)          = "Precip.rate convective  (ice)"
       Met_var_WMO_names(47)         = ""
       Met_var_GRIB1_Param(47)       = 0
-      Met_var_GRIB1_St(47)          = ""
+      Met_var_GRIB1_St(47)          = "1"
       Met_var_ndim(47)              = 3
 
       if (MR_iwindformat.eq.0) then
@@ -2716,16 +2716,16 @@
                                           !       since we need to know how many
                                           !       metsteps to allocate
 
-      integer      :: i
-      logical      :: IsThere
-      character(len=130) :: tmp_str
-      character(len=130) :: infile
+      integer            :: i
+      logical            :: IsThere      = .false.
+      character(len=130) :: tmp_str      = ""
+      character(len=130) :: iw5filename  = ""
       integer            :: ivar
       real(kind=8)       :: inhour
-      character(len=8)  :: date
-      character(len=10) :: time2
-      character(len=5)  :: zone
-      integer           :: values(8)
+      character(len=8)   :: date
+      character(len=10)  :: time2
+      character(len=5)   :: zone
+      integer            :: values(8)
 
       integer :: io                           ! Index for output streams
 
@@ -2838,7 +2838,7 @@
           inhour = MR_Comp_StartHour + (i-1)*MR_iw5_hours_per_file
           do ivar = 1,5
 #ifdef USENETCDF
-            call MR_Set_iwind5_filenames(inhour,ivar,infile)
+            call MR_Set_iwind5_filenames(inhour,ivar,iw5filename)
 #else
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: Currently, MR_iwind=5 required netcdf."
@@ -2846,14 +2846,14 @@
             endif;enddo
             stop 1
 #endif
-            inquire( file=trim(adjustl(infile)), exist=IsThere )
+            inquire( file=trim(adjustl(iw5filename)), exist=IsThere )
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-              write(outlog(io),*)" ",i,trim(adjustl(infile)),IsThere
+              write(outlog(io),*)" ",i,trim(adjustl(iw5filename)),IsThere
             endif;enddo
             if(.not.IsThere)then
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then           
                 write(errlog(io),*)"MR ERROR: Could not find windfile ",i
-                write(errlog(io),*)"          ",trim(adjustl(infile))
+                write(errlog(io),*)"          ",trim(adjustl(iw5filename))
               endif;enddo
               stop 1
             endif
@@ -2931,8 +2931,8 @@
       real(kind=8),intent(in) :: phi2
       real(kind=8),intent(in) :: ko
       real(kind=8),intent(in) :: Re
-      real(kind=8) :: inx1,outx,inx2
-      real(kind=8) :: iny1,outy,iny2
+!      real(kind=8) :: inx1,outx,inx2
+!      real(kind=8) :: iny1,outy,iny2
 
       integer :: io                           ! Index for output streams
 
@@ -3651,7 +3651,7 @@
           stop 1
         endif
       endif
- 150  format(8x,i3,9x,i4,4x,f15.2,2x,f13.2,10x,i4,8x,a25)
+ 150  format(8x,i3,9x,i4,4x,f15.2,2x,f13.2,10x,i4,8x,a31)
 
       ! We now have the number of steps needed for the computation
       ! Allocate the lists
@@ -3852,11 +3852,9 @@
       integer,intent(in)           :: istep
       logical, optional,intent(in) :: reset_first_time
 
-      integer :: ivar
+      integer      :: ivar
       logical,save :: first_time = .true.
-      integer :: k
-
-      integer :: io                           ! Index for output streams
+      integer      :: io                           ! Index for output streams
 
       if(present(reset_first_time)) then
         first_time = .true.

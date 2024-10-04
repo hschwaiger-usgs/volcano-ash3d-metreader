@@ -1786,7 +1786,7 @@
 
       integer :: nSTAT
       integer :: iostatus
-      character(len=120) :: iomessage
+      character(len=120) :: iomessage = ""
       integer :: ncid
       integer :: time_var_id = 0
       integer :: gph_var_id  = 0
@@ -1820,8 +1820,8 @@
       integer            :: iwstep
       logical            :: TimeHasUnitsAttr = .false.
       integer            :: i,ii
-      real(kind=dp),dimension(:), allocatable :: dum1d_dp
-      real(kind=sp),dimension(:), allocatable :: dum1d_sp
+      real(kind=dp),dimension(:),   allocatable :: dum1d_dp
+      real(kind=sp),dimension(:),   allocatable :: dum1d_sp
       integer(kind=4),dimension(:), allocatable :: dum1d_int4
       integer,dimension(8)  :: values
       integer               :: Current_Year,nt_tst
