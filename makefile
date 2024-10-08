@@ -104,6 +104,7 @@ USGSLIB = $(USGSINC) $(USGSLIBDIR) -lhourssince -lprojection
 #  GNU Fortran Compiler
 #  Intel Fortran Compiler
 #  AMD Optimizing C/C++/Fortran Compiler (aocc)
+#  Nvidia HPC Fortran Compiler (ncfortran)
 include $(SYSINC)
 ###############################################################################
 
