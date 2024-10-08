@@ -32,9 +32,9 @@
 #
 #  SYSTEM specifies which compiler to use
 #    Current available options are:
-#      gfortran , ifort , aocc
+#      gfortran , ifort , aocc , nvhpc
 #    This variable cannot be left blank
-#      
+#
 SYSTEM = gfortran
 SYSINC = make_$(SYSTEM).inc
 #

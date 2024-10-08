@@ -61,6 +61,10 @@
 
       module MetReader
 
+      ! This module requires Fortran 2003 or later
+      use ieee_arithmetic, only : &
+         ieee_is_nan
+
       implicit none
 
         ! Set everything to private by default
@@ -2821,9 +2825,6 @@
       if(MR_iwind.ne.5)then
         do i=1,MR_iwindfiles
           inquire( file=trim(adjustl(MR_windfiles(i))), exist=IsThere )
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-            write(outlog(io),*)"     ",i,trim(adjustl(MR_windfiles(i))),IsThere
-          endif;enddo
           if(.not.IsThere)then
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: Could not find windfile ",i
@@ -4261,7 +4262,7 @@
         endif
         do i = 1,nx_comp
           do j = 1,ny_comp
-            if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
+            if(ieee_is_nan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
           enddo
         enddo
         MR_dum3d_compH(:,:,k) = tmp_regrid2d_sp(:,:)
@@ -4386,7 +4387,7 @@
         endif
         do i = 1,nx_comp
           do j = 1,ny_comp
-            if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
+            if(ieee_is_nan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
           enddo
         enddo
         MR_dum3d_compP(:,:,k) = tmp_regrid2d_sp(:,:)
@@ -4528,7 +4529,7 @@
       endif
       do i = 1,nx_comp
         do j = 1,ny_comp
-          if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
+          if(ieee_is_nan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
         enddo
       enddo
       MR_dum2d_comp(:,:) = tmp_regrid2d_sp(:,:)
@@ -4819,7 +4820,7 @@
           endif
           do i = 1,nx_comp
             do j = 1,ny_comp
-              if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
+              if(ieee_is_nan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
             enddo
           enddo
           MR_dum3d_compH(:,:,k) = tmp_regrid2d_sp(:,:)
@@ -4844,7 +4845,7 @@
           endif
           do i = 1,nx_comp
             do j = 1,ny_comp
-              if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
+              if(ieee_is_nan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
             enddo
           enddo
           MR_dum3d_compP(:,:,k) = tmp_regrid2d_sp(:,:)
@@ -5041,7 +5042,7 @@
                               nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
       do i = 1,nx_comp
         do j = 1,ny_comp
-          if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
+          if(ieee_is_nan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
         enddo
       enddo
       MR_dum2d_comp(:,:) = tmp_regrid2d_sp(:,:)
@@ -5489,7 +5490,7 @@
           ! find all fill values in the column
           IsFillValue = .false.
           do k=1,nz2_max
-            if(isnan(dum_array_sp(i,j,k)).or.      &  ! Some windfiles use NaN's for fill values
+            if(ieee_is_nan(dum_array_sp(i,j,k)).or.      &  ! Some windfiles use NaN's for fill values
                dum_array_sp(i,j,k).eq.fill_val_sp) &  ! Others have a specific number for fill
                    IsFillValue(k) = .true.
           enddo
