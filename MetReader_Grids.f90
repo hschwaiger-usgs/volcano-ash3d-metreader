@@ -383,6 +383,18 @@
 
         Met_gridtype      = "GLL0"
 
+      elseif(igrid.eq.181)then
+        ! Caribbean
+        ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID181
+
+        Met_proj4 = "LL"
+        IsLatLon_MetGrid  = .true.
+        IsGlobal_MetGrid  = .false.
+        IsRegular_MetGrid = .true.
+        isGridRelative    = .true.
+
+        Met_gridtype      = "GLL0"
+
       elseif(igrid.eq.182)then
         ! HI N.Pacific 
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID182
@@ -2101,7 +2113,7 @@
       integer, parameter :: fid       = 110
 
       integer :: iostatus
-      character(len=120) :: iomessage
+      character(len=120) :: iomessage = ""
 
       logical            :: IsThere
       character(len=130) :: linebuffer130       ! We need to accommodate very long variable names
@@ -2174,6 +2186,12 @@
           write(errlog(io),*)iomessage
         endif;enddo
         stop 1
+      else
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Read StepInterval = ",StepInterval
+          write(outlog(io),*)"Note that this is for guidance and might be ignored we"
+          write(outlog(io),*)"the time information of each file can be read."
+        endif;enddo
       endif
       read(linebuffer130,*,iostat=iostatus,iomsg=iomessage)StepInterval,useLeap_str
       if (iostatus.eq.0)then
@@ -2237,7 +2255,7 @@
           idx=index(Met_dim_names(dimID),' ')
           if(idx.gt.1)then
             linebuffer130 = Met_dim_names(dimID)
-            Met_dim_names(dimID)       = linebuffer130(1:idx)
+            Met_dim_names(dimID)     = linebuffer130(1:idx)
           endif
           Met_dim_fac(i)             = fac
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
@@ -2293,7 +2311,7 @@
           idx=index(Met_var_NC_names(varID),' ')
           if(idx.gt.1)then
             linebuffer130 = Met_var_NC_names(varID)
-            Met_var_NC_names(varID)          = linebuffer130(1:idx)
+            Met_var_NC_names(varID)        = linebuffer130(1:idx)
           endif
           Met_var_ndim(varID)              = vndim
           Met_var_zdim_idx(varID)          = zindx

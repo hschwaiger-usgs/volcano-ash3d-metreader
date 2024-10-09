@@ -81,7 +81,7 @@
       subroutine MR_Read_Met_DimVars_ASCII_1d
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,verbosity_debug1,&
          x_fullmet_sp,y_fullmet_sp,p_fullmet_sp,Snd_idx,MR_nSnd_Locs,MR_iwindfiles,MR_windfile_stephour,&
          MR_windfiles_nt_fullmet,MR_windfile_starthour,Met_dim_IsAvailable,Met_var_IsAvailable,&
          MR_SndVars_metP,MR_SndVarsID,MR_Snd_np_fullmet,np_fullmet,z_approx,MR_windfiles,&
@@ -112,7 +112,7 @@
 
       integer :: iostatus
       integer :: ioerr
-      character(len=120) :: iomessage
+      character(len=120) :: iomessage = ""
       integer :: istr1,istr2,istr3
       integer :: ic,il,iil,iv
 
@@ -150,7 +150,11 @@
       real(kind=sp) :: vbot,vtop,zbot,ztop,zhere
       integer :: scl_idx
       real(kind=sp),dimension(7) :: scl_m,scl_a
-      real(kind=sp) :: SurfPres,SurfTemp,SurfDewPoint,SurfWindDir,SurfWindSpeed
+      real(kind=sp) :: SurfPres
+      real(kind=sp) :: SurfTemp
+      real(kind=sp) :: SurfDewPoint
+      real(kind=sp) :: SurfWindDir
+      real(kind=sp) :: SurfWindSpeed
       integer :: SurfTemp_int
       logical :: In_hPa = .true.
       integer :: indx1,indx2,indx3
@@ -187,12 +191,12 @@
           real(kind=sp),intent(out) :: Stat_lon,Stat_lat,Stat_elv
         end subroutine MR_Get_Radiosonde_Station_Coord
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
-          integer            :: iyear
-          integer            :: imonth
-          integer            :: iday
-          real(kind=8)       :: hours
-          integer            :: byear
-          logical            :: useLeaps
+          integer     ,intent(in)   :: iyear
+          integer     ,intent(in)   :: imonth
+          integer     ,intent(in)   :: iday
+          real(kind=8),intent(in)   :: hours
+          integer     ,intent(in)   :: byear
+          logical     ,intent(in)   :: useLeaps
         end function HS_hours_since_baseyear
       END INTERFACE
 
@@ -569,7 +573,7 @@
                     ! that so we know ' 0 ' will be in the string, but the first or
                     ! second coordinate could have this string too.  Need a better way.
 
-           ! HFS: compress repeated white spaces then look for the second space
+                    ! ToDo: Need to compress repeated white spaces then look for the second space
 
                     indx1 = index(linebuffer080,' 0 ')
                     indx2 = index(linebuffer080,'#')   ! Check for the comment marker
@@ -1075,6 +1079,11 @@
                 if(idx.gt.0)then
                   ! this is a file from NOAA Rapid Update Cycle ruc.noaa.gov
                   IsRUCNOAA = .true.
+                  if(IsRUCNOAA)then
+                    do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+                      write(errlog(io),*)'NOAA Rapid Update Cycle file format identified.'
+                    endif;enddo
+                  endif
                   ! the format for the TTAA block is 4 lines of 10 6-char strings
                   read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080_2
                   if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080_2,iomessage)
@@ -1524,17 +1533,41 @@
                   read(field_str,*,iostat=iostatus,iomsg=iomessage)rvalue1
                 if(iostatus.eq.0)then
                   field_str(1:7) = linebuffer080(8:14)
-                  if(len(trim(adjustl(field_str))).gt.0)&
+                  if(len(trim(adjustl(field_str))).gt.0)then
                     read(field_str,*,iostat=ioerr,iomsg=iomessage)ivalue2
+                    if(ioerr.ne.0)then
+                      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                        write(errlog(io),*)'Tried to read ivalue2 from linebuffer080, but failed.'
+                      endif;enddo
+                    endif
+                  endif
                   field_str(1:7) = linebuffer080(15:21)
-                  if(len(trim(adjustl(field_str))).gt.0)&
+                  if(len(trim(adjustl(field_str))).gt.0)then
                     read(field_str,*,iostat=ioerr,iomsg=iomessage)rvalue3
+                    if(ioerr.ne.0)then
+                      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                        write(errlog(io),*)'Tried to read rvalue3 from linebuffer080, but failed.'
+                      endif;enddo
+                    endif
+                  endif
                   field_str(1:7) = linebuffer080(43:49)
-                  if(len(trim(adjustl(field_str))).gt.0)&
+                  if(len(trim(adjustl(field_str))).gt.0)then
                     read(field_str,*,iostat=ioerr,iomsg=iomessage)ivalue4
+                    if(ioerr.ne.0)then
+                      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                        write(errlog(io),*)'Tried to read ivalue4 from linebuffer080, but failed.'
+                      endif;enddo
+                    endif
+                  endif
                   field_str(1:7) = linebuffer080(50:56)
-                  if(len(trim(adjustl(field_str))).gt.0)&
+                  if(len(trim(adjustl(field_str))).gt.0)then
                     read(field_str,*,iostat=ioerr,iomsg=iomessage)ivalue5
+                    if(ioerr.ne.0)then
+                      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                        write(errlog(io),*)'Tried to read ivalue5 from linebuffer080, but failed.'
+                      endif;enddo
+                    endif
+                  endif
                 endif
               enddo
               ! We should be at the first pressure level here.
@@ -3397,9 +3430,9 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
       integer :: i
       logical :: FoundStation
       integer :: iostatus
-      character(len=120) :: iomessage
-      character(len=80) :: linebuffer080
-      real(kind=sp)     :: tmp_sp
+      character(len=120) :: iomessage     = ""
+      character(len=80)  :: linebuffer080 = ""
+      real(kind=sp)      :: tmp_sp
 
       integer :: io                           ! Index for output streams
 

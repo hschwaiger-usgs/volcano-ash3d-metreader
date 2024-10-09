@@ -61,6 +61,10 @@
 
       module MetReader
 
+      ! This module requires Fortran 2003 or later
+      use ieee_arithmetic, only : &
+         ieee_is_nan
+
       implicit none
 
         ! Set everything to private by default
@@ -163,6 +167,7 @@
                                        ! 28 ECMWF Interim Reanalysis (ERA-Interim)  :: ds627.0  requires catted GRIB files
                                        ! 29 ECMWF ERA5                              :: ds633.0  iwind=5
                                        ! 30 ECMWF 20-Century (ERA-20C)              :: ds626.0  iwind=5
+                                       ! 31 NAM Caribbean 181 (0.108 deg)
                                        ! 32 Air Force Weather Agency subcenter = 0
                                        ! 33 CCSM3.0 Community Atmosphere Model (CAM)
                                        ! 40 NASA-GEOS Cp
@@ -511,10 +516,10 @@
 #endif
 
       ! Here are a few variables needed for sigma-altitude coordinates
-      logical          ,public :: MR_useTopo             = .false.
+      logical          ,public :: MR_useTopo        = .false.
       integer          ,public :: MR_ZScaling_ID    = 0  ! = 0 for no scaling (i.e. s = z)
                                                          ! = 1 for shifted-altitude (s=z-zsurf)
-                                                         ! = 2 for sigma-altitude (s=(z-zsurf)/(ztop-zsurf))
+                                                         ! = 2 for sigma-altitude (s=Ztop*(z-zsurf)/(ztop-zsurf))
       real(kind=sp)    ,public :: MR_ztop
 #ifdef USEPOINTERS
       real(kind=sp),dimension(:)   ,pointer, public :: s_comp_sp     => null() ! s-coordinates (scaled z) of comp. grid
@@ -589,7 +594,7 @@
                                                                             ! discpln,param_cat,param_num,surf_class
       integer          ,dimension(MR_MAXVARS),public   :: Met_var_GRIB1_Param      !   indicatorOfParameter
       integer          ,dimension(MR_MAXVARS),public   :: Met_var_GRIB1_Table      !   table2Version
-      character(len=3) ,dimension(MR_MAXVARS),public   :: Met_var_GRIB1_St         ! level type (pl, src, 116 etc)
+      character(len=3) ,dimension(MR_MAXVARS),public   :: Met_var_GRIB1_St         ! level type: pl (100), sfc (001), etc
       integer                                ,public   :: MR_GRIB_Version  = 0
 
       real(kind=sp)    ,dimension(MR_MAXVARS),public   :: Met_var_conversion_factor
@@ -1211,7 +1216,7 @@
       Met_var_WMO_names(44)         = "PRATE"
       Met_var_GRIB2_DPcPnSt(44,1:4) = (/0, 1, 7, 1/)
       Met_var_GRIB1_Param(44)       = 59
-      Met_var_GRIB1_St(44)          = "pl"
+      Met_var_GRIB1_St(44)          = "1"
       Met_var_ndim(44)              = 3
         ! Convective liquid precipitation rate at surface  (kg/m2/s)
       Met_var_NC_names(45)          = "Precip.rate convective  (liquid)"
@@ -1219,19 +1224,19 @@
       Met_var_GRIB2_DPcPnSt(45,1:4) = (/0, 1, 196, 1/)
       Met_var_WMO_names(45)         = "CPRAT"
       Met_var_GRIB1_Param(45)       = 0
-      Met_var_GRIB1_St(45)          = "cprat"
+      Met_var_GRIB1_St(45)          = "1"
       Met_var_ndim(45)              = 3
         ! Large-scale precipitation rate at surface  (kg/m2/s)
       Met_var_NC_names(46)          = "Precip.rate large-scale (ice)"
       Met_var_WMO_names(46)         = ""
       Met_var_GRIB1_Param(46)       = 0
-      Met_var_GRIB1_St(46)          = ""
+      Met_var_GRIB1_St(46)          = "1"
       Met_var_ndim(46)              = 3
         ! Convective frozen precipitation rate at surface for (kg/m2/s)
       Met_var_NC_names(47)          = "Precip.rate convective  (ice)"
       Met_var_WMO_names(47)         = ""
       Met_var_GRIB1_Param(47)       = 0
-      Met_var_GRIB1_St(47)          = ""
+      Met_var_GRIB1_St(47)          = "1"
       Met_var_ndim(47)              = 3
 
       if (MR_iwindformat.eq.0) then
@@ -1806,6 +1811,55 @@
 
         fill_value_sp = -9999.0_sp
 
+!      elseif (MR_iwindformat.eq.15) then
+!        ! NAM Caribbean 181 (0.108 degrees)
+!          !  
+!          !  nam.t00z.afwaca00.tm00.grib2.nc
+!
+!        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
+!        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+!          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+!                    "NAM Caribbean 0.108 degree"
+!        endif;enddo
+!
+!        MR_iGridCode = 181
+!        call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
+!        MR_Reannalysis = .false.
+!
+!        ! Mechanical / State variables
+!        Met_var_IsAvailable(1)=.true.
+!        Met_var_IsAvailable(2)=.true.
+!        Met_var_IsAvailable(3)=.true.
+!        Met_var_IsAvailable(4)=.true.
+!        Met_var_IsAvailable(5)=.true.
+!        Met_var_IsAvailable(7)=.true.
+!        ! Surface
+!        Met_var_IsAvailable(10)=.true.
+!        Met_var_IsAvailable(11)=.true.
+!        Met_var_IsAvailable(12)=.true.
+!        Met_var_IsAvailable(13)=.true.
+!        Met_var_IsAvailable(15)=.true.
+!        Met_var_IsAvailable(16)=.true.
+!        !Met_var_IsAvailable(17)=.true.
+!        !Met_var_IsAvailable(18)=.true.
+!        ! Atmospheric Structure
+!        Met_var_IsAvailable(20)=.true.
+!        Met_var_IsAvailable(21)=.true.
+!        Met_var_IsAvailable(23)=.true.
+!        ! Moisture
+!        Met_var_IsAvailable(30)=.true.
+!        Met_var_IsAvailable(31)=.true.
+!        Met_var_IsAvailable(32)=.true.
+!        Met_var_IsAvailable(33)=.true.
+!        ! Precipitation
+!        Met_var_IsAvailable(40)=.true.
+!        Met_var_IsAvailable(41)=.true.
+!        Met_var_IsAvailable(42)=.true.
+!        Met_var_IsAvailable(43)=.true.
+!        !Met_var_IsAvailable(44)=.true.
+!
+!        fill_value_sp = -9999.0_sp
+
       elseif (MR_iwindformat.eq.20)then
         ! GFS 0.5 deg
           !  http://www.nco.ncep.noaa.gov/pmb/products/gfs/
@@ -2292,6 +2346,55 @@
 
         Met_var_conversion_factor(1) = 1.0_sp/9.81_sp
 
+      elseif (MR_iwindformat.eq.31) then
+        ! NAM Caribbean 181 (0.108 degrees)
+          !  
+          !  nam.t00z.afwaca00.tm00.grib2.nc
+
+        if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NAM Caribbean 0.108 degree"
+        endif;enddo
+
+        MR_iGridCode = 181
+        call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
+        MR_Reannalysis = .false.
+
+        ! Mechanical / State variables
+        Met_var_IsAvailable(1)=.true.
+        Met_var_IsAvailable(2)=.true.
+        Met_var_IsAvailable(3)=.true.
+        Met_var_IsAvailable(4)=.true.
+        Met_var_IsAvailable(5)=.true.
+        Met_var_IsAvailable(7)=.true.
+        ! Surface
+        Met_var_IsAvailable(10)=.true.
+        Met_var_IsAvailable(11)=.true.
+        Met_var_IsAvailable(12)=.true.
+        Met_var_IsAvailable(13)=.true.
+        Met_var_IsAvailable(15)=.true.
+        Met_var_IsAvailable(16)=.true.
+        !Met_var_IsAvailable(17)=.true.
+        !Met_var_IsAvailable(18)=.true.
+        ! Atmospheric Structure
+        Met_var_IsAvailable(20)=.true.
+        Met_var_IsAvailable(21)=.true.
+        Met_var_IsAvailable(23)=.true.
+        ! Moisture
+        Met_var_IsAvailable(30)=.true.
+        Met_var_IsAvailable(31)=.true.
+        Met_var_IsAvailable(32)=.true.
+        Met_var_IsAvailable(33)=.true.
+        ! Precipitation
+        Met_var_IsAvailable(40)=.true.
+        Met_var_IsAvailable(41)=.true.
+        Met_var_IsAvailable(42)=.true.
+        Met_var_IsAvailable(43)=.true.
+        !Met_var_IsAvailable(44)=.true.
+
+        fill_value_sp = -9999.0_sp
+
       elseif (MR_iwindformat.eq.32)then
          ! Air Force Weather Agency subcenter = 0
          ! GALWEM
@@ -2617,16 +2720,16 @@
                                           !       since we need to know how many
                                           !       metsteps to allocate
 
-      integer      :: i
-      logical      :: IsThere
-      character(len=130) :: tmp_str
-      character(len=130) :: infile
+      integer            :: i
+      logical            :: IsThere      = .false.
+      character(len=130) :: tmp_str      = ""
+      character(len=130) :: iw5filename  = ""
       integer            :: ivar
       real(kind=8)       :: inhour
-      character(len=8)  :: date
-      character(len=10) :: time2
-      character(len=5)  :: zone
-      integer           :: values(8)
+      character(len=8)   :: date
+      character(len=10)  :: time2
+      character(len=5)   :: zone
+      integer            :: values(8)
 
       integer :: io                           ! Index for output streams
 
@@ -2722,9 +2825,6 @@
       if(MR_iwind.ne.5)then
         do i=1,MR_iwindfiles
           inquire( file=trim(adjustl(MR_windfiles(i))), exist=IsThere )
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-            write(outlog(io),*)"     ",i,trim(adjustl(MR_windfiles(i))),IsThere
-          endif;enddo
           if(.not.IsThere)then
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: Could not find windfile ",i
@@ -2739,7 +2839,7 @@
           inhour = MR_Comp_StartHour + (i-1)*MR_iw5_hours_per_file
           do ivar = 1,5
 #ifdef USENETCDF
-            call MR_Set_iwind5_filenames(inhour,ivar,infile)
+            call MR_Set_iwind5_filenames(inhour,ivar,iw5filename)
 #else
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: Currently, MR_iwind=5 required netcdf."
@@ -2747,14 +2847,14 @@
             endif;enddo
             stop 1
 #endif
-            inquire( file=trim(adjustl(infile)), exist=IsThere )
+            inquire( file=trim(adjustl(iw5filename)), exist=IsThere )
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-              write(outlog(io),*)" ",i,trim(adjustl(infile)),IsThere
+              write(outlog(io),*)" ",i,trim(adjustl(iw5filename)),IsThere
             endif;enddo
             if(.not.IsThere)then
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then           
                 write(errlog(io),*)"MR ERROR: Could not find windfile ",i
-                write(errlog(io),*)"          ",trim(adjustl(infile))
+                write(errlog(io),*)"          ",trim(adjustl(iw5filename))
               endif;enddo
               stop 1
             endif
@@ -2832,8 +2932,8 @@
       real(kind=8),intent(in) :: phi2
       real(kind=8),intent(in) :: ko
       real(kind=8),intent(in) :: Re
-      real(kind=8) :: inx1,outx,inx2
-      real(kind=8) :: iny1,outy,iny2
+!      real(kind=8) :: inx1,outx,inx2
+!      real(kind=8) :: iny1,outy,iny2
 
       integer :: io                           ! Index for output streams
 
@@ -3114,14 +3214,14 @@
       if(MR_useTopo)then
         if(MR_iwind.eq.1)then
           ! There is no grid for ASCII input, so just use comp grid
-          allocate(MR_Topo_met(nx_comp,ny_comp));  MR_Topo_met(:,:)   = 0.0_sp
-          allocate(MR_jacob_met(nx_comp,ny_comp)); MR_jacob_met(:,:)  = 1.0_sp
+          allocate(MR_Topo_met(-1:nx_comp+2,-1:ny_comp+2));  MR_Topo_met(:,:)   = 0.0_sp
+          allocate(MR_jacob_met(-1:nx_comp+2,-1:ny_comp+2)); MR_jacob_met(:,:)  = 1.0_sp
         else
           allocate(MR_Topo_met(nx_submet,ny_submet));  MR_Topo_met(:,:)   = 0.0_sp
           allocate(MR_jacob_met(nx_submet,ny_submet)); MR_jacob_met(:,:)  = 1.0_sp
         endif
-        allocate(MR_Topo_comp(nx_comp,ny_comp));     MR_Topo_comp(:,:)  = 0.0_sp
-        allocate(MR_jacob_comp(nx_comp,ny_comp));    MR_jacob_comp(:,:) = 1.0_sp
+        allocate(MR_Topo_comp(-1:nx_comp+2,-1:ny_comp+2));     MR_Topo_comp(:,:)  = 0.0_sp
+        allocate(MR_jacob_comp(-1:nx_comp+2,-1:ny_comp+2));    MR_jacob_comp(:,:) = 1.0_sp
       endif
 
       CALLED_MR_Initialize_Met_Grids = .true.
@@ -3180,33 +3280,31 @@
         endif
       elseif(MR_ZScaling_ID.eq.1)then
         ! shifted-altitude (s=z-zsurf)
-        MR_jacob_comp(1:nx_comp,1:ny_comp) = 1.0_sp
+        MR_jacob_comp(-1:nx_comp+2,-1:ny_comp+2) = 1.0_sp
         if(MR_iwind.eq.1)then
           MR_jacob_met = MR_jacob_comp
         else
           MR_jacob_met(1:nx_submet,1:ny_submet) = 1.0_sp
         endif
       elseif(MR_ZScaling_ID.eq.2)then
-        ! sigma-altitude (s=(z-zsurf)/(top-surf))
+        ! sigma-altitude (s=Ztop*(z-zsurf)/(Ztop-zsurf))
         !  Note: this is not the same as in Jacobson Eq 5.89, but we want the orientation of the
         !        vertical coordinate to be the same (-> positive Jacobian). Effect of topography
         !        diminishes with altitude.
-        !        Alternatively, we could use s=z-zsurf which has both the same orientation and units,
-        !        but the constant s level have the same topographic influence throughout.
 
-        ! Just set the s-values for now without appling topography
-        MR_jacob_comp(1:nx_comp,1:ny_comp) = MR_ztop - MR_Topo_comp(1:nx_comp,1:ny_comp)
+        ! Just set the s-values for now without applying topography
+        MR_jacob_comp(-1:nx_comp+2,-1:ny_comp+2) = (MR_ztop - MR_Topo_comp(-1:nx_comp+2,-1:ny_comp+2))/MR_ztop
         if(MR_iwind.eq.1)then
           MR_jacob_met = MR_jacob_comp
         else
-          MR_jacob_met(1:nx_submet,1:ny_submet) = MR_ztop - MR_Topo_met(1:nx_submet,1:ny_submet)
+          MR_jacob_met(1:nx_submet,1:ny_submet) = (MR_ztop - MR_Topo_met(1:nx_submet,1:ny_submet))/MR_ztop
         endif
       else
         do io=1,MR_nio;if(VB(io).le.verbosity_production)then
           write(outlog(io),*)"MR WARNING: Topography scheme not recognized."
           write(outlog(io),*)"            Reverting to altitude."
         endif;enddo
-        MR_jacob_comp(1:nx_comp,1:ny_comp) = 1.0_sp
+        MR_jacob_comp(-1:nx_comp+2,-1:ny_comp+2) = 1.0_sp
         if(MR_iwind.eq.1)then
           MR_jacob_met = MR_jacob_comp
         else
@@ -3263,35 +3361,35 @@
 
       INTERFACE
         real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_HourOfDay
         integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_YearOfEvent
         integer function HS_MonthOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_MonthOfEvent
 
         integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_DayOfEvent
         integer function HS_DayOfYear(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
         end function HS_DayOfYear
         character (len=13) function HS_yyyymmddhhmm_since(HoursSince,byear,useLeaps)
-          real(kind=8)          :: HoursSince
-          integer               :: byear
-          logical               :: useLeaps
+          real(kind=8) ,intent(in):: HoursSince
+          integer      ,intent(in):: byear
+          logical      ,intent(in):: useLeaps
         end function HS_yyyymmddhhmm_since
 
       END INTERFACE
@@ -3526,6 +3624,14 @@
         enddo
       enddo
 
+      ! If we went through all the steps and didn't find the first step, then issue an error message
+      if(.not.Found_First_Step)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          write(errlog(io),*)"MR ERROR:  Something is wrong.  Could not find the first MetStep needed for"
+          write(errlog(io),*)"           the simulation."
+        endif;enddo
+        stop 1
+      endif
       ! If we went through all the steps and didn't find the last step, and if poststep=T, then
       ! increment istep and set nMetSteps_Comp
       if(.not.Found_Last_Step)then
@@ -3546,7 +3652,7 @@
           stop 1
         endif
       endif
- 150  format(8x,i3,9x,i4,4x,f15.2,2x,f13.2,10x,i4,8x,a25)
+ 150  format(8x,i3,9x,i4,4x,f15.2,2x,f13.2,10x,i4,8x,a31)
 
       ! We now have the number of steps needed for the computation
       ! Allocate the lists
@@ -3747,11 +3853,9 @@
       integer,intent(in)           :: istep
       logical, optional,intent(in) :: reset_first_time
 
-      integer :: ivar
+      integer      :: ivar
       logical,save :: first_time = .true.
-      integer :: k
-
-      integer :: io                           ! Index for output streams
+      integer      :: io                           ! Index for output streams
 
       if(present(reset_first_time)) then
         first_time = .true.
@@ -3935,14 +4039,7 @@
       integer :: kc,knext
       integer :: np_fully_padded
       real(kind=sp),dimension(:),allocatable :: dumVertCoord_sp
-      logical :: useScaled
       integer :: io                           ! Index for output streams
-
-      if (MR_ZScaling_ID.gt.0.and.MR_useTopo) then
-        useScaled = .true.
-      else
-        useScaled = .false.
-      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -4028,21 +4125,30 @@
             endif
           endif
 
-          if (useScaled)then
+          if(MR_ZScaling_ID.eq.0)then
+            dumVertCoord_sp(1:nz_comp) = z_comp_sp(1:nz_comp)
+          elseif(MR_ZScaling_ID.eq.1)then
+            dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + s_comp_sp(1:nz_comp)
+          elseif(MR_ZScaling_ID.eq.2)then
               ! this recovers the real-world z coordinate from the sigma level and topography
             if(MR_iwind.eq.1)then
               ! this is incorrect (should be MR_jacob_met(i,j)), but this isn't set for iwind=1
               dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
                                              s_comp_sp(1:nz_comp) * MR_jacob_comp(1,1)
+            else
+              dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
+                                             s_comp_sp(1:nz_comp) * MR_jacob_met(i,j)
             endif
-            dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
-                                           s_comp_sp(1:nz_comp) * MR_jacob_met(i,j)
-          else
-            dumVertCoord_sp(1:nz_comp) = z_comp_sp(1:nz_comp)
           endif
+
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !   Interpolate these values to a regular grid with
           !   spacing equal to the simulation grid
+          do io=1,MR_nio;if(VB(io).le.verbosity_debug2)then
+            write(outlog(io),*)
+            write(outlog(io),*)"Callling MR_Regrid_P2H_linear from MR_Read_3d_MetH_Variable for ",i,j
+          endif;enddo
+
           call MR_Regrid_P2H_linear(np_fullmet+2, z_col_metP,       var_col_metP, & 
                                     nz_comp,      dumVertCoord_sp,  var_col_metH)
           MR_dum3d_metH(i,j,:) = var_col_metH
@@ -4089,15 +4195,7 @@
 
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
-      logical :: useScaled
-
       integer :: io                           ! Index for output streams
-
-      if (MR_ZScaling_ID.gt.0.and.MR_useTopo) then
-        useScaled = .true.
-      else
-        useScaled = .false.
-      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -4164,7 +4262,7 @@
         endif
         do i = 1,nx_comp
           do j = 1,ny_comp
-            if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
+            if(ieee_is_nan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
           enddo
         enddo
         MR_dum3d_compH(:,:,k) = tmp_regrid2d_sp(:,:)
@@ -4289,7 +4387,7 @@
         endif
         do i = 1,nx_comp
           do j = 1,ny_comp
-            if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
+            if(ieee_is_nan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
           enddo
         enddo
         MR_dum3d_compP(:,:,k) = tmp_regrid2d_sp(:,:)
@@ -4431,7 +4529,7 @@
       endif
       do i = 1,nx_comp
         do j = 1,ny_comp
-          if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
+          if(ieee_is_nan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
         enddo
       enddo
       MR_dum2d_comp(:,:) = tmp_regrid2d_sp(:,:)
@@ -4677,14 +4775,7 @@
 
       integer             :: i,j,k
       real(kind=sp),dimension(:,:),allocatable :: tmp_regrid2d_sp
-      logical :: useScaled
       integer :: io                           ! Index for output streams
-
-      if (MR_ZScaling_ID.gt.0.and.MR_useTopo) then
-        useScaled = .true.
-      else
-        useScaled = .false.
-      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -4729,7 +4820,7 @@
           endif
           do i = 1,nx_comp
             do j = 1,ny_comp
-              if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
+              if(ieee_is_nan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
             enddo
           enddo
           MR_dum3d_compH(:,:,k) = tmp_regrid2d_sp(:,:)
@@ -4754,7 +4845,7 @@
           endif
           do i = 1,nx_comp
             do j = 1,ny_comp
-              if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
+              if(ieee_is_nan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
             enddo
           enddo
           MR_dum3d_compP(:,:,k) = tmp_regrid2d_sp(:,:)
@@ -4795,14 +4886,7 @@
       integer :: i,j,k
       integer :: kc,knext
       real(kind=sp),dimension(:),allocatable :: dumVertCoord_sp
-      logical :: useScaled
       integer :: io                           ! Index for output streams
-
-      if (MR_ZScaling_ID.gt.0.and.MR_useTopo) then
-        useScaled = .true.
-      else
-        useScaled = .false.
-      endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -4876,17 +4960,32 @@
           z_col_metP(np_fullmet+2) = max(z_comp_sp(nz_comp)+1.0_sp,z_col_metP(np_fullmet+1)+1.0_sp)
           var_col_metP(np_fullmet+2) = var_col_metP(np_fullmet+1)
 
-          if (useScaled) then
-              ! this recovers the real-world z coordinate from the sigma level and topography
-            dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
-                                           s_comp_sp(1:nz_comp) * MR_jacob_met(i,j)
-          else
+          if(MR_ZScaling_ID.eq.0)then
             dumVertCoord_sp(1:nz_comp) = z_comp_sp(1:nz_comp)
+          elseif(MR_ZScaling_ID.eq.1)then
+            dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + s_comp_sp(1:nz_comp)
+          elseif(MR_ZScaling_ID.eq.2)then
+              ! this recovers the real-world z coordinate from the sigma level and topography
+            if(MR_iwind.eq.1)then
+              ! this is incorrect (should be MR_jacob_met(i,j)), but this isn't set for iwind=1
+              dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
+                                             s_comp_sp(1:nz_comp) * MR_jacob_comp(1,1)
+            else
+              dumVertCoord_sp(1:nz_comp) = MR_Topo_met(i,j) + &
+                                             s_comp_sp(1:nz_comp) * MR_jacob_met(i,j)
+            endif
           endif
 
           !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !   Interpolate these values to a regular grid with
           !   spacing equal to the simulation grid
+
+
+          do io=1,MR_nio;if(VB(io).le.verbosity_debug2)then
+            write(outlog(io),*)
+            write(outlog(io),*)"Callling MR_Regrid_P2H_linear from MR_Regrid_MetP_to_MetH for ",i,j
+          endif;enddo
+
           call MR_Regrid_P2H_linear(np_fullmet+2, z_col_metP,       var_col_metP, &
                                     nz_comp,      dumVertCoord_sp,  var_col_metH)
           MR_dum3d_metH(i,j,:) = var_col_metH
@@ -4943,7 +5042,7 @@
                               nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
       do i = 1,nx_comp
         do j = 1,ny_comp
-          if(isnan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
+          if(ieee_is_nan(tmp_regrid2d_sp(i,j)))tmp_regrid2d_sp(i,j)=0.0_sp
         enddo
       enddo
       MR_dum2d_comp(:,:) = tmp_regrid2d_sp(:,:)
@@ -5391,7 +5490,7 @@
           ! find all fill values in the column
           IsFillValue = .false.
           do k=1,nz2_max
-            if(isnan(dum_array_sp(i,j,k)).or.      &  ! Some windfiles use NaN's for fill values
+            if(ieee_is_nan(dum_array_sp(i,j,k)).or.      &  ! Some windfiles use NaN's for fill values
                dum_array_sp(i,j,k).eq.fill_val_sp) &  ! Others have a specific number for fill
                    IsFillValue(k) = .true.
           enddo
