@@ -2189,7 +2189,7 @@
       else
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
           write(outlog(io),*)"Read StepInterval = ",StepInterval
-          write(outlog(io),*)"Note that this is for guidance and might be ignored we"
+          write(outlog(io),*)"Note that this is for guidance and might be ignored when"
           write(outlog(io),*)"the time information of each file can be read."
         endif;enddo
       endif
