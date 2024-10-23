@@ -48,7 +48,7 @@
     "organization": "U.S. Geological Survey",
     "description": "MetReader is a library written in fortran 90 that provides an interface to numerical weather prediction (NWP) data, or other forms of meteorological data, such as radiosonde or other 1-d data.",
     "version": "1.0.0",
-    "status": "Production
+    "status": "Production",
 
     "permissions": {
       "usageType": "openSource",
