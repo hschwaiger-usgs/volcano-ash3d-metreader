@@ -3,8 +3,52 @@
     "name": "metreader",
     "organization": "U.S. Geological Survey",
     "description": "MetReader is a library written in fortran 90 that provides an interface to numerical weather prediction (NWP) data, or other forms of meteorological data, such as radiosonde or other 1-d data.",
+    "version": "master",
+    "status": "Development",
+
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain, CC0-1.0",
+          "URL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-metreader/-/raw/master/LICENSE.md"
+        }
+      ]
+    },
+
+    "homepageURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-metreader/",
+    "downloadURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-metreader/-/archive/master/volcano-ash3d-metreader-master.zip",
+    "disclaimerURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-metreader/-/raw/master/DISCLAIMER.md",
+    "repositoryURL": "https://code.usgs.gov/vsc/ash3d/volcano-ash3d-metreader.git",
+    "vcs": "git",
+
+    "laborHours": 0,
+
+    "tags": [
+      "USGS",
+      "Ash3d",
+      "AVOG2S"
+    ],
+
+    "languages": [
+      "fortran"
+    ],
+
+    "contact": {
+      "name": "Hans F. Schwaiger",
+      "email": "hschwaiger@usgs.gov"
+    },
+
+    "date": {
+      "metadataLastUpdated": "2024-10-22"
+    }
+  },
+  {
+    "name": "metreader",
+    "organization": "U.S. Geological Survey",
+    "description": "MetReader is a library written in fortran 90 that provides an interface to numerical weather prediction (NWP) data, or other forms of meteorological data, such as radiosonde or other 1-d data.",
     "version": "1.0.0",
-    "status": "Release Candidate",
+    "status": "Production",
 
     "permissions": {
       "usageType": "openSource",
@@ -40,7 +84,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2024-07-25"
+      "metadataLastUpdated": "2024-10-22"
     }
   }
 ]
