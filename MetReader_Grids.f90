@@ -845,7 +845,7 @@
          MR_dum2d_comp_int,MR_dum2d_comp,MR_dum3d_compP,MR_dum3d_compH,&
          MR_geoH_metP_last,MR_geoH_metP_next,ilhalf_fm_l,ilhalf_nx,irhalf_fm_l,irhalf_nx,&
          istart,jstart,MR_v_ER_metP,MR_dum3d_compH_2,MR_dum3d_compP_2,theta_Comp,&
-         x_fullmet_sp,y_fullmet_sp,MR_dx_met,&
+         x_fullmet_sp,y_fullmet_sp,MR_dx_met,MR_sigma_nz_submet,&
          MR_dy_met,y_comp_sp,iend,ilhalf_fm_r,IsGlobal_MetGrid,&
          Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
          isGridRelative,bilin_map_wgt,CompPoint_on_subMet_idx,y_pad_South,y_pad_North,&
@@ -1213,9 +1213,11 @@
       if(IsPeriodic_CompGrid)then
         allocate( x_submet_sp(0:nx_submet+1))
         allocate( MR_dx_submet(0:nx_submet+1))
+        allocate( MR_sigma_nz_submet(0:nx_submet+1,1:nx_submet))
       else
         allocate( x_submet_sp(1:nx_submet))
         allocate( MR_dx_submet(1:nx_submet))
+        allocate( MR_sigma_nz_submet(1:nx_submet,1:nx_submet))
       endif
       allocate( y_submet_sp(1:ny_submet))
       allocate( MR_dy_submet(1:ny_submet))
