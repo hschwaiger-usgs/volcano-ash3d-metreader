@@ -3840,9 +3840,9 @@
 !
 !     MR_Read_HGT_arrays
 !
-!     This subroutine basically does the same thing as Read_3d_MetP_Variable
+!     This subroutine basically does the same thing as MR_Read_3d_MetP_Variable
 !     but specifically for the variable HGT (ivar=1).  This is needed because the
-!     more general Read_3d_MetP_Variable just returns data in dum3d_metP and
+!     more general MR_Read_3d_MetP_Variable just returns data in dum3d_metP and
 !     expects the calling program to save the results.  The HGT variables,
 !     geoH_metP_last and geoH_metP_next need to persist locally, however,  since they are
 !     used in QC calculations and are needed in converting PresVertVel (from Pa
