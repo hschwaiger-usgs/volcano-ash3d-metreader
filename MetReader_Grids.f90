@@ -1213,11 +1213,11 @@
       if(IsPeriodic_CompGrid)then
         allocate( x_submet_sp(0:nx_submet+1))
         allocate( MR_dx_submet(0:nx_submet+1))
-        allocate( MR_sigma_nz_submet(0:nx_submet+1,1:nx_submet))
+        allocate( MR_sigma_nz_submet(0:nx_submet+1,1:ny_submet))
       else
         allocate( x_submet_sp(1:nx_submet))
         allocate( MR_dx_submet(1:nx_submet))
-        allocate( MR_sigma_nz_submet(1:nx_submet,1:nx_submet))
+        allocate( MR_sigma_nz_submet(1:nx_submet,1:ny_submet))
       endif
       allocate( y_submet_sp(1:ny_submet))
       allocate( MR_dy_submet(1:ny_submet))
@@ -1605,7 +1605,6 @@
         write(outlog(io),*)"----------                          MR_Set_Comp2Met_Map      ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
-
       ! We now have the full definition of the Met grid and the Comp grid
       ! Figure out if we need to do any remapping
       !Possibilities are:

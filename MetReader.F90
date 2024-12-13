@@ -3168,39 +3168,46 @@
       !  These are currently only needed for calculating DelMetP_Dx and
       !  DelMetP_Dy
       if(IsLatLon_MetGrid)then
-        allocate(rdphi_MetP_sp(ny_submet,np_fullmet))             ;   rdphi_MetP_sp(:,:)=0.0_sp
-        allocate(rdlambda_MetP_sp(nx_submet,ny_submet,np_fullmet));rdlambda_MetP_sp(:,:,:)=0.0_sp
-        do k=1,np_fullmet
-          if(IsRegular_MetGrid)then
-            ! length scale along y (in meters)
-            rdphi_MetP_sp(:,k) = dy_met_const*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))*1000.0_sp
-            do j=1,ny_submet
-              ! length scale along x (in meters)
-              rdlambda_MetP_sp(:,j,k) =(MR_RAD_EARTH+z_approx(k))*1000.0_sp * &
-                                      cos(MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*dy_met_const)) * &
-                                      dx_met_const*MR_DEG2RAD
-            enddo
-          else
-            do i=1,nx_submet
+#ifdef USEPOINTERS
+        if(associated(MR_dx_met))then
+#else
+        if(allocated(MR_dx_met))then
+#endif
+          allocate(rdphi_MetP_sp(ny_submet,np_fullmet))             ;   rdphi_MetP_sp(:,:)=0.0_sp
+          allocate(rdlambda_MetP_sp(nx_submet,ny_submet,np_fullmet));rdlambda_MetP_sp(:,:,:)=0.0_sp
+
+          do k=1,np_fullmet
+            if(IsRegular_MetGrid)then
               ! length scale along y (in meters)
-              rdphi_MetP_sp(:,k) = MR_dy_submet(:)*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))*1000.0_sp
+              rdphi_MetP_sp(:,k) = dy_met_const*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))*1000.0_sp
               do j=1,ny_submet
                 ! length scale along x (in meters)
-                rdlambda_MetP_sp(i,j,k) =(MR_RAD_EARTH+z_approx(k))*1000.0_sp * &
-                                        cos(MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*MR_dy_submet(j))) * &
-                                        MR_dx_submet(i)*MR_DEG2RAD
+                rdlambda_MetP_sp(:,j,k) =(MR_RAD_EARTH+z_approx(k))*1000.0_sp * &
+                                        cos(MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*dy_met_const)) * &
+                                        dx_met_const*MR_DEG2RAD
               enddo
-            enddo
-          endif
-        enddo
-        MR_minlen = maxval(rdlambda_MetP_sp(:,:,:))
-        do i=1,nx_submet
-          do j=1,ny_submet
-            if(MR_minlen.gt.rdlambda_MetP_sp(i,j,1)) MR_minlen=rdlambda_MetP_sp(i,j,1)
-            if(MR_minlen.gt.rdphi_MetP_sp(j,1))      MR_minlen=rdphi_MetP_sp(j,1)
-            MR_sigma_nz_submet(i,j) = rdphi_MetP_sp(j,1)*rdlambda_MetP_sp(i,j,1)
+            else
+              do i=1,nx_submet
+                ! length scale along y (in meters)
+                rdphi_MetP_sp(:,k) = MR_dy_submet(:)*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))*1000.0_sp
+                do j=1,ny_submet
+                  ! length scale along x (in meters)
+                  rdlambda_MetP_sp(i,j,k) =(MR_RAD_EARTH+z_approx(k))*1000.0_sp * &
+                                          cos(MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*MR_dy_submet(j))) * &
+                                          MR_dx_submet(i)*MR_DEG2RAD
+                enddo
+              enddo
+            endif
           enddo
-        enddo
+          MR_minlen = maxval(rdlambda_MetP_sp(:,:,:))
+          do i=1,nx_submet
+            do j=1,ny_submet
+              if(MR_minlen.gt.rdlambda_MetP_sp(i,j,1)) MR_minlen=rdlambda_MetP_sp(i,j,1)
+              if(MR_minlen.gt.rdphi_MetP_sp(j,1))      MR_minlen=rdphi_MetP_sp(j,1)
+              MR_sigma_nz_submet(i,j) = rdphi_MetP_sp(j,1)*rdlambda_MetP_sp(i,j,1)
+            enddo
+          enddo
+        endif
       else
 #ifdef USEPOINTERS
         if(associated(MR_dx_met))then

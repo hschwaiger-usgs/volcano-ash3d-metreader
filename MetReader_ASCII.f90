@@ -1939,7 +1939,7 @@
          MR_dum2d_comp_int,MR_dum2d_comp,MR_dum3d_compH,MR_dum3d_compP,&
          MR_geoH_metP_last,MR_geoH_metP_next,MR_Snd2Comp_map_wgt,MR_Snd2Comp_map_idx,&
          MR_dum3d_metP,nx_submet,ny_submet,nx_comp,ny_comp,nz_comp,MR_iwind,MR_iwindformat,&
-         MR_pexp,MR_nstat,MR_nSnd_Locs,np_fullmet
+         MR_pexp,MR_nstat,MR_nSnd_Locs,np_fullmet,MR_sigma_nz_submet
 
       use projection,      only : &
            PJ_Set_Proj_Params
@@ -1975,6 +1975,7 @@
         ny_submet     = 1
         allocate(x_submet_sp(1:nx_submet));  x_submet_sp(:)  = 0.0_sp
         allocate(y_submet_sp(1:ny_submet));  y_submet_sp(:)  = 0.0_sp
+        allocate(MR_sigma_nz_submet(1:nx_submet,1:ny_submet)); MR_sigma_nz_submet = 0.0_sp
         allocate(MR_dx_submet(1:nx_submet)); MR_dx_submet(:) = 0.0_sp
         allocate(MR_dy_submet(1:ny_submet)); MR_dy_submet(:) = 0.0_sp
         allocate(MR_dum3d_metP(nx_submet,ny_submet,np_fullmet))
