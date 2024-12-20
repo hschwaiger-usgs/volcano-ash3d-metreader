@@ -237,6 +237,7 @@ uninstall:
 	rm -f $(INSTALLDIR)/bin/makegfsncml
 	rm -f $(INSTALLDIR)/bin/gen_GRIB_index
 	rm -f $(INSTALLDIR)/bin/MetProbe
+	rm -f $(INSTALLDIR)/bin/MR_ASCII_check
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/autorun_gfs.sh
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/autorun_nam.sh
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/autorun_NCEP_50YearReanalysis.sh
@@ -248,5 +249,6 @@ uninstall:
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/prune_windfiles.sh
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/get_gmao.sh
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/probe_volc.sh
+	rm -f $(INSTALLDIR)/bin/GMT_plot_traj.sh
 	rm -f $(INSTALLDIR)/share/volc_NOVAC.txt
 

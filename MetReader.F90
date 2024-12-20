@@ -468,12 +468,13 @@
 
       ! Some geometry terms
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:,:)     ,pointer            :: rdphi_MetP_sp    => null()
-      real(kind=sp),dimension(:,:,:)   ,pointer            :: rdlambda_MetP_sp => null()
-      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dx_met        => null()
-      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dx_submet     => null()
-      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dy_met        => null()
-      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dy_submet     => null()
+      real(kind=sp),dimension(:,:)     ,pointer            :: rdphi_MetP_sp      => null()
+      real(kind=sp),dimension(:,:,:)   ,pointer            :: rdlambda_MetP_sp   => null()
+      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dx_met          => null()
+      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dx_submet       => null()
+      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dy_met          => null()
+      real(kind=sp),dimension(:)       ,pointer    ,public :: MR_dy_submet       => null()
+      real(kind=sp),dimension(:,:)     ,pointer    ,public :: MR_sigma_nz_submet => null()
 #else
       real(kind=sp),dimension(:,:)     ,allocatable        :: rdphi_MetP_sp
       real(kind=sp),dimension(:,:,:)   ,allocatable        :: rdlambda_MetP_sp
@@ -481,6 +482,7 @@
       real(kind=sp),dimension(:)       ,allocatable,public :: MR_dx_submet
       real(kind=sp),dimension(:)       ,allocatable,public :: MR_dy_met
       real(kind=sp),dimension(:)       ,allocatable,public :: MR_dy_submet
+      real(kind=sp),dimension(:,:)     ,allocatable,public :: MR_sigma_nz_submet
 #endif
       real(kind=sp),public :: MR_minlen = 100000.0_sp    ! minimum length of the met subgrid (m)
 
@@ -734,6 +736,7 @@
        if(associated(MR_dx_submet                  ))deallocate(MR_dx_submet)
        if(associated(MR_dy_met                     ))deallocate(MR_dy_met)
        if(associated(MR_dy_submet                  ))deallocate(MR_dy_submet)
+       if(associated(MR_sigma_nz_submet            ))deallocate(MR_sigma_nz_submet)
        if(associated(x_comp_sp                     ))deallocate(x_comp_sp)
        if(associated(y_comp_sp                     ))deallocate(y_comp_sp)
        if(associated(z_comp_sp                     ))deallocate(z_comp_sp)
@@ -773,93 +776,94 @@
        if(associated(MR_Snd_st                     ))deallocate(MR_Snd_st)
        if(associated(MR_Snd_ct                     ))deallocate(MR_Snd_ct)
 #else
-       if(allocated(MR_windfile_starthour         ))deallocate(MR_windfile_starthour)
-       if(allocated(MR_windfile_stephour          ))deallocate(MR_windfile_stephour)
-       if(allocated(MR_windfiles_nt_fullmet       ))deallocate(MR_windfiles_nt_fullmet)
-       if(allocated(MR_windfiles_Have_GRIB_index  ))deallocate(MR_windfiles_Have_GRIB_index)
-       if(allocated(MR_windfiles_GRIB_index       ))deallocate(MR_windfiles_GRIB_index)
-       if(allocated(MR_MetStep_File               ))deallocate(MR_MetStep_File)
-       if(allocated(MR_MetStep_findex             ))deallocate(MR_MetStep_findex)
-       if(allocated(MR_MetStep_tindex             ))deallocate(MR_MetStep_tindex)
-       if(allocated(MR_MetStep_Hour_since_baseyear))deallocate(MR_MetStep_Hour_since_baseyear)
-       if(allocated(MR_MetStep_Interval           ))deallocate(MR_MetStep_Interval)
-       if(allocated(MR_MetStep_year               ))deallocate(MR_MetStep_year)
-       if(allocated(MR_MetStep_month              ))deallocate(MR_MetStep_month)
-       if(allocated(MR_MetStep_day                ))deallocate(MR_MetStep_day)
-       if(allocated(MR_MetStep_DOY                ))deallocate(MR_MetStep_DOY)
-       if(allocated(MR_MetStep_Hour_Of_Day        ))deallocate(MR_MetStep_Hour_Of_Day)
-       if(allocated(MR_iwind5_year                ))deallocate(MR_iwind5_year)
-       if(allocated(MR_windfiles                  ))deallocate(MR_windfiles)
-       if(allocated(MR_dum2d_met_int              ))deallocate(MR_dum2d_met_int)
-       if(allocated(MR_dum2d_met                  ))deallocate(MR_dum2d_met)
-       if(allocated(MR_dum3d_metP                 ))deallocate(MR_dum3d_metP)
-       if(allocated(MR_dum3d2_metP                ))deallocate(MR_dum3d2_metP)
-       if(allocated(MR_geoH_metP_last             ))deallocate(MR_geoH_metP_last)
-       if(allocated(MR_geoH_metP_next             ))deallocate(MR_geoH_metP_next)
-       if(allocated(MR_vx_metP_last               ))deallocate(MR_vx_metP_last)
-       if(allocated(MR_vx_metP_next               ))deallocate(MR_vx_metP_next)
-       if(allocated(MR_vy_metP_last               ))deallocate(MR_vy_metP_last)
-       if(allocated(MR_vy_metP_next               ))deallocate(MR_vy_metP_next)
-       if(allocated(MR_dum3d_metH                 ))deallocate(MR_dum3d_metH)
-       if(allocated(MR_dum2d_comp_int             ))deallocate(MR_dum2d_comp_int)
-       if(allocated(MR_dum2d_comp                 ))deallocate(MR_dum2d_comp)
-       if(allocated(MR_dum3d_compP                ))deallocate(MR_dum3d_compP)
-       if(allocated(MR_dum3d_compP_2              ))deallocate(MR_dum3d_compP_2)
-       if(allocated(MR_dum3d_compH                ))deallocate(MR_dum3d_compH)
-       if(allocated(MR_dum3d_compH_2              ))deallocate(MR_dum3d_compH_2)
-       if(allocated(x_fullmet_sp                  ))deallocate(x_fullmet_sp)
-       if(allocated(y_fullmet_sp                  ))deallocate(y_fullmet_sp)
-       if(allocated(p_fullmet_sp                  ))deallocate(p_fullmet_sp)
-       if(allocated(x_submet_sp                   ))deallocate(x_submet_sp)
-       if(allocated(y_submet_sp                   ))deallocate(y_submet_sp)
-       if(allocated(levs_fullmet_sp               ))deallocate(levs_fullmet_sp)
-       if(allocated(nlevs_fullmet                 ))deallocate(nlevs_fullmet)
-       if(allocated(levs_code                     ))deallocate(levs_code)
-       if(allocated(z_approx                      ))deallocate(z_approx)
-       if(allocated(rdphi_MetP_sp                 ))deallocate(rdphi_MetP_sp)
-       if(allocated(rdlambda_MetP_sp              ))deallocate(rdlambda_MetP_sp)
-       if(allocated(MR_dx_met                     ))deallocate(MR_dx_met)
-       if(allocated(MR_dx_submet                  ))deallocate(MR_dx_submet)
-       if(allocated(MR_dy_met                     ))deallocate(MR_dy_met)
-       if(allocated(MR_dy_submet                  ))deallocate(MR_dy_submet)
-       if(allocated(x_comp_sp                     ))deallocate(x_comp_sp)
-       if(allocated(y_comp_sp                     ))deallocate(y_comp_sp)
-       if(allocated(z_comp_sp                     ))deallocate(z_comp_sp)
-       if(allocated(CompPoint_X_on_Met_sp         ))deallocate(CompPoint_X_on_Met_sp)
-       if(allocated(CompPoint_Y_on_Met_sp         ))deallocate(CompPoint_Y_on_Met_sp)
-       if(allocated(CompPoint_on_subMet_idx       ))deallocate(CompPoint_on_subMet_idx)
-       if(allocated(bilin_map_wgt                 ))deallocate(bilin_map_wgt)
-       if(allocated(s_comp_sp                     ))deallocate(s_comp_sp)
-       if(allocated(MR_Topo_met                   ))deallocate(MR_Topo_met)
-       if(allocated(MR_jacob_met                  ))deallocate(MR_jacob_met)
-       if(allocated(MR_Topo_comp                  ))deallocate(MR_Topo_comp)
-       if(allocated(MR_jacob_comp                 ))deallocate(MR_jacob_comp)
-       if(allocated(MR_u_ER_metP                  ))deallocate(MR_u_ER_metP)
-       if(allocated(MR_v_ER_metP                  ))deallocate(MR_v_ER_metP)
-       if(allocated(theta_Met                     ))deallocate(theta_Met)
-       if(allocated(theta_Comp                    ))deallocate(theta_Comp)
-       if(allocated(temp1d_sp                     ))deallocate(temp1d_sp)
-       if(allocated(temp2d_sp                     ))deallocate(temp2d_sp)
-       if(allocated(temp3d_sp                     ))deallocate(temp3d_sp)
-       if(allocated(temp2d_int                    ))deallocate(temp2d_int)
-       if(allocated(temp2d_short                  ))deallocate(temp2d_short)
-       if(allocated(temp3d_short                  ))deallocate(temp3d_short)
-       if(allocated(Met_Proj_lat                  ))deallocate(Met_Proj_lat)
-       if(allocated(Met_Proj_lon                  ))deallocate(Met_Proj_lon)
-       if(allocated(MR_SndVars_metP               ))deallocate(MR_SndVars_metP)
-       if(allocated(MR_SndVarsID                  ))deallocate(MR_SndVarsID)
-       if(allocated(MR_Snd_np_fullmet             ))deallocate(MR_Snd_np_fullmet)
-       if(allocated(MR_Snd2Comp_map_wgt           ))deallocate(MR_Snd2Comp_map_wgt)
-       if(allocated(MR_Snd2Comp_map_idx           ))deallocate(MR_Snd2Comp_map_idx)
-       if(allocated(Snd_idx                       ))deallocate(Snd_idx)
-       if(allocated(MR_Snd_cd                     ))deallocate(MR_Snd_cd)
-       if(allocated(MR_Snd_id                     ))deallocate(MR_Snd_id)
-       if(allocated(MR_Snd_lt                     ))deallocate(MR_Snd_lt)
-       if(allocated(MR_Snd_ln                     ))deallocate(MR_Snd_ln)
-       if(allocated(MR_Snd_el                     ))deallocate(MR_Snd_el)
-       if(allocated(MR_Snd_lnm                    ))deallocate(MR_Snd_lnm)
-       if(allocated(MR_Snd_st                     ))deallocate(MR_Snd_st)
-       if(allocated(MR_Snd_ct                     ))deallocate(MR_Snd_ct)
+       if(allocated(MR_windfile_starthour          ))deallocate(MR_windfile_starthour)
+       if(allocated(MR_windfile_stephour           ))deallocate(MR_windfile_stephour)
+       if(allocated(MR_windfiles_nt_fullmet        ))deallocate(MR_windfiles_nt_fullmet)
+       if(allocated(MR_windfiles_Have_GRIB_index   ))deallocate(MR_windfiles_Have_GRIB_index)
+       if(allocated(MR_windfiles_GRIB_index        ))deallocate(MR_windfiles_GRIB_index)
+       if(allocated(MR_MetStep_File                ))deallocate(MR_MetStep_File)
+       if(allocated(MR_MetStep_findex              ))deallocate(MR_MetStep_findex)
+       if(allocated(MR_MetStep_tindex              ))deallocate(MR_MetStep_tindex)
+       if(allocated(MR_MetStep_Hour_since_baseyear ))deallocate(MR_MetStep_Hour_since_baseyear)
+       if(allocated(MR_MetStep_Interval            ))deallocate(MR_MetStep_Interval)
+       if(allocated(MR_MetStep_year                ))deallocate(MR_MetStep_year)
+       if(allocated(MR_MetStep_month               ))deallocate(MR_MetStep_month)
+       if(allocated(MR_MetStep_day                 ))deallocate(MR_MetStep_day)
+       if(allocated(MR_MetStep_DOY                 ))deallocate(MR_MetStep_DOY)
+       if(allocated(MR_MetStep_Hour_Of_Day         ))deallocate(MR_MetStep_Hour_Of_Day)
+       if(allocated(MR_iwind5_year                 ))deallocate(MR_iwind5_year)
+       if(allocated(MR_windfiles                   ))deallocate(MR_windfiles)
+       if(allocated(MR_dum2d_met_int               ))deallocate(MR_dum2d_met_int)
+       if(allocated(MR_dum2d_met                   ))deallocate(MR_dum2d_met)
+       if(allocated(MR_dum3d_metP                  ))deallocate(MR_dum3d_metP)
+       if(allocated(MR_dum3d2_metP                 ))deallocate(MR_dum3d2_metP)
+       if(allocated(MR_geoH_metP_last              ))deallocate(MR_geoH_metP_last)
+       if(allocated(MR_geoH_metP_next              ))deallocate(MR_geoH_metP_next)
+       if(allocated(MR_vx_metP_last                ))deallocate(MR_vx_metP_last)
+       if(allocated(MR_vx_metP_next                ))deallocate(MR_vx_metP_next)
+       if(allocated(MR_vy_metP_last                ))deallocate(MR_vy_metP_last)
+       if(allocated(MR_vy_metP_next                ))deallocate(MR_vy_metP_next)
+       if(allocated(MR_dum3d_metH                  ))deallocate(MR_dum3d_metH)
+       if(allocated(MR_dum2d_comp_int              ))deallocate(MR_dum2d_comp_int)
+       if(allocated(MR_dum2d_comp                  ))deallocate(MR_dum2d_comp)
+       if(allocated(MR_dum3d_compP                 ))deallocate(MR_dum3d_compP)
+       if(allocated(MR_dum3d_compP_2               ))deallocate(MR_dum3d_compP_2)
+       if(allocated(MR_dum3d_compH                 ))deallocate(MR_dum3d_compH)
+       if(allocated(MR_dum3d_compH_2               ))deallocate(MR_dum3d_compH_2)
+       if(allocated(x_fullmet_sp                   ))deallocate(x_fullmet_sp)
+       if(allocated(y_fullmet_sp                   ))deallocate(y_fullmet_sp)
+       if(allocated(p_fullmet_sp                   ))deallocate(p_fullmet_sp)
+       if(allocated(x_submet_sp                    ))deallocate(x_submet_sp)
+       if(allocated(y_submet_sp                    ))deallocate(y_submet_sp)
+       if(allocated(levs_fullmet_sp                ))deallocate(levs_fullmet_sp)
+       if(allocated(nlevs_fullmet                  ))deallocate(nlevs_fullmet)
+       if(allocated(levs_code                      ))deallocate(levs_code)
+       if(allocated(z_approx                       ))deallocate(z_approx)
+       if(allocated(rdphi_MetP_sp                  ))deallocate(rdphi_MetP_sp)
+       if(allocated(rdlambda_MetP_sp               ))deallocate(rdlambda_MetP_sp)
+       if(allocated(MR_dx_met                      ))deallocate(MR_dx_met)
+       if(allocated(MR_dx_submet                   ))deallocate(MR_dx_submet)
+       if(allocated(MR_dy_met                      ))deallocate(MR_dy_met)
+       if(allocated(MR_dy_submet                   ))deallocate(MR_dy_submet)
+       if(allocated(MR_sigma_nz_submet             ))deallocate(MR_sigma_nz_submet)
+       if(allocated(x_comp_sp                      ))deallocate(x_comp_sp)
+       if(allocated(y_comp_sp                      ))deallocate(y_comp_sp)
+       if(allocated(z_comp_sp                      ))deallocate(z_comp_sp)
+       if(allocated(CompPoint_X_on_Met_sp          ))deallocate(CompPoint_X_on_Met_sp)
+       if(allocated(CompPoint_Y_on_Met_sp          ))deallocate(CompPoint_Y_on_Met_sp)
+       if(allocated(CompPoint_on_subMet_idx        ))deallocate(CompPoint_on_subMet_idx)
+       if(allocated(bilin_map_wgt                  ))deallocate(bilin_map_wgt)
+       if(allocated(s_comp_sp                      ))deallocate(s_comp_sp)
+       if(allocated(MR_Topo_met                    ))deallocate(MR_Topo_met)
+       if(allocated(MR_jacob_met                   ))deallocate(MR_jacob_met)
+       if(allocated(MR_Topo_comp                   ))deallocate(MR_Topo_comp)
+       if(allocated(MR_jacob_comp                  ))deallocate(MR_jacob_comp)
+       if(allocated(MR_u_ER_metP                   ))deallocate(MR_u_ER_metP)
+       if(allocated(MR_v_ER_metP                   ))deallocate(MR_v_ER_metP)
+       if(allocated(theta_Met                      ))deallocate(theta_Met)
+       if(allocated(theta_Comp                     ))deallocate(theta_Comp)
+       if(allocated(temp1d_sp                      ))deallocate(temp1d_sp)
+       if(allocated(temp2d_sp                      ))deallocate(temp2d_sp)
+       if(allocated(temp3d_sp                      ))deallocate(temp3d_sp)
+       if(allocated(temp2d_int                     ))deallocate(temp2d_int)
+       if(allocated(temp2d_short                   ))deallocate(temp2d_short)
+       if(allocated(temp3d_short                   ))deallocate(temp3d_short)
+       if(allocated(Met_Proj_lat                   ))deallocate(Met_Proj_lat)
+       if(allocated(Met_Proj_lon                   ))deallocate(Met_Proj_lon)
+       if(allocated(MR_SndVars_metP                ))deallocate(MR_SndVars_metP)
+       if(allocated(MR_SndVarsID                   ))deallocate(MR_SndVarsID)
+       if(allocated(MR_Snd_np_fullmet              ))deallocate(MR_Snd_np_fullmet)
+       if(allocated(MR_Snd2Comp_map_wgt            ))deallocate(MR_Snd2Comp_map_wgt)
+       if(allocated(MR_Snd2Comp_map_idx            ))deallocate(MR_Snd2Comp_map_idx)
+       if(allocated(Snd_idx                        ))deallocate(Snd_idx)
+       if(allocated(MR_Snd_cd                      ))deallocate(MR_Snd_cd)
+       if(allocated(MR_Snd_id                      ))deallocate(MR_Snd_id)
+       if(allocated(MR_Snd_lt                      ))deallocate(MR_Snd_lt)
+       if(allocated(MR_Snd_ln                      ))deallocate(MR_Snd_ln)
+       if(allocated(MR_Snd_el                      ))deallocate(MR_Snd_el)
+       if(allocated(MR_Snd_lnm                     ))deallocate(MR_Snd_lnm)
+       if(allocated(MR_Snd_st                      ))deallocate(MR_Snd_st)
+       if(allocated(MR_Snd_ct                      ))deallocate(MR_Snd_ct)
 #endif
 
        nlev_coords_detected = 0
@@ -3164,50 +3168,65 @@
       !  These are currently only needed for calculating DelMetP_Dx and
       !  DelMetP_Dy
       if(IsLatLon_MetGrid)then
-        allocate(rdphi_MetP_sp(ny_submet,np_fullmet))             ;   rdphi_MetP_sp(:,:)=0.0_sp
-        allocate(rdlambda_MetP_sp(nx_submet,ny_submet,np_fullmet));rdlambda_MetP_sp(:,:,:)=0.0_sp
-        do k=1,np_fullmet
-          if(IsRegular_MetGrid)then
-            ! length scale along y (in meters)
-            rdphi_MetP_sp(:,k) = dy_met_const*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))*1000.0_sp
-            do j=1,ny_submet
-              ! length scale along x (in meters)
-              rdlambda_MetP_sp(:,j,k) =(MR_RAD_EARTH+z_approx(k))*1000.0_sp * &
-                                      cos(MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*dy_met_const)) * &
-                                      dx_met_const*MR_DEG2RAD
-            enddo
-          else
-            do i=1,nx_submet
+#ifdef USEPOINTERS
+        if(associated(MR_dx_met))then
+#else
+        if(allocated(MR_dx_met))then
+#endif
+          allocate(rdphi_MetP_sp(ny_submet,np_fullmet))             ;   rdphi_MetP_sp(:,:)=0.0_sp
+          allocate(rdlambda_MetP_sp(nx_submet,ny_submet,np_fullmet));rdlambda_MetP_sp(:,:,:)=0.0_sp
+
+          do k=1,np_fullmet
+            if(IsRegular_MetGrid)then
+              ! length scale along y (in meters)
+              rdphi_MetP_sp(:,k) = dy_met_const*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))*1000.0_sp
               do j=1,ny_submet
-                ! length scale along y (in meters)
-                rdphi_MetP_sp(:,k) = MR_dy_submet(j)*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))*1000.0_sp
                 ! length scale along x (in meters)
-                rdlambda_MetP_sp(i,j,k) =(MR_RAD_EARTH+z_approx(k))*1000.0_sp * &
-                                        cos(MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*MR_dy_submet(j))) * &
-                                        MR_dx_submet(i)*MR_DEG2RAD
+                rdlambda_MetP_sp(:,j,k) =(MR_RAD_EARTH+z_approx(k))*1000.0_sp * &
+                                        cos(MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*dy_met_const)) * &
+                                        dx_met_const*MR_DEG2RAD
               enddo
-            enddo
-          endif
-        enddo
-        MR_minlen = maxval(rdlambda_MetP_sp(:,:,:))
-        do i=1,nx_submet
-          do j=1,ny_submet
-            if(MR_minlen.gt.rdlambda_MetP_sp(i,j,1)) MR_minlen=rdlambda_MetP_sp(i,j,1)
-            if(MR_minlen.gt.rdphi_MetP_sp(j,1))      MR_minlen=rdphi_MetP_sp(j,1)
+            else
+              do i=1,nx_submet
+                ! length scale along y (in meters)
+                rdphi_MetP_sp(:,k) = MR_dy_submet(:)*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))*1000.0_sp
+                do j=1,ny_submet
+                  ! length scale along x (in meters)
+                  rdlambda_MetP_sp(i,j,k) =(MR_RAD_EARTH+z_approx(k))*1000.0_sp * &
+                                          cos(MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*MR_dy_submet(j))) * &
+                                          MR_dx_submet(i)*MR_DEG2RAD
+                enddo
+              enddo
+            endif
           enddo
-        enddo
+          MR_minlen = maxval(rdlambda_MetP_sp(:,:,:))
+          do i=1,nx_submet
+            do j=1,ny_submet
+              if(MR_minlen.gt.rdlambda_MetP_sp(i,j,1)) MR_minlen=rdlambda_MetP_sp(i,j,1)
+              if(MR_minlen.gt.rdphi_MetP_sp(j,1))      MR_minlen=rdphi_MetP_sp(j,1)
+              MR_sigma_nz_submet(i,j) = rdphi_MetP_sp(j,1)*rdlambda_MetP_sp(i,j,1)
+            enddo
+          enddo
+        endif
       else
 #ifdef USEPOINTERS
         if(associated(MR_dx_met))then
 #else
         if(allocated(MR_dx_met))then
 #endif
+          ! This is the branch for projected NWP files
           MR_minlen = min(minval(MR_dx_met),minval(MR_dy_met))
+          do i=1,nx_submet
+            do j=1,ny_submet
+              MR_sigma_nz_submet(i,j) = MR_dx_submet(i)*MR_dy_submet(j)
+            enddo
+          enddo
         else
           ! MR_dx_met and MR_dy_met might not be defined for radio sonde or ASCII 
           ! grids.  Just set MR_minlen to 10% of min domain dimension
           MR_minlen = 0.1_sp * (x_comp_sp(nx) - x_comp_sp(1))
           MR_minlen = min(MR_minlen,0.1_sp * (y_comp_sp(ny) - y_comp_sp(1)))
+          !MR_sigma_nz_submet(i,j) = 
         endif
       endif
 
@@ -3828,9 +3847,9 @@
 !
 !     MR_Read_HGT_arrays
 !
-!     This subroutine basically does the same thing as Read_3d_MetP_Variable
+!     This subroutine basically does the same thing as MR_Read_3d_MetP_Variable
 !     but specifically for the variable HGT (ivar=1).  This is needed because the
-!     more general Read_3d_MetP_Variable just returns data in dum3d_metP and
+!     more general MR_Read_3d_MetP_Variable just returns data in dum3d_metP and
 !     expects the calling program to save the results.  The HGT variables,
 !     geoH_metP_last and geoH_metP_next need to persist locally, however,  since they are
 !     used in QC calculations and are needed in converting PresVertVel (from Pa
@@ -4215,7 +4234,7 @@
 
       if(MR_Save_Velocities)then
         ! Note: this flag for saving the velocity values is useful in special
-        ! cased such where the velocities might be read and used for a local
+        ! cases such where the velocities might be read and used for a local
         ! calculation, but then can be used later.  Variable diffusivity uses
         ! this.
         if(present(IsNext)) then ! First check if this parameter was provided
@@ -4340,7 +4359,7 @@
 
       if(MR_Save_Velocities)then
         ! Note: this flag for saving the velocity values is useful in special
-        ! cased such where the velocities might be read and used for a local
+        ! cases such where the velocities might be read and used for a local
         ! calculation, but then can be used later.  Variable diffusivity uses
         ! this.
         if(present(IsNext)) then
@@ -4556,10 +4575,11 @@
 !
 !##############################################################################
 
-      subroutine MR_Rotate_UV_GR2ER_Met(istep,SetComp)
+      subroutine MR_Rotate_UV_GR2ER_Met(istep,SetComp,IsNext)
 
       integer,intent(in)  :: istep
       logical,optional,intent(in) :: SetComp
+      logical,optional,intent(in) :: IsNext
 
       integer             :: i,j,k
 
@@ -4610,6 +4630,30 @@
           enddo
         enddo
       enddo
+
+      if(MR_Save_Velocities)then
+        ! Note: this flag for saving the velocity values is useful in special
+        ! cases such where the velocities might be read and used for a local
+        ! calculation, but then can be used later.  Variable diffusivity uses
+        ! this.
+        if(present(IsNext)) then ! First check if this parameter was provided
+          if(IsNext) then  ! second, check if it is true
+            ! MR_dum3d_metP still contains the variable just read
+            if(IsNext)then
+              MR_vx_metP_last = MR_vx_metP_next
+              MR_vx_metP_next = MR_u_ER_metP
+            else
+              MR_vx_metP_last = MR_u_ER_metP
+            endif
+            if(IsNext)then
+              MR_vy_metP_last = MR_vy_metP_next
+              MR_vy_metP_next = MR_v_ER_metP
+            else
+              MR_vy_metP_last = MR_v_ER_metP
+            endif
+          endif
+        endif
+      endif
 
       if(present(SetComp)) then
         if(SetComp)then
@@ -5062,6 +5106,7 @@
 !
 !     Calculated the x derivative of the variable in MR_dum3d_MetP.
 !     This subroutine expects the calling program to populate MR_dum3d2_metP.
+!     The unit of dx is always km.
 !
 !     Sets  : MR_dum3d_metH
 !
@@ -5072,11 +5117,8 @@
       integer :: i
       integer :: lside,rside
       real(kind=sp) :: dx_fac
-      real(kind=sp) :: KM_2_M
 
       integer :: io                           ! Index for output streams
-
-      KM_2_M = 100.0_sp
 
       do i=1,nx_submet
         if(i.eq.1)then
@@ -5114,18 +5156,18 @@
             MR_dum3d2_metP(i,:,:) = (MR_dum3d_metP(rside,:,:)  - &
                                      MR_dum3d_metP(lside,:,:)) / &
                                     (rdlambda_MetP_sp(i,:,:)   * &
-                                    dx_fac*KM_2_M)
+                                    dx_fac)
           else
             MR_dum3d2_metP(i,:,:) = (MR_dum3d_metP(rside,:,:)  - &
                                      MR_dum3d_metP(lside,:,:)) / &
                                     (0.5_sp*(rdlambda_MetP_sp(i,:,:)+rdlambda_MetP_sp(rside,:,:)) * &
-                                    dx_fac*KM_2_M)
+                                    dx_fac)
           endif
         else
           if(IsRegular_MetGrid)then
             MR_dum3d2_metP(i,:,:) = (MR_dum3d_metP(rside,:,:)  - &
                                      MR_dum3d_metP(lside,:,:)) / &
-                                    (dx_fac*MR_dx_submet(i)*KM_2_M)
+                                    (dx_fac*MR_dx_submet(i))
           else
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
               write(errlog(io),*)"Need to fix DelMetP_Dx for non-regular grids."
@@ -5145,6 +5187,7 @@
 !
 !     Calculated the y derivative of the variable in MR_dum3d_MetP.
 !     This subroutine expects the calling program to populate MR_dum3d2_metP.
+!     The unit of dy is always km.
 !
 !     Sets  : MR_dum3d_metH
 !
@@ -5155,11 +5198,8 @@
       integer :: i,j
       integer :: lside,rside
       real(kind=sp) :: dy_fac
-      real(kind=sp) :: KM_2_M
 
       integer :: io                           ! Index for output streams
-
-      KM_2_M = 100.0_sp
 
       do j=1,ny_submet
         if(j.eq.1)then
@@ -5184,21 +5224,21 @@
               MR_dum3d2_metP(i,j,:) = (MR_dum3d_metP(i,rside,:)  - &
                                        MR_dum3d_metP(i,lside,:)) / &
                                       (rdphi_MetP_sp(j,:)   * &
-                                       dy_fac*KM_2_M)
+                                       dy_fac)
             enddo
           else
             do i=1,nx_submet
               MR_dum3d2_metP(i,j,:) = (MR_dum3d_metP(i,rside,:)  - &
                                        MR_dum3d_metP(i,lside,:)) / &
                                       (0.5_sp*(rdphi_MetP_sp(j,:)+rdphi_MetP_sp(rside,:))   * &
-                                       dy_fac*KM_2_M)
+                                       dy_fac)
             enddo
           endif
         else
           if(IsRegular_MetGrid)then
             MR_dum3d2_metP(:,j,:) = (MR_dum3d_metP(:,rside,:)  - &
                                      MR_dum3d_metP(:,lside,:)) / &
-                                    (dy_fac*MR_dy_submet(j)*KM_2_M)
+                                    (dy_fac*MR_dy_submet(j))
           else
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
               write(errlog(io),*)"Need to fix DelMetP_Dy for non-regular grids."
