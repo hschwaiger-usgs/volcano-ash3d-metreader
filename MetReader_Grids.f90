@@ -994,16 +994,29 @@
           endif;enddo
           stop 1
         endif
-        iend = 1
-        do i = 1,nx_fullmet
-          ! For the end index, we assign the upper node of the interval
-          cond1 = x_fullmet_sp(i  ).lt.xUR
-          cond2 = x_fullmet_sp(i+1).ge.xUR
-          if(cond1.and.cond2) iend = i+1
-        enddo
+        if(x_fullmet_sp(nx_fullmet).ge.xUR)then
+          ! Make sure the end of the comp grid is not beyond the domain of the
+          ! met files
+          iend = 1
+          do i = 1,nx_fullmet
+            ! For the end index, we assign the upper node of the interval
+            cond1 = x_fullmet_sp(i  ).lt.xUR
+            cond2 = x_fullmet_sp(i+1).ge.xUR
+            if(cond1.and.cond2) iend = i+1
+          enddo
+        else
+          if(.not.IsGlobal_MetGrid)then
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR: xUR > x_fullmet_sp(nx_fullmet)"
+              write(errlog(io),*)"     x_fullmet_sp(nx_fullmet) = ",x_fullmet_sp(nx_fullmet)
+              write(errlog(io),*)"     xUR                      = ",xUR
+            endif;enddo
+            stop 1
+          endif
+        endif
         if(iend.eq.1)then
           if(IsGlobal_MetGrid)then
-          ! If iend was not assigned, then the wrap back to the beginning
+            ! If iend was not assigned, then the wrap back to the beginning
             iend = nx_fullmet
             do i = 1,nx_fullmet
               ! For the end index, we assign the upper node of the interval
@@ -1425,48 +1438,53 @@
                                                   ! Met grid and the earth grid; used for rotating
                                                   ! grid velocities to Earth-Relative, or in the
                                                   ! special NARR case, rotating ER to GR
-        ddeg = 1.0_dp/60.0_dp
-        do i=1,nx_submet
-          do j=1,ny_submet
-              ! Get lon/lat of point in question
-            xin = real(x_submet_sp(i),kind=dp)
-            yin = real(y_submet_sp(j),kind=dp)
-            call PJ_proj_inv(xin,yin, Met_iprojflag, &
-                          Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
-                           ptlon,ptlat)
-              ! Get projected coordinate of de at the current point
-            call PJ_proj_for(ptlon+ddeg,ptlat, Met_iprojflag, &
-                       Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
-                       xout,yout)
-            de_x = xout-xin
-            de_y = yout-yin
-            ate  = atan2(de_y,de_x)
-              ! Get projected coordinate of dw at the current point
-            call PJ_proj_for(ptlon-ddeg,ptlat, Met_iprojflag, &
-                       Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
-                       xout,yout)
-            dw_x = xout-xin
-            dw_y = yout-yin
-            atw  = atan2(dw_y,dw_x) - 3.141592653589793_dp
-              ! Get projected coordinate of dn at the current point
-            call PJ_proj_for(ptlon,ptlat+ddeg, Met_iprojflag, &
-                       Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
-                       xout,yout)
-            dn_x = xout-xin
-            dn_y = yout-yin
-            atn  = atan2(dn_y,dn_x) - 3.141592653589793_dp/2.0_dp
-              ! Get projected coordinate of ds at the current point
-            call PJ_proj_for(ptlon,ptlat-ddeg, Met_iprojflag, &
-                       Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
-                       xout,yout)
-            ds_x = xout-xin
-            ds_y = yout-yin
-            ats  = atan2(ds_y,ds_x) + 3.141592653589793_dp/2.0_dp
-              ! Now recover the angle between angle of rotation as the average angle
-              ! for all of the coordinate directions
-            theta_Met(i,j) = (ate + atw + atn + ats)*0.25_dp
+        if(Met_iprojflag.eq.5)then
+          ! Mercator projections have grid lines aligned with lat, lon
+          theta_Met(:,:) = 0.0_dp
+        else
+          ddeg = 1.0_dp/60.0_dp
+          do i=1,nx_submet
+            do j=1,ny_submet
+                ! Get lon/lat of point in question
+              xin = real(x_submet_sp(i),kind=dp)
+              yin = real(y_submet_sp(j),kind=dp)
+              call PJ_proj_inv(xin,yin, Met_iprojflag, &
+                            Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                             ptlon,ptlat)
+                ! Get projected coordinate of de at the current point
+              call PJ_proj_for(ptlon+ddeg,ptlat, Met_iprojflag, &
+                         Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                         xout,yout)
+              de_x = xout-xin
+              de_y = yout-yin
+              ate  = atan2(de_y,de_x)
+                ! Get projected coordinate of dw at the current point
+              call PJ_proj_for(ptlon-ddeg,ptlat, Met_iprojflag, &
+                         Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                         xout,yout)
+              dw_x = xout-xin
+              dw_y = yout-yin
+              atw  = atan2(dw_y,dw_x) - 3.141592653589793_dp
+                ! Get projected coordinate of dn at the current point
+              call PJ_proj_for(ptlon,ptlat+ddeg, Met_iprojflag, &
+                         Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                         xout,yout)
+              dn_x = xout-xin
+              dn_y = yout-yin
+              atn  = atan2(dn_y,dn_x) - 3.141592653589793_dp/2.0_dp
+                ! Get projected coordinate of ds at the current point
+              call PJ_proj_for(ptlon,ptlat-ddeg, Met_iprojflag, &
+                         Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                         xout,yout)
+              ds_x = xout-xin
+              ds_y = yout-yin
+              ats  = atan2(ds_y,ds_x) + 3.141592653589793_dp/2.0_dp
+                ! Now recover the angle between angle of rotation as the average angle
+                ! for all of the coordinate directions
+              theta_Met(i,j) = (ate + atw + atn + ats)*0.25_dp
+            enddo
           enddo
-        enddo
+        endif
       endif
 
       ! theta_Met ensures that we have Met data that is Earth-Relative, even if the
