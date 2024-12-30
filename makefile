@@ -155,7 +155,7 @@ MetReader.o: MetReader.F90 makefile $(SYSINC)
 	sh get_version.sh
 	$(FC) $(FPPFLAGS) $(EXFLAGS) $(LIBS) $(USGSLIB) -c MetReader.F90
 MetReader_Grids.o: MetReader_Grids.f90 MetReader.o makefile $(SYSINC)
-	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(USGSLIB) -c MetReader_Grids.f90
+	$(FC) $(FPPFLAGS) $(FFLAGS) $(EXFLAGS) $(LIBS) $(USGSLIB) -c MetReader_Grids.f90
 MetReader_ASCII.o: MetReader_ASCII.f90 MetReader.o makefile $(SYSINC)
 	$(FC) $(FFLAGS) $(EXFLAGS) $(LIBS) $(USGSLIB) -c MetReader_ASCII.f90
 
