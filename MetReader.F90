@@ -426,13 +426,19 @@
       real(kind=sp),dimension(:),  pointer,public :: z_approx    => null() ! approximate altidue from STD Atmos and press (in km)
       real(kind=dp),dimension(:,:),pointer,public :: theta_Met   => null() ! Earth to grid
       real(kind=dp),dimension(:,:),pointer,public :: theta_Comp  => null() ! Earth to grid
+      real(kind=dp),dimension(:,:),pointer,public :: MR_xy2ll_xlon  => null() ! holds longitude of projected grid
+      real(kind=dp),dimension(:,:),pointer,public :: MR_xy2ll_ylat  => null() ! holds latitude of projected grid
 #else
       real(kind=sp),dimension(:)  ,allocatable,public :: x_submet_sp ! x-coordinates of met sub-grid
       real(kind=sp),dimension(:)  ,allocatable,public :: y_submet_sp ! y-coordinates of met sub-grid
       real(kind=sp),dimension(:)  ,allocatable,public :: z_approx ! approximate altitude from STD Atmos and press (in km)
       real(kind=dp),dimension(:,:),allocatable,public :: theta_Met  ! Earth to grid
       real(kind=dp),dimension(:,:),allocatable,public :: theta_Comp ! Earth to grid
+      real(kind=dp),dimension(:,:),allocatable,public :: MR_xy2ll_xlon  ! holds longitude of projected grid
+      real(kind=dp),dimension(:,:),allocatable,public :: MR_xy2ll_ylat  ! holds latitude of projected grid
 #endif
+      real(kind=sp),public :: MR_lonmin,MR_lonmax
+      real(kind=sp),public :: MR_latmin,MR_latmax
 
       logical,public :: x_inverted     = .false.
       logical,public :: y_inverted     = .false. ! Some LatLon grids start at the North Pole and increment down
@@ -753,6 +759,8 @@
        if(associated(MR_v_ER_metP                  ))deallocate(MR_v_ER_metP)
        if(associated(theta_Met                     ))deallocate(theta_Met)
        if(associated(theta_Comp                    ))deallocate(theta_Comp)
+       if(associated(MR_xy2ll_xlon                 ))deallocate(MR_xy2ll_xlon)
+       if(associated(MR_xy2ll_ylat                 ))deallocate(MR_xy2ll_ylat)
        if(associated(temp1d_sp                     ))deallocate(temp1d_sp)
        if(associated(temp2d_sp                     ))deallocate(temp2d_sp)
        if(associated(temp3d_sp                     ))deallocate(temp3d_sp)
@@ -842,6 +850,8 @@
        if(allocated(MR_v_ER_metP                   ))deallocate(MR_v_ER_metP)
        if(allocated(theta_Met                      ))deallocate(theta_Met)
        if(allocated(theta_Comp                     ))deallocate(theta_Comp)
+       if(allocated(MR_xy2ll_xlon                  ))deallocate(MR_xy2ll_xlon)
+       if(allocated(MR_xy2ll_ylat                  ))deallocate(MR_xy2ll_ylat)
        if(allocated(temp1d_sp                      ))deallocate(temp1d_sp)
        if(allocated(temp2d_sp                      ))deallocate(temp2d_sp)
        if(allocated(temp3d_sp                      ))deallocate(temp3d_sp)

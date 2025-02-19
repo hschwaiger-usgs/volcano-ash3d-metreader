@@ -852,7 +852,8 @@
          y_inverted,wrapgrid,UseFullMetGrid,ny_fullmet,ny_comp,nx_comp,nx_fullmet,&
          irhalf_fm_r,IsLatLon_MetGrid,IsPeriodic_CompGrid,jend,Map_Case,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         MR_useCompH,MR_useCompP,np_fullmet,nz_comp
+         MR_useCompH,MR_useCompP,np_fullmet,nz_comp,MR_xy2ll_xlon,MR_xy2ll_ylat,&
+         MR_lonmin,MR_lonmax,MR_latmin,MR_latmax
 
       use projection,      only : &
            PJ_Set_Proj_Params,&
@@ -1547,6 +1548,39 @@
             enddo
           enddo
         endif
+      endif
+
+      ! This bit is needed to map topo values onto met grid points
+      if(.not.IsLatLon_MetGrid)then
+#ifdef USEPOINTERS
+        if(.not.associated(MR_xy2ll_xlon))allocate(MR_xy2ll_xlon(nx_submet,ny_submet))
+        if(.not.associated(MR_xy2ll_ylat))allocate(MR_xy2ll_ylat(nx_submet,ny_submet))
+#else
+        if(.not.allocated(MR_xy2ll_xlon))allocate(MR_xy2ll_xlon(nx_submet,ny_submet))
+        if(.not.allocated(MR_xy2ll_ylat))allocate(MR_xy2ll_ylat(nx_submet,ny_submet))
+#endif
+        MR_latmax =  -90.0_sp
+        MR_latmin =   90.0_sp
+        MR_lonmin =  360.0_sp
+        MR_lonmax = -360.0_sp
+        do i=1,nx_submet
+          do j=1,ny_submet
+            xin = real(x_submet_sp(i),kind=dp)  ! Projection routines use kind=8
+            yin = real(y_submet_sp(j),kind=dp)
+            call PJ_proj_inv(xin,yin, &
+                           Met_iprojflag, Met_lam0,Met_phi0,Met_phi1,Met_phi2, &
+                           Met_k0,Met_Re, &
+                           xout,yout)
+            if(xout.lt.MR_lonmin)MR_lonmin=xout
+            if(xout.gt.MR_lonmax)MR_lonmax=xout
+            if(yout.lt.MR_latmin)MR_latmin=yout
+            if(yout.gt.MR_latmax)MR_latmax=yout
+            MR_xy2ll_xlon(i,j) = real(xout,kind=sp)
+            MR_xy2ll_ylat(i,j) = real(yout,kind=sp)
+            if(MR_xy2ll_xlon(i,j).lt.0.0_sp) MR_xy2ll_xlon(i,j) = MR_xy2ll_xlon(i,j) + 360.0_sp
+            write(*,*)i,j,MR_xy2ll_xlon(i,j),MR_xy2ll_ylat(i,j)
+          enddo
+        enddo
       endif
 
       allocate(MR_dum2d_met_int(nx_submet,ny_submet))
