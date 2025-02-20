@@ -170,6 +170,7 @@
                                        ! 31 NAM Caribbean 181 (0.108 deg)
                                        ! 32 Air Force Weather Agency subcenter = 0
                                        ! 33 CCSM3.0 Community Atmosphere Model (CAM)
+                                       ! 34 ECMWF 0.25 degree forecast
                                        ! 40 NASA-GEOS Cp
                                        ! 41 NASA-GEOS Np
                                        ! 50 WRF - output
@@ -2462,6 +2463,32 @@
         Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="Q"
 
         fill_value_sp = -9999.0_sp
+
+      elseif (MR_iwindformat.eq.34)then
+         ! ECMWF 0.25 degree forecast
+         ! Amazon's AWS: "https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com"
+         ! ECMWF:  https://data.ecmwf.int/forecasts
+
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "ECMWF "
+        endif;enddo
+
+        MR_iGridCode = 193
+        call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
+        MR_Reannalysis = .false.
+
+        ! Momentum / State variables
+!        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"        ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
+!        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_u.ll025uv.1991061500_1991061523.nc
+!        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_v.ll025uv.1991061500_1991061523.nc
+!        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
+!        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric"         ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
+!        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_129_w.ll025sc.19910
+
+        fill_value_sp = -9999.0_sp
+
+!        Met_var_conversion_factor(1) = 1.0_sp/9.81_sp
 
       elseif (MR_iwindformat.eq.40)then
          ! NASA-GEOS Cp
