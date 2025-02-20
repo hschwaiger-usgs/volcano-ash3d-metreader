@@ -94,6 +94,7 @@ else
 endif
 
 # location of HoursSince and projection
+USGSROOT = $(INSTALLDIR)
 USGSLIBDIR = -L$(INSTALLDIR)/lib
 USGSINC = -I$(INSTALLDIR)/include
 USGSLIB = $(USGSINC) $(USGSLIBDIR) -lhourssince -lprojection
