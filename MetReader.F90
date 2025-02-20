@@ -46,6 +46,7 @@
 !        subroutine MR_Regrid_MetP_to_CompH(istep)
 !        subroutine MR_Regrid_MetP_to_MetH(istep)
 !        subroutine MR_Regrid_Met2d_to_Comp2d()
+!        subroutine MR_Set_LL_mapping()
 !        subroutine MR_DelMetP_Dx()
 !        subroutine MR_DelMetP_Dy()
 !        subroutine MR_QC_3dvar(ivar,nx_max,ny_max,nz1_max,z_array_sp,nz2_max,&
@@ -78,7 +79,7 @@
              MR_Read_2d_Met_Variable,MR_Read_2d_Met_Variable_to_CompGrid,&
              MR_Rotate_UV_GR2ER_Met,MR_Rotate_UV_ER2GR_Comp,&
              MR_Regrid_MetP_to_CompH,MR_Regrid_MetP_to_MetH,MR_Regrid_Met2d_to_Comp2d,&
-             MR_DelMetP_Dx,MR_DelMetP_Dy,&
+             MR_DelMetP_Dx,MR_DelMetP_Dy,MR_Set_LL_mapping,&
              MR_Temp_US_StdAtm,MR_Z_US_StdAtm,MR_Pres_US_StdAtm,&
              MR_QC_3dvar,MR_FileIO_Error_Handler
 
@@ -396,12 +397,12 @@
                                                                   !    p_fullmet_sp,p_fullmet_[Vz,RH]sp are copies of one
                                                                   !    of the slices
       integer,dimension(:), allocatable,public :: nlevs_fullmet
-      integer,dimension(:), allocatable,public :: levs_code                     ! code indicating how to map to the GPH grid
-                                                                         !   0 = no mapping (not a pressure coordinate)
-                                                                         !   1 = one-to-one mapping (U,V)
-                                                                         !   2 = upper truncation (missing upper levels)
-                                                                         !   3 = interpolation (missing mid-levels)
-                                                                         !   4 = more levels than GPH grid
+      integer,dimension(:), allocatable,public :: levs_code       ! code indicating how to map to the GPH grid
+                                                                  !   0 = no mapping (not a pressure coordinate)
+                                                                  !   1 = one-to-one mapping (U,V)
+                                                                  !   2 = upper truncation (missing upper levels)
+                                                                  !   3 = interpolation (missing mid-levels)
+                                                                  !   4 = more levels than GPH grid
 #endif
 
       logical,public :: IsLatLon_MetGrid
@@ -414,7 +415,7 @@
                                           ! velocities relative to the grid of the file.  Some (NARR)
                                           ! give velocities relative to earth coordinates and need to
                                           ! be rotated
-
+      logical,public       :: MR_Have_LL_mapping = .false.
       logical,public       :: IsRegular_MetGrid                ! True if the grid-spacing is uniform
       real(kind=sp),public :: dx_met_const
       real(kind=sp),public :: dy_met_const
@@ -429,6 +430,8 @@
       real(kind=dp),dimension(:,:),pointer,public :: theta_Comp  => null() ! Earth to grid
       real(kind=dp),dimension(:,:),pointer,public :: MR_xy2ll_xlon  => null() ! holds longitude of projected grid
       real(kind=dp),dimension(:,:),pointer,public :: MR_xy2ll_ylat  => null() ! holds latitude of projected grid
+!      real(kind=dp),dimension(:,:),pointer,public :: MR_ll2xy_lonx  => null() ! holds x projected value of lon/lat grid
+!      real(kind=dp),dimension(:,:),pointer,public :: MR_ll2xy_laty  => null() ! holds y projected value of lon/lat grid
 #else
       real(kind=sp),dimension(:)  ,allocatable,public :: x_submet_sp ! x-coordinates of met sub-grid
       real(kind=sp),dimension(:)  ,allocatable,public :: y_submet_sp ! y-coordinates of met sub-grid
@@ -437,6 +440,8 @@
       real(kind=dp),dimension(:,:),allocatable,public :: theta_Comp ! Earth to grid
       real(kind=dp),dimension(:,:),allocatable,public :: MR_xy2ll_xlon  ! holds longitude of projected grid
       real(kind=dp),dimension(:,:),allocatable,public :: MR_xy2ll_ylat  ! holds latitude of projected grid
+!      real(kind=dp),dimension(:,:),allocatable,public :: MR_ll2xy_lonx  ! holds x projected value of lon/lat grid
+!      real(kind=dp),dimension(:,:),allocatable,public :: MR_ll2xy_laty  ! holds y projected value of lon/lat grid
 #endif
       real(kind=sp),public :: MR_lonmin,MR_lonmax
       real(kind=sp),public :: MR_latmin,MR_latmax
@@ -553,7 +558,7 @@
       ! have just a sub-set available with specific names.  For now, allocate
       ! space for 50 variable names
         ! Mechanical / State variables
-        !   1 = Geopotential Height
+        !   1 = Geopotential Height              : m
         !   2 = Vx                               : m/s
         !   3 = Vy                               : m/s
         !   4 = Vz                               : m/s
@@ -957,7 +962,7 @@
       Met_var_GRIB1_St(1:MR_MAXVARS)          = ""
       Met_var_conversion_factor(1:MR_MAXVARS) = 1.0_sp
       Met_var_nlevs(1:MR_MAXVARS)             = 0
-      isGridRelative = .true.
+      IsGridRelative = .true.
 
       !--------------------------------
       ! Dimensions
@@ -3059,7 +3064,6 @@
 
       end subroutine MR_Set_CompProjection
 
-
 !##############################################################################
 !
 !     MR_Initialize_Met_Grids
@@ -3236,12 +3240,12 @@
               enddo
             endif
           enddo
-          MR_minlen = maxval(rdlambda_MetP_sp(:,:,:))
+          MR_minlen = maxval(rdlambda_MetP_sp(:,:,:)) / 1000.0_sp ! in km
           do i=1,nx_submet
             do j=1,ny_submet
               if(MR_minlen.gt.rdlambda_MetP_sp(i,j,1)) MR_minlen=rdlambda_MetP_sp(i,j,1)
               if(MR_minlen.gt.rdphi_MetP_sp(j,1))      MR_minlen=rdphi_MetP_sp(j,1)
-              MR_sigma_nz_submet(i,j) = rdphi_MetP_sp(j,1)*rdlambda_MetP_sp(i,j,1)
+              MR_sigma_nz_submet(i,j) = rdphi_MetP_sp(j,1)*rdlambda_MetP_sp(i,j,1)/1.0-6_sp ! in km2
             enddo
           enddo
         endif
@@ -3252,17 +3256,17 @@
         if(allocated(MR_dx_met))then
 #endif
           ! This is the branch for projected NWP files
-          MR_minlen = min(minval(MR_dx_met),minval(MR_dy_met))
+          MR_minlen = min(minval(MR_dx_met),minval(MR_dy_met)) ! (in km)
           do i=1,nx_submet
             do j=1,ny_submet
-              MR_sigma_nz_submet(i,j) = MR_dx_submet(i)*MR_dy_submet(j)
+              MR_sigma_nz_submet(i,j) = MR_dx_submet(i)*MR_dy_submet(j) ! in km2
             enddo
           enddo
         else
           ! MR_dx_met and MR_dy_met might not be defined for radio sonde or ASCII 
           ! grids.  Just set MR_minlen to 10% of min domain dimension
           MR_minlen = 0.1_sp * (x_comp_sp(nx) - x_comp_sp(1))
-          MR_minlen = min(MR_minlen,0.1_sp * (y_comp_sp(ny) - y_comp_sp(1)))
+          MR_minlen = min(MR_minlen,0.1_sp * (y_comp_sp(ny) - y_comp_sp(1))) ! in km2
           !MR_sigma_nz_submet(i,j) = 
         endif
       endif
@@ -4986,10 +4990,10 @@
       !    nx_submet,ny_submet,np_fullmet to
       !    nx_submet,ny_submet,nz_comp
 
-      allocate(  z_col_metP(np_fullmet+2));   z_col_metP(:)=0.0_sp
-      allocate(var_col_metP(np_fullmet+2)); var_col_metP(:)=0.0_sp
-      allocate(var_col_metH(nz_comp))     ; var_col_metH(:)=0.0_sp
-      allocate(dumVertCoord_sp(nz_comp))     ; dumVertCoord_sp(:) = 0.0_sp
+      allocate(  z_col_metP(np_fullmet+2));   z_col_metP(:)    = 0.0_sp
+      allocate(var_col_metP(np_fullmet+2)); var_col_metP(:)    = 0.0_sp
+      allocate(var_col_metH(nz_comp))     ; var_col_metH(:)    = 0.0_sp
+      allocate(dumVertCoord_sp(nz_comp))  ; dumVertCoord_sp(:) = 0.0_sp
 
       ! Create 1d arrays in p, and regrid them into 1d arrays in z or s
       do i=1,nx_submet
@@ -5136,6 +5140,96 @@
 
       end subroutine MR_Regrid_Met2d_to_Comp2d
 
+!##############################################################################
+!
+!     MR_Set_LL_mapping
+!
+!     This subroutine calculates the lon/lat coordinates for each point
+!     of the Met grid.
+!
+!     Sets: 
+!           MR_Have_LL_mapping
+!           MR_xy2ll_xlon
+!           MR_xy2ll_ylat
+!           MR_lonmin,MR_lonmax
+!           MR_latmin,MR_latmax
+!
+!##############################################################################
+
+      subroutine MR_Set_LL_mapping
+
+      use projection,      only : &
+           PJ_Set_Proj_Params,&
+           PJ_proj_for,&
+           PJ_proj_inv
+
+      implicit none
+
+      integer, parameter :: sp        = 4 ! single precision
+      integer, parameter :: dp        = 8 ! double precision
+
+      integer :: io
+      integer :: i,j
+      real(kind=dp) :: xin,yin
+      real(kind=dp) :: xout,yout
+
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+        write(outlog(io),*)"----------                 MR_Set_LL_mapping                 ----------"
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+      endif;enddo
+
+      ! This bit is needed to map topo values onto met grid points
+      if(.not.IsLatLon_MetGrid.and. &
+         .not.MR_Have_LL_mapping)then
+#ifdef USEPOINTERS
+        if(.not.associated(MR_xy2ll_xlon))allocate(MR_xy2ll_xlon(nx_submet,ny_submet))
+        if(.not.associated(MR_xy2ll_ylat))allocate(MR_xy2ll_ylat(nx_submet,ny_submet))
+#else
+        if(.not.allocated(MR_xy2ll_xlon))allocate(MR_xy2ll_xlon(nx_submet,ny_submet))
+        if(.not.allocated(MR_xy2ll_ylat))allocate(MR_xy2ll_ylat(nx_submet,ny_submet))
+#endif
+        MR_latmax =  -90.0_sp
+        MR_latmin =   90.0_sp
+        MR_lonmin =  360.0_sp
+        MR_lonmax = -360.0_sp
+        do i=1,nx_submet
+          do j=1,ny_submet
+            xin = real(x_submet_sp(i),kind=dp)  ! Projection routines use kind=8
+            yin = real(y_submet_sp(j),kind=dp)
+            call PJ_proj_inv(xin,yin, &
+                           Met_iprojflag, Met_lam0,Met_phi0,Met_phi1,Met_phi2, &
+                           Met_k0,Met_Re, &
+                           xout,yout)
+            if(xout.lt.MR_lonmin)MR_lonmin=real(xout,kind=sp)
+            if(xout.gt.MR_lonmax)MR_lonmax=real(xout,kind=sp)
+            if(yout.lt.MR_latmin)MR_latmin=real(yout,kind=sp)
+            if(yout.gt.MR_latmax)MR_latmax=real(yout,kind=sp)
+            MR_xy2ll_xlon(i,j) = real(xout,kind=sp)
+            MR_xy2ll_ylat(i,j) = real(yout,kind=sp)
+            if(MR_xy2ll_xlon(i,j).lt.0.0_sp) MR_xy2ll_xlon(i,j) = MR_xy2ll_xlon(i,j) + 360.0_sp
+!            write(*,*)i,j,MR_xy2ll_xlon(i,j),MR_xy2ll_ylat(i,j)
+          enddo
+        enddo
+        MR_Have_LL_mapping = .true.
+      endif
+
+      end subroutine MR_Set_LL_mapping
+
+!##############################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 !##############################################################################
 !
@@ -5216,7 +5310,6 @@
       enddo
 
       end subroutine MR_DelMetP_Dx
-
 
 !##############################################################################
 !
@@ -5402,7 +5495,6 @@
       return
 
       end function MR_Z_US_StdAtm
-
 
 !##############################################################################
 !

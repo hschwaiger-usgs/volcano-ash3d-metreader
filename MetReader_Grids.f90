@@ -22,7 +22,7 @@
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_production,&
-         IsLatLon_MetGrid,IsGlobal_MetGrid,IsRegular_MetGrid,isGridRelative,&
+         IsLatLon_MetGrid,IsGlobal_MetGrid,IsRegular_MetGrid,IsGridRelative,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
          MR_iversion,MR_Reannalysis,Met_gridtype,Met_proj4
 
@@ -66,7 +66,7 @@
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
@@ -104,7 +104,7 @@
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .false.
+        IsGridRelative    = .false.
         MR_Reannalysis    = .true.
 
         Met_gridtype      = "GLC0"
@@ -124,7 +124,7 @@
         IsLatLon_MetGrid  = .true.   ! this might be reset
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -136,7 +136,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -148,7 +148,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -160,7 +160,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -172,7 +172,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -184,7 +184,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .false.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -196,7 +196,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .false.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -209,14 +209,14 @@
           IsLatLon_MetGrid  = .true.
           IsGlobal_MetGrid  = .true.
           IsRegular_MetGrid = .true.
-          isGridRelative    = .true.
+          IsGridRelative    = .true.
           Met_gridtype      = "GLL0"
         elseif(MR_iversion.eq.3)then
           !v3
           IsLatLon_MetGrid  = .true.
           IsGlobal_MetGrid  = .true.
           IsRegular_MetGrid = .false.
-          isGridRelative    = .true.
+          IsGridRelative    = .true.
           Met_gridtype      = "GLL0"
         endif
       elseif(igrid.eq.2)then
@@ -227,7 +227,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -240,7 +240,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -252,7 +252,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -265,7 +265,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -320,7 +320,7 @@
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GST0"
         Met_iprojflag     = 1
@@ -360,7 +360,7 @@
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GST0"
         Met_iprojflag     = 1
@@ -379,7 +379,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .false.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -391,7 +391,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -403,7 +403,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -415,7 +415,7 @@
         IsLatLon_MetGrid  = .true.
         IsGlobal_MetGrid  = .true.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
 
@@ -460,7 +460,7 @@
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GME0"
         Met_iprojflag     = 5
@@ -520,7 +520,7 @@
         IsLatLon_MetGrid  = .false.   
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GST0"
         Met_iprojflag     = 1
@@ -558,7 +558,7 @@
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
@@ -597,7 +597,7 @@
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
@@ -635,7 +635,7 @@
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GST0"
         Met_iprojflag     = 1
@@ -672,7 +672,7 @@
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
@@ -711,7 +711,7 @@
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
@@ -749,7 +749,7 @@
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
@@ -787,7 +787,7 @@
         IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
-        isGridRelative    = .true.
+        IsGridRelative    = .true.
 
         Met_gridtype      = "GST0"
         Met_iprojflag     = 1
@@ -848,12 +848,11 @@
          x_fullmet_sp,y_fullmet_sp,MR_dx_met,MR_sigma_nz_submet,&
          MR_dy_met,y_comp_sp,iend,ilhalf_fm_r,IsGlobal_MetGrid,&
          Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
-         isGridRelative,bilin_map_wgt,CompPoint_on_subMet_idx,y_pad_South,y_pad_North,&
+         IsGridRelative,bilin_map_wgt,CompPoint_on_subMet_idx,y_pad_South,y_pad_North,&
          y_inverted,wrapgrid,UseFullMetGrid,ny_fullmet,ny_comp,nx_comp,nx_fullmet,&
          irhalf_fm_r,IsLatLon_MetGrid,IsPeriodic_CompGrid,jend,Map_Case,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         MR_useCompH,MR_useCompP,np_fullmet,nz_comp,MR_xy2ll_xlon,MR_xy2ll_ylat,&
-         MR_lonmin,MR_lonmax,MR_latmin,MR_latmax
+         MR_useCompH,MR_useCompP,np_fullmet,nz_comp
 
       use projection,      only : &
            PJ_Set_Proj_Params,&
@@ -1427,7 +1426,7 @@
       ! We might need to rotate the wind vectors on the met grid in place if
       !   we need to convert ER to GR for the same grid or
       !   we need ER vectors from a projected Met grid
-      if(.not.isGridRelative.or. &  ! We are dealing with NARR data
+      if(.not.IsGridRelative.or. &  ! We are dealing with NARR data
                Map_Case.eq.4.or. &  ! Met Grid is projected and Comp grid is Lat/Lon
                Map_Case.eq.5)then   ! Met Grid and Comp grids have different projections
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
@@ -1550,39 +1549,6 @@
         endif
       endif
 
-      ! This bit is needed to map topo values onto met grid points
-      if(.not.IsLatLon_MetGrid)then
-#ifdef USEPOINTERS
-        if(.not.associated(MR_xy2ll_xlon))allocate(MR_xy2ll_xlon(nx_submet,ny_submet))
-        if(.not.associated(MR_xy2ll_ylat))allocate(MR_xy2ll_ylat(nx_submet,ny_submet))
-#else
-        if(.not.allocated(MR_xy2ll_xlon))allocate(MR_xy2ll_xlon(nx_submet,ny_submet))
-        if(.not.allocated(MR_xy2ll_ylat))allocate(MR_xy2ll_ylat(nx_submet,ny_submet))
-#endif
-        MR_latmax =  -90.0_sp
-        MR_latmin =   90.0_sp
-        MR_lonmin =  360.0_sp
-        MR_lonmax = -360.0_sp
-        do i=1,nx_submet
-          do j=1,ny_submet
-            xin = real(x_submet_sp(i),kind=dp)  ! Projection routines use kind=8
-            yin = real(y_submet_sp(j),kind=dp)
-            call PJ_proj_inv(xin,yin, &
-                           Met_iprojflag, Met_lam0,Met_phi0,Met_phi1,Met_phi2, &
-                           Met_k0,Met_Re, &
-                           xout,yout)
-            if(xout.lt.MR_lonmin)MR_lonmin=xout
-            if(xout.gt.MR_lonmax)MR_lonmax=xout
-            if(yout.lt.MR_latmin)MR_latmin=yout
-            if(yout.gt.MR_latmax)MR_latmax=yout
-            MR_xy2ll_xlon(i,j) = real(xout,kind=sp)
-            MR_xy2ll_ylat(i,j) = real(yout,kind=sp)
-            if(MR_xy2ll_xlon(i,j).lt.0.0_sp) MR_xy2ll_xlon(i,j) = MR_xy2ll_xlon(i,j) + 360.0_sp
-            write(*,*)i,j,MR_xy2ll_xlon(i,j),MR_xy2ll_ylat(i,j)
-          enddo
-        enddo
-      endif
-
       allocate(MR_dum2d_met_int(nx_submet,ny_submet))
       allocate(MR_dum2d_met(nx_submet,ny_submet))
       allocate(MR_dum3d_metP(nx_submet,ny_submet,np_fullmet))
@@ -1604,6 +1570,89 @@
 
       end subroutine MR_Set_MetComp_Grids
 
+!##############################################################################
+!
+!     MR_Set_LL_mapping
+!
+!     This subroutine calculates the lon/lat coordinates for each point
+!     of the Met grid.
+!
+!     Sets: 
+!           MR_Have_LL_mapping
+!           MR_xy2ll_xlon
+!           MR_xy2ll_ylat
+!           MR_lonmin,MR_lonmax
+!           MR_latmin,MR_latmax
+!
+!##############################################################################
+!
+!      subroutine MR_Set_LL_mapping
+!
+!      use MetReader,       only : &
+!         MR_nio,VB,outlog,verbosity_production,&
+!         x_submet_sp,nx_submet,y_submet_sp,ny_submet,IsLatLon_MetGrid,&
+!         Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
+!         MR_Have_LL_mapping,MR_xy2ll_xlon,MR_xy2ll_ylat,&
+!         MR_lonmin,MR_lonmax,MR_latmin,MR_latmax
+!
+!      use projection,      only : &
+!           PJ_Set_Proj_Params,&
+!           PJ_proj_for,&
+!           PJ_proj_inv
+!
+!      implicit none
+!
+!      integer, parameter :: sp        = 4 ! single precision
+!      integer, parameter :: dp        = 8 ! double precision
+!
+!      integer :: io
+!      integer :: i,j
+!      real(kind=dp) :: xin,yin
+!      real(kind=dp) :: xout,yout
+!
+!      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+!        write(outlog(io),*)"-----------------------------------------------------------------------"
+!        write(outlog(io),*)"----------                 MR_Set_LL_mapping                 ----------"
+!        write(outlog(io),*)"-----------------------------------------------------------------------"
+!      endif;enddo
+!
+!      ! This bit is needed to map topo values onto met grid points
+!      if(.not.IsLatLon_MetGrid.and. &
+!         .not.MR_Have_LL_mapping)then
+!#ifdef USEPOINTERS
+!        if(.not.associated(MR_xy2ll_xlon))allocate(MR_xy2ll_xlon(nx_submet,ny_submet))
+!        if(.not.associated(MR_xy2ll_ylat))allocate(MR_xy2ll_ylat(nx_submet,ny_submet))
+!#else
+!        if(.not.allocated(MR_xy2ll_xlon))allocate(MR_xy2ll_xlon(nx_submet,ny_submet))
+!        if(.not.allocated(MR_xy2ll_ylat))allocate(MR_xy2ll_ylat(nx_submet,ny_submet))
+!#endif
+!        MR_latmax =  -90.0_sp
+!        MR_latmin =   90.0_sp
+!        MR_lonmin =  360.0_sp
+!        MR_lonmax = -360.0_sp
+!        do i=1,nx_submet
+!          do j=1,ny_submet
+!            xin = real(x_submet_sp(i),kind=dp)  ! Projection routines use kind=8
+!            yin = real(y_submet_sp(j),kind=dp)
+!            call PJ_proj_inv(xin,yin, &
+!                           Met_iprojflag, Met_lam0,Met_phi0,Met_phi1,Met_phi2, &
+!                           Met_k0,Met_Re, &
+!                           xout,yout)
+!            if(xout.lt.MR_lonmin)MR_lonmin=real(xout,kind=sp)
+!            if(xout.gt.MR_lonmax)MR_lonmax=real(xout,kind=sp)
+!            if(yout.lt.MR_latmin)MR_latmin=real(yout,kind=sp)
+!            if(yout.gt.MR_latmax)MR_latmax=real(yout,kind=sp)
+!            MR_xy2ll_xlon(i,j) = real(xout,kind=sp)
+!            MR_xy2ll_ylat(i,j) = real(yout,kind=sp)
+!            if(MR_xy2ll_xlon(i,j).lt.0.0_sp) MR_xy2ll_xlon(i,j) = MR_xy2ll_xlon(i,j) + 360.0_sp
+!            write(*,*)i,j,MR_xy2ll_xlon(i,j),MR_xy2ll_ylat(i,j)
+!          enddo
+!        enddo
+!        MR_Have_LL_mapping = .true.
+!      endif
+!
+!      end subroutine MR_Set_LL_mapping
+!
 !##############################################################################
 
 
