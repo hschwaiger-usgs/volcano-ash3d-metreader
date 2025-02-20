@@ -48,6 +48,7 @@
         !        LambertConformal_Projection:standard_parallel = 38.5 ;
         !        LambertConformal_Projection:earth_radius = 6371229. ;
         ! proj +proj=lcc +lon_0=262.5 +lat_0=38.5 +lat_1=38.5 +lat_2=38.5 +R=6371.229
+        ! invproj +proj=lcc +lon_0=262.5 +lat_0=38.5 +lat_1=38.5 +lat_2=38.5 +R=6371.229 -f '%.8f'
         !   226.541 12.190
         !     -4226.108 -832.6978
         !   310.615 57.290
@@ -86,6 +87,7 @@
         !        LambertConformal_Projection:standard_parallel = 50. ;
         !    Reported NARR Reanal    Lambert_Conformal:GRIB_param_grid_radius_spherical_earth = 6367.47 ;
         ! proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6367.47
+        ! invproj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6367.47 -f '%.8f'
         !   214.50  1.0
         !     -5629.34  -4609.85
         !   357.43 46.352
@@ -302,6 +304,7 @@
         !        Polar_Stereographic:GRIB_param_grid_type = 20 ;
         !        Polar_Stereographic:GRIB_param_grid_units = "m" ;
         ! proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229
+        ! invproj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229 -f '%.8f'
         !   181.42899 40.5301
         !      -2619.36159134661 -4810.03724324973
         !   266.3082 63.9757
@@ -342,6 +345,7 @@
         !        PolarStereographic_Projection:scale_factor_at_projection_origin = 0.933012701892219 ;
         !        PolarStereographic_Projection:earth_radius = 6371229. ;
         ! proj +proj=stere  +lon_0=255  +lat_0=90 +k_0=0.933 +R=6371.229
+        ! invproj +proj=stere  +lon_0=255  +lat_0=90 +k_0=0.933 +R=6371.229 -f '%.8f'
         !
         ! -6761.21 -9846.821
         ! 
@@ -449,6 +453,7 @@
         !        Mercator:GRIB_param_grid_type = 10 ;
         !        Mercator:GRIB_param_grid_units = "m" ;
         ! proj +proj=merc  +lat_ts=20.0 +lon_0=198.475 +R=6371.229
+        ! invproj +proj=merc  +lat_ts=20.0 +lon_0=198.475 +R=6371.229 -f '%.8f'
         ! 198.475 18.073
         !   0.00    1920.62
         ! 206.131 23.088
@@ -502,6 +507,7 @@
         !        Polar_Stereographic:GRIB_param_grid_type = 20 ;
         !        Polar_Stereographic:GRIB_param_grid_units = "m" ;
         ! proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229
+        ! invproj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229 -f '%.8f'
         !   181.42899 40.5301
         !      -2619.36159134661 -4810.03724324973
         !   266.3082 63.9757
@@ -539,6 +545,7 @@
         !        LambertConformal_Projection:standard_parallel = 25. ;
         !        LambertConformal_Projection:earth_radius = 6371229. ;
         ! proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229
+        ! invproj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229 -f '%.8f'
         !   226.541 12.190
         !     -4226.108 -832.6978
         !   310.615 57.290
@@ -578,6 +585,7 @@
         !        LambertConformal_Projection:standard_parallel = 25. ;
         !        LambertConformal_Projection:earth_radius = 6371229. ;
         ! proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229
+        ! invproj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229 -f '%.8f'
         !   226.541 12.190
         !     -4226.108 -832.6978
         !   310.615 57.290
@@ -617,6 +625,7 @@
         !        PolarStereographic_Projection:scale_factor_at_projection_origin = 0.933012701892219 ;
         !        PolarStereographic_Projection:earth_radius = 6371229. ;
         ! proj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.933 +R=6371.229
+        ! invproj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.933 +R=6371.229 -f '%.8f'
         ! 187.0 30.0
         !   -4225.928 -5408.941
         ! 297.15 70.111
@@ -654,6 +663,7 @@
         !        LambertConformal_Projection:standard_parallel = 25. ;
         !        LambertConformal_Projection:earth_radius = 6371229. ;
         ! proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229
+        ! invproj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229 -f '%.8f'
         !   226.541 12.190
         !     -4226.108 -832.6978
         !   310.615 57.290
@@ -693,6 +703,7 @@
         !    NCEP FC        LambertConformal_Projection:earth_radius = 6371229. ;
         ! Note: the NARR grid should use 1221
         ! proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6371.229
+        ! invproj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6371.229 -f '%.8f'
         !   214.50  1.0
         !     -5632.668 -4612.566
         !   357.43 46.352
@@ -731,6 +742,7 @@
         !        LambertConformal_Projection:standard_parallel = 25.0 ;
         !        LambertConformal_Projection:earth_radius = 6371229. ;
         ! proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229
+        ! invproj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229 -f '%.8f'
         !   226.541 12.190
         !     -4226.11  -832.70
         !   310.615 57.290
@@ -769,6 +781,7 @@
         !        PolarStereographic_Projection:scale_factor_at_projection_origin = 0.933012701892219 ;
         !        PolarStereographic_Projection:earth_radius = 6371229. ;
         ! proj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.933 +R=6371.229
+        ! invproj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.933 +R=6371.229 -f '%.8f'
         ! 187.0 30.0
         !   -4225.928 -5408.941
         ! 297.15 70.111

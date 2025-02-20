@@ -150,7 +150,7 @@ AUTOSCRIPTS = \
 
 all: ${lib} tools
 	$(info -------------------------------------)
-	$(info  Before running 'make check', set the WINDROOT and USGSROOT environment variablex.)
+	$(info  Before running 'make check', set the WINDROOT and USGSROOT environment variables.)
 	$(info  e.g. execute: )
 	$(info  export WINDROOT="${WINDROOT}")
 	$(info  export USGSROOT="${USGSROOT}")
