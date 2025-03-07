@@ -175,7 +175,7 @@
                                        ! 40 NASA-GEOS Cp
                                        ! 41 NASA-GEOS Np
                                        ! 50 WRF - output
-      logical,public :: MR_Use_RDA     = .false.  ! If reanalysis products were aquired via RDA, this flag can be changed
+      logical,public :: MR_Use_RDA     = .false.  ! If reanalysis products were acquired via RDA, this flag can be changed
       integer,public :: MR_RDAcode     = -1       ! This allows the calling program to specify older versions of data
       integer,public :: MR_iversion    = -1       ! version of the product; sometimes the grid used changes with newer
                                                   ! versions. -1 indicates latest version, but can be overridden here
