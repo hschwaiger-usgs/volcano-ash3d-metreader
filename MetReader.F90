@@ -2484,6 +2484,17 @@
         MR_Reannalysis = .false.
 
         ! Momentum / State variables
+        Met_var_IsAvailable(1)=.true.
+        Met_var_IsAvailable(2)=.true.
+        Met_var_IsAvailable(3)=.true.
+        Met_var_IsAvailable(4)=.true.
+        Met_var_IsAvailable(5)=.true.
+        Met_var_IsAvailable(7)=.true.
+        ! Moisture
+        Met_var_IsAvailable(30)=.true.
+        Met_var_IsAvailable(31)=.true.
+
+        ! Momentum / State variables
 !        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"        ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
 !        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_u.ll025uv.1991061500_1991061523.nc
 !        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_v.ll025uv.1991061500_1991061523.nc
@@ -3587,12 +3598,10 @@
             write(errlog(io),*)"       cannot be extrapolated."
             write(errlog(io),*)"  MR_Comp_StartHour    = ",real(MR_Comp_StartHour,kind=4),&
                                     HS_yyyymmddhhmm_since(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
-            write(errlog(io),*)"  MR_Comp_Time_in_hours= ",real(MR_Comp_Time_in_hours,kind=4),&
-                                    HS_yyyymmddhhmm_since(MR_Comp_Time_in_hours,MR_BaseYear,MR_useLeap)
+            write(errlog(io),*)"  MR_Comp_Time_in_hours= ",real(MR_Comp_Time_in_hours,kind=4)
             write(errlog(io),*)"  met_t1               = ",real(met_t1,kind=4),&
                                     HS_yyyymmddhhmm_since(met_t1,MR_BaseYear,MR_useLeap)
-            write(errlog(io),*)"  met_dt1              = ",real(met_dt1,kind=4),&
-                                    HS_yyyymmddhhmm_since(met_dt1,MR_BaseYear,MR_useLeap)
+            write(errlog(io),*)"  met_dt1              = ",real(met_dt1,kind=4)
           endif;enddo
           stop 1
         endif
@@ -5449,7 +5458,7 @@
       function MR_Z_US_StdAtm(pin)
 
       real(kind=sp) :: MR_Z_US_StdAtm  ! in km
-      real(kind=sp) :: pin          ! in mb
+      real(kind=sp) :: pin             ! in mb
 
       integer,parameter :: MAXATMOSNODES = 16
       real(kind=sp),dimension(MAXATMOSNODES) :: US_StdAtm_znodes
