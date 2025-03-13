@@ -187,6 +187,8 @@
       if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
 
       do while (nSTAT.eq.CODES_SUCCESS)
+!        call codes_release(igribv(count1),nSTAT)
+!        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
         count1=count1+1
         if (count1.gt.MAXGRIBREC) then
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
@@ -198,6 +200,9 @@
         call codes_new_from_file(ifile,igribv(count1),CODES_PRODUCT_GRIB,nSTAT)
       enddo
       count1 = count1-1
+!      call codes_release(igribv(count1),nSTAT)
+!      if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"  Number of grib records found = ",count1
       endif;enddo
@@ -715,6 +720,7 @@
         if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
       enddo
       call codes_close_file(ifile,nSTAT)
+
       if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_close_file ")
 
       maxdimlen = maxval(zcount(:))
@@ -947,6 +953,7 @@
       integer            :: dataTime
       integer            :: forecastTime
       integer            :: ifile
+      integer            :: igrib
       integer            :: count1
       integer,dimension(MAXGRIBREC) :: igribv
       integer(kind=4)    :: typeOfFirstFixedSurface
@@ -984,7 +991,7 @@
         stop 1
       endif
 
-      allocate(MR_windfile_starthour(MR_iwindfiles))
+      allocate(MR_windfile_starthour(MR_iwindfiles))   ! MR_windfiles_IsAvailable
       if(MR_iwindformat.eq.27)then
         ! GRIB1 reader not yet working!!
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
@@ -1058,39 +1065,42 @@
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
 
           count1=1
-          call codes_new_from_file(ifile,igribv(count1),CODES_PRODUCT_GRIB,nSTAT)
+          call codes_grib_new_from_file(ifile,igrib,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
-
           typeOfFirstFixedSurface = -1
 
           do while (count1.lt.100)  ! Read up to the first 100 grib records looking for a
                                     ! pressure level
-            call codes_get(igribv(count1),'typeOfFirstFixedSurface', typeOfFirstFixedSurface,nSTAT)
+            call codes_get(igrib,'typeOfFirstFixedSurface', typeOfFirstFixedSurface,nSTAT)
+            write(*,*)count1,igrib,nSTAT
             if(nSTAT.ne.CODES_SUCCESS) exit
             ! for populating z-levels, we are only concerned with specific level types
             if(typeOfFirstFixedSurface.eq.100) exit ! Isobaric surface  (Pa)
             ! if we haven't found a pressure level, keep looking, some surface variables
             ! are not for the expected forcast hour
+            ! Release this record and get the next one.
+            call codes_release(igrib,nSTAT)
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+            ! New record for testing
             count1 = count1+1
-            call codes_new_from_file(ifile,igribv(count1),CODES_PRODUCT_GRIB,nSTAT)
+            call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
           enddo
-
 
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
           if(iw.eq.1) then
-            call codes_get(igribv(count1),'editionNumber',MR_GRIB_Version,nSTAT)
+            call codes_get(igrib,'editionNumber',MR_GRIB_Version,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get editionNumber ")
           endif
-          call codes_get(igribv(count1),'dataDate',dataDate,nSTAT)
+          call codes_get(igrib,'dataDate',dataDate,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get dataDate ")
-          call codes_get(igribv(count1),'dataTime',dataTime,nSTAT)
+          call codes_get(igrib,'dataTime',dataTime,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get dataTime ")
 
           if(MR_GRIB_Version.eq.1)then
             ! The only grib1 files we deal with are reanalysis files with no FC time
             forecastTime = 0
           else
-            call codes_get(igribv(count1),'forecastTime',forecastTime,nSTAT)
+            call codes_get(igrib,'forecastTime',forecastTime,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get forecastTime ")
           endif
 
@@ -1101,13 +1111,8 @@
           itstart_min   = mod(dataTime,100)
           itstart_sec   = 0
 
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
-            write(outlog(io),2100)&
-               "Ref time = ",itstart_year,itstart_month,itstart_day, &
-               itstart_hour,itstart_min,itstart_sec
-          endif;enddo
+          call codes_release(igrib,nSTAT)
 
-          call codes_release(igribv(count1),nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
           call codes_close_file(ifile,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_close_file ")
@@ -1635,6 +1640,8 @@
                   endif
                   allocate(values(numberOfPoints))
                   allocate(slice(Ni,Nj))
+                  ! HFS we can get a subset of the slice using this subroutine
+                  !       call codes_get_element(igrib, key, index, value, status)
                   call codes_get(igrib,'values',values,nSTAT)
                   if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get values ")
                   do m = 1,Nj

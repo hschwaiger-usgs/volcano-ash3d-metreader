@@ -201,8 +201,8 @@
       real(kind=dp)     ,dimension(:,:),pointer,public :: MR_windfile_stephour         => null()
       integer           ,dimension(:)  ,pointer,public :: MR_windfiles_nt_fullmet      => null() ! number of steps in files
       logical           ,dimension(:)  ,pointer,public :: MR_windfiles_Have_GRIB_index => null()
-      character(len=130),dimension(:)  ,pointer,public :: MR_windfiles_GRIB_index      => null() ! name of GRIB index file`
-
+      character(len=130),dimension(:)  ,pointer,public :: MR_windfiles_GRIB_index      => null() ! name of GRIB index file
+      logical           ,dimension(:)  ,pointer,public :: MR_windfiles_IsAvailable     => null()
 #else
 !      character(len=130), allocatable,dimension(:)  ,public :: fc_windfilename
       character(len=130),dimension(:)  ,allocatable,public :: MR_windfiles            ! name of file
@@ -211,6 +211,7 @@
       integer           ,dimension(:)  ,allocatable,public :: MR_windfiles_nt_fullmet ! number of steps in files
       logical           ,dimension(:)  ,allocatable,public :: MR_windfiles_Have_GRIB_index
       character(len=130),dimension(:)  ,allocatable,public :: MR_windfiles_GRIB_index ! name of GRIB index file
+      logical           ,dimension(:)  ,allocatable,public :: MR_windfiles_IsAvailable
 #endif
       character(len=80)                           ,public :: MR_iwf_template         ! name of the template file
       logical                                     ,public :: MR_Reannalysis     = .false.
@@ -704,6 +705,7 @@
        if(associated(MR_windfiles_nt_fullmet       ))deallocate(MR_windfiles_nt_fullmet)
        if(associated(MR_windfiles_Have_GRIB_index  ))deallocate(MR_windfiles_Have_GRIB_index)
        if(associated(MR_windfiles_GRIB_index       ))deallocate(MR_windfiles_GRIB_index)
+       if(associated(MR_windfiles_IsAvailable      ))deallocate(MR_windfiles_IsAvailable)
        if(associated(MR_MetStep_File               ))deallocate(MR_MetStep_File)
        if(associated(MR_MetStep_findex             ))deallocate(MR_MetStep_findex)
        if(associated(MR_MetStep_tindex             ))deallocate(MR_MetStep_tindex)
@@ -795,6 +797,7 @@
        if(allocated(MR_windfiles_nt_fullmet        ))deallocate(MR_windfiles_nt_fullmet)
        if(allocated(MR_windfiles_Have_GRIB_index   ))deallocate(MR_windfiles_Have_GRIB_index)
        if(allocated(MR_windfiles_GRIB_index        ))deallocate(MR_windfiles_GRIB_index)
+       if(allocated(MR_windfiles_IsAvailable       ))deallocate(MR_windfiles_IsAvailable)
        if(allocated(MR_MetStep_File                ))deallocate(MR_MetStep_File)
        if(allocated(MR_MetStep_findex              ))deallocate(MR_MetStep_findex)
        if(allocated(MR_MetStep_tindex              ))deallocate(MR_MetStep_tindex)
@@ -2687,6 +2690,8 @@
       do i=1,MR_iwindfiles
         write(MR_windfiles(i),'(130x)')
       enddo
+      allocate(MR_windfiles_IsAvailable(MR_iwindfiles))
+      MR_windfiles_IsAvailable(:) = .false.
       allocate (MR_windfiles_nt_fullmet(MR_iwindfiles))
       MR_windfiles_nt_fullmet(:)=0
       if(MR_idataFormat.eq.3)then
@@ -2777,9 +2782,11 @@
                                           !       since we need to know how many
                                           !       metsteps to allocate
 
-      integer            :: i
+      integer            :: i,ii,n
       logical            :: IsThere      = .false.
       character(len=130) :: tmp_str      = ""
+      integer            :: nmissing
+      integer            :: iwmax
       character(len=130) :: iw5filename  = ""
       integer            :: ivar
       real(kind=8)       :: inhour
@@ -2873,21 +2880,26 @@
 
       ! Check the existence of the wind files
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-        write(outlog(io),*)"  Verifying existance of windfiles:"
+        write(outlog(io),*)"  Verifying existence of windfiles:"
       endif;enddo
       ! Note MR_iwind=5 cases have the number of windfiles (MR_iwindfiles)
       ! modified in MR_Allocate_FullMetFileList to be the number of
       ! anticipated files based on the length of the simulation and the number
       ! of steps per file.
       if(MR_iwind.ne.5)then
+        nmissing = 0
         do i=1,MR_iwindfiles
           inquire( file=trim(adjustl(MR_windfiles(i))), exist=IsThere )
           if(.not.IsThere)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-              write(errlog(io),*)"MR ERROR: Could not find windfile ",i
-              write(errlog(io),*)"          ",trim(adjustl(MR_windfiles(i)))
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"MR WARNING: Could not find windfile ",i
+              write(outlog(io),*)"          ",trim(adjustl(MR_windfiles(i)))
+              write(outlog(io),*)"          File wil be deleted from the list."
             endif;enddo
-            stop 1
+            nmissing = nmissing+1
+            MR_windfiles_IsAvailable(i)=.false.
+          else
+            MR_windfiles_IsAvailable(i)=.true.
           endif
         enddo
       else
@@ -2909,14 +2921,43 @@
               write(outlog(io),*)" ",i,trim(adjustl(iw5filename)),IsThere
             endif;enddo
             if(.not.IsThere)then
+              ! for iw=5 cases, do a hard stop if the expected file is not found
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then           
                 write(errlog(io),*)"MR ERROR: Could not find windfile ",i
                 write(errlog(io),*)"          ",trim(adjustl(iw5filename))
               endif;enddo
               stop 1
+            else
+              MR_windfiles_IsAvailable(i)=.true.
             endif
           enddo
         enddo
+      endif
+
+      ! Compact the windfile list, removing missing files
+      do n=1,nmissing
+        iwmax = MR_iwindfiles
+        do i=2,iwmax
+          if(.not.MR_windfiles_IsAvailable(i-1))then
+            ! Found a missing windfile, remove it from the list
+            ! by copying everthing from i down up one slot
+            do ii=i,iwmax
+              MR_windfiles(ii-1) = MR_windfiles(ii)
+              MR_windfiles_IsAvailable(ii-1) = MR_windfiles_IsAvailable(ii)
+            enddo
+            MR_iwindfiles = MR_iwindfiles -1
+          endif
+        enddo
+      enddo
+
+      if(nmissing.gt.0)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"MR WARNING: Number of missing windfiles = ",nmissing
+          write(outlog(io),*)"            Windfile list has been compacted to:"
+          do i=1,MR_iwindfiles
+            write(outlog(io),*)i,trim(adjustl(MR_windfiles(i)))
+          enddo
+        endif;enddo
       endif
 
       ! Now set up the full spatial and temporal grids
@@ -3564,7 +3605,7 @@
         else
           do io=1,MR_nio;if(VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Start time is before the first available data and"
-            write(errlog(io),*)"       cannot be extrapolated."
+            write(errlog(io),*)"          cannot be extrapolated."
           endif;enddo
           stop 1
         endif
