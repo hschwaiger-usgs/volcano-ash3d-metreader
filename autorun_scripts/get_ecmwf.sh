@@ -53,7 +53,7 @@ RES=$1
 yearmonthday=$2
 FChour=$3
 
-SERVER="https://data.ecmwf.int/forecasts/"
+SERVER="https://data.ecmwf.int/forecasts"
 
 echo "------------------------------------------------------------"
 echo "running get_ecmwf.sh ${RES} ${yearmonthday} ${FChour}"
@@ -109,8 +109,8 @@ while [ "$t" -le ${HourMax} ]; do
   INFILE=${FilePre}${t}${FilePost}
   fileURL=${SERVER}/${yearmonthday}/${FChour}z/ifs/${RES}/oper/${INFILE}
 
-  echo "wget ${fileURL}"
-  time wget ${fileURL}
+  echo "wget --no-check-certificate ${fileURL}"
+  time wget --no-check-certificate ${fileURL}
   ${USGSROOT}/bin/gen_GRIB_index $INFILE
 
   t=$(($t+${HourStep}))

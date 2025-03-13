@@ -22,7 +22,10 @@
 # current date.
 # This script expects a command line argument indicating which forecast package to download.
 #   autorun_nam.sh 091 0   for the AK HiRes 00 forecast package
-
+#
+# or from a cron job:
+#01 10 * * * /opt/USGS/bin/autorun_scripts/autorun_nam.sh 196 0    > /home/ash3d/cron_logs/nam19600_log   2>&1
+#
 # Check environment variable USGSROOT
 #  USGSROOT = location where the MetReader tools and scripts were placed.
 # Please edit these to suit your system or ensure USGSROOT is set as environment

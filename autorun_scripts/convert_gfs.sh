@@ -175,7 +175,7 @@ do
   if test -r ${gfsfile}
   then
      echo "making ${ncmlfile}"
-     ${INSTALLDIR}/bin/makegfsncml ${gfsfile} ${ncmlfile}
+     ${USGSROOT}/bin/makegfsncml ${gfsfile} ${ncmlfile}
      if [[ $? -ne 0 ]]; then
           exit 1
      fi
@@ -261,10 +261,10 @@ do
 done
 
 #cd ${GFSDATAHOME}
-#if test -f "${INSTALLDIR}/bin/ncGFS4_2_pf"; then
+#if test -f "${USGSROOT}/bin/ncGFS4_2_pf"; then
 #  PUFFDATAHOME="${WINDROOT}/puff/gfs/"
 #  mkdir -p ${PUFFDATAHOME}
-#  ${INSTALLDIR}/bin/ncGFS4_2_pf gfslist.txt
+#  ${USGSROOT}/bin/ncGFS4_2_pf gfslist.txt
 #  echo "mv Puff__GFS_______pf.nc ${PUFFDATAHOME}/${yearmonthday}${FChour}_gfs.nc"
 #  mv Puff__GFS_______pf.nc ${yearmonthday}${FChour}_gfs.nc
 #  mv ${yearmonthday}${FChour}_gfs.nc ${PUFFDATAHOME}/${yearmonthday}${FChour}_gfs.nc

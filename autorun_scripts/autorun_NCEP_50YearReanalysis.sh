@@ -19,7 +19,12 @@
 #      technical support to users of this software.
 
 # Shell script that manages the download of the NCEP 2.5 degree Reanalysis data files.
-
+# This script takes no command-line arguments and assumes the year needed is the current
+# year, as determined from the system date.
+#
+# Or, to run from a cron job:
+#01 01 * * 06 /opt/USGS/bin/autorun_scripts/autorun_NCEP_50YearReanalysis.sh   > /home/ash3d/cron_logs/NCEP_50yr_log   2>&1
+#
 # Check environment variables WINDROOT and USGSROOT
 #  WINDROOT = location where the downloaded windfiles will placed.
 #  USGSROOT = location where the MetReader tools and scripts were placed.

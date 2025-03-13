@@ -21,8 +21,12 @@
 # Shell script that manages the download of the gfs data files for the
 # current date, and converts the file to NetCDF.
 # This script expects a command line argument indicating which forecast package to download.
-#   autorun_gfs.sh 0p25 0   for the 0.25 degree 00 forecast package
-
+#   autorun_gfs.sh 0p50 0   for the 0.5 degree 00 forecast package
+#
+# or from a cron job:
+#01 06 * * * /opt/USGS/bin/autorun_scripts/autorun_gfs.sh 0p50 0   > /home/ash3d/cron_logs/gfs00_log  2>&1
+#01 19 * * * /opt/USGS/bin/autorun_scripts/autorun_gfs.sh 0p50 12  > /home/ash3d/cron_logs/gfs12_log  2>&1
+#
 # Check environment variable USGSROOT
 #  USGSROOT = location where the MetReader tools and scripts were placed.
 # Please edit these to suit your system or ensure USGSROOT is set as environment

@@ -22,7 +22,10 @@
 # current date, and converts the file to NetCDF.
 # This script expects a command line argument indicating which forecast package to download.
 #   autorun_ecmwf.sh 0p25 0   for the 0.25 degree 00 forecast package
-
+#
+# or from a cron job:
+#01 07 * * * /opt/USGS/bin/autorun_scripts/autorun_ecmwf.sh 0p25 0   > /home/ash3d/cron_logs/ecmwf00_log      2>&1
+#
 # Check environment variable USGSROOT
 #  USGSROOT = location where the MetReader tools and scripts were placed.
 # Please edit these to suit your system or ensure USGSROOT is set as environment
@@ -96,8 +99,9 @@ echo "  Calling ${SCRIPTDIR}/get_ecmwf.sh ${RES} ${yearmonthday} ${FChour}"
 ${SCRIPTDIR}/get_ecmwf.sh ${RES} ${yearmonthday} ${FChour}
 
 #script that converts grib2 to netcdf
-echo "  Calling ${SCRIPTDIR}/convert_ecmwf.sh ${RES} ${yearmonthday} ${FChour}"
-${SCRIPTDIR}/convert_ecmwf.sh ${RES} ${yearmonthday} ${FChour}
+# Note: this is commented out since both ncl and netcdf-java are failing to convert
+#echo "  Calling ${SCRIPTDIR}/convert_ecmwf.sh ${RES} ${yearmonthday} ${FChour}"
+#${SCRIPTDIR}/convert_ecmwf.sh ${RES} ${yearmonthday} ${FChour}
 
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "finished autorun_ecmwf script"
