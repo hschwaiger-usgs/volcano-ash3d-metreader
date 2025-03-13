@@ -36,12 +36,14 @@ if [ -z ${WINDROOT} ];then
 fi
 
 GFS_retain=17
+ECMFW_retain=4
 NAM196_retain=0
 NAM091_retain=0
 MetProf_retain=30
 Hysplit_retain=7
 
 GFSDATAHOME="${WINDROOT}/gfs"
+ECMWFDATAHOME="${WINDROOT}/ecmwf"
 NAM196DATAHOME="${WINDROOT}/nam/196"
 NAM091DATAHOME="${WINDROOT}/nam/091"
 METPROFDATAHOME="${WINDROOT}/MetProfiles"
@@ -52,6 +54,9 @@ HYSPLITDATAHOME="${WINDROOT}/Hysplit_traj"
 echo "Deleting all GFS windfiles older than ${GFS_retain} days"
 find ${GFSDATAHOME} -type f -mtime +${GFS_retain} -exec rm '{}' \;
 find ${GFSDATAHOME} -type d -empty -exec rmdir '{}' \;
+echo "Deleting all ECMWF windfiles older than ${ECMWF_retain} days"
+find ${ECMWFDATAHOME} -type f -mtime +${ECMWF_retain} -exec rm '{}' \;
+find ${ECMWFDATAHOME} -type d -empty -exec rmdir '{}' \;
 echo "Deleting all nam-HI windfiles older than ${NAM196_retain} days"
 find ${NAM196DATAHOME} -type f -mtime +${NAM196_retain} -exec rm '{}' \;
 find ${NAM196DATAHOME} -type d -empty -exec rmdir '{}' \;
@@ -68,6 +73,9 @@ echo ""
 echo `date`
 echo "GFS directories remaining:"
 echo `ls -l ${GFSDATAHOME}`
+echo "------------------------------------------------------------"
+echo "ECMWF directories remaining:"
+echo `ls -l ${ECMWFDATAHOME}`
 echo "------------------------------------------------------------"
 echo "NAM196 directories remaining:"
 echo `ls -l ${NAM196DATAHOME}`
