@@ -41,7 +41,7 @@
          np_fullmet,nt_fullmet,nx_fullmet,ny_fullmet,Pressure_Conv_Fac,x_inverted,&
          y_inverted,z_inverted,Met_var_zdim_idx,MR_windfiles,Met_var_IsAvailable,&
          Met_var_ndim,Met_var_NC_names,Met_dim_names,Met_var_zdim_ncid,&
-         temp1d_byte,temp1d_char,temp1d_intS,temp1d_intL,temp1d_sp,temp1d_dp,&
+         temp1d_byte,temp1d_char,temp1d_int2,temp1d_int4,temp1d_int8,temp1d_sp,temp1d_dp,&
            MR_Z_US_StdAtm
 
       use projection,      only : &
@@ -559,6 +559,7 @@
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var X byte")
                 ! copy to local variable
+                !  This is a template code section only; no known x variables are in byte format
                 !x_fullmet_sp(1:nx_fullmet) =  real(temp1d_byte(1:nx_fullmet),kind=sp)
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR variable x is of type BYTE, but real value expected.'
@@ -571,6 +572,7 @@
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var X char")
                 ! copy to local variable
+                !  This is a template code section only; no known x variables are in char format
                 !x_fullmet_sp(1:nx_fullmet) =  real(temp1d_char(1:nx_fullmet),kind=sp)
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR variable x is of type CHAR, but real value expected.'
@@ -583,22 +585,30 @@
                 var_scale_fac = dum_sp
                 nSTAT = nf90_get_att(ncid, var_id,"add_offset",dum_sp)
                 var_offset = dum_sp
-                allocate(temp1d_intS(dimlen))
-                nSTAT = nf90_get_var(ncid,var_id,temp1d_intS, &
+                allocate(temp1d_int2(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_int2, &
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var X short")
                 ! copy to local variable
-                x_fullmet_sp(1:nx_fullmet) =  real(temp1d_intS(1:nx_fullmet),kind=sp) * &
+                x_fullmet_sp(1:nx_fullmet) =  real(temp1d_int2(1:nx_fullmet),kind=sp) * &
                                                var_scale_fac + var_offset
-                deallocate(temp1d_intS)
+                deallocate(temp1d_int2)
               elseif(var_xtype.eq.NF90_INT)then
-                allocate(temp1d_intL(dimlen))
-                nSTAT = nf90_get_var(ncid,var_id,temp1d_intL, &
+                allocate(temp1d_int4(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_int4, &
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var X int")
                 ! copy to local variable
-                x_fullmet_sp(1:nx_fullmet) =  real(temp1d_intL(1:nx_fullmet),kind=sp)
-                deallocate(temp1d_intL)
+                x_fullmet_sp(1:nx_fullmet) =  real(temp1d_int4(1:nx_fullmet),kind=sp)
+                deallocate(temp1d_int4)
+              elseif(var_xtype.eq.NF90_INT64)then
+                allocate(temp1d_int8(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_int8, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var X int64")
+                ! copy to local variable
+                x_fullmet_sp(1:nx_fullmet) =  real(temp1d_int8(1:nx_fullmet),kind=sp)
+                deallocate(temp1d_int8)
               elseif(var_xtype.eq.NF90_FLOAT)then
                 allocate(temp1d_sp(dimlen))
                 nSTAT = nf90_get_var(ncid,var_id,temp1d_sp, &
@@ -645,6 +655,7 @@
                 nSTAT = nf90_get_att(ncid, var_id,"units",ustring)
                 call MR_NC_check_status(nSTAT,1,"nf90_get_att X units")
                 if(index(ustring,'km').gt.0.or.&
+                   index(ustring,'KM').gt.0.or.&
                    index(ustring,'kilo').gt.0)then
                   ! This is a projected grid
                   IsLatLon_MetGrid  = .false.
@@ -715,6 +726,7 @@
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var Y byte")
                 ! copy to local variable
+                !  This is a template code section only; no known y variables are in byte format
                 !y_fullmet_sp(1:ny_fullmet) =  real(temp1d_byte(1:ny_fullmet),kind=sp)
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR variable x is of type BYTE, but real value expected.'
@@ -727,6 +739,7 @@
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var Y char")
                 ! copy to local variable
+                !  This is a template code section only; no known y variables are in char format
                 !y_fullmet_sp(1:ny_fullmet) =  real(temp1d_char(1:ny_fullmet),kind=sp)
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR variable x is of type CHAR, but real value expected.'
@@ -739,22 +752,30 @@
                 var_scale_fac = dum_sp
                 nSTAT = nf90_get_att(ncid, var_id,"add_offset",dum_sp)
                 var_offset = dum_sp
-                allocate(temp1d_intS(dimlen))
-                nSTAT = nf90_get_var(ncid,var_id,temp1d_intS, &
+                allocate(temp1d_int2(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_int2, &
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var Y short")
                 ! copy to local variable
-                y_fullmet_sp(1:ny_fullmet) =  real(temp1d_intS(1:ny_fullmet),kind=sp) * &
+                y_fullmet_sp(1:ny_fullmet) =  real(temp1d_int2(1:ny_fullmet),kind=sp) * &
                                                var_scale_fac + var_offset
-                deallocate(temp1d_intS)
+                deallocate(temp1d_int2)
               elseif(var_xtype.eq.NF90_INT)then
-                allocate(temp1d_intL(dimlen))
-                nSTAT = nf90_get_var(ncid,var_id,temp1d_intL, &
+                allocate(temp1d_int4(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_int4, &
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var Y int")
                 ! copy to local variable
-                y_fullmet_sp(1:ny_fullmet) =  real(temp1d_intL(1:ny_fullmet),kind=sp)
-                deallocate(temp1d_intL)
+                y_fullmet_sp(1:ny_fullmet) =  real(temp1d_int4(1:ny_fullmet),kind=sp)
+                deallocate(temp1d_int4)
+              elseif(var_xtype.eq.NF90_INT64)then
+                allocate(temp1d_int8(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_int8, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var Y int64")
+                ! copy to local variable
+                y_fullmet_sp(1:ny_fullmet) =  real(temp1d_int8(1:ny_fullmet),kind=sp)
+                deallocate(temp1d_int8)
               elseif(var_xtype.eq.NF90_FLOAT)then
                 allocate(temp1d_sp(dimlen))
                 nSTAT = nf90_get_var(ncid,var_id,temp1d_sp, &
@@ -882,6 +903,7 @@
                 index(dimname,'isobaric')        .ne.0.or.&
                 index(dimname,'isobaricInhPa')   .ne.0.or.&
                 index(dimname,'pressure')        .ne.0.or.&
+                index(dimname,'pressure_level')  .ne.0.or.&
                 index(dimname,'height')          .ne.0.or.&
                 index(dimname,'depth')           .ne.0.or.&
                 index(dimname,'lv_ISBL1')        .ne.0.or.&
@@ -920,8 +942,8 @@
               do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: level coordinate is not in pos. 3 for ',invar
                 write(errlog(io),*)'          Expected one of: lev, level, isobaric, pressure,'
-                write(errlog(io),*)'            height, depth, lv_ISBL1, bottom_top,'
-                write(errlog(io),*)'            bottom_top_stag, soil_layers_stag'
+                write(errlog(io),*)'            pressure_level,height, depth, lv_ISBL1,'
+                write(errlog(io),*)'            bottom_top,bottom_top_stag, soil_layers_stag'
                 write(errlog(io),*)'          Instead, found: ',dimname
               endif;enddo
               stop 1
@@ -958,6 +980,7 @@
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var level byte")
                 ! copy to local variable
+                !  This is a template code section only; no known p variables are in byte format
                 !levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_byte(1:nlevs_fullmet(idx)),kind=sp)
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR variable level is of type BYTE, but real value expected.'
@@ -970,6 +993,7 @@
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var level char")
                 ! copy to local variable
+                !  This is a template code section only; no known p variables are in char format
                 !levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_char(1:nlevs_fullmet(idx)),kind=sp)
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR variable level is of type CHAR, but real value expected.'
@@ -982,22 +1006,30 @@
                 var_scale_fac = dum_sp
                 nSTAT = nf90_get_att(ncid, var_id,"add_offset",dum_sp)
                 var_offset = dum_sp
-                allocate(temp1d_intS(dimlen))
-                nSTAT = nf90_get_var(ncid,var_id,temp1d_intS, &
+                allocate(temp1d_int2(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_int2, &
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var level short")
                 ! copy to local variable
-                levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_intS(1:nlevs_fullmet(idx)),kind=sp)* &
+                levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_int2(1:nlevs_fullmet(idx)),kind=sp)* &
                                                var_scale_fac + var_offset
-                deallocate(temp1d_intS)
+                deallocate(temp1d_int2)
               elseif(var_xtype.eq.NF90_INT)then
-                allocate(temp1d_intL(dimlen))
-                nSTAT = nf90_get_var(ncid,var_id,temp1d_intL, &
+                allocate(temp1d_int4(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_int4, &
                        start = (/1/),count = (/dimlen/))
                 if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var level int")
                 ! copy to local variable
-                levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = temp1d_intL(1:nlevs_fullmet(idx))
-                deallocate(temp1d_intL)
+                levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_int4(1:nlevs_fullmet(idx)),kind=sp)
+                deallocate(temp1d_int4)
+              elseif(var_xtype.eq.NF90_INT64)then
+                allocate(temp1d_int8(dimlen))
+                nSTAT = nf90_get_var(ncid,var_id,temp1d_int8, &
+                       start = (/1/),count = (/dimlen/))
+                if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"get_var level int64")
+                ! copy to local variable
+                levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) =  real(temp1d_int8(1:nlevs_fullmet(idx)),kind=sp)
+                deallocate(temp1d_int8)
               elseif(var_xtype.eq.NF90_FLOAT)then
                 allocate(temp1d_sp(dimlen))
                 nSTAT = nf90_get_var(ncid,var_id,temp1d_sp, &
@@ -1823,6 +1855,7 @@
       real(kind=dp),dimension(:),   allocatable :: dum1d_dp
       real(kind=sp),dimension(:),   allocatable :: dum1d_sp
       integer(kind=4),dimension(:), allocatable :: dum1d_int4
+      integer(kind=8),dimension(:), allocatable :: dum1d_int8
       integer,dimension(8)  :: values
       integer               :: Current_Year,nt_tst
       character(len=130)    :: Z_infile
@@ -2075,7 +2108,7 @@
                        len = dimlen)
           if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension X")
           nx_fullmet = dimlen
-          x_dim_id    = var_dimIDs(i_dim)
+          x_dim_id   = var_dimIDs(i_dim)
           if(index(dimname,'x')        .eq.0.and.&  ! Check this dimension against known names
              index(dimname,'lon')      .eq.0.and.&
              index(dimname,'g0_lon_3') .eq.0.and.&
@@ -2098,7 +2131,7 @@
           call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Y")
           !if(index(dimname,Met_dim_names(3)).ne.0)then
             ny_fullmet = dimlen
-            y_dim_id    = var_dimIDs(i_dim)
+            y_dim_id   = var_dimIDs(i_dim)
           !endif
           if(index(dimname,'y')        .eq.0.and.&        ! Check this dimension against known names
              index(dimname,'lat')      .eq.0.and.&
@@ -2122,11 +2155,11 @@
           call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension time")
           !if(index(dimname,Met_dim_names(1)).ne.0)then
             nt_fullmet = dimlen
-            t_dim_id    = var_dimIDs(i_dim)
+            t_dim_id   = var_dimIDs(i_dim)
           !endif
-           if(index(dimname,'time')        .eq.0.and.&        ! Check this dimension against known names
-              index(dimname,'Time')        .eq.0.and.&
-              index(dimname,trim(adjustl(Met_dim_names(1)))).eq.0)then
+          if(index(dimname,'time')        .eq.0.and.&        ! Check this dimension to see if it contains
+             index(dimname,'Time')        .eq.0.and.&        ! 'time' or 'Time'
+             index(dimname,trim(adjustl(Met_dim_names(1)))).eq.0)then
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
               write(errlog(io),*)'MR WARNING: Name of assumed t dimension does not'
               write(errlog(io),*)'            match any expected names.  Please verify'
@@ -2455,16 +2488,33 @@
 
             if(TimeHasUnitsAttr)then
               if(index(tstring2,'since').ne.0)then
+                ! 'since' is present, we just need to get the units and the index
+                ! Could be one of:
+                  !  time:units = "seconds since 1970-01-01"         ! some ERA5 files
+                  !  time:units = "minutes since 1970-01-01"         ! NASA MERRA2 files
+                  !  time:units = "Hour since 2016-01-11T00:00:00Z"  ! most others
+                  !  time:units = "days since 0001-01-01 00:00:00"   ! CAM files
+
+                if(index(tstring2,'seconds').ne.0)then
+                  Met_dim_fac(1) = 1.0_sp/3600.0_sp
+                elseif(index(tstring2,'minutes').ne.0)then
+                  Met_dim_fac(1) = 1.0_sp/60.0_sp
+                elseif(index(tstring2,'days').ne.0)then
+                  Met_dim_fac(1) = 24.0
+                endif
+                ! Assuming hours otherwise
+
                 ! loop over the first 26 characters looking for 'since'
                 do i=1,26
-                  ! try to parse
-                  !  time:units = "Hour since 2016-01-11T00:00:00Z" ;
-                  !  time:units = "days since 0001-01-01 00:00:00" ;
+                  ! try to parse line by looking for 'since'
                   if(tstring2(i:i+5).eq.'since ')then
                     ii = i+6
+                    write(*,*)itstart_year,itstart_month,itstart_day,itstart_hour,itstart_min,itstart_sec
                     read(tstring2(ii:31),103,iostat=iostatus,iomsg=iomessage)&
                                       itstart_year,itstart_month,itstart_day, &
                                       itstart_hour,itstart_min,itstart_sec
+                    write(*,*)itstart_year,itstart_month,itstart_day,itstart_hour,itstart_min,itstart_sec
+                    write(*,*)iostatus,iomessage
                     if(iostatus.ne.0)then
                       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                         write(errlog(io),*)'MR ERROR:  Error reading time string from NetCDF file'
@@ -2503,7 +2553,8 @@
                                      real(itstart_min,kind=sp)/60.0_sp      + &
                                      real(itstart_sec,kind=sp)/3600.0_sp
                     exit
-                  endif
+                  endif ! end of block for reading date after 'since'
+
                 enddo
               endif
             endif
@@ -2589,7 +2640,7 @@
                   endif
                 enddo
               endif
-            endif
+            endif ! end of block for when 'since' is not found in units
 2100        format(20x,a11,i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2)
  103        format(i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2)
 
@@ -2612,6 +2663,15 @@
               MR_windfile_stephour(iw,1:nt_fullmet) = real(dum1d_int4(1:nt_fullmet),kind=4)* &
                                                            Met_dim_fac(1)
               deallocate(dum1d_int4)
+            elseif(var_xtype.eq.NF90_INT64)then
+              allocate(dum1d_int8(nt_fullmet))
+              nSTAT = nf90_get_var(ncid,time_var_id,dum1d_int8, &
+                     start = (/1/),count = (/nt_fullmet/))
+              call MR_NC_check_status(nSTAT,1,"nf90_get_var reftime int64")
+              ! copy to local variable
+              MR_windfile_stephour(iw,1:nt_fullmet) = real(dum1d_int8(1:nt_fullmet),kind=4)* &
+                                                           Met_dim_fac(1)
+              deallocate(dum1d_int8)
             elseif(var_xtype.eq.NF90_FLOAT)then
               allocate(dum1d_sp(nt_fullmet))
               nSTAT = nf90_get_var(ncid,time_var_id,dum1d_sp, &

@@ -635,8 +635,9 @@
 #ifdef USEPOINTERS
       character       ,dimension(:)       ,pointer,public :: temp1d_byte   => null()
       character       ,dimension(:)       ,pointer,public :: temp1d_char   => null()
-      integer(kind=2) ,dimension(:)       ,pointer,public :: temp1d_intS   => null()
-      integer(kind=4) ,dimension(:)       ,pointer,public :: temp1d_intL   => null()
+      integer(kind=2) ,dimension(:)       ,pointer,public :: temp1d_int2   => null()
+      integer(kind=4) ,dimension(:)       ,pointer,public :: temp1d_int4   => null()
+      integer(kind=8) ,dimension(:)       ,pointer,public :: temp1d_int8   => null()
       real(kind=sp)   ,dimension(:)       ,pointer,public :: temp1d_sp     => null()
       real(kind=dp)   ,dimension(:)       ,pointer,public :: temp1d_dp     => null()
       real(kind=sp)   ,dimension(:,:,:)   ,pointer,public :: temp2d_sp     => null()
@@ -650,8 +651,9 @@
 #else
       character       ,dimension(:)       ,allocatable,public :: temp1d_byte
       character       ,dimension(:)       ,allocatable,public :: temp1d_char
-      integer(kind=2) ,dimension(:)       ,allocatable,public :: temp1d_intS
-      integer(kind=4) ,dimension(:)       ,allocatable,public :: temp1d_intL
+      integer(kind=2) ,dimension(:)       ,allocatable,public :: temp1d_int2
+      integer(kind=4) ,dimension(:)       ,allocatable,public :: temp1d_int4
+      integer(kind=8) ,dimension(:)       ,allocatable,public :: temp1d_int8
       real(kind=sp)   ,dimension(:)       ,allocatable,public :: temp1d_sp
       real(kind=dp)   ,dimension(:)       ,allocatable,public :: temp1d_dp
       real(kind=sp)   ,dimension(:,:,:)   ,allocatable,public :: temp2d_sp
@@ -2269,8 +2271,8 @@
          ! directly by CDS, though metreader will attempt to translate.
 
         ! Dimension names are in the direct nc4 download
-        !Met_dim_names(1)="time"
-        !Met_dim_names(2)="level"
+        !Met_dim_names(1)="valid_time"            previously was "time"
+        !Met_dim_names(2)="pressure_level"        previously was "level"
         !Met_dim_names(3)="latitude"
         !Met_dim_names(4)="longitude"
         ! Dimension names are in the GRIB to NetCDF via ncj
