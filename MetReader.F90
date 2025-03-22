@@ -620,10 +620,10 @@
       real(kind=sp),public :: iwf25_scale_facs(MR_MAXVARS)
       real(kind=sp),public :: iwf25_offsets(MR_MAXVARS)
 
-      integer,public :: istart
-      integer,public :: iend
-      integer,public :: jstart
-      integer,public :: jend
+      integer,public :: istart      = 1
+      integer,public :: iend        = 1
+      integer,public :: jstart      = 1
+      integer,public :: jend        = 1
       integer,public :: ilhalf_fm_l
       integer,public :: ilhalf_fm_r
       integer,public :: irhalf_fm_l
