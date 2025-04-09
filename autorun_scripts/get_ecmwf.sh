@@ -116,6 +116,9 @@ while [ "$t" -le ${HourMax} ]; do
   t=$(($t+${HourStep}))
 done
 
+echo "writing last_downloaded.txt"
+echo ${yearmonthday}${FChour} > ${ECMWFDATAHOME}/last_downloaded.txt
+
 echo "finished downloading wind files"
 t1=`date`
 echo "download start: $t0"
