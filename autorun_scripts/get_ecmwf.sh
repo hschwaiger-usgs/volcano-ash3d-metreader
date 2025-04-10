@@ -117,7 +117,7 @@ while [ "$t" -le ${HourMax} ]; do
 done
 
 echo "writing last_downloaded.txt"
-echo ${yearmonthday}${FChour} > ${ECMWFDATAHOME}/last_downloaded.txt
+echo ${yearmonthday}${FChour} > ${ECMWFDATAHOME}/last_ecmwf_downloaded.txt
 
 echo "finished downloading wind files"
 t1=`date`
