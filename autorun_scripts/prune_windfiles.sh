@@ -36,7 +36,7 @@ if [ -z ${WINDROOT} ];then
 fi
 
 GFS_retain=17
-ECMFW_retain=4
+ECMWF_retain=4
 NAM196_retain=0
 NAM091_retain=0
 MetProf_retain=30
