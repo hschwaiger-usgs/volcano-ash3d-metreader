@@ -2896,7 +2896,7 @@
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
               write(outlog(io),*)"MR WARNING: Could not find windfile ",i
               write(outlog(io),*)"          ",trim(adjustl(MR_windfiles(i)))
-              write(outlog(io),*)"          File wil be deleted from the list."
+              write(outlog(io),*)"          File will be deleted from the list."
             endif;enddo
             nmissing = nmissing+1
             MR_windfiles_IsAvailable(i)=.false.
@@ -2937,20 +2937,22 @@
       endif
 
       ! Compact the windfile list, removing missing files
-      do n=1,nmissing
-        iwmax = MR_iwindfiles
-        do i=2,iwmax
-          if(.not.MR_windfiles_IsAvailable(i-1))then
-            ! Found a missing windfile, remove it from the list
-            ! by copying everthing from i down up one slot
-            do ii=i,iwmax
-              MR_windfiles(ii-1) = MR_windfiles(ii)
-              MR_windfiles_IsAvailable(ii-1) = MR_windfiles_IsAvailable(ii)
-            enddo
-            MR_iwindfiles = MR_iwindfiles -1
-          endif
-        enddo
+      iwmax = MR_iwindfiles
+      do i=2,iwmax
+        if(.not.MR_windfiles_IsAvailable(i-1))then
+          ! Found a missing windfile, remove it from the list
+          ! by copying everthing from i down up one slot
+          do ii=i,iwmax
+            MR_windfiles(ii-1) = MR_windfiles(ii)
+            MR_windfiles_IsAvailable(ii-1) = MR_windfiles_IsAvailable(ii)
+          enddo
+          MR_iwindfiles = MR_iwindfiles -1
+        endif
       enddo
+      ! test last file on list
+      if(.not.MR_windfiles_IsAvailable(iwmax))then
+        MR_iwindfiles = MR_iwindfiles -1
+      endif
 
       if(nmissing.gt.0)then
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
