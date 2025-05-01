@@ -502,6 +502,7 @@
         ! There are some computational grid variables we might need, so make local copies
       integer      ,public :: MR_BaseYear            = 1900    ! This should be reset in calling program
       logical      ,public :: MR_useLeap             = .true.  ! This too
+      integer      ,public :: MR_RunTime_Year
       integer      ,public :: MR_Comp_StartYear
       integer      ,public :: MR_Comp_StartMonth
       integer      ,public :: MR_Comp_StartDay
@@ -949,7 +950,7 @@
           write(errlog(io),*)' MR_iwind = 1 read from a 1-D wind sounding'
           write(errlog(io),*)'            2 read from 3D gridded ASCII files'
           write(errlog(io),*)'            3 read from a single, multistep file'
-          write(errlog(io),*)'            4 read from multiple files'
+          write(errlog(io),*)'            4 read from multiple single-step files'
           write(errlog(io),*)'            5 read variables from separate files'
         endif;enddo
         stop 1
@@ -2834,6 +2835,9 @@
         stop 1
       endif
 
+      call date_and_time(date,time2,zone,values)
+      MR_RunTime_Year   = values(1)
+
       if(MR_iwind.eq.5)then
         ! For iwind=5 files (NCEP 2.5 degree reanalysis, NOAA, etc. ), only the directory
         ! was read into slot 1 of MR_windfiles(:).  We need to copy to all other slots
@@ -2853,7 +2857,7 @@
             write(outlog(io),*)"            ERA5, etc.) are used, then MR_Read_Met_DimVars"
             write(outlog(io),*)"            should be called with a start year.  This is needed"
             write(outlog(io),*)"            to allocate the correct number of time steps per file."
-            write(outlog(io),*)"            Setting MR_Comp_StartYear to 2018 for a non-leap year."
+            write(outlog(io),*)"            Setting MR_Comp_StartYear to current year."
             write(outlog(io),*)"            However, MR_Comp_StartYear will be checked later to"
             write(outlog(io),*)"            verify that the start year is not a leap year."
             write(outlog(io),*)"            If there is an inconsistancy, the program will stop."
@@ -2861,10 +2865,8 @@
             write(outlog(io),*)"            of MetReader, then the results will be incorrect."
           endif;enddo
           ! Setting to year of program execution
-          call date_and_time(date,time2,zone,values)
-          MR_Comp_StartYear = values(1)
+          MR_Comp_StartYear = MR_RunTime_Year
         endif
-
       endif
 
       ! Verify that the first windfile has been changed from its initialized value
@@ -2906,7 +2908,7 @@
         enddo
       else
         MR_iw5_root = MR_windfiles(1)
-        do i = 1,MR_iwindfiles-1
+        do i = 1,MR_iwindfiles
           inhour = MR_Comp_StartHour + (i-1)*MR_iw5_hours_per_file
           do ivar = 1,5
 #ifdef USENETCDF
@@ -2933,6 +2935,7 @@
               MR_windfiles_IsAvailable(i)=.true.
             endif
           enddo
+          if(MR_RunTime_Year.eq.MR_Comp_StartYear)cycle
         enddo
       endif
 
@@ -3447,9 +3450,6 @@
 !##############################################################################
 
       subroutine MR_Set_Met_Times(eStartHour,Duration)
-
-      integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
 
       integer, parameter :: NT_MAXOUT = 100
 
@@ -5219,9 +5219,6 @@
 
       implicit none
 
-      integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
-
       integer :: io
       integer :: i,j
       real(kind=dp) :: xin,yin
@@ -5271,19 +5268,6 @@
       end subroutine MR_Set_LL_mapping
 
 !##############################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 !##############################################################################
 !
