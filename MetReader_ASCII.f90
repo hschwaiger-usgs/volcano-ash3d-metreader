@@ -88,7 +88,7 @@
          Snd_Have_PT,nt_fullmet,MR_BaseYear,MR_useLeap,MR_Snd_nt_fullmet,MR_Snd_nvars,Snd_Have_Coord,&
          MR_Max_geoH_metP_predicted,MR_iwind,MR_iwindformat,IsGlobal_MetGrid,IsLatLon_MetGrid,IsRegular_MetGrid,&
          Met_iprojflag,Met_k0,Met_lam0,Met_lam1,Met_lam2,Met_phi0,Met_phi1,Met_phi2,Met_Re,MR_EPS_SMALL,&
-         MR_Comp_StartYear,MR_Comp_StartMonth,MR_nstat,MR_dx_met,MR_dy_met,&
+         MR_Comp_StartYear,MR_Comp_StartMonth,MR_nstat,MR_dx_met,MR_dy_met,MR_MAXVARS,&
            MR_Z_US_StdAtm,&
            MR_Temp_US_StdAtm,&
            MR_Pres_US_StdAtm, &
@@ -168,7 +168,7 @@
       integer           :: Stat_idx
       real(kind=sp)     :: Stat_elev
       integer           :: idx,idx2
-      real(kind=sp)     :: fac
+!      real(kind=sp)     :: fac
       integer           :: substr_pos1
       character(len=8)  :: date
       character(len=10) :: time2
@@ -333,8 +333,8 @@
       IsCustVarOrder    = .false.
       IsWindDirectSpeed = .true.
 
-      Met_dim_IsAvailable = .false.
-      Met_var_IsAvailable = .false.
+      Met_dim_IsAvailable(1:9)          = .false.
+      Met_var_IsAvailable(1:MR_MAXVARS) = .false.
       MR_nstat = min(MR_nSnd_Locs,MR_nstat)
 
       ! HFS: Break up reader into a diagnostic (type of ASCII file), then subroutines
@@ -1614,7 +1614,7 @@
                   !       HFS Fix this
                   ! Should be log interpolation in pressure to get the best altitude, then linear
                   ! interpolation between altitude levels
-                  fac = (rvalue1_o-pres_Snd_tmp(iil))/(rvalue1_o-rvalue1)
+                  !fac = (rvalue1_o-pres_Snd_tmp(iil))/(rvalue1_o-rvalue1)
                   rvalue1 = pres_Snd_tmp(iil)                          ! PRES
                   ivalue2 = -9999
                   rvalue3 = -9999.0_sp

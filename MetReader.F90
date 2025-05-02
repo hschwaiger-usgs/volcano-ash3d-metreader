@@ -958,8 +958,7 @@
 
       ! Initialize the dimension and variable arrays.  Select slots in these arrays will be
       ! overwritten from the calls in the case block below
-      Met_dim_IsAvailable                     = .false.
-      Met_var_IsAvailable                     = .false.
+      Met_dim_IsAvailable(1:9)                = .false.
       Met_var_IsAvailable(1:MR_MAXVARS)       = .false.
       Met_var_zdim_idx(1:MR_MAXVARS)          = 0
       Met_var_zdim_ncid(1:MR_MAXVARS)         = 0
@@ -2785,7 +2784,7 @@
                                           !       since we need to know how many
                                           !       metsteps to allocate
 
-      integer            :: i,ii,n
+      integer            :: i,ii
       logical            :: IsThere      = .false.
       character(len=130) :: tmp_str      = ""
       integer            :: nmissing
@@ -3487,7 +3486,6 @@
           integer     ,intent(in) :: byear
           logical     ,intent(in) :: useLeaps
         end function HS_MonthOfEvent
-
         integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
           real(kind=8),intent(in) :: HoursSince
           integer     ,intent(in) :: byear
@@ -5549,21 +5547,22 @@
       real(kind=sp) :: zin
 
       integer,parameter :: MAXATMOSNODES = 16
-      real(kind=sp),dimension(MAXATMOSNODES) :: US_StdAtm_znodes
-      real(kind=sp),dimension(MAXATMOSNODES) :: US_StdAtm_pnodes
+
+!      real(kind=sp),dimension(MAXATMOSNODES) :: US_StdAtm_znodes
+!      real(kind=sp),dimension(MAXATMOSNODES) :: US_StdAtm_pnodes
 
       real(kind=sp) :: pres0 = 1013.25_sp
       real(kind=sp) :: skinz   = 7.0_sp
 
-      US_StdAtm_znodes = (/ 0.0_sp,  11.0_sp,  20.0_sp,  32.0_sp,   &
-                           47.0_sp,  51.0_sp,  71.0_sp,  84.852_sp, &
-                           90.0_sp,  95.0_sp, 100.0_sp, 105.0_sp,   &   ! These are extensions
-                          110.0_sp, 115.0_sp, 120.0_sp, 125.0_sp/)      ! using mean CIRA ref atmos.
+!      US_StdAtm_znodes = (/ 0.0_sp,  11.0_sp,  20.0_sp,  32.0_sp,   &
+!                           47.0_sp,  51.0_sp,  71.0_sp,  84.852_sp, &
+!                           90.0_sp,  95.0_sp, 100.0_sp, 105.0_sp,   &   ! These are extensions
+!                          110.0_sp, 115.0_sp, 120.0_sp, 125.0_sp/)      ! using mean CIRA ref atmos.
 
-      US_StdAtm_pnodes = (/1013.25_sp, 226.321_sp, 54.7489_sp, 8.68019_sp, &
-                           1.10906_sp, 6.69389e-1_sp, 3.95642e-2_sp, 3.68501e-3_sp, &
-                           1.795e-3_sp,7.345e-4_sp,3.090e-4_sp,1.422e-4_sp, &
-                           7.362e-5_sp,4.236e-5_sp,2.667e-5_sp,2.666e-5_sp/)
+!      US_StdAtm_pnodes = (/1013.25_sp, 226.321_sp, 54.7489_sp, 8.68019_sp, &
+!                           1.10906_sp, 6.69389e-1_sp, 3.95642e-2_sp, 3.68501e-3_sp, &
+!                           1.795e-3_sp,7.345e-4_sp,3.090e-4_sp,1.422e-4_sp, &
+!                           7.362e-5_sp,4.236e-5_sp,2.667e-5_sp,2.666e-5_sp/)
 
         ! Eq 1.8 of Wallace and Hobbs
         !  This starts to fall apart around 90 km or so
