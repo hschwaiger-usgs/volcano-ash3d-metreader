@@ -329,6 +329,7 @@
         Met_lam0          = -150.0_8
         Met_phi0          =  90.0_8
         Met_phi1          =  90.0_8
+        Met_phi2          =  90.0_8
         Met_k0            =  0.933_8
         Met_Re            =  6371.229_8
 
@@ -370,6 +371,7 @@
         Met_lam0          = -105.0_8
         Met_phi0          =  90.0_8
         Met_phi1          =  90.0_8
+        Met_phi2          =  90.0_8
         Met_k0            =  0.933_8
         Met_Re            =  6371.229_8
 
@@ -470,6 +472,8 @@
         Met_iprojflag     = 5
         Met_lam0          = 198.475_8
         Met_phi0          =  20.0_8
+        Met_phi1          =  20.0_8
+        Met_phi2          =  20.0_8
         Met_k0            =  0.933_8
         Met_Re            =  6371.229_8
 
@@ -532,6 +536,7 @@
         Met_lam0          = -150.0_8
         Met_phi0          =  90.0_8
         Met_phi1          =  90.0_8
+        Met_phi2          =  90.0_8
         Met_k0            =  0.933_8
         Met_Re            =  6371.229_8
 
@@ -650,6 +655,7 @@
         Met_lam0          = -135.0_8
         Met_phi0          =  90.0_8
         Met_phi1          =  90.0_8
+        Met_phi2          =  90.0_8
         Met_k0            =  0.933_8
         Met_Re            =  6371.229_8
 
@@ -806,6 +812,7 @@
         Met_lam0          = -135.0_8
         Met_phi0          =  90.0_8
         Met_phi1          =  90.0_8
+        Met_phi2          =  90.0_8
         Met_k0            =  0.933_8
         Met_Re            =  6371.229_8
 
