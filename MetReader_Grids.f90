@@ -74,7 +74,7 @@
         Met_phi0          =  38.5_8
         Met_phi1          =  38.5_8
         Met_phi2          =  38.5_8
-        Met_k0            =  0.933_8
+        Met_k0            =  0.93301270_8
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.1221)then
@@ -114,7 +114,7 @@
         Met_phi0          =  50.0_8
         Met_phi1          =  50.0_8
         Met_phi2          =  50.0_8
-        Met_k0            =  0.933_8
+        Met_k0            =  0.93301270_8
         Met_Re            =  6367.470_8
 
       elseif(igrid.eq.1050)then
@@ -330,7 +330,7 @@
         Met_phi0          =  90.0_8
         Met_phi1          =  90.0_8
         Met_phi2          =  90.0_8
-        Met_k0            =  0.933_8
+        Met_k0            =  0.93301270_8
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.104)then
@@ -372,7 +372,7 @@
         Met_phi0          =  90.0_8
         Met_phi1          =  90.0_8
         Met_phi2          =  90.0_8
-        Met_k0            =  0.933_8
+        Met_k0            =  0.93301270_8
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.170)then
@@ -474,7 +474,7 @@
         Met_phi0          =  20.0_8
         Met_phi1          =  20.0_8
         Met_phi2          =  20.0_8
-        Met_k0            =  0.933_8
+        Met_k0            =  0.93301270_8
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.198)then
@@ -537,7 +537,7 @@
         Met_phi0          =  90.0_8
         Met_phi1          =  90.0_8
         Met_phi2          =  90.0_8
-        Met_k0            =  0.933_8
+        Met_k0            =  0.93301270_8
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.212)then
@@ -577,7 +577,7 @@
         Met_phi0          =  25.0_8
         Met_phi1          =  25.0_8
         Met_phi2          =  25.0_8
-        Met_k0            =  0.933_8
+        Met_k0            =  0.93301270_8
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.215)then
@@ -617,7 +617,7 @@
         Met_phi0          =  25.0_8
         Met_phi1          =  25.0_8
         Met_phi2          =  25.0_8
-        Met_k0            =  0.933_8
+        Met_k0            =  0.93301270_8
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.216)then
@@ -656,7 +656,7 @@
         Met_phi0          =  90.0_8
         Met_phi1          =  90.0_8
         Met_phi2          =  90.0_8
-        Met_k0            =  0.933_8
+        Met_k0            =  0.93301270_8
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.218)then
@@ -695,7 +695,7 @@
         Met_phi0          =  25.0_8
         Met_phi1          =  25.0_8
         Met_phi2          =  25.0_8
-        Met_k0            =  0.933_8
+        Met_k0            =  0.93301270_8
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.221)then
@@ -774,7 +774,7 @@
         Met_phi0          =  25.0_8
         Met_phi1          =  25.0_8
         Met_phi2          =  25.0_8
-        Met_k0            =  0.933_8
+        Met_k0            =  0.93301270_8
         Met_Re            =  6371.229_8
 
       elseif(igrid.eq.242)then
@@ -813,7 +813,7 @@
         Met_phi0          =  90.0_8
         Met_phi1          =  90.0_8
         Met_phi2          =  90.0_8
-        Met_k0            =  0.933_8
+        Met_k0            =  0.93301270_8
         Met_Re            =  6371.229_8
 
       else

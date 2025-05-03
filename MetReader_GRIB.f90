@@ -54,6 +54,7 @@
       integer, parameter :: sp         = 4 ! single precision
       integer, parameter :: dp         = 8 ! double precision
       integer, parameter :: MAXGRIBREC = 10000
+      real(kind=dp), parameter :: DEG2RAD   = 1.7453292519943295e-2_dp
 
       integer :: i, j, k
       integer :: ir
@@ -502,8 +503,17 @@
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get orientationOfTheGridInDegrees ")
             Met_lam0 = dum_dp
             Met_phi0 = 90.0_8
-            Met_phi1 = 90.0_8
-            Met_k0   =  0.933_8
+            call codes_get(igribv(ir),'LaDInDegrees',dum_dp,nSTAT)
+            if(nSTAT.ne.CODES_SUCCESS)then
+              call MR_GRIB_check_status(nSTAT,1,"codes_get LaDInDegrees")
+              Met_phi1 = 90.0_8
+              Met_k0   =  0.933012701892219_8
+            else
+              Met_phi1 = dum_dp
+              Met_k0=1.0_8-(1.0_8-sin(Met_phi1*DEG2RAD))*0.5_8
+              Met_phi1 = Met_phi0
+            endif
+            Met_phi2 = 90.0_8
             Met_Re   =  6371.229_8
 
           elseif(index(dum_str,'albers').ne.0)then
@@ -1072,7 +1082,6 @@
           do while (count1.lt.100)  ! Read up to the first 100 grib records looking for a
                                     ! pressure level
             call codes_get(igrib,'typeOfFirstFixedSurface', typeOfFirstFixedSurface,nSTAT)
-            write(*,*)count1,igrib,nSTAT
             if(nSTAT.ne.CODES_SUCCESS) exit
             ! for populating z-levels, we are only concerned with specific level types
             if(typeOfFirstFixedSurface.eq.100) exit ! Isobaric surface  (Pa)

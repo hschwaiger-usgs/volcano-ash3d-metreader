@@ -2937,6 +2937,7 @@
           if(MR_RunTime_Year.eq.MR_Comp_StartYear)cycle
         enddo
       endif
+      if(MR_RunTime_Year.eq.MR_Comp_StartYear)MR_iwindfiles=1
 
       ! Compact the windfile list, removing missing files
       iwmax = MR_iwindfiles

@@ -468,7 +468,6 @@
           !
           ! Checking for dimension length and values for x,y,t,p
           !   Assume all files have the same format so we just work with MR_windfiles(1)
-
           maxdimlen = 0
           infile = trim(adjustl(MR_windfiles(1)))
           nSTAT=nf90_open(trim(adjustl(infile)),NF90_NOWRITE, ncid)
@@ -688,7 +687,6 @@
               do i = 1,nx_fullmet
                 MR_dx_met(i) = x_fullmet_sp(i+1)-x_fullmet_sp(i)
               enddo 
- 
               i_dim = 2  ! get y info
               nSTAT = nf90_inquire_dimension(ncid,var_dimIDs(i_dim), &
                            name =  dimname, &
@@ -2453,7 +2451,7 @@
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Time")
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                 write(outlog(io),*)"  Assuming all NWP files have the same number of steps."
-                write(outlog(io),*)"   Allocating time arrays for ",MR_iwindfiles,"files"
+                write(outlog(io),*)"   Allocating time arrays for ",MR_iwindfiles,"files(s)"
                 write(outlog(io),*)"                              ",nt_fullmet,"step(s) each"
               endif;enddo
               allocate(MR_windfile_stephour(MR_iwindfiles,nt_fullmet))
@@ -2509,12 +2507,9 @@
                   ! try to parse line by looking for 'since'
                   if(tstring2(i:i+5).eq.'since ')then
                     ii = i+6
-                    write(*,*)itstart_year,itstart_month,itstart_day,itstart_hour,itstart_min,itstart_sec
                     read(tstring2(ii:31),103,iostat=iostatus,iomsg=iomessage)&
                                       itstart_year,itstart_month,itstart_day, &
                                       itstart_hour,itstart_min,itstart_sec
-                    write(*,*)itstart_year,itstart_month,itstart_day,itstart_hour,itstart_min,itstart_sec
-                    write(*,*)iostatus,iomessage
                     if(iostatus.ne.0)then
                       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
                         write(errlog(io),*)'MR ERROR:  Error reading time string from NetCDF file'
