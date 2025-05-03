@@ -2924,12 +2924,19 @@
               write(outlog(io),*)" ",i,trim(adjustl(iw5filename)),IsThere
             endif;enddo
             if(.not.IsThere)then
-              ! for iw=5 cases, do a hard stop if the expected file is not found
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then           
-                write(errlog(io),*)"MR ERROR: Could not find windfile ",i
-                write(errlog(io),*)"          ",trim(adjustl(iw5filename))
-              endif;enddo
-              stop 1
+              if(i.eq.1)then
+                ! for iw=5 cases, do a hard stop if the expected file is not found
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then           
+                  write(errlog(io),*)"MR ERROR: Could not find windfile ",i
+                  write(errlog(io),*)"          ",trim(adjustl(iw5filename))
+                endif;enddo
+                stop 1
+              else
+                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  write(errlog(io),*)"MR Warning: Could not find windfile ",i
+                  write(errlog(io),*)"          ",trim(adjustl(iw5filename))
+                endif;enddo
+              endif
             else
               MR_windfiles_IsAvailable(i)=.true.
             endif
@@ -2937,7 +2944,6 @@
           if(MR_RunTime_Year.eq.MR_Comp_StartYear)cycle
         enddo
       endif
-      if(MR_RunTime_Year.eq.MR_Comp_StartYear)MR_iwindfiles=1
 
       ! Compact the windfile list, removing missing files
       iwmax = MR_iwindfiles
@@ -3451,7 +3457,7 @@
 
       subroutine MR_Set_Met_Times(eStartHour,Duration)
 
-      integer, parameter :: NT_MAXOUT = 100
+      integer, parameter :: NT_MAXOUT = 10000
 
       real(kind=8),intent(in) :: eStartHour
       real(kind=8),intent(in) :: Duration
