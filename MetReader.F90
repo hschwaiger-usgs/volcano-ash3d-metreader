@@ -508,6 +508,7 @@
       integer      ,public :: MR_Comp_StartDay
       real(kind=dp),public :: MR_Comp_StartHour      = 0.0_dp  ! Note that these must be double-precision to
       real(kind=dp),public :: MR_Comp_Time_in_hours  = 0.0_dp  ! be passed correctly to HoursSince
+      integer      ,public :: MR_Comp_EndYear
       integer      ,public :: nx_comp
       integer      ,public :: ny_comp
       integer      ,public :: nz_comp
@@ -2805,6 +2806,11 @@
           integer           ,intent(in)  :: ivar
           character(len=130),intent(out) :: infile
         end subroutine MR_Set_iwind5_filenames
+        integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
+          real(kind=8),intent(in) :: HoursSince
+          integer     ,intent(in) :: byear
+          logical     ,intent(in) :: useLeaps
+        end function HS_YearOfEvent
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
@@ -2836,7 +2842,7 @@
 
       call date_and_time(date,time2,zone,values)
       MR_RunTime_Year   = values(1)
-
+      MR_Comp_EndYear = HS_YearOfEvent(MR_Comp_StartHour+MR_Comp_Time_in_hours,MR_BaseYear,MR_useLeap)
       if(MR_iwind.eq.5)then
         ! For iwind=5 files (NCEP 2.5 degree reanalysis, NOAA, etc. ), only the directory
         ! was read into slot 1 of MR_windfiles(:).  We need to copy to all other slots
@@ -2863,8 +2869,6 @@
             write(outlog(io),*)"            If MR_Comp_StartYear is changed to a leap year outside"
             write(outlog(io),*)"            of MetReader, then the results will be incorrect."
           endif;enddo
-          ! Setting to year of program execution
-          MR_Comp_StartYear = MR_RunTime_Year
         endif
       endif
 
@@ -2889,8 +2893,8 @@
       ! modified in MR_Allocate_FullMetFileList to be the number of
       ! anticipated files based on the length of the simulation and the number
       ! of steps per file.
+      nmissing = 0
       if(MR_iwind.ne.5)then
-        nmissing = 0
         do i=1,MR_iwindfiles
           inquire( file=trim(adjustl(MR_windfiles(i))), exist=IsThere )
           if(.not.IsThere)then
@@ -2924,7 +2928,7 @@
               write(outlog(io),*)" ",i,trim(adjustl(iw5filename)),IsThere
             endif;enddo
             if(.not.IsThere)then
-              if(i.eq.1)then
+              if(i.eq.1.or.MR_Comp_EndYear.gt.MR_Comp_StartYear)then
                 ! for iw=5 cases, do a hard stop if the expected file is not found
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then           
                   write(errlog(io),*)"MR ERROR: Could not find windfile ",i
@@ -2932,9 +2936,11 @@
                 endif;enddo
                 stop 1
               else
+                nmissing = nmissing+1
                 do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                   write(errlog(io),*)"MR Warning: Could not find windfile ",i
                   write(errlog(io),*)"          ",trim(adjustl(iw5filename))
+                  write(errlog(io),*)"            This might be fine if the simulation is entirely within the first file."
                 endif;enddo
               endif
             else
