@@ -1236,13 +1236,13 @@
                   write(errlog(io),*)"          with an unknown year."
                 endif;enddo
                 !stop 1
-                MR_Comp_StartYear  = 2018
-                MR_Comp_StartMonth = 6
+                call date_and_time(date,time2,zone,values)
+                MR_Comp_StartYear  = values(1)
+                MR_Comp_StartMonth = values(2)
               endif
               MR_windfile_starthour(iw_idx) = &
                  HS_hours_since_baseyear(MR_Comp_StartYear,MR_Comp_StartMonth,DayOfMonth,&
                                          real(SndHour,kind=dp),MR_BaseYear,MR_useLeap)
-
               !   Last character of block B is 1 if data are provided up to 100mb
               read(GTSstr(1)(5:5),*,iostat=iostatus,iomsg=iomessage)dum_int
               !if(dum_int.eq.1)then

@@ -39,7 +39,7 @@
          Met_iprojflag,Met_k0,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_Re,MR_EPS_SMALL,&
          MR_GRIB_Version,MR_iwind,MR_iwindformat,MR_Max_geoH_metP_predicted,&
          x_inverted,y_inverted,z_inverted,MR_windfiles,Met_var_IsAvailable,&
-         nlev_coords_detected,nt_fullmet,Met_var_GRIB1_Param,Met_var_GRIB1_St,MR_GRIB_Version,&
+         nlev_coords_detected,nt_fullmet,Met_var_GRIB1_Param,Met_var_GRIB1_St,&
          Met_var_GRIB2_DPcPnSt,Met_var_GRIB_names,&
            MR_Z_US_StdAtm        
 
@@ -158,17 +158,12 @@
         if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
         call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
         if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
-        call codes_get(igrib,'editionNumber',MR_GRIB_Version,nSTAT)
-        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get editionNumber ")
         call codes_release(igrib,nSTAT)
         if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
         call codes_close_file(ifile,nSTAT)
         if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_close_file ")
 
       endif
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-        write(outlog(io),*)"Grib version = ",MR_GRIB_Version
-      endif;enddo
       !------------------------------------------------------------------------
       ! Checking for dimension length and values for x,y,t,p
       !   Assume all files have the same format
@@ -1003,7 +998,7 @@
 
       allocate(MR_windfile_starthour(MR_iwindfiles))   ! MR_windfiles_IsAvailable
       if(MR_iwindformat.eq.27)then
-        ! GRIB1 reader not yet working!!
+        ! GRIB1 reader not yet working for NOAA-CIRES 20th Century Reanalysis
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: iwf=27 is a GRIB1 format."
           write(errlog(io),*)"       The GRIB1 reader is not yet working"
@@ -1078,28 +1073,36 @@
           call codes_grib_new_from_file(ifile,igrib,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
           typeOfFirstFixedSurface = -1
-
-          do while (count1.lt.100)  ! Read up to the first 100 grib records looking for a
-                                    ! pressure level
-            call codes_get(igrib,'typeOfFirstFixedSurface', typeOfFirstFixedSurface,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS) exit
-            ! for populating z-levels, we are only concerned with specific level types
-            if(typeOfFirstFixedSurface.eq.100) exit ! Isobaric surface  (Pa)
-            ! if we haven't found a pressure level, keep looking, some surface variables
-            ! are not for the expected forcast hour
-            ! Release this record and get the next one.
-            call codes_release(igrib,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
-            ! New record for testing
-            count1 = count1+1
-            call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
-          enddo
-
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
           if(iw.eq.1) then
             call codes_get(igrib,'editionNumber',MR_GRIB_Version,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get editionNumber ")
+            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              write(outlog(io),*)"Grib version = ",MR_GRIB_Version
+            endif;enddo
           endif
+
+          ! We need to get a record that corresponds to a pressure level, then look at time info:
+          if(MR_GRIB_Version.eq.2)then
+            ! For some grib2 files, the first record doesn't have the time info, so look for
+            ! the first pressure level, then look at time info.
+            do while (count1.lt.100)  ! Read up to the first 100 grib records looking for a
+                                      ! pressure level
+              call codes_get(igrib,'typeOfFirstFixedSurface', typeOfFirstFixedSurface,nSTAT)
+              if(nSTAT.ne.CODES_SUCCESS) exit
+              ! for populating z-levels, we are only concerned with specific level types
+              if(typeOfFirstFixedSurface.eq.100) exit ! Isobaric surface  (Pa)
+              ! if we haven't found a pressure level, keep looking, some surface variables
+              ! are not for the expected forcast hour
+              ! Release this record and get the next one.
+              call codes_release(igrib,nSTAT)
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+              ! New record for testing
+              count1 = count1+1
+              call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
+            enddo
+          endif
+
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
           call codes_get(igrib,'dataDate',dataDate,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get dataDate ")
           call codes_get(igrib,'dataTime',dataTime,nSTAT)
@@ -1581,7 +1584,7 @@
                          ", slice = ",iwstep
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
             write(outlog(io),*)"Reading ",trim(adjustl(invar)),&
-               " from file : ",trim(adjustl(index_file)),fileposstr
+                  " from file : ",trim(adjustl(index_file)),fileposstr
           endif;enddo
 
           call codes_index_read(idx,index_file)
@@ -1695,8 +1698,7 @@
                          ", slice = ",iwstep
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
             write(outlog(io),*)"Reading ",trim(adjustl(invar)),&
-                  " from file : ",&
-                  trim(adjustl(grib_file_path)),fileposstr
+                  " from file : ",trim(adjustl(grib_file_path)),fileposstr
           endif;enddo
 
           ifile=5
@@ -1786,9 +1788,8 @@
                          ", file = ",iw,&
                          ", slice = ",iwstep
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
-            write(outlog(io),*)&
-               "Reading ",trim(adjustl(invar))," from file : ",&
-               trim(adjustl(index_file)),fileposstr
+            write(outlog(io),*)"Reading ",trim(adjustl(invar)),&
+                  " from file : ",trim(adjustl(index_file)),fileposstr
           endif;enddo
 
           call codes_index_read(idx,index_file,nSTAT)
@@ -1925,9 +1926,8 @@
           ! We don't have/(can't make) the index file so scan all messages of the
           ! GRIB2 file
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
-            write(outlog(io),*)&
-               istep,ivar,"Reading ",trim(adjustl(invar))," from file : ",&
-               trim(adjustl(grib_file_path))
+            write(outlog(io),*)"Reading ",trim(adjustl(invar)),&
+                  " from file : ",trim(adjustl(grib_file_path))
           endif;enddo
           ifile=5
           call codes_open_file(ifile,grib_file_path,'R',nSTAT)
@@ -2253,7 +2253,7 @@
       subroutine MR_GRIB_check_status(nSTAT, errcode, operation)
 
       use MetReader,       only : &
-         MR_nio,VB,errlog,verbosity_error
+         MR_nio,VB,outlog,errlog,verbosity_error
 
       use eccodes
 
@@ -2263,8 +2263,8 @@
       integer, intent(in) :: errcode
       character(len=*), intent(in) :: operation
 
-      character(len=50) :: err_message
-      character(len=12) :: severity
+      character(len=128) :: err_message = ''
+      character(len=12)  :: severity
 
       integer :: io                           ! Index for output streams
 
@@ -2277,7 +2277,11 @@
       if (nSTAT == CODES_SUCCESS) return
       call codes_get_error_string(nSTAT,err_message)
       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io) ,*)severity,errcode,operation,' ',trim(adjustl(err_message))
+        if (errcode.eq.0)then
+          write(outlog(io) ,*)severity,errcode,operation,' :: ',trim(adjustl(err_message))
+        else
+          write(errlog(io) ,*)severity,errcode,operation,' :: ',trim(adjustl(err_message))
+        endif
       endif;enddo
 
       ! If user-supplied error code is 0, then consider this a warning,

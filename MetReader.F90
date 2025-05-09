@@ -2842,7 +2842,8 @@
 
       call date_and_time(date,time2,zone,values)
       MR_RunTime_Year   = values(1)
-      MR_Comp_EndYear = HS_YearOfEvent(MR_Comp_StartHour+MR_Comp_Time_in_hours,MR_BaseYear,MR_useLeap)
+      MR_Comp_StartYear = HS_YearOfEvent(MR_Comp_StartHour                      ,MR_BaseYear,MR_useLeap)
+      MR_Comp_EndYear   = HS_YearOfEvent(MR_Comp_StartHour+MR_Comp_Time_in_hours,MR_BaseYear,MR_useLeap)
       if(MR_iwind.eq.5)then
         ! For iwind=5 files (NCEP 2.5 degree reanalysis, NOAA, etc. ), only the directory
         ! was read into slot 1 of MR_windfiles(:).  We need to copy to all other slots
@@ -2933,6 +2934,8 @@
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then           
                   write(errlog(io),*)"MR ERROR: Could not find windfile ",i
                   write(errlog(io),*)"          ",trim(adjustl(iw5filename))
+                  write(errlog(io),*)"  MR_Comp_StartYear=",MR_Comp_StartYear
+                  write(errlog(io),*)"  MR_Comp_EndYear  =",MR_Comp_EndYear
                 endif;enddo
                 stop 1
               else
@@ -5270,7 +5273,6 @@
             MR_xy2ll_xlon(i,j) = real(xout,kind=sp)
             MR_xy2ll_ylat(i,j) = real(yout,kind=sp)
             if(MR_xy2ll_xlon(i,j).lt.0.0_sp) MR_xy2ll_xlon(i,j) = MR_xy2ll_xlon(i,j) + 360.0_sp
-!            write(*,*)i,j,MR_xy2ll_xlon(i,j),MR_xy2ll_ylat(i,j)
           enddo
         enddo
         MR_Have_LL_mapping = .true.

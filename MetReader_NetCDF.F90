@@ -462,6 +462,7 @@
           call MR_Get_WRF_grid
 
         else  ! MR_iwindformat .ne. 50
+
           !------------------------------------------------------------------------
           ! Start of block for all non-iwind=5 and non-iwf=50
           ! This is where the Netcdf and Grib subroutines can be compared

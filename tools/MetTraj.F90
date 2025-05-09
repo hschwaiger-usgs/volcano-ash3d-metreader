@@ -47,16 +47,22 @@
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
-         dx_met_const,dy_met_const,IsLatLon_CompGrid,&
+         dx_met_const,dy_met_const,IsLatLon_CompGrid,x_comp_sp,&
            MR_Initialize_Met_Grids,&
            MR_Reset_Memory,&
            MR_FileIO_Error_Handler
+
+      use projection,      only : &
+         PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
+           PJ_proj_for
 
       implicit none
 
       ! These are the variables that must be set in the input file or command line
       real(kind=8)        :: inlon
       real(kind=8)        :: inlat
+      real(kind=8)        :: srcx
+      real(kind=8)        :: srcy
       integer             :: inyear,inmonth,inday
       real(kind=8)        :: inhour
       real(kind=8)        :: Simtime_in_hours
@@ -80,8 +86,8 @@
       integer             :: nxmax,nymax,nzmax
       real(kind=8)        :: dx,dy
       real(kind=8)        :: xwidth,ywidth
-      real(kind=4),dimension(:)    ,allocatable :: lon_grid
-      real(kind=4),dimension(:)    ,allocatable :: lat_grid
+      real(kind=4),dimension(:)    ,allocatable :: xgrid
+      real(kind=4),dimension(:)    ,allocatable :: ygrid
       real(kind=4),dimension(:)    ,allocatable :: z_cc
       logical             :: IsPeriodic
       integer             :: i
@@ -138,12 +144,12 @@
           integer         ,intent(in) :: GFS_Archive_Days
           integer         ,intent(in) :: GFS_FC_TotHours
         end subroutine GetWindFile
-        subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
-                                Simtime_in_hours,TrajFlag,ntraj,output_interv)
+        subroutine Integrate_ConstH_Traj(IsGlobal,srcx,srcy,inyear,inmonth,inday,inhour,&
+                                Simtime_in_hours,TrajFlag,ntraj,output_interv,inlon,inlat)
           integer,parameter   :: dp        = 8 ! double precision
           logical      , intent(in)      :: IsGlobal
-          real(kind=dp), intent(in)      :: inlon
-          real(kind=dp), intent(in)      :: inlat
+          real(kind=dp), intent(in)      :: srcx
+          real(kind=dp), intent(in)      :: srcy
           integer      , intent(in)      :: inyear
           integer      , intent(in)      :: inmonth
           integer      , intent(in)      :: inday
@@ -152,6 +158,8 @@
           integer      , intent(in)      :: TrajFlag
           integer      , intent(in)      :: ntraj
           integer      , intent(in)      :: output_interv
+          real(kind=dp), intent(in)      :: inlon
+          real(kind=dp), intent(in)      :: inlat
         end subroutine Integrate_ConstH_Traj
       END INTERFACE
 
@@ -160,6 +168,15 @@
                       StreamFlag,OutStepInc_Minutes,ntraj,OutputLevels,&
                       iw,iwf,igrid,idf,iwfiles,&
                       autoflag,FC_freq,GFS_Archive_Days)
+
+      if(IsLatLon_CompGrid)then
+        srcx = inlon
+        srcy = inlat
+      else
+        call PJ_proj_for(inlon,inlat, PJ_iprojflag, &
+                   PJ_lam0,PJ_phi0,PJ_phi1,PJ_phi2,PJ_k0,PJ_Re, &
+                   srcx,srcy)
+      endif
 
       ! Now set up the computational grid
       TrajFlag = 0
@@ -204,15 +221,25 @@
       nzmax = ntraj
       IsGlobal = .false.
       ! Define grid padding based on the integration time
-      if(Simtime_in_hours.le.8.0_8)then
+      if(Simtime_in_hours.le.6.0_8)then
+        if(IsLatLon_CompGrid)then
+          ! +-7.5 in lon ; +-5.0 in lat
+          xwidth = 15.0_4
+          ywidth = 10.0_4
+        else
+          ! +-75km in x ; +-75 in y
+          xwidth = 800.0_4
+          ywidth = 800.0_4
+        endif
+      elseif(Simtime_in_hours.le.8.0_8)then
         if(IsLatLon_CompGrid)then
           ! +-15 in lon ; +-10 in lat
           xwidth = 30.0_4
           ywidth = 20.0_4
         else
-          ! +-300km in x ; +-300 in y
-          xwidth = 300.0_4
-          ywidth = 300.0_4
+          ! +-125km in x ; +-125 in y
+          xwidth = 1000.0_4
+          ywidth = 1000.0_4
         endif
       elseif(Simtime_in_hours.le.16.0_8)then
         if(IsLatLon_CompGrid)then
@@ -220,9 +247,9 @@
           xwidth = 50.0_4
           ywidth = 30.0_4
         else
-          ! +-600km in x ; +-600 in y
-          xwidth = 600.0_4
-          ywidth = 600.0_4
+          ! +-300km in x ; +-300 in y
+          xwidth = 1500.0_4
+          ywidth = 1200.0_4
         endif
       elseif(Simtime_in_hours.le.24.0_8)then
         if(IsLatLon_CompGrid)then
@@ -230,9 +257,9 @@
           xwidth = 70.0_4
           ywidth = 40.0_4
         else
-          ! +-1000km in x ; +-1000 in y
-          xwidth = 1000.0_4
-          ywidth = 1000.0_4
+          ! +-500km in x ; +-500 in y
+          xwidth = 2000.0_4
+          ywidth = 1500.0_4
         endif
       else
         if(IsLatLon_CompGrid)then
@@ -250,7 +277,7 @@
       if(iw.eq.1)then
         ! For the ASCII case, the met grid is not a 2-d grid, but maybe
         ! scattered points.  We need to set up comp grid independent of
-        ! the met grid.
+        ! the met grid. Note ASCII cases are lon/lat
         dx = 0.5_4
         dy = 0.5_4
       else
@@ -258,57 +285,77 @@
           dx = dx_met_const
           dy = dy_met_const
         else
-          dx = 0.5_4
-          dy = 0.5_4
+          if(IsLatLon_CompGrid)then
+            ! Absent other information, choose 0.5 degree for lon/lat cases
+            dx = 0.5_4
+            dy = 0.5_4
+          else
+            dx = xwidth/20.0_4
+            dy = dx
+          endif
         endif
       endif
       nxmax = ceiling(xwidth/dx) + 1
       nymax = ceiling(ywidth/dy) + 1
 
-      allocate(lon_grid(0:nxmax+1))
-      allocate(lat_grid(0:nymax+1))
+      allocate(xgrid(0:nxmax+1))
+      allocate(ygrid(0:nymax+1))
       allocate(z_cc(nzmax))
-      if(IsGlobal)then
-        do i=0,nxmax+1
-          lon_grid(i) = real((i-1) * dx,kind=4)
-        enddo
-        IsPeriodic = .true.
-      else
-        do i=0,nxmax+1
-          lon_grid(i) = real(inlon - 0.5_4*(nxmax-1) * dx + (i-1) * dx,kind=4)
-        enddo
-        if(lon_grid(1).lt.0.0_4)then
-          lon_grid(:) = lon_grid(:) + 360.0_4
-        endif
-      endif
-      ! We can specify the longitude grid with no problems, but the latitude
-      ! grid might be padded up across the pole.  We need to set the cap at
-      ! an extreme point (89 degrees N or S)
-      if(IsGlobal)then
-        do i=0,nymax+1
-          lat_grid(i) = real(-90.0_4 + (i-1) * dy,kind=4)
-        enddo
-      else
-        if((inlat + (nymax-1)/2 * dy).gt.89.0_8)then
-          ! Start from 89.0 N and count down nymax
-          starty = 89.0_8 - (nymax-1) * dy
-          do i=0,nymax+1
-            lat_grid(i) = real(starty + (i-1) * dy,kind=4)
+      ! Set up x and y grids. Note that xgrid,ygrid use the coordinates of the Met
+      ! grid. Output positions are reprojected back to lon/lat, but integration is
+      ! on the Met grid.
+      IsPeriodic = .false.  ! This will almost always be true unless we are using
+                            ! Lon/Lat with simtimes or > 24
+      if(IsLatLon_CompGrid)then
+        ! Lon/Lat case: first global or not
+        if(IsGlobal)then
+          IsPeriodic = .true.
+          do i=0,nxmax+1
+            xgrid(i) = real((i-1) * dx,kind=4)
           enddo
-        elseif((inlat - (nymax-1)/2 * dy).lt.-89.0_8)then
-          ! Start from 89.0 N and count down nymax
-          starty = -89.0_8
           do i=0,nymax+1
-            lat_grid(i) = real(starty + (i-1) * dy,kind=4)
+            ygrid(i) = real(-90.0_4 + (i-1) * dy,kind=4)
           enddo
         else
-          ! lat grid doesn't involve poles; center grid over inlat
-          do i=0,nymax+1
-            lat_grid(i) = real(inlat - 0.5_8*(nymax-1) * dy + (i-1) * dy,kind=4)
+          do i=0,nxmax+1
+            xgrid(i) = real(srcx - 0.5_4*(nxmax-1) * dx + (i-1) * dx,kind=4)
           enddo
+          ! For the y grid, we need to check if the requested box bumps up against
+          ! the poles. Limit the extrema to +-89
+          if((srcy + (nymax-1)/2 * dy).gt.89.0_8)then
+            ! Start from 89.0 N and count down nymax
+            starty = 89.0_8 - (nymax-1) * dy
+            do i=0,nymax+1
+              ygrid(i) = real(starty + (i-1) * dy,kind=4)
+            enddo
+          elseif((srcy - (nymax-1)/2 * dy).lt.-89.0_8)then
+            ! Start from 89.0 N and count down nymax
+            starty = -89.0_8
+            do i=0,nymax+1
+              ygrid(i) = real(starty + (i-1) * dy,kind=4)
+            enddo
+          else
+            ! lat grid doesn't involve poles; center grid over inlat or srcy
+            do i=0,nymax+1
+              ygrid(i) = real(srcy - 0.5_8*(nymax-1) * dy + (i-1) * dy,kind=4)
+            enddo
+          endif
+          ! Shift xgrid to preferred range
+          !if(xgrid(1).lt.0.0_4)then
+          !  xgrid(:) = xgrid(:) + 360.0_4
+          !  srcx     = srcx + 360.0_8
+          !endif
         endif
-        IsPeriodic = .false.
+      else
+        ! Projected grids
+        do i=0,nxmax+1
+          xgrid(i) = real(srcx - 0.5_4*(nxmax-1) * dx + (i-1) * dx,kind=4)
+        enddo
+        do i=0,nymax+1
+          ygrid(i) = real(srcy - 0.5_4*(nymax-1) * dy + (i-1) * dy,kind=4)
+        enddo
       endif
+
       do i = 1,ntraj
         z_cc(i) = real(OutputLevels(i),4)
       enddo
@@ -316,24 +363,29 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Setting up wind grids"
       endif;enddo
-      ! Again, since we only need the metH grid, lon_grid and lat_grid are dummy
+      ! Again, since we only need the metH grid, xgrid and ygrid are dummy
       ! arrays
       call MR_Initialize_Met_Grids(nxmax,nymax,nzmax,&
-                              lon_grid(1:nxmax), &
-                              lat_grid(1:nymax), &
+                              xgrid(1:nxmax), &
+                              ygrid(1:nymax), &
                               z_cc(1:nzmax)    , &
                               IsPeriodic)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Now integrating from start point"
       endif;enddo
-      call Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
-                                Simtime_in_hours,TrajFlag,ntraj,OutStepInc_Minutes)
+
+      if(srcx.lt.x_comp_sp(1).or.srcx.gt.x_comp_sp(nxmax))then
+        srcx = srcx - 360.0_8
+      endif
+
+      call Integrate_ConstH_Traj(IsGlobal,srcx,srcy,inyear,inmonth,inday,inhour,&
+                                Simtime_in_hours,TrajFlag,ntraj,OutStepInc_Minutes,inlon,inlat)
 
       call MR_Reset_Memory
-      if(allocated(        z_cc)) deallocate(z_cc)
-      if(allocated(    lon_grid)) deallocate(lon_grid)
-      if(allocated(    lat_grid)) deallocate(lat_grid)
+      if(allocated(     z_cc)) deallocate(z_cc)
+      if(allocated(    xgrid)) deallocate(xgrid)
+      if(allocated(    ygrid)) deallocate(ygrid)
 
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"Program ended normally."
@@ -394,7 +446,8 @@
 
       use projection,      only : &
          PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
-           PJ_Set_Proj_Params
+           PJ_Set_Proj_Params, &
+           PJ_proj_for
 
       implicit none
 
@@ -435,6 +488,7 @@
       logical           :: IsThere
       character(len=80) :: linebuffer080
       character(len=80) :: Comp_projection_line
+      real(kind=8)      :: srcx,srcy
 
       integer :: io                           ! Index for output streams
 
@@ -949,11 +1003,20 @@
       call MR_Set_CompProjection(IsLatLon_CompGrid,PJ_iprojflag,PJ_lam0,&
                                  PJ_phi0,PJ_phi1,PJ_phi2,&
                                  PJ_k0,PJ_Re)
+      if(.not.IsLatLon_CompGrid)then
+        call PJ_proj_for(inlon,inlat, PJ_iprojflag, &
+                   PJ_lam0,PJ_phi0,PJ_phi1,PJ_phi2,PJ_k0,PJ_Re, &
+                   srcx,srcy)
+      endif
 
       ! write out values of parameters defining the run
       do io=1,MR_nio;if(VB(io).le.verbosity_info)then
         write(outlog(io),*)"inlon              = ",real(inlon,kind=4)
         write(outlog(io),*)"inlat              = ",real(inlat,kind=4)
+        if(.not.IsLatLon_CompGrid)then
+          write(outlog(io),*)"projected x        = ",srcx
+          write(outlog(io),*)"projected y        = ",srcy
+        endif
         write(outlog(io),*)"inyear             = ",inyear
         write(outlog(io),*)"inmonth            = ",inmonth
         write(outlog(io),*)"inday              = ",inday
@@ -1012,8 +1075,13 @@
       integer :: io                           ! Index for output streams
 
       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        write(errlog(io),*)"Too few command-line arguments:"
-        write(errlog(io),*)"  Usage: MetTraj_[F,B] lon lat YYYY MM DD HH.H (FC_hours nlev lev1 lev2 ...)"
+        write(errlog(io),*)"Unexpected number of command-line arguments:"
+        write(errlog(io),*)"  Usage: Either provide a control file name as a single"
+        write(errlog(io),*)"         command-line argument, or a sequence of arguments in the"
+        write(errlog(io),*)"         following format:"
+        write(errlog(io),*)"         MetTraj_[F,B] ControlFileName"
+        write(errlog(io),*)"               or"
+        write(errlog(io),*)"         MetTraj_[F,B] lon lat YYYY MM DD HH.H (FC_hours nlev lev1 lev2 ...)"
         write(errlog(io),*)"           lon       = longitude of start point"
         write(errlog(io),*)"           lat       = latitude of start point"
         write(errlog(io),*)"           YYYY      = start year"
@@ -1047,7 +1115,8 @@
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
          MR_windfiles,MR_BaseYear,MR_useLeap,&
-         MR_Comp_StartHour,MR_Comp_Time_in_hours,MR_iwindfiles,MR_iwind,&
+         MR_Comp_StartHour,MR_Comp_StartYear,MR_Comp_StartMonth,MR_Comp_StartDay, &
+         MR_Comp_Time_in_hours,MR_iwindfiles,MR_iwind,&
            MR_Allocate_FullMetFileList,&
            MR_Read_Met_DimVars,&
            MR_Set_Met_Times,&
@@ -1424,12 +1493,17 @@
                                  trim(ADJUSTL(string2))
           enddo
         endif  ! automatic cases: NCEP, then GFS
-      else
+      else ! autoflag.eq.1
 
         Probe_StartHour = HS_hours_since_baseyear(inyear,inmonth,inday,inhour,&
                                                   MR_BaseYear,MR_useLeap)
         MR_Comp_StartHour     = Probe_StartHour
         MR_Comp_Time_in_hours = Simtime_in_hours
+
+        FC_year = HS_YearOfEvent(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
+        FC_mon  = HS_MonthOfEvent(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
+        FC_day  = HS_DayOfEvent(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
+        FC_hour = HS_HourOfDay(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
 
         ! Calculate the earliest Met data needed
         if(TrajFlag.gt.0)then
@@ -1517,6 +1591,10 @@
 
       endif
 
+      MR_Comp_StartYear  = FC_year
+      MR_Comp_StartMonth = FC_mon
+      MR_Comp_StartDay   = FC_day
+
         ! Check for existance and compatibility with simulation time requirements
       call MR_Read_Met_DimVars(FC_year)
 
@@ -1538,24 +1616,28 @@
 !
 !##############################################################################
 
-      subroutine Integrate_ConstH_Traj(IsGlobal,inlon,inlat,inyear,inmonth,inday,inhour,&
-                                Simtime_in_hours,TrajFlag,ntraj,output_interv)
+      subroutine Integrate_ConstH_Traj(IsGlobal,srcx,srcy,inyear,inmonth,inday,inhour,&
+                                Simtime_in_hours,TrajFlag,ntraj,output_interv,inlon,inlat)
 
       use MetReader,       only : &
          MR_nio,VB,outlog,verbosity_info,&
          MR_dum3d_CompH,nx_comp,ny_comp,dx_met_const,dy_met_const,&
          IsRegular_MetGrid,MR_BaseYear,MR_useLeap,MR_iMetStep_Now,&
          MR_MetSteps_Total,MR_MetStep_Interval,MR_MetStep_Hour_since_baseyear,&
-         x_comp_sp,y_comp_sp,&
+         x_comp_sp,y_comp_sp,IsLatLon_CompGrid,&
            MR_Allocate_FullMetFileList,&
            MR_Read_HGT_arrays,&
            MR_Read_3d_Met_Variable_to_CompH
 
+      use projection,      only : &
+         PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
+           PJ_proj_inv
+
       implicit none
 
       logical     , intent(in)      :: IsGlobal
-      real(kind=8), intent(in)      :: inlon
-      real(kind=8), intent(in)      :: inlat
+      real(kind=8), intent(in)      :: srcx
+      real(kind=8), intent(in)      :: srcy
       integer     , intent(in)      :: inyear
       integer     , intent(in)      :: inmonth
       integer     , intent(in)      :: inday
@@ -1564,6 +1646,8 @@
       integer     , intent(in)      :: TrajFlag
       integer     , intent(in)      :: ntraj
       integer     , intent(in)      :: output_interv
+      real(kind=8), intent(in)      :: inlon
+      real(kind=8), intent(in)      :: inlat
 
       real(kind=8), parameter :: PI        = 3.141592653589793
       real(kind=8), parameter :: DEG2RAD   = 1.7453292519943295e-2
@@ -1603,6 +1687,11 @@
       real(kind=8) :: x_fin,y_fin
       real(kind=8) :: xstep,ystep
       real(kind=8) :: lonmin,lonmax,latmin,latmax
+      real(kind=8) :: outlon,outlat
+      character    :: dirchar
+      integer      :: ofile
+      integer      :: ofrmt
+      character(len=11) :: ofilename
 
       integer :: io                           ! Index for output streams
 
@@ -1668,7 +1757,6 @@
         Step_Time_since1900(stepindx) = MR_MetStep_Hour_since_baseyear(istep)
         if(istep.lt.MR_MetSteps_Total)call MR_Read_HGT_arrays(istep)
         ivar = 2 ! Vx
-
         call MR_Read_3d_Met_Variable_to_CompH(ivar,istep)
         Vx_full(1:nx_comp,1:ny_comp,:,stepindx) = &
           MR_dum3d_CompH(1:nx_comp,1:ny_comp,:)
@@ -1676,24 +1764,23 @@
         call MR_Read_3d_Met_Variable_to_CompH(ivar,istep)
         Vy_full(1:nx_comp,1:ny_comp,:,stepindx) = &
           MR_dum3d_CompH(1:nx_comp,1:ny_comp,:)
-
       enddo
 
       ! Finally B.C.'s
-      Vx_full(:,          0,:,:)=Vx_full(:,        1,:,:)
+      Vx_full(:,        0,:,:)=Vx_full(:,      1,:,:)
       Vx_full(:,ny_comp+1,:,:)=Vx_full(:,ny_comp,:,:)
-      Vy_full(:,          0,:,:)=Vy_full(:,        1,:,:)
+      Vy_full(:,        0,:,:)=Vy_full(:,      1,:,:)
       Vy_full(:,ny_comp+1,:,:)=Vy_full(:,ny_comp,:,:)
 
       if(IsGlobal)then
-        Vx_full(          0,:,:,:)=Vx_full(nx_comp,:,:,:)
-        Vx_full(nx_comp+1,:,:,:)=Vx_full(        1,:,:,:)
-        Vy_full(          0,:,:,:)=Vy_full(nx_comp,:,:,:)
-        Vy_full(nx_comp+1,:,:,:)=Vy_full(        1,:,:,:)
+        Vx_full(        0,:,:,:)=Vx_full(nx_comp,:,:,:)
+        Vx_full(nx_comp+1,:,:,:)=Vx_full(      1,:,:,:)
+        Vy_full(        0,:,:,:)=Vy_full(nx_comp,:,:,:)
+        Vy_full(nx_comp+1,:,:,:)=Vy_full(      1,:,:,:)
       else
-        Vx_full(          0,:,:,:)=Vx_full(        1,:,:,:)
+        Vx_full(        0,:,:,:)=Vx_full(      1,:,:,:)
         Vx_full(nx_comp+1,:,:,:)=Vx_full(nx_comp,:,:,:)
-        Vy_full(          0,:,:,:)=Vy_full(        1,:,:,:)
+        Vy_full(        0,:,:,:)=Vy_full(      1,:,:,:)
         Vy_full(nx_comp+1,:,:,:)=Vy_full(nx_comp,:,:,:)
       endif
 
@@ -1701,57 +1788,63 @@
       ! for the full forward/backward simulation
 
       ! Initialize the start coordinates
-      x1(:) = inlon
-      y1(:) = inlat
+      x1(:) = srcx
+      y1(:) = srcy
       t1    = Probe_StartHour
       it    = 1
 
       ! Assume an integration step of 1 min and a max v of around 100m/s
       if(TrajFlag.ge.0)then
-        dt = 1.0_8/60.0_8
+        dt =  1.0_8/60.0_8
       else
         dt = -1.0_8/60.0_8
       endif
 
-      mstodeghr = 3600.0_8*360.0_8/(2.0_8*PI*RAD_EARTH*KM_2_M)
+      mstodeghr = 3600.0_8                     * & ! seconds / hour
+                  360.0_8/(2.0_8*PI*RAD_EARTH) / & ! degree  / km arclength
+                  KM_2_M                           ! km / m
 
       if(TrajFlag.ge.0)then
-        if(ntraj.ge.1)open(unit=21,file='ftraj1.dat')
-        if(ntraj.ge.2)open(unit=22,file='ftraj2.dat')
-        if(ntraj.ge.3)open(unit=23,file='ftraj3.dat')
-        if(ntraj.ge.4)open(unit=24,file='ftraj4.dat')
-        if(ntraj.ge.5)open(unit=25,file='ftraj5.dat')
-        if(ntraj.ge.6)open(unit=26,file='ftraj6.dat')
-        if(ntraj.ge.7)open(unit=27,file='ftraj7.dat')
-        if(ntraj.ge.8)open(unit=28,file='ftraj8.dat')
-        if(ntraj.ge.9)open(unit=29,file='ftraj9.dat')
+        dirchar = 'f'
       else
-        if(ntraj.ge.1)open(unit=21,file='btraj1.dat')
-        if(ntraj.ge.2)open(unit=22,file='btraj2.dat')
-        if(ntraj.ge.3)open(unit=23,file='btraj3.dat')
-        if(ntraj.ge.4)open(unit=24,file='btraj4.dat')
-        if(ntraj.ge.5)open(unit=25,file='btraj5.dat')
-        if(ntraj.ge.6)open(unit=26,file='btraj6.dat')
-        if(ntraj.ge.7)open(unit=27,file='btraj7.dat')
-        if(ntraj.ge.8)open(unit=28,file='btraj8.dat')
-        if(ntraj.ge.9)open(unit=29,file='btraj9.dat')
+        dirchar = 'b'
       endif
+      ! Open trajectory files and write initial point
+      do kk = 1,ntraj
+        if(IsLatLon_CompGrid)then
+          outlon = x1(kk)
+          outlat = y1(kk)
+        else
+          call PJ_proj_inv(x1(kk),y1(kk),  &
+                      PJ_iprojflag, PJ_lam0,PJ_phi0,PJ_phi1,PJ_phi2, &
+                      PJ_k0,PJ_Re, &
+                      outlon,outlat)
+        endif
+ 101    format(a1,a4,i1,a4)
+ 102    format(a1,a4,i2,a4)
+        if(kk.lt.10)then
+          write(ofilename,101)dirchar,'traj',kk,'.dat'
+        else
+          write(ofilename,102)dirchar,'traj',kk,'.dat'
+        endif
+        ofile = 20+kk
+        open(unit=ofile,file=ofilename)
+        write(ofile,*)real(outlon,kind=4),real(outlat,kind=4)
 
-      if(ntraj.ge.1)write(21,*)real(x1(1),kind=4),real(y1(1),kind=4)
-      if(ntraj.ge.2)write(22,*)real(x1(2),kind=4),real(y1(2),kind=4)
-      if(ntraj.ge.3)write(23,*)real(x1(3),kind=4),real(y1(3),kind=4)
-      if(ntraj.ge.4)write(24,*)real(x1(4),kind=4),real(y1(4),kind=4)
-      if(ntraj.ge.5)write(25,*)real(x1(5),kind=4),real(y1(5),kind=4)
-      if(ntraj.ge.6)write(26,*)real(x1(6),kind=4),real(y1(6),kind=4)
-      if(ntraj.ge.7)write(27,*)real(x1(7),kind=4),real(y1(7),kind=4)
-      if(ntraj.ge.8)write(28,*)real(x1(8),kind=4),real(y1(8),kind=4)
-      if(ntraj.ge.9)write(29,*)real(x1(9),kind=4),real(y1(9),kind=4)
+        if(.not.IsGlobal)then
+          if(x1(kk).lt.lonmin)lonmin=outlon
+          if(x1(kk).gt.lonmax)lonmax=outlon
+          if(y1(kk).lt.latmin)latmin=outlat
+          if(y1(kk).gt.latmax)latmax=outlat
+        endif
+      enddo
+
 
       ! Find location of initial trajectory heights
       ! Get interpolation coefficients
       it = 1
       if(TrajFlag.gt.0)then
-        tfrac = (t1-Step_Time_since1900(it))/MR_MetStep_Interval(it)
+        tfrac =  (t1-Step_Time_since1900(it))/MR_MetStep_Interval(it)
       else
         tfrac = -(t1-Step_Time_since1900(it))/MR_MetStep_Interval(it)
       endif
@@ -1780,19 +1873,18 @@
           dvxdt(:,:,:) = (Vx_full(:,:,:,it+1)-Vx_full(:,:,:,it))/MR_MetStep_Interval(it)
           dvydt(:,:,:) = (Vy_full(:,:,:,it+1)-Vy_full(:,:,:,it))/MR_MetStep_Interval(it)
         endif
-
         do kk = 1,ntraj
           ! Get current time and position indecies
           if(IsRegular_MetGrid)then
             ! For regular grids, finding the indecies is trivial
             ix = floor((x1(kk)-x_comp_sp(1))/abs(dx_met_const)) + 1
             iy = floor((y1(kk)-y_comp_sp(1))/abs(dy_met_const)) + 1
-
           else
             ! For non-regular grids (e.g. Gaussian), we need to march over the
             ! subgrid to find the index of the current point.  This could be
             ! faster.
-            do ix=max(ixold(kk),1),nx_comp-1
+!            do ix=max(ixold(kk),1),nx_comp-1
+            do ix=1,nx_comp-1
               if (x1(kk).ge.x_comp_sp(ix).and.x1(kk).lt.x_comp_sp(ix+1))then
                 exit
               endif
@@ -1802,14 +1894,20 @@
                 exit
               endif
             enddo
+          endif ! Reg grid or no
+          ixold(kk) = ix
+          iyold(kk) = iy
 
-          endif
           if(.not.IsGlobal)then
             ! Skip over points that leave the domain
-            if(ix.le.0.or.ix.ge.nx_comp)cycle
-            if(iy.le.0.or.iy.ge.ny_comp)cycle
+            if(ix.le.0.or.ix.ge.nx_comp.or.&
+               iy.le.0.or.iy.ge.ny_comp)then
+              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                write(outlog(io),*)"out of bounds:",kk,ix,iy,nx_comp,ny_comp
+              endif;enddo
+              cycle
+            endif
           endif
-
           ! Get the fractional position within the cell
           xfrac = (x1(kk)-x_comp_sp(ix))/(x_comp_sp(ix+1)-x_comp_sp(ix))
           yfrac = (y1(kk)-y_comp_sp(iy))/(y_comp_sp(iy+1)-y_comp_sp(iy))
@@ -1834,64 +1932,66 @@
           ! Interpolate velocity onto current position and time (in m/s)
           vel_1(1) = (a1*vx1+a2*vx2+a3*vx3+a4*vx4)
           vel_1(2) = (a1*vy1+a2*vy2+a3*vy3+a4*vy4)
-          !  now convert to deg/hr
-          vel_1(1) = vel_1(1)*mstodeghr/sin((90.0_4-y1(kk))*DEG2RAD)
-          vel_1(2) = vel_1(2)*mstodeghr
-
+          if(IsLatLon_CompGrid)then
+            !  now convert to deg/hr
+            vel_1(1) = vel_1(1)*mstodeghr/sin((90.0_4-y1(kk))*DEG2RAD)
+            vel_1(2) = vel_1(2)*mstodeghr
+          else
+            !  now convert to km/hr
+            vel_1(1) = vel_1(1)*3.6_8
+            vel_1(2) = vel_1(2)*3.6_8
+          endif
           ! Now advect via Forward Euler
           xstep = vel_1(1) * dt
           ystep = vel_1(2) * dt
           x_fin = x1(kk) + xstep
           y_fin = y1(kk) + ystep
-          if (x_fin.ge.360.0_8)x_fin=x_fin - 360.0_8
-          if (x_fin.lt.0.0_8)x_fin=x_fin + 360.0_8
+          !if(IsLatLon_CompGrid)then
+          !  if (x_fin.ge.360.0_8)x_fin=x_fin - 360.0_8
+          !  if (x_fin.lt.0.0_8)x_fin=x_fin + 360.0_8
+          !endif
 
           x1(kk) = x_fin
           y1(kk) = y_fin
-        enddo
+        enddo ! kk
 
         t1 = t1 + dt
         if(mod(ti,output_interv).eq.0)then
-        !if(mod(ti,60).eq.0)then
           do kk = 1,ntraj
-            if(kk.eq.1)write(21,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
-            if(kk.eq.2)write(22,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
-            if(kk.eq.3)write(23,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
-            if(kk.eq.4)write(24,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
-            if(kk.eq.5)write(25,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
-            if(kk.eq.6)write(26,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
-            if(kk.eq.7)write(27,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
-            if(kk.eq.8)write(28,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
-            if(kk.eq.9)write(29,*)real(x1(kk),kind=4),real(y1(kk),kind=4)
-            ! Check min/max of trajectories
+            if(IsLatLon_CompGrid)then
+              outlon = x1(kk)
+              outlat = y1(kk)
+            else
+              call PJ_proj_inv(x1(kk),y1(kk),  &
+                          PJ_iprojflag, PJ_lam0,PJ_phi0,PJ_phi1,PJ_phi2, &
+                          PJ_k0,PJ_Re, &
+                          outlon,outlat)
+            endif
+            ofrmt = 20+kk
+            write(ofrmt,*)real(outlon,kind=4),real(outlat,kind=4)
 
             if(.not.IsGlobal)then
-              if(x1(kk).lt.lonmin)lonmin=x1(kk)
-              if(x1(kk).gt.lonmax)lonmax=x1(kk)
-              if(y1(kk).lt.latmin)latmin=y1(kk)
-              if(y1(kk).gt.latmax)latmax=y1(kk)
+              if(x1(kk).lt.lonmin)lonmin=outlon
+              if(x1(kk).gt.lonmax)lonmax=outlon
+              if(y1(kk).lt.latmin)latmin=outlat
+              if(y1(kk).gt.latmax)latmax=outlat
             endif
           enddo
         endif
-      enddo
+      enddo ! time
       open(unit=40,file='map_range_traj.txt')
       write(40,*)real(lonmin,kind=4),&
                  real(lonmax,kind=4),&
                  real(latmin,kind=4),&
                  real(latmax,kind=4),&
-                  real(inlon,kind=4),&
-                  real(inlat,kind=4)
+                 real( inlon,kind=4),&
+                 real( inlat,kind=4)
       close(40)
 
-      if(ntraj.ge.1)close(21)
-      if(ntraj.ge.2)close(22)
-      if(ntraj.ge.3)close(23)
-      if(ntraj.ge.4)close(24)
-      if(ntraj.ge.5)close(25)
-      if(ntraj.ge.6)close(26)
-      if(ntraj.ge.7)close(27)
-      if(ntraj.ge.8)close(28)
-      if(ntraj.ge.9)close(29)
+      do kk=1,ntraj
+        ofrmt = 20+kk
+        close(ofrmt)
+      enddo
 
       end subroutine Integrate_ConstH_Traj
 
