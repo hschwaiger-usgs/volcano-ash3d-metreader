@@ -1914,10 +1914,10 @@
           xc = 1.0_4-xfrac
           yc = 1.0_4-yfrac
           ! Build interpolation coefficients
-          a1 = real(xc*yc,kind=4)
-          a2 = real(xfrac*yc,kind=4)
+          a1 = real(xc   *   yc,kind=4)
+          a2 = real(xfrac*   yc,kind=4)
           a3 = real(xfrac*yfrac,kind=4)
-          a4 = real(yfrac*xc,kind=4)
+          a4 = real(xc   *yfrac,kind=4)
 
           ! Corner velocities for current time
           vx1 = Vx_full(ix  ,iy  ,kk,it) + tfrac*dvxdt(ix  ,iy  ,kk)
@@ -1979,6 +1979,13 @@
           enddo
         endif
       enddo ! time
+      ! We want the lon/lat min/max to reflect a somewhat broader range than the trajectory
+      ! data to expand to the nearest 10th degree
+      lonmin = floor(0.1_8*lonmin)*10.0_8
+      latmin = floor(0.1_8*latmin)*10.0_8
+      lonmax = ceiling(0.1_8*lonmax)*10.0_8
+      latmax = ceiling(0.1_8*latmax)*10.0_8
+
       open(unit=40,file='map_range_traj.txt')
       write(40,*)real(lonmin,kind=4),&
                  real(lonmax,kind=4),&

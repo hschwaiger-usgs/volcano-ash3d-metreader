@@ -418,6 +418,16 @@
               ! First check if this is the first file read, otherwise do not allocate
               if(iw_idx.eq.1)then
                 IsCustVarOrder = .true.
+                if(ivalue2.lt.5)then
+                  ! For custom columns of data, we need 5+ columns
+                  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                    write(errlog(io),*)'MR ERROR:  For user-specified columns of data,'
+                    write(errlog(io),*)'           we need at least 5 columns containing at'
+                    write(errlog(io),*)'           least P, H, U, V, T'
+                    write(errlog(io),*)'           U and V can alternatively be given as Windspeed and Az.'
+                  endif;enddo
+                  stop 1
+                endif
                 MR_Snd_nvars = max(5,ivalue2)
                 allocate(MR_SndVarsID(MR_Snd_nvars))    ! This is the storage oder
                 MR_SndVarsID(1) = 0 ! P
@@ -767,22 +777,14 @@
                   MR_SndVars_metP(iloc,itime,4,il)*MR_SndVars_metP(iloc,itime,4,il)
                 WindVelocity(il) = sqrt(WindVelocity(il))
                 WindDirection(il) = &
-                  -real(atan2(MR_SndVars_metP(iloc,itime,4,il),MR_SndVars_metP(iloc,itime,3,il))/DEG2RAD,kind=sp) + &
+                  -real(atan2(MR_SndVars_metP(iloc,itime,4,il),&
+                              MR_SndVars_metP(iloc,itime,3,il))/DEG2RAD,kind=sp) + &
                   90.0_sp
               endif
-              !Met_dim_IsAvailable(1) = .true.  ! Time
-              Met_dim_IsAvailable(2) = .true.  ! P
-              !Met_dim_IsAvailable(3) = .true.  ! y
-              !Met_dim_IsAvailable(4) = .true.  ! x
-    
-              Met_var_IsAvailable(1) = .true.  ! GPH
-              Met_var_IsAvailable(2) = .true.  ! U
-              Met_var_IsAvailable(3) = .true.  ! V
-              Met_var_IsAvailable(5) = .true.  ! T
               if(il.eq.1)then
                 do io=1,MR_nio;if(VB(io).le.verbosity_info)then
                   write(outlog(io),*)"Sonde values loaded."
-                  write(outlog(io),203)MR_SndVarsName(1:7)
+                  write(outlog(io),203)MR_SndVarsName(0:3),MR_SndVarsName(5:7)
                 endif;enddo
               endif
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
@@ -796,7 +798,7 @@
                                 1x,a3,'(K)', &
                                 3x,a3,'(m/s)', &
                                 2x,a3,'(degree E of N)')
- 204          format(6x,i2,5x,7f10.3)
+ 204          format(6x,i2,5x,f10.0,3f10.2,f10.1,f10.2,f10.1)
             enddo ! il=1,nlev
             close(fid)
             ! Finished reading all the data for this file
@@ -807,6 +809,16 @@
           enddo ! iloc = 1,MR_nSnd_Locs
         enddo ! itime = 1,MR_Snd_nt_fullmet
         ! Finished reading all the data of all the files
+
+        !Met_dim_IsAvailable(1) = .true.  ! Time
+        Met_dim_IsAvailable(2) = .true.  ! P
+        !Met_dim_IsAvailable(3) = .true.  ! y
+        !Met_dim_IsAvailable(4) = .true.  ! x
+
+        Met_var_IsAvailable(1) = .true.  ! GPH
+        Met_var_IsAvailable(2) = .true.  ! U
+        Met_var_IsAvailable(3) = .true.  ! V
+        Met_var_IsAvailable(5) = .true.  ! T
 
         ! Here we look for the highest pressure value (lowest altitude) of all the pressure
         ! values to be used for setting the master pressure array (p_fullmet_sp)
