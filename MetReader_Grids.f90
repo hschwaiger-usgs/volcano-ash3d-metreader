@@ -2023,7 +2023,7 @@
       subroutine MR_Regrid_Met2Comp(nx1,ny1,wrk_met,nx2,ny2,wrk_comp)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug1,&
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug2,&
          bilin_map_wgt,CompPoint_on_subMet_idx,y_pad_South,y_pad_North,&
          IsPeriodic_CompGrid
 
@@ -2046,7 +2046,7 @@
 
       integer :: io                           ! Index for output streams
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug2)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_Met2Comp                           ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -2134,7 +2134,7 @@
                                       nzc,z_comp,var_comp)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug1
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug2
 
       implicit none
 
@@ -2154,7 +2154,7 @@
 
       integer :: io                           ! Index for output streams
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+      do io=1,MR_nio;if(VB(io).le.verbosity_debug2)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_P2H_linear                         ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
