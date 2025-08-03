@@ -960,7 +960,6 @@
       integer            :: ifile
       integer            :: igrib
       integer            :: count1
-      integer,dimension(MAXGRIBREC) :: igribv
       integer(kind=4)    :: typeOfFirstFixedSurface
       integer            :: nSTAT
 
@@ -1140,8 +1139,6 @@
 
         enddo
       endif
-
-2100  format(20x,a11,i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2)
 
       ! Finished setting up the start time of each wind file in HoursSince : MR_windfile_starthour(iw)
       !  and the forecast (offset from start of file) for each step        : MR_windfile_stephour(iw,iwstep)

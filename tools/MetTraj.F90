@@ -53,7 +53,8 @@
            MR_FileIO_Error_Handler
 
       use projection,      only : &
-         PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
+         PJ_iprojflag,PJ_k0,PJ_lam0,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
+         !PJ_ilatlonflag,PJ_lam1,PJ_lam2, &
            PJ_proj_for
 
       implicit none
@@ -1630,7 +1631,8 @@
            MR_Read_3d_Met_Variable_to_CompH
 
       use projection,      only : &
-         PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
+         PJ_iprojflag,PJ_k0,PJ_lam0,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re, &
+         !PJ_ilatlonflag,PJ_lam1,PJ_lam2, &
            PJ_proj_inv
 
       implicit none
