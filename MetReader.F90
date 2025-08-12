@@ -3253,38 +3253,39 @@
 #else
         if(allocated(MR_dx_met))then
 #endif
-          allocate(rdphi_MetP_sp(ny_submet,np_fullmet))             ;   rdphi_MetP_sp(:,:)=0.0_sp
+          allocate(rdphi_MetP_sp(ny_submet,np_fullmet))             ;   rdphi_MetP_sp(:,:  )=0.0_sp
           allocate(rdlambda_MetP_sp(nx_submet,ny_submet,np_fullmet));rdlambda_MetP_sp(:,:,:)=0.0_sp
 
           do k=1,np_fullmet
             if(IsRegular_MetGrid)then
-              ! length scale along y (in meters)
-              rdphi_MetP_sp(:,k) = dy_met_const*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))*1000.0_sp
+              ! Note: dx_met_const and dy_met_const are in degrees for this branch
+              ! length scale along y (in km)
+              rdphi_MetP_sp(:,k) = dy_met_const*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))
               do j=1,ny_submet
-                ! length scale along x (in meters)
-                rdlambda_MetP_sp(:,j,k) =(MR_RAD_EARTH+z_approx(k))*1000.0_sp * &
+                ! length scale along x (in km)
+                rdlambda_MetP_sp(:,j,k) =(MR_RAD_EARTH+z_approx(k)) * &
                                         cos(MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*dy_met_const)) * &
                                         dx_met_const*MR_DEG2RAD
               enddo
             else
               do i=1,nx_submet
-                ! length scale along y (in meters)
-                rdphi_MetP_sp(:,k) = MR_dy_submet(:)*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))*1000.0_sp
+                ! length scale along y (in km)
+                rdphi_MetP_sp(:,k) = MR_dy_submet(:)*MR_DEG2RAD * (MR_RAD_EARTH+z_approx(k))
                 do j=1,ny_submet
-                  ! length scale along x (in meters)
-                  rdlambda_MetP_sp(i,j,k) =(MR_RAD_EARTH+z_approx(k))*1000.0_sp * &
+                  ! length scale along x (in km)
+                  rdlambda_MetP_sp(i,j,k) =(MR_RAD_EARTH+z_approx(k)) * &
                                           cos(MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*MR_dy_submet(j))) * &
                                           MR_dx_submet(i)*MR_DEG2RAD
                 enddo
               enddo
             endif
           enddo
-          MR_minlen = maxval(rdlambda_MetP_sp(:,:,:)) / 1000.0_sp ! in km
+          MR_minlen = maxval(rdlambda_MetP_sp(:,:,:)) ! in km
           do i=1,nx_submet
             do j=1,ny_submet
               if(MR_minlen.gt.rdlambda_MetP_sp(i,j,1)) MR_minlen=rdlambda_MetP_sp(i,j,1)
               if(MR_minlen.gt.rdphi_MetP_sp(j,1))      MR_minlen=rdphi_MetP_sp(j,1)
-              MR_sigma_nz_submet(i,j) = rdphi_MetP_sp(j,1)*rdlambda_MetP_sp(i,j,1)/1.0-6_sp ! in km2
+              MR_sigma_nz_submet(i,j) = rdphi_MetP_sp(j,1)*rdlambda_MetP_sp(i,j,1)  ! in km2
             enddo
           enddo
         endif
@@ -3306,6 +3307,7 @@
           ! grids.  Just set MR_minlen to 10% of min domain dimension
           MR_minlen = 0.1_sp * (x_comp_sp(nx) - x_comp_sp(1))
           MR_minlen = min(MR_minlen,0.1_sp * (y_comp_sp(ny) - y_comp_sp(1))) ! in km2
+          ! HFS: Need to fix this for radio sonde
           !MR_sigma_nz_submet(i,j) = 
         endif
       endif
