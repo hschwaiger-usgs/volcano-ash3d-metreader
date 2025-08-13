@@ -5416,6 +5416,7 @@
 !  Returns the temperature (in K) given the height in km
 !
 !  From http://en.wikipedia.org/wiki/U.S._Standard_Atmosphere
+!  https://www.ngdc.noaa.gov/stp/space-weather/online-publications/miscellaneous/us-standard-atmosphere-1976/us-standard-atmosphere_st76-1562_noaa.pdf
 !
 !##############################################################################
 
@@ -5424,7 +5425,7 @@
       real(kind=sp) :: MR_Temp_US_StdAtm
       real(kind=sp) :: zin
 
-      integer,parameter :: MAXATMOSNODES = 16
+      integer,parameter :: MAXATMOSNODES = 17
       real(kind=sp),dimension(MAXATMOSNODES) :: US_StdAtm_znodes
       real(kind=sp),dimension(MAXATMOSNODES) :: US_StdAtm_Tnodes
 
@@ -5434,14 +5435,15 @@
       integer :: k,kk
       integer :: io                           ! Index for output streams
 
+      ! Last node is approximated from NASA MERRA
       US_StdAtm_znodes = (/ 0.0_sp, 11.0_sp, 20.0_sp, 32.0_sp, &
                            47.0_sp, 51.0_sp, 71.0_sp, 84.852_sp, &
                            90.0_sp,  95.0_sp, 100.0_sp, 105.0_sp,   &   ! These are extensions
-                          110.0_sp, 115.0_sp, 120.0_sp, 125.0_sp/)      ! using mean CIRA ref atmos.
+                          110.0_sp, 115.0_sp, 120.0_sp, 125.0_sp, 140.0_sp/)      ! using mean CIRA ref atmos.
       US_StdAtm_Tnodes = (/288.15_sp, 216.65_sp, 216.65_sp, 228.65_sp, &
                            270.65_sp, 270.65_sp, 214.65_sp, 186.946_sp, &
                            183.80_sp, 190.30_sp, 203.50_sp, 228.00_sp,  &
-                           265.50_sp, 317.10_sp, 380.60_sp, 452.30_sp/)
+                           265.50_sp, 317.10_sp, 380.60_sp, 452.30_sp, 520.0_sp/)
 
       if(zin.le.US_StdAtm_znodes(1))then
         MR_Temp_US_StdAtm = US_StdAtm_Tnodes(1)
@@ -5474,6 +5476,7 @@
 !
 !  From http://en.wikipedia.org/wiki/U.S._Standard_Atmosphere
 !       supplemented by doi=10.1.1.455.9475
+!  https://www.ngdc.noaa.gov/stp/space-weather/online-publications/miscellaneous/us-standard-atmosphere-1976/us-standard-atmosphere_st76-1562_noaa.pdf
 !
 !##############################################################################
 
@@ -5482,7 +5485,7 @@
       real(kind=sp) :: MR_Z_US_StdAtm  ! in km
       real(kind=sp) :: pin             ! in mb
 
-      integer,parameter :: MAXATMOSNODES = 16
+      integer,parameter :: MAXATMOSNODES = 17
       real(kind=sp),dimension(MAXATMOSNODES) :: US_StdAtm_znodes
       real(kind=sp),dimension(MAXATMOSNODES) :: US_StdAtm_pnodes
 
@@ -5491,14 +5494,15 @@
       integer :: k,kk
       integer :: io                           ! Index for output streams
 
+      ! Last node is approximated from NASA MERRA
       US_StdAtm_znodes = (/ 0.0_sp,  11.0_sp,  20.0_sp,  32.0_sp,   &
                            47.0_sp,  51.0_sp,  71.0_sp,  84.852_sp, &
                            90.0_sp,  95.0_sp, 100.0_sp, 105.0_sp,   &   ! These are extensions
-                          110.0_sp, 115.0_sp, 120.0_sp, 125.0_sp/)      ! using mean CIRA ref atmos.
+                          110.0_sp, 115.0_sp, 120.0_sp, 125.0_sp, 140.0_sp/)      ! using mean CIRA ref atmos.
       US_StdAtm_pnodes = (/1013.25_sp, 226.321_sp, 54.7489_sp, 8.68019_sp, &
                            1.10906_sp, 6.69389e-1_sp, 3.95642e-2_sp, 3.68501e-3_sp, &
                            1.795e-3_sp,7.345e-4_sp,3.090e-4_sp,1.422e-4_sp, &
-                           7.362e-5_sp,4.236e-5_sp,2.667e-5_sp,2.666e-5_sp/)
+                           7.362e-5_sp,4.236e-5_sp,2.667e-5_sp,2.666e-5_sp,5.0e-06_sp/)
 
       if(pin.ge.US_StdAtm_pnodes(1))then
         MR_Z_US_StdAtm = US_StdAtm_pnodes(1)
