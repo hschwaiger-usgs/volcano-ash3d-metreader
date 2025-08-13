@@ -145,42 +145,55 @@
                                        !  0 Custom format based on template
                                        !  1 ASCII profile
                                        !  2 Radiosonde data
-                                       !  3 NARR3D 32 km North America files (32 km) :: ds608.0
-                                       !  4 NAM Regional North America 221 (32 km)
-                                       !  5 NAM AK 216  (45 km)
-                                       !  6 NAM Regional 104 (90 km)
-                                       !  7 NAM CONUS 212 (40 km)
-                                       !  8 NAM CONUS 218 (12 km)
-                                       !  9 NAM CONUS 227 (5.08 km)
-                                       ! 10 NAM AK 242 (11.25 km)
-                                       ! 11 NAM HI 196 (2.5 km)
-                                       ! 12 NAM AK 198 (5.953 km)
-                                       ! 13 NAM AK 91 (2.976 km)
-                                       ! 14 NAM CONUS 1227 (3.0 km)
-                                       ! 20 GFS 0.5
-                                       ! 21 GFS 1.0
-                                       ! 22 GFS 0.25
-                                       ! 23 NCEP / DOE reanalysis 2.5 degree files  :: ds091.0
+                                       !  3 NARR3D 32 km N.America files (32 km)    :: RN ds608.0 To use surf requires catting .b files
+                                       !  4 NAM Regional N.America 221 (32 km)      :: FC nam.t00z.awip3200.tm00.grib2
+                                       !  5 NAM AK 216  (45 km)                     :: FC nam.t00z.awipak00.tm00.grib2
+                                       !  6 NAM Regional 104 (90 km)                :: FC nam.t00z.grbgrd00.tm00.grib2
+                                       !  7 NAM CONUS 212 (40 km)                   :: FC nam.t00z.awip3d00.tm00.grib2
+                                       !  8 NAM CONUS 218 (12 km)                   :: FC nam.t00z.awip1200.tm00.grib2
+                                       !  9 NAM CONUS 227 (5.08 km)                 ::      no longer available; hires is now iwf=14
+                                       ! 10 NAM AK 242 (11.25 km)                   :: FC nam.t00z.awak3d00.tm00.grib2
+                                       ! 11 NAM HI 196 (2.5 km)                     :: FC nam.t00z.hawaiinest.hiresf00.tm00.grib2
+                                       ! 12 NAM AK 198 (5.953 km)                   ::      no longer available; hires is now iwf=13
+                                       ! 13 NAM AK 91 (2.976 km)                    :: FC nam.t00z.alaskanest.hiresf00.tm00.grib2
+                                       ! 14 NAM CONUS 1227 (3.0 km)                 :: FC nam.t00z.conusnest.hiresf00.tm00.grib2
+                                       ! 20 GFS (  4) 0.5                           :: FC gfs.t00z.pgrb2.0p50.f000
+                                       ! 21 GFS (  1) 1.0                           :: FC gfs.t00z.pgrb2.1p00.f000
+                                       ! 22 GFS (193) 0.25                          :: FC gfs.t00z.pgrb2.0p25.f000
+                                       ! 23 NCEP / DOE reanalysis 2.5 degree files  :: RN ds091.0
                                        ! 24 NASA-MERRA-2 reanalysis 0.625/0.5 degree files
-                                       ! 25 NCEP/NCAR reanalysis 2.5 degree files   :: ds090.0  iwind=4 or 5
-                                       ! 26 JRA-55                                  :: ds628.0  iwind=5
-                                       ! 27 NOAA-CIRES reanalysis 2.0 degree files  :: ds131.2,3  iwind=5
-                                       ! 28 ECMWF Interim Reanalysis (ERA-Interim)  :: ds627.0  requires catted GRIB files
-                                       ! 29 ECMWF ERA5                              :: ds633.0  iwind=5
-                                       ! 30 ECMWF 20-Century (ERA-20C)              :: ds626.0  iwind=5
-                                       ! 31 NAM Caribbean 181 (0.108 deg)
+                                       ! 25 NCEP/NCAR reanalysis 2.5 degree files   :: RN ds090.0  iwind=4 or 5
+                                       ! 26 JRA-55                                  :: RN ds628.0  iwind=5
+                                       ! 27 NOAA-CIRES reanalysis 2.0 degree files  :: RN ds131.2,3  iwind=5
+                                       ! 28 ECMWF Interim Reanalysis (ERA-Interim)  :: RN ds627.0  requires catted GRIB files
+                                       ! 29 ECMWF ERA5                              :: RN ds633.0  iwind=5
+                                       ! 30 ECMWF 20-Century (ERA-20C)              :: RN ds626.0  iwind=5
+                                       ! 31 NAM Caribbean 181 (0.108 deg)           :: FC nam.t00z.afwaca00.tm00.grib2
                                        ! 32 Air Force Weather Agency subcenter = 0
                                        ! 33 CCSM3.0 Community Atmosphere Model (CAM)
-                                       ! 34 ECMWF 0.25 degree forecast
-                                       ! 40 NASA-GEOS Cp
-                                       ! 41 NASA-GEOS Np
+                                       ! 34 ECMWF 0.25 degree forecast              :: FC 20250509000000-0h-oper-fc.grib2
+                                       ! 40 NASA-GEOS Cp                            :: FC GEOS.fp.fcst.inst3_3d_asm_Cp.YYYYMMDD_00+YYYYMMDD_0000.V01.nc4
+                                       ! 41 NASA-GEOS Np                            :: FC GEOS.fp.fcst.inst3_3d_asm_Np.YYYYMMDD_00+YYYYMMDD_0000.V01.nc4
                                        ! 50 WRF - output
-                              ! Global Environmental Multiscale Model (GEM), often known as the CMC, from Canada
-                              ! US Navy NAVGEM
-                              ! UK Met office UM model
-                              ! Deutscher Wetterdienst ICON
-                              ! JMA Global Spectrum Model (GSM)
-                              !     https://en.wikipedia.org/wiki/Global_Environmental_Multiscale_Model
+                            ! Other NAM forecast files available, but not coded with an iwindformat # (template OK)
+                            !   nam.t00z.afwahi00.tm00.grib2           Grid 182 : HI 0.108-degree
+                            !   nam.t00z.awip2000.tm00.grib2           Grid 215 : CONUS 20 km
+                            !   nam.t00z.awiphi00.tm00.grib2           Grid 243 : HI-Pac 0.4-degree
+                            !   nam.t00z.awp21100.tm00.grib2           Grid 211 : CONUS 80-km
+                            !   nam.t00z.awp24200.tm00.grib2           Grid 242 : AK 11.25-km (how different from nam.t00z.awak3d00.tm00.grib2?)
+                            !   nam.t00z.awphys00.tm00.grib2           Grid 218 : CONUS 12-km (how different from nam.t00z.awip1200.tm00.grib2?)
+                            !   nam.t00z.bgrd3d00.tm00.grib2           Grid 190 : N.Amer/C.Amer/Arctic 0.126-degrees
+                            !                                                     Staggeblack B-grid on rotated latitude/longitude grid
+                            !   nam.t00z.grbgrd00.tm00.grib2           Grid 104 : AK 91-km PS
+                            !   nam.t00z.priconest.hiresf00.tm00.grib2 Grid 194 : PR 2.5-km
+
+                            ! Other global forecast files produced around the world, but not included:
+                            !   Global Environmental Multiscale Model (GEM), often known as the CMC, from Canada
+                            !   US Navy NAVGEM
+                            !   UK Met office UM model
+                            !   Deutscher Wetterdienst ICON
+                            !   JMA Global Spectrum Model (GSM)
+                            !       https://en.wikipedia.org/wiki/Global_Environmental_Multiscale_Model
       logical,public :: MR_Use_RDA     = .false.  ! If reanalysis products were acquired via RDA, this flag can be changed
       integer,public :: MR_RDAcode     = -1       ! This allows the calling program to specify older versions of data
       integer,public :: MR_iversion    = -1       ! version of the product; sometimes the grid used changes with newer
