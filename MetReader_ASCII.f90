@@ -1515,7 +1515,7 @@
    141          format(3x,7f10.3)
                 write(outlog(io),*)"==================================================================="
               endif;enddo
-!              stop 77
+
             else  ! end of GTS format section
               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
               !  Reading data Textlist format from http://weather.uwyo.edu/

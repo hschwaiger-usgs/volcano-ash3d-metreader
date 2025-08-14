@@ -1509,7 +1509,8 @@
       ! underlying wind data are projected.  We might, however, need to rotate these
       ! ER values to a projected computational grid.  So we set up another rotation
       ! to map ER values that were interpolated onto a computational grid to GR
-      if(Map_Case.eq.3.or. & ! Met is Lat/Lon, but Comp is projected
+      if((Map_Case.eq.2.and..not.IsGridRelative).or. &
+         Map_Case.eq.3.or. & ! Met is Lat/Lon, but Comp is projected
          Map_Case.eq.4.or. & ! Met is projected, but Comp is Lat/Lon
          Map_Case.eq.5)then  ! Met Grid and Comp grids have different projections
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then

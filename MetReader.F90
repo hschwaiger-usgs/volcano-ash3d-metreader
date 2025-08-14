@@ -51,7 +51,7 @@
 !        subroutine MR_DelMetP_Dy()
 !        subroutine MR_QC_3dvar(ivar,nx_max,ny_max,nz1_max,z_array_sp,nz2_max,&
 !                               dum_array_sp,fill_val_sp,bc_low_sp, bc_high_sp)
-!        subroutine MR_Check_Prerequsites(test_allocate,test_dimvars,test_compproj,&
+!        subroutine MR_Check_Prerequisites(test_allocate,test_dimvars,test_compproj,&
 !                                         test_initmetgrid,test_setmettimes)
 !        subroutine MR_FileIO_Error_Handler(ios,linebuffer080)
 !        function MR_Temp_US_StdAtm(zin)
@@ -431,7 +431,7 @@
       logical,public :: IsPeriodic_CompGrid  = .false.
       logical,public :: UseFullMetGrid       = .false.  ! This is the special case where the comp grid
                                                         ! equals the Met grid
-      logical,public :: isGridRelative = .true.  ! Most windfiles, whether Lat/Lon or projected, give
+      logical,public :: IsGridRelative = .true.  ! Most windfiles, whether Lat/Lon or projected, give
                                           ! velocities relative to the grid of the file.  Some (NARR)
                                           ! give velocities relative to earth coordinates and need to
                                           ! be rotated
@@ -2799,7 +2799,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .false., &  ! CALLED_MR_Read_Met_DimVars
                                  .false., &  ! CALLED_MR_Set_CompProjection
                                  .false., &  ! CALLED_MR_Initialize_Met_Grids
@@ -3168,7 +3168,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
                                  .false., &  ! CALLED_MR_Initialize_Met_Grids
@@ -3508,7 +3508,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .false., &  ! CALLED_MR_Set_CompProjection
                                  .false., &  ! CALLED_MR_Initialize_Met_Grids
@@ -3978,7 +3978,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .false., &  ! CALLED_MR_Set_CompProjection
                                  .false., &  ! CALLED_MR_Initialize_Met_Grids
@@ -4083,7 +4083,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .false., &  ! CALLED_MR_Set_CompProjection
                                  .false., &  ! CALLED_MR_Initialize_Met_Grids
@@ -4154,7 +4154,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
                                  .true.,  &  ! CALLED_MR_Initialize_Met_Grids        (this check is needed)
@@ -4312,7 +4312,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
                                  .true.,  &  ! CALLED_MR_Initialize_Met_Grids        (this check is needed)
@@ -4429,7 +4429,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
                                  .true.,  &  ! CALLED_MR_Initialize_Met_Grids        (this check is needed)
@@ -4485,7 +4485,6 @@
           ! ASCII profile data with multiple locations
           call MR_Regrid_MetSonde2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
                                        nx_comp,  ny_comp,   tmp_regrid2d_sp(1:nx_comp,1:ny_comp))
-          !stop 3
         else
           ! All other cases
           call MR_Regrid_Met2Comp(nx_submet,ny_submet, MR_dum3d_metP(1:nx_submet,1:ny_submet,k),       &
@@ -4541,7 +4540,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .false., &  ! CALLED_MR_Set_CompProjection
                                  .false., &  ! CALLED_MR_Initialize_Met_Grids
@@ -4612,7 +4611,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
                                  .true.,  &  ! CALLED_MR_Initialize_Met_Grids        (this check is needed)
@@ -4659,6 +4658,8 @@
 !
 !     Takes as input :: istep   :: specified the met step
 !                       SetComp :: (optional) logical flag to regrid to comp grid
+!                       IsNext  :: (optional) T for saving velocity values
+!                                             F default
 !
 !     Sets  : MR_dum3d_compH    holds U
 !             MR_dum3d_compH_2  holds V
@@ -4667,7 +4668,7 @@
 
       subroutine MR_Rotate_UV_GR2ER_Met(istep,SetComp,IsNext)
 
-      integer,intent(in)  :: istep
+      integer,         intent(in) :: istep
       logical,optional,intent(in) :: SetComp
       logical,optional,intent(in) :: IsNext
 
@@ -4676,6 +4677,7 @@
       real(kind=sp)                :: rotang
       real(kind=sp),dimension(2)   :: v_old, v_new
       real(kind=sp),dimension(2,2) :: rotmat
+      real(kind=sp)                :: dirfac
 
       integer :: io                           ! Index for output streams
 
@@ -4688,7 +4690,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
                                  .true.,  &  ! CALLED_MR_Initialize_Met_Grids        (this check is needed)
@@ -4703,11 +4705,17 @@
         MR_v_ER_metP = MR_dum3d_metP
       ! Using these earth relative velocities, rotate to grid relative and
       ! copy to MR_dum3d_metP
+      if(Map_Case.eq.2.and..not.IsGridRelative)then
+        ! For NARR case, back-rotate velocities
+        dirfac = 1.0_sp
+      else
+        dirfac = -1.0_sp
+      endif
       do i=1,nx_submet
         do j=1,ny_submet
           ! The angle theta for the Earth to Grid conversion was
           ! precalculated in Set_MetComp_Grids
-          rotang = -1.0_sp*real(theta_Met(i,j),kind=sp)
+          rotang = dirfac*real(theta_Met(i,j),kind=sp)
           rotmat(1,1) = cos(rotang)
           rotmat(2,1) = sin(rotang)
           rotmat(1,2) = rotmat(2,1)*(-1.0_sp)
@@ -4827,13 +4835,15 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
                                  .true.,  &  ! CALLED_MR_Initialize_Met_Grids        (this check is needed)
                                  .true.)     ! CALLED_MR_Set_Met_Times               (this check is needed)
 
-      if(Map_Case.eq.3.or.Map_Case.eq.4)then
+      if((Map_Case.eq.2.and..not.IsGridRelative).or.&
+          Map_Case.eq.3                         .or.&
+          Map_Case.eq.4)then
         ! Met grid is natively LL and Comp grid is projected
         !  - or -
         ! Met grid is projected and comp grid is LL
@@ -4875,7 +4885,7 @@
           do k=1,nz_comp
             v_old(1:2) = (/MR_dum3d_compH(i,j,k),MR_dum3d_compH_2(i,j,k)/)
             v_new = matmul(rotmat(1:2,1:2),v_old(1:2))
-            MR_dum3d_compH(i,j,k) = v_new(1)
+            MR_dum3d_compH(i,j,k)   = v_new(1)
             MR_dum3d_compH_2(i,j,k) = v_new(2)
           enddo
         enddo
@@ -4918,7 +4928,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
                                  .true.,  &  ! CALLED_MR_Initialize_Met_Grids        (this check is needed)
@@ -5029,7 +5039,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
                                  .true.,  &  ! CALLED_MR_Initialize_Met_Grids        (this check is needed)
@@ -5160,7 +5170,7 @@
 
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
-      call MR_Check_Prerequsites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
+      call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
                                  .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
                                  .true.,  &  ! CALLED_MR_Initialize_Met_Grids        (this check is needed)
@@ -5796,7 +5806,7 @@
 
 !##############################################################################
 !
-!    MR_Check_Prerequsites
+!    MR_Check_Prerequisites
 !
 !    Subroutine called at various points in MetReader to verify that the
 !    prerequisite steps have been completed.  The five parameters are logicals
@@ -5804,7 +5814,7 @@
 !
 !##############################################################################
 
-      subroutine MR_Check_Prerequsites(test_allocate,    &
+      subroutine MR_Check_Prerequisites(test_allocate,    &
                                        test_dimvars,     &
                                        test_compproj,    &
                                        test_initmetgrid, &
@@ -5917,7 +5927,7 @@
         stop 1
       endif
 
-      end subroutine MR_Check_Prerequsites
+      end subroutine MR_Check_Prerequisites
 
 !##############################################################################
 !
