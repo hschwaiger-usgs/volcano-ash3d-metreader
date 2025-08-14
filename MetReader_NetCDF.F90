@@ -1861,6 +1861,8 @@
 
       integer :: io                           ! Index for output streams
 
+      integer :: iv
+
       INTERFACE
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
           integer     ,intent(in) :: iyear
@@ -2340,11 +2342,10 @@
             enddo
           enddo
         else
-          ! This branch is for non-iw=5 and non-iwf=50
+          ! This branch is for non-iwind=5 and non-iwindformat=50
           ! For all other formats, try to read the GRIB_orgReferenceTime string
           ! Loop through all the windfiles
           do iw = 1,MR_iwindfiles
-
             ! Each wind file needs a ref-time which in almost all cases is given
             ! in the 'units' attribute of the time variable
             do io=1,MR_nio;if(VB(io).le.verbosity_info)then
@@ -2365,7 +2366,7 @@
             ! If this is the first windfile, log some info on the NetCDF library and datafile
             if(iw.eq.1)then
               NCv_lib = trim(nf90_inq_libvers())
-              nSTAT=nf90_inquire(ncid, nDimensions, nVariables, nAttributes, &
+              nSTAT = nf90_inquire(ncid, nDimensions, nVariables, nAttributes, &
                           unlimitedDimId, formatNum)
               call MR_NC_check_status(nSTAT,1,"nf90_inquire")
               !   nf90_format_classic
@@ -2373,6 +2374,29 @@
               !   nf90_format_netcdf4
               !   nf90_format_netcdf4_classic
               NCv_datafile = formatNum
+              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                write(outlog(io),*)'  NWP file info:'
+                write(outlog(io),*)'    nDimensions    = ',nDimensions
+                write(outlog(io),*)'    nVariables     = ',nVariables
+                write(outlog(io),*)'    nAttributes    = ',nAttributes
+                write(outlog(io),*)'    unlimitedDimId = ',unlimitedDimId
+                if(formatNum.eq.nf90_format_classic)then
+                  write(outlog(io),*)'    formatNum      = ',formatNum,' nf90_format_classic'
+                elseif(formatNum.eq.nf90_format_64bit)then
+                  write(outlog(io),*)'    formatNum      = ',formatNum,' nf90_format_64bit'
+                elseif(formatNum.eq.nf90_format_netcdf4)then
+                  write(outlog(io),*)'    formatNum      = ',formatNum,' nf90_format_netcdf4'
+                elseif(formatNum.eq.nf90_format_netcdf4_classic)then
+                  write(outlog(io),*)'    formatNum      = ',formatNum,' nf90_format_netcdf4_classic'
+                else
+                  write(outlog(io),*)'    formatNum      = ',formatNum,' Not recognized'
+                endif
+              endif;enddo
+              !do iv = 1,nDimensions
+              !  nSTAT = nf90_inquire_dimension(ncid,iv, &
+              !         name =  dimname, &
+              !         len = dimlen)
+              !enddo
             endif
 
             ! Find the id of the time dimension
@@ -2400,7 +2424,6 @@
                 call MR_NC_check_status(nSTAT,1,"nf90_inq_varid GPH")
               endif
             endif
-
             nSTAT = nf90_inquire_variable(ncid, gph_var_id, ndims = gph_ndims)
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable GPH")
             nSTAT = nf90_inquire_variable(ncid, gph_var_id, dimids = gph_DimIDs(:gph_ndims))
@@ -3276,7 +3299,8 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Read_MetP_Variable_netcdf       ----------"
-        write(outlog(io),*)ivar,istep
+        write(outlog(io),*)" istep = ",istep
+        write(outlog(io),*)" ivar  = ",ivar,trim(adjustl(Met_var_NC_names(ivar)))
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -3367,8 +3391,11 @@
           ! Files are provided directly by calling program, not hard-coded paths
         infile = trim(adjustl(MR_MetStep_File(istep)))
       endif
-      np_met_loc = nlevs_fullmet(Met_var_zdim_idx(ivar))
-
+      if(Met_var_zdim_idx(ivar).gt.0)then
+        np_met_loc = nlevs_fullmet(Met_var_zdim_idx(ivar))
+      else
+        np_met_loc = 0
+      endif
       invar = Met_var_NC_names(ivar)
 
       write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&

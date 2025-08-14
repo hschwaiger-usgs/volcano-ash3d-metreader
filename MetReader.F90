@@ -4534,7 +4534,8 @@
       do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Read_2d_Met_Variable                      ----------"
-        write(outlog(io),*)ivar,istep
+        write(outlog(io),*)" istep = ",istep
+        write(outlog(io),*)" ivar  = ",ivar,trim(adjustl(Met_var_NC_names(ivar)))
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -5114,7 +5115,7 @@
 
           do io=1,MR_nio;if(VB(io).le.verbosity_debug2)then
             write(outlog(io),*)
-            write(outlog(io),*)"Callling MR_Regrid_P2H_linear from MR_Regrid_MetP_to_MetH for ",i,j
+            write(outlog(io),*)"Callling MR_Regrid_P2H_linear from MR_Regrid_MetP_to_MetH for subgrid coord: ",i,j
           endif;enddo
 
           call MR_Regrid_P2H_linear(np_fullmet+2, z_col_metP,       var_col_metP, &
