@@ -2559,7 +2559,7 @@
         Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W"
         Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T"      ! float K perturbation potential temperature (theta-t0)
         Met_var_IsAvailable(6)=.true.; Met_var_NC_names(6)="PB"
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="W"
+        Met_var_IsAvailable(7)=.false.; 
 
         ! Surface
         Met_var_IsAvailable(10)=.true.; Met_var_NC_names(10)="PBLH"

@@ -2270,22 +2270,98 @@
               !   nf90_format_netcdf4
               !   nf90_format_netcdf4_classic
               NCv_datafile = formatNum
-
-              ! Find the id of the time dimension
-              nSTAT = nf90_inq_dimid(ncid,trim(adjustl(Met_dim_names(1))),t_dim_id)
-              call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid time")
-              ! Get length of time dimension and allocate MR_windfile_stephour
-              nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_fullmet)
-              call MR_NC_check_status(nSTAT,1,"nf90_Inquire_Dimension time")
               do io=1,MR_nio;if(VB(io).le.verbosity_info)then
-                write(outlog(io),*)"  Assuming all NWP files have the same number of steps."
-                write(outlog(io),*)"   Allocating time arrays for ",MR_iwindfiles,"file(s)"
-                write(outlog(io),*)"                              ",nt_fullmet,"step(s) each"
+                write(outlog(io),*)'  NWP file info:'
+                write(outlog(io),*)'    nDimensions    = ',nDimensions
+                write(outlog(io),*)'    nVariables     = ',nVariables
+                write(outlog(io),*)'    nAttributes    = ',nAttributes
+                write(outlog(io),*)'    unlimitedDimId = ',unlimitedDimId
+                if(formatNum.eq.nf90_format_classic)then
+                  write(outlog(io),*)'    formatNum      = ',formatNum,' nf90_format_classic'
+                elseif(formatNum.eq.nf90_format_64bit)then
+                  write(outlog(io),*)'    formatNum      = ',formatNum,' nf90_format_64bit'
+                elseif(formatNum.eq.nf90_format_netcdf4)then
+                  write(outlog(io),*)'    formatNum      = ',formatNum,' nf90_format_netcdf4'
+                elseif(formatNum.eq.nf90_format_netcdf4_classic)then
+                  write(outlog(io),*)'    formatNum      = ',formatNum,' nf90_format_netcdf4_classic'
+                else
+                  write(outlog(io),*)'    formatNum      = ',formatNum,' Not recognized'
+                endif
               endif;enddo
-              allocate(MR_windfile_stephour(MR_iwindfiles,nt_fullmet))
-              MR_windfile_stephour(:,:) = 0.0_dp
-              nSTAT = nf90_inq_varid(ncid,"Times",time_var_id)
-              call MR_NC_check_status(nSTAT,1,"nf90_inq_varid Times")
+              ! Find the id of the time dimension
+              !   First, search for the GPH variable and check its
+              !   dimensions
+              ivar = 1
+              nSTAT = nf90_inq_varid(ncid,Met_var_NC_names(ivar),gph_var_id)
+              ! This might fail if the GPH name is not as expected, so search known alternatives
+              ! first before giving up.
+              if(nSTAT.ne.NF90_NOERR)then
+                call MR_NC_check_status(nSTAT,0,"inq_varid")
+                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  write(outlog(io),*)'  Cannot find variable ',Met_var_NC_names(ivar)
+                  write(outlog(io),*)'  Testing for known synonyms'
+                endif;enddo
+                ! Checking other name options.
+                call MR_NC_check_var_synonyms(ivar,ncid)
+                ! Now try again
+                invar = Met_var_NC_names(ivar)
+                nSTAT = nf90_inq_varid(ncid,invar,gph_var_id)  ! get the var_id for this named variable
+                if(nSTAT.ne.NF90_NOERR)then
+                  do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                    write(outlog(io),*)'  Cannot find variable ',invar
+                  endif;enddo
+                  call MR_NC_check_status(nSTAT,1,"nf90_inq_varid GPH")
+                endif
+              endif
+              nSTAT = nf90_inquire_variable(ncid, gph_var_id, ndims = gph_ndims)
+              call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable GPH")
+              nSTAT = nf90_inquire_variable(ncid, gph_var_id, dimids = gph_DimIDs(:gph_ndims))
+              call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable GPH")
+              if(gph_ndims.lt.4)then
+                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  write(errlog(io),*)'MR ERROR:'
+                  write(errlog(io),*)'GPH variable does not have 4 dimensions.'
+                  write(errlog(io),*)'Expecting time, level, y, x'
+                endif;enddo
+                stop 1
+              endif
+
+              nSTAT = nf90_inquire_dimension(ncid,gph_DimIDs(4),indim)
+              call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Time")
+                ! See if name has changed since last file
+              if(iw.eq.1)then
+                Met_dim_names(1)= trim(adjustl(indim))
+              else
+                if(trim(adjustl(Met_dim_names(1))).ne.trim(adjustl(indim)))then
+                  do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                    write(outlog(io),*)" MR WARNING: time dimension name changed from first file."
+                  endif;enddo
+                endif
+              endif
+              nSTAT = nf90_inq_dimid(ncid,trim(adjustl(indim)),t_dim_id)
+              call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid Time")
+              if(iw.eq.1)then
+                ! Get length of time dimension and allocate MR_windfile_stephour
+                nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_fullmet)
+                call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Time")
+                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  write(outlog(io),*)"  Assuming all NWP files have the same number of steps."
+                  write(outlog(io),*)"   Allocating time arrays for ",MR_iwindfiles,"files(s)"
+                  write(outlog(io),*)"                              ",nt_fullmet,"step(s) each"
+                endif;enddo
+                allocate(MR_windfile_stephour(MR_iwindfiles,nt_fullmet))
+                MR_windfile_stephour(:,:) = 0.0_dp
+              endif
+
+              ! get variable id for time
+              ! First try the name of the dimension as the variable (Time)
+              nSTAT = nf90_inq_varid(ncid,trim(adjustl(indim)),time_var_id)
+              call MR_NC_check_status(nSTAT,0,"nf90_inq_varid Time")
+              if(nSTAT.ne.nf90_noerr)then
+                ! Some WRF files have a variable name of 'Times'
+                nSTAT = nf90_inq_varid(ncid,'Times',time_var_id)
+                call MR_NC_check_status(nSTAT,1,"nf90_inq_varid Times")
+              endif
               nSTAT = nf90_inquire_variable(ncid, time_var_id, invar, &
                   xtype = var_xtype)
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable Times")
@@ -2392,11 +2468,6 @@
                   write(outlog(io),*)'    formatNum      = ',formatNum,' Not recognized'
                 endif
               endif;enddo
-              !do iv = 1,nDimensions
-              !  nSTAT = nf90_inquire_dimension(ncid,iv, &
-              !         name =  dimname, &
-              !         len = dimlen)
-              !enddo
             endif
 
             ! Find the id of the time dimension
@@ -2436,6 +2507,7 @@
               endif;enddo
               stop 1
             endif
+
             nSTAT = nf90_inquire_dimension(ncid,gph_DimIDs(1),indim)
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension X")
             if(iw.eq.1)Met_dim_names(4)= trim(adjustl(indim))
@@ -3480,7 +3552,12 @@
                 ! pressure lives on non-staggered grid, but we need base and pert.
             allocate(temp3d_sp(nx_submet,ny_submet,np_met_loc,1))
             allocate(dum3d_metP_aux(nx_submet,ny_submet,np_met_loc,1))
+          elseif(ivar.eq.7)then
+                ! pressure lives on non-staggered grid, but we need base and pert.
+            allocate(temp3d_sp(nx_submet,ny_submet,np_met_loc,1))
+            allocate(dum3d_metP_aux(nx_submet,ny_submet,np_met_loc,1))
           endif
+          write(*,*)'ivar',ivar
           temp3d_sp(:,:,:,:)=0.0_sp
           dum3d_metP_aux(:,:,:,:)=0.0_sp
         endif ! MR_iwindformat.ne.50
@@ -4069,7 +4146,7 @@
         severity = "MR ERROR:   "
       endif
 
-      if (nSTAT == nf90_noerr) return
+      if (nSTAT.eq.nf90_noerr) return
       do io=1,MR_nio;if(VB(io).le.verbosity_error)then
         if (errcode.eq.0)then
           write(outlog(io) ,*)severity,errcode,operation,' :: ',trim(adjustl(nf90_strerror(nSTAT)))
