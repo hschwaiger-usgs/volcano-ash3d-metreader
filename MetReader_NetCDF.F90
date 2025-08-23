@@ -539,10 +539,10 @@
                  index(dimname,'west_east').eq.0.and.&
                  index(dimname,trim(adjustl(Met_dim_names(4)))).eq.0)then
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-                  write(errlog(io),*)'MR WARNING: Name of assumed x dimension does not'
-                  write(errlog(io),*)'            match any expected names.  Please verify'
-                  write(errlog(io),*)'            that this file is COORDS compliant.'
-                  write(errlog(io),*)'   Dimension name: ',dimname
+                  write(outlog(io),*)'MR WARNING: Name of assumed x dimension does not'
+                  write(outlog(io),*)'            match any expected names.  Please verify'
+                  write(outlog(io),*)'            that this file is COORDS compliant.'
+                  write(outlog(io),*)'   Dimension name: ',dimname
                 endif;enddo
               endif
               Met_dim_names(4) = trim(adjustl(dimname))
@@ -705,10 +705,10 @@
                  index(dimname,'south_north').eq.0.and.&
                  index(dimname,trim(adjustl(Met_dim_names(3)))).eq.0)then
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-                  write(errlog(io),*)'MR WARNING: Name of assumed y dimension does not'
-                  write(errlog(io),*)'            match any expected names.  Please verify'
-                  write(errlog(io),*)'            that this file is COORDS compliant.'
-                  write(errlog(io),*)'   Dimension name: ',dimname
+                  write(outlog(io),*)'MR WARNING: Name of assumed y dimension does not'
+                  write(outlog(io),*)'            match any expected names.  Please verify'
+                  write(outlog(io),*)'            that this file is COORDS compliant.'
+                  write(outlog(io),*)'   Dimension name: ',dimname
                 endif;enddo
               endif
               Met_dim_names(3) = trim(adjustl(dimname))
@@ -873,10 +873,10 @@
                   index(dimname,'Time')        .eq.0.and.&
                   index(dimname,trim(adjustl(Met_dim_names(1)))).eq.0)then
                 do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-                  write(errlog(io),*)'MR WARNING: Name of assumed t dimension does not'
-                  write(errlog(io),*)'            match any expected names.  Please verify'
-                  write(errlog(io),*)'            that this file is COORDS compliant.'
-                  write(errlog(io),*)'   Dimension name: ',dimname
+                  write(outlog(io),*)'MR WARNING: Name of assumed t dimension does not'
+                  write(outlog(io),*)'            match any expected names.  Please verify'
+                  write(outlog(io),*)'            that this file is COORDS compliant.'
+                  write(outlog(io),*)'   Dimension name: ',dimname
                 endif;enddo
               endif
               Met_dim_names(1) = trim(adjustl(dimname))
@@ -2118,10 +2118,10 @@
              index(dimname,'west_east').eq.0.and.&
              index(dimname,trim(adjustl(Met_dim_names(4)))).eq.0)then
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-              write(errlog(io),*)'MR WARNING: Name of assumed x dimension does not'
-              write(errlog(io),*)'            match any expected names.  Please verify'
-              write(errlog(io),*)'            that this file is COORDS compliant.'
-              write(errlog(io),*)'   Dimension name: ',dimname
+              write(outlog(io),*)'MR WARNING: Name of assumed x dimension does not'
+              write(outlog(io),*)'            match any expected names.  Please verify'
+              write(outlog(io),*)'            that this file is COORDS compliant.'
+              write(outlog(io),*)'   Dimension name: ',dimname
             endif;enddo
           endif
           Met_dim_names(4) = trim(adjustl(dimname))
@@ -2142,10 +2142,10 @@
              index(dimname,'south_north').eq.0.and.&
              index(dimname,trim(adjustl(Met_dim_names(3)))).eq.0)then
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-              write(errlog(io),*)'MR WARNING: Name of assumed y dimension does not'
-              write(errlog(io),*)'            match any expected names.  Please verify'
-              write(errlog(io),*)'            that this file is COORDS compliant.'
-              write(errlog(io),*)'   Dimension name: ',dimname
+              write(outlog(io),*)'MR WARNING: Name of assumed y dimension does not'
+              write(outlog(io),*)'            match any expected names.  Please verify'
+              write(outlog(io),*)'            that this file is COORDS compliant.'
+              write(outlog(io),*)'   Dimension name: ',dimname
             endif;enddo
           endif
           Met_dim_names(3) = trim(adjustl(dimname))
@@ -2162,10 +2162,10 @@
              index(dimname,'Time')        .eq.0.and.&        ! 'time' or 'Time'
              index(dimname,trim(adjustl(Met_dim_names(1)))).eq.0)then
             do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-              write(errlog(io),*)'MR WARNING: Name of assumed t dimension does not'
-              write(errlog(io),*)'            match any expected names.  Please verify'
-              write(errlog(io),*)'            that this file is COORDS compliant.'
-              write(errlog(io),*)'   Dimension name: ',dimname
+              write(outlog(io),*)'MR WARNING: Name of assumed t dimension does not'
+              write(outlog(io),*)'            match any expected names.  Please verify'
+              write(outlog(io),*)'            that this file is COORDS compliant.'
+              write(outlog(io),*)'   Dimension name: ',dimname
             endif;enddo
           endif
           Met_dim_names(1) = trim(adjustl(dimname))
@@ -4126,7 +4126,7 @@
       subroutine MR_NC_check_status(nSTAT, errcode, operation)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error
+         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info
 
       use netcdf
 
@@ -4147,13 +4147,15 @@
       endif
 
       if (nSTAT.eq.nf90_noerr) return
-      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-        if (errcode.eq.0)then
+      if (errcode.eq.0)then
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
           write(outlog(io) ,*)severity,errcode,operation,' :: ',trim(adjustl(nf90_strerror(nSTAT)))
-        else
+        endif;enddo
+      else
+        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
           write(errlog(io) ,*)severity,errcode,operation,' :: ',trim(adjustl(nf90_strerror(nSTAT)))
-        endif
-      endif;enddo
+        endif;enddo
+      endif
 
       ! If user-supplied error code is 0, then consider this a warning,
       ! otherwise do a hard stop
