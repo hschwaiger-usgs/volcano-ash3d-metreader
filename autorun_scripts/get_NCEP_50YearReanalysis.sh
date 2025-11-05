@@ -91,7 +91,7 @@ var=( air hgt omega shum uwnd vwnd )
 for (( i=0;i<=5;i++))
 do
  echo "wget http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep/${var[i]}.${y}.nc"
- wget http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis/pressure/${var[i]}.${y}.nc
+ wget --tries=50 http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis/pressure/${var[i]}.${y}.nc
  mv ${NCEPDATAHOME}/dbuffer/${var[i]}.${y}.nc ${NCEPDATAHOME}/${y}/${var[i]}.${y}.nc       #overwrite older file
 done
 
