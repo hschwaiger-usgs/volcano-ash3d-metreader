@@ -850,6 +850,8 @@
 !           bilin_map_wgt
 !           CompPoint_X_on_Met_sp
 !           CompPoint_Y_on_Met_sp
+!           MetPoint_X_on_comp_sp
+!           MetPoint_Y_on_comp_sp
 !
 !##############################################################################
 
@@ -858,6 +860,7 @@
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
          CompPoint_X_on_Met_sp,CompPoint_Y_on_Met_sp,x_comp_sp,x_submet_sp,nx_submet,&
+         MetPoint_X_on_comp_sp,MetPoint_Y_on_comp_sp,&
          MR_dx_submet,y_submet_sp,ny_submet,MR_dy_submet,MR_u_ER_metP,theta_Met,&
          MR_dum2d_met_int,MR_dum2d_met,MR_dum3d_metP,MR_dum3d2_metP,MR_dum3d_metH,&
          MR_dum2d_comp_int,MR_dum2d_comp,MR_dum3d_compP,MR_dum3d_compH,&
@@ -870,7 +873,7 @@
          y_inverted,wrapgrid,UseFullMetGrid,ny_fullmet,ny_comp,nx_comp,nx_fullmet,&
          irhalf_fm_r,IsLatLon_MetGrid,IsPeriodic_CompGrid,jend,Map_Case,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
-         MR_useCompH,MR_useCompP,np_fullmet,nz_comp
+         MR_useCompH,MR_useCompP,np_fullmet,nz_comp,MR_InterpolateMet,dx_comp
 
       use projection,      only : &
            PJ_Set_Proj_Params,&
@@ -905,6 +908,8 @@
       INTERFACE
         subroutine MR_Set_Comp2Met_Map
         end subroutine MR_Set_Comp2Met_Map
+        subroutine MR_Set_Met2Comp_Map
+        end subroutine MR_Set_Met2Comp_Map
       END INTERFACE
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
@@ -913,6 +918,7 @@
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
+      ! Call subroutine to calculate the bi-linear weights for the interpolation
       call MR_Set_Comp2Met_Map
 
       ! Now calculate the indices of the subgrid containing the
@@ -1583,6 +1589,22 @@
       allocate(MR_geoH_metP_last(nx_submet,ny_submet,np_fullmet))
       allocate(MR_geoH_metP_next(nx_submet,ny_submet,np_fullmet))
 
+      if((Map_Case.eq.1.or.Map_Case.eq.2)then
+        ! If Met and comp grids are not the same class, then we need to compare lengths
+        if(dx_comp.gt.1.5_sp*(MR_dx_met(2)-MR_dx_met(1)))then
+          ! Comp grid is coarser than the met grid, set up list of met points to average for each comp cell
+          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Using averaging of Met cells to comp grid."
+          endif;enddo
+          MR_InterpolateMet = .false.
+          call MR_Set_Met2Comp_Map
+        endif
+      else
+        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          write(outlog(io),*)"Using interpolation of comp grid cell-center from Met grid."
+        endif;enddo
+      endif
+
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
@@ -1831,7 +1853,7 @@
       elseif(Map_Case.eq.4)then
         ! (4) Met Grid is projected and Comp grid is Lat/Lon
         Comp_proj4 = "LL"
-      elseif(Map_Case.eq.5.or.Map_Case.eq.5)then
+      elseif(Map_Case.eq.3.or.Map_Case.eq.5)then
         ! (3) Met Grid is Lat/Lon and Comp grid is projected
         ! (5) Met Grid and Comp grids have different projections
         ! In these cases, we need to build the proj4 line.
@@ -2013,6 +2035,197 @@
 
 !##############################################################################
 !
+!     MR_Set_Met2Comp_Map
+!
+!     This subroutine generates the mapping from the Met grid to the computational
+!     grid.
+!
+!     Allocates the mapping arrays:
+!
+!        CompPoint_on_subMet_idx
+!        bilin_map_wgt
+!        NetPoint_X_on_comp_sp
+!        MetPoint_Y_on_comp_sp
+!
+!##############################################################################
+
+
+      subroutine MR_Set_Met2Comp_Map
+
+      use MetReader,       only : &
+         MR_nio,VB,outlog,errlog,verbosity_info,verbosity_production,verbosity_error,&
+         CompPoint_on_subMet_idx,bilin_map_wgt,CompPoint_X_on_Met_sp,CompPoint_Y_on_Met_sp,&
+         Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
+         Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
+         y_comp_sp,x_comp_sp,nx_comp,ny_comp,IsLatLon_MetGrid,IsLatLon_CompGrid,Map_Case, &
+         Met_proj4,Comp_proj4,dx_comp,dy_comp,x_submet_sp,y_submet_sp,&
+         MetPoint_X_on_comp_sp,MetPoint_Y_on_comp_sp,&
+         nx_submet,ny_submet,x_submet_sp,y_submet_sp,MR_InterpolateMet,&
+         NumMetPoints_in_comp_cell,ListMetPoints_in_comp_cell
+
+      use projection,      only : &
+           PJ_Set_Proj_Params,&
+           PJ_proj_for,&
+           PJ_proj_inv
+
+      implicit none
+
+      integer, parameter :: sp        = 4 ! single precision
+      integer, parameter :: dp        = 8 ! double precision
+
+      integer :: i,j
+      integer :: ii,jj
+      integer :: iidx,jidx
+      integer :: met_indx
+      real(kind=dp) :: x_in ,y_in
+      real(kind=dp) :: x_out,y_out
+      integer :: io   
+      integer :: max_met_in_comp
+
+      allocate(MetPoint_X_on_comp_sp(nx_submet,ny_submet))
+      allocate(MetPoint_Y_on_comp_sp(nx_submet,ny_submet))
+      allocate(NumMetPoints_in_comp_cell(nx_comp,ny_comp))
+      NumMetPoints_in_comp_cell(:,:)    = 0
+
+      if(Map_Case.eq.1.or.Map_Case.eq.2)then
+        ! Map and Comp are on same grid; either Map_Case=1 (both LL) or Map_Case=2 (both proj)
+        do i=1,nx_submet
+          x_in = x_submet_sp(i)
+          do j=1,ny_submet
+            y_in = y_submet_sp(j)
+            MetPoint_X_on_comp_sp(i,j) = real(x_in,kind=sp)
+            MetPoint_Y_on_comp_sp(i,j) = real(y_in,kind=sp)
+          enddo
+        enddo
+      elseif(Map_Case.eq.3)then
+        ! Map_Case = 3 : Met=LL,   Comp=proj
+
+          ! We just need to map the Lon/Lat Met grid to the projected comp grid
+        do i=1,nx_submet
+          x_in = x_submet_sp(i)
+          do j=1,ny_submet
+            y_in = y_submet_sp(j)
+            call PJ_proj_for(x_in, y_in, Comp_iprojflag, &
+                         Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
+                         x_out,y_out)
+
+            MetPoint_X_on_comp_sp(i,j) = real(x_out,kind=sp)
+            MetPoint_Y_on_comp_sp(i,j) = real(y_out,kind=sp)
+          enddo
+        enddo
+      elseif(Map_Case.eq.4)then
+          ! We just need to map the projected Met grid to the Lon/Lat comp grid
+        do i=1,nx_submet
+          x_in = x_submet_sp(i)
+          do j=1,ny_submet
+            y_in = y_submet_sp(j)
+            call PJ_proj_inv(x_in, y_in, Met_iprojflag, &
+                           Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                           x_out,y_out)
+            MetPoint_X_on_comp_sp(i,j) = real(x_out,kind=sp)
+            MetPoint_Y_on_comp_sp(i,j) = real(y_out,kind=sp)
+          enddo
+        enddo
+      elseif(Map_Case.eq.5)then
+          ! Here, we need to map the projected met grid to a Lon/Lat grid, then
+          ! map to the projected comp grid
+        do i=1,nx_submet
+          do j=1,ny_submet
+            x_in = x_submet_sp(i)
+              y_in = y_submet_sp(j)
+
+            call PJ_proj_inv(x_in, y_in, Met_iprojflag, &
+                           Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
+                           x_out,y_out)
+            x_in = x_out
+            y_in = y_out
+            call PJ_proj_for(x_in, y_in, Comp_iprojflag, &
+                           Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
+                           x_out,y_out)
+            MetPoint_X_on_comp_sp(i,j) = real(x_out,kind=sp)
+            MetPoint_Y_on_comp_sp(i,j) = real(y_out,kind=sp)
+          enddo
+        enddo
+      endif ! Map_Case
+
+      ! Now build list: loop over all Met cells and log which comp cell they map to
+      max_met_in_comp = 0
+      do i=1,nx_submet
+        do j=1,ny_submet
+          met_indx = (i-1)*ny_submet + j
+          x_in = MetPoint_X_on_comp_sp(i,j)
+          y_in = MetPoint_Y_on_comp_sp(i,j)
+          iidx = 0
+          do ii=1,nx_comp
+            if(x_in.ge.(x_comp_sp(ii)-0.5_sp*dx_comp).and. &
+               x_in.lt.(x_comp_sp(ii)+0.5_sp*dx_comp))then
+              iidx = ii
+            endif
+          enddo
+          jidx = 0
+          do jj=1,ny_comp
+            if(y_in.ge.(y_comp_sp(jj)-0.5_sp*dy_comp).and. &
+               y_in.lt.(y_comp_sp(jj)+0.5_sp*dy_comp))then
+              jidx = jj
+            endif
+          enddo
+          if(iidx.gt.0.and.jidx.gt.0)then
+            NumMetPoints_in_comp_cell(iidx,jidx) = NumMetPoints_in_comp_cell(iidx,jidx) + 1
+          else
+            ! Couldn't find mapped comp cell
+            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              write(errlog(io),*)"MR ERROR: Couldn't find mapping for cell ",i,j,x_in,y_in
+              write(errlog(io),*)"          Comp limits in x: ",x_comp_sp(1)-0.5_sp*dx_comp,x_comp_sp(nx_comp)+0.5_sp*dx_comp
+              write(errlog(io),*)"          Comp limits in y: ",y_comp_sp(1)-0.5_sp*dy_comp,y_comp_sp(ny_comp)+0.5_sp*dy_comp
+            endif;enddo
+            stop 1
+          endif
+        enddo
+      enddo
+      max_met_in_comp = maxval(NumMetPoints_in_comp_cell(:,:))
+      allocate(ListMetPoints_in_comp_cell(nx_comp,ny_comp,max_met_in_comp))
+      ! Now that we know how big of an array to allocate, loop back through and log the mapping
+      NumMetPoints_in_comp_cell(:,:) = 0
+      do i=1,nx_submet
+        do j=1,ny_submet
+          met_indx = (i-1)*ny_submet + j
+          x_in = MetPoint_X_on_comp_sp(i,j)
+          y_in = MetPoint_Y_on_comp_sp(i,j)
+          iidx = 0
+          do ii=1,nx_comp
+            if(x_in.ge.(x_comp_sp(ii)-0.5_sp*dx_comp).and. &
+               x_in.lt.(x_comp_sp(ii)+0.5_sp*dx_comp))then
+              iidx = ii
+            endif
+          enddo
+          jidx = 0
+          do jj=1,ny_comp
+            if(y_in.ge.(y_comp_sp(jj)-0.5_sp*dy_comp).and. &
+               y_in.lt.(y_comp_sp(jj)+0.5_sp*dy_comp))then
+              jidx = jj
+            endif
+          enddo
+          if(iidx.gt.0.and.jidx.gt.0)then
+            NumMetPoints_in_comp_cell(iidx,jidx) = NumMetPoints_in_comp_cell(iidx,jidx) + 1
+            ListMetPoints_in_comp_cell(iidx,jidx,NumMetPoints_in_comp_cell(iidx,jidx)) = met_indx
+          endif
+        enddo
+      enddo
+
+      ! At this point, we have the mapping of all comp cell-center points onto the met grid
+      ! and for met grids coarser than comp grids, we have a mapping to average all met cells
+      ! that contribute to a comp cell. For the pathalogical case where a coarse grid comp cell
+      ! has no contributing met cells, we turn off the avergaing and return to the interpolation
+      if(minval(NumMetPoints_in_comp_cell(:,:)).eq.0) MR_InterpolateMet = .true.
+
+      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        write(outlog(io),*)"-----------------------------------------------------------------------"
+      endif;enddo
+
+      end subroutine MR_Set_Met2Comp_Map
+
+!##############################################################################
+!
 !     MR_Regrid_Met2Comp
 !
 !     This subroutine does the 2-D regridding using the mapping
@@ -2020,13 +2233,13 @@
 !
 !##############################################################################
 
-
       subroutine MR_Regrid_Met2Comp(nx1,ny1,wrk_met,nx2,ny2,wrk_comp)
 
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug2,&
          bilin_map_wgt,CompPoint_on_subMet_idx,y_pad_South,y_pad_North,&
-         IsPeriodic_CompGrid
+         IsPeriodic_CompGrid,MR_InterpolateMet,ny_submet,&
+         NumMetPoints_in_comp_cell,ListMetPoints_in_comp_cell
 
       implicit none
 
@@ -2039,7 +2252,9 @@
       real(kind=sp),dimension(nx2,ny2),intent(out) :: wrk_comp
 
       integer :: i,j,ii,jj
+      integer :: ic,ncells
       integer :: nx_max
+      integer :: met_indx
       real(kind=sp) :: a1,a2,a3,a4
       real(kind=sp) :: tmp
 
@@ -2089,36 +2304,57 @@
         wrk_loc(1:nx1,1:ny1) = wrk_met(1:nx1,1:ny1)
       endif
 
-      ! Loop over all comp points
-      do i = 1,nx2
-        do j = 1,ny2
-          ! Get the Met cell id this comp point maps to
-          ii = CompPoint_on_subMet_idx(i,j,1)
-          jj = CompPoint_on_subMet_idx(i,j,2)
-          if(ii.lt.1.or.ii.gt.nx_max-1)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then        
-              write(errlog(io),*)"MR ERROR: ii maps out of grid: ",ii
-            endif;enddo
-            stop 1
-          endif
-          if(jj.lt.0.or.jj.gt.ny1)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then        
-              write(errlog(io),*)"MR ERROR: jj maps out of grid: ",jj,ny1
-            endif;enddo
-            stop 1
-          endif
-          ! Look up this comp points weights
-          a1 = bilin_map_wgt(i,j,1)
-          a2 = bilin_map_wgt(i,j,2)
-          a3 = bilin_map_wgt(i,j,3)
-          a4 = bilin_map_wgt(i,j,4)
-          ! Now interpolate from Met to Comp
-          wrk_comp(i,j) = a1*wrk_loc(ii  ,jj  ) + &
-                          a2*wrk_loc(ii+1,jj  ) + &
-                          a3*wrk_loc(ii+1,jj+1) + &
-                          a4*wrk_loc(ii  ,jj+1)
+      wrk_comp(:,:) = 0.0_sp
+      if(MR_InterpolateMet)then
+        ! Loop over all comp points
+        do i = 1,nx2
+          do j = 1,ny2
+            ! Get the Met cell id this comp point maps to
+            ii = CompPoint_on_subMet_idx(i,j,1)
+            jj = CompPoint_on_subMet_idx(i,j,2)
+            if(ii.lt.1.or.ii.gt.nx_max-1)then
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then        
+                write(errlog(io),*)"MR ERROR: ii maps out of grid: ",ii
+              endif;enddo
+              stop 1
+            endif
+            if(jj.lt.0.or.jj.gt.ny1)then
+              do io=1,MR_nio;if(VB(io).le.verbosity_error)then        
+                write(errlog(io),*)"MR ERROR: jj maps out of grid: ",jj,ny1
+              endif;enddo
+              stop 1
+            endif
+            ! Look up this comp points weights
+            a1 = bilin_map_wgt(i,j,1)
+            a2 = bilin_map_wgt(i,j,2)
+            a3 = bilin_map_wgt(i,j,3)
+            a4 = bilin_map_wgt(i,j,4)
+            ! Now interpolate from Met to Comp
+            wrk_comp(i,j) = a1*wrk_loc(ii  ,jj  ) + &
+                            a2*wrk_loc(ii+1,jj  ) + &
+                            a3*wrk_loc(ii+1,jj+1) + &
+                            a4*wrk_loc(ii  ,jj+1)
+          enddo
         enddo
-      enddo
+      else
+        ! Loop over all comp points
+        do i = 1,nx2
+          do j = 1,ny2
+            ncells = NumMetPoints_in_comp_cell(i,j)
+            do ic = 1,ncells
+              met_indx = ListMetPoints_in_comp_cell(i,j,ic)
+              ! Convert met_indx back to ii jj
+              !   met_indx = (i-1)*ny_submet + j
+
+              jj = mod(met_indx,ny_submet) + 1
+              ii = int((met_indx-jj)/ny_submet) + 1
+              !write(*,*)i,j,ncells,met_indx,ii,jj
+              wrk_comp(i,j) = wrk_comp(i,j) + wrk_loc(ii,jj)
+            enddo
+            wrk_comp(i,j) = wrk_comp(i,j) / real(ncells,kind=sp)
+          enddo
+        enddo
+      endif
 
       end subroutine MR_Regrid_Met2Comp
 

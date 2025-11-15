@@ -274,19 +274,19 @@
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d2_metP     => null()
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_geoH_metP_last  => null() ! These are needed for compH interpolation
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_geoH_metP_next  => null() 
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vx_metP_last    => null() !These might need to be stored to avoid a 
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vx_metP_next    => null() !second reading
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vx_metP_last    => null() ! These might need to be stored to avoid a 
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vx_metP_next    => null() ! second reading
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_vy_metP_last    => null() 
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_vy_metP_next    => null() 
 #else
-      integer      ,dimension(:,:)  ,allocatable, public :: MR_dum2d_met_int   ! Used for categorical variables
-      real(kind=sp),dimension(:,:)  ,allocatable, public :: MR_dum2d_met       ! Used for surface variables
+      integer      ,dimension(:,:)  ,allocatable, public :: MR_dum2d_met_int         ! Used for categorical variables
+      real(kind=sp),dimension(:,:)  ,allocatable, public :: MR_dum2d_met             ! Used for surface variables
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_dum3d_metP
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_dum3d2_metP
-      real(kind=sp),dimension(:,:,:),allocatable, public :: MR_geoH_metP_last  ! These are needed for compH interpolation
+      real(kind=sp),dimension(:,:,:),allocatable, public :: MR_geoH_metP_last        ! These are needed for compH interpolation
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_geoH_metP_next
-      real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vx_metP_last  !These might need to be stored to avoid a 
-      real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vx_metP_next  !second reading
+      real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vx_metP_last          ! These might need to be stored to avoid a 
+      real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vx_metP_next          ! second reading
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vy_metP_last
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vy_metP_next
 #endif
@@ -296,14 +296,14 @@
       real(kind=sp)         :: Max_geoH_metP_next
       real(kind=sp)         :: Max_geoH_metP
       real(kind=sp)         :: Suppl_H
-      !Parameter iHeightHandler specifies what to do if the maximum height
-      !of the simulation region exceeds the maximum height in the wind files.
-      !If iHeightHandler = 1, stop the program if the plume height exceeds mesoscale height
-      !                    2, wind direction at levels above the highest node 
-      !                       equal that of the highest node.  Temperatures in the
-      !                       upper nodes don't change between 11 and 20 km; above
-      !                       20 km they increase by 2 C/km, as in the Standard
-      !                       atmosphere.  A warning is written to the log file.
+      ! Parameter iHeightHandler specifies what to do if the maximum height
+      ! of the simulation region exceeds the maximum height in the wind files.
+      ! If iHeightHandler = 1, stop the program if the plume height exceeds mesoscale height
+      !                     2, wind direction at levels above the highest node 
+      !                        equal that of the highest node.  Temperatures in the
+      !                        upper nodes don't change between 11 and 20 km; above
+      !                        20 km they increase by 2 C/km, as in the Standard
+      !                        atmosphere.  A warning is written to the log file.
       integer       ,public :: MR_iHeightHandler = 2
 
         ! The following are used for sonde data
@@ -324,18 +324,18 @@
       real(kind=sp)    ,dimension(:,:,:)  ,pointer,public :: MR_Snd2Comp_map_wgt=> null() ! weights of nearby sondes for every comp point
       integer          ,dimension(:,:,:)  ,pointer,public :: MR_Snd2Comp_map_idx=> null() ! sonde index of weights
 #else
-      character(len=4 ),dimension(:)      ,allocatable,public :: MR_Snd_cd         ! Station code
-      integer          ,dimension(:)      ,allocatable,public :: MR_Snd_id         ! WMO station ID
-      real(kind=sp)    ,dimension(:)      ,allocatable,public :: MR_Snd_lt         ! Station latitude
-      real(kind=sp)    ,dimension(:)      ,allocatable,public :: MR_Snd_ln         ! Station longitude
-      real(kind=sp)    ,dimension(:)      ,allocatable,public :: MR_Snd_el         ! Station elevation
-      character(len=25),dimension(:)      ,allocatable,public :: MR_Snd_lnm        ! Station long name
-      character(len=2 ),dimension(:)      ,allocatable,public :: MR_Snd_st         ! Station state
-      character(len=2 ),dimension(:)      ,allocatable,public :: MR_Snd_ct         ! Station country
-      integer          ,dimension(:)      ,allocatable,public :: Snd_idx           ! Index of radiosonde in master list
-      real(kind=sp)    ,dimension(:,:,:,:),allocatable,public :: MR_SndVars_metP   ! (MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,300)
-      integer          ,dimension(:,:)    ,allocatable,public :: MR_Snd_np_fullmet ! Number of pressure values for each location/time
-      integer          ,dimension(:)      ,allocatable,public :: MR_SndVarsID      ! Lists which vars are in which columns of MR_SndVars_metP
+      character(len=4 ),dimension(:)      ,allocatable,public :: MR_Snd_cd           ! Station code
+      integer          ,dimension(:)      ,allocatable,public :: MR_Snd_id           ! WMO station ID
+      real(kind=sp)    ,dimension(:)      ,allocatable,public :: MR_Snd_lt           ! Station latitude
+      real(kind=sp)    ,dimension(:)      ,allocatable,public :: MR_Snd_ln           ! Station longitude
+      real(kind=sp)    ,dimension(:)      ,allocatable,public :: MR_Snd_el           ! Station elevation
+      character(len=25),dimension(:)      ,allocatable,public :: MR_Snd_lnm          ! Station long name
+      character(len=2 ),dimension(:)      ,allocatable,public :: MR_Snd_st           ! Station state
+      character(len=2 ),dimension(:)      ,allocatable,public :: MR_Snd_ct           ! Station country
+      integer          ,dimension(:)      ,allocatable,public :: Snd_idx             ! Index of radiosonde in master list
+      real(kind=sp)    ,dimension(:,:,:,:),allocatable,public :: MR_SndVars_metP     ! (MR_nSnd_Locs,MR_Snd_nt_fullmet,MR_Snd_nvars,300)
+      integer          ,dimension(:,:)    ,allocatable,public :: MR_Snd_np_fullmet   ! Number of pressure values for each location/time
+      integer          ,dimension(:)      ,allocatable,public :: MR_SndVarsID        ! Lists which vars are in which columns of MR_SndVars_metP
       real(kind=sp)    ,dimension(:,:,:)  ,allocatable,public :: MR_Snd2Comp_map_wgt ! weights of nearby sondes for every comp point
       integer          ,dimension(:,:,:)  ,allocatable,public :: MR_Snd2Comp_map_idx ! sonde index of weights
 #endif
@@ -437,8 +437,8 @@
                                           ! be rotated
       logical,public       :: MR_Have_LL_mapping = .false.
       logical,public       :: IsRegular_MetGrid                ! True if the grid-spacing is uniform
-      real(kind=sp),public :: dx_met_const
-      real(kind=sp),public :: dy_met_const
+      real(kind=sp),public :: dx_met_const = 0.0_sp
+      real(kind=sp),public :: dy_met_const = 0.0_sp
 
       integer,public       :: nx_submet ! length of x or lon of sub-grid
       integer,public       :: ny_submet ! length of y or lat of sub-grid
@@ -531,7 +531,7 @@
       integer      ,public :: nx_comp
       integer      ,public :: ny_comp
       integer      ,public :: nz_comp
-      real(kind=sp) :: dx_comp,dy_comp
+      real(kind=sp),public :: dx_comp,dy_comp
       real(kind=sp) :: MaxZ_comp_sp
 #ifdef USEPOINTERS
       real(kind=sp),dimension(:),    pointer,public :: x_comp_sp               => null() ! x-coordinates of computational grid
@@ -540,6 +540,10 @@
       real(kind=sp),dimension(:,:),  pointer,public :: CompPoint_X_on_Met_sp   => null() ! x-coord (on Met grid) of comp point
       real(kind=sp),dimension(:,:),  pointer,public :: CompPoint_Y_on_Met_sp   => null() ! y-coord (on Met grid) of comp point
       integer      ,dimension(:,:,:),pointer,public :: CompPoint_on_subMet_idx => null() ! index on met sub-grid of comp point
+      real(kind=sp),dimension(:,:),  pointer,public :: MetPoint_X_on_comp_sp   => null() ! x-coord (on comp grid) of Met point
+      real(kind=sp),dimension(:,:),  pointer,public :: MetPoint_Y_on_comp_sp   => null() ! y-coord (on comp grid) of Met point
+      integer      ,dimension(:,:)  ,pointer,public :: NumMetPoints_in_comp_cell  => null() ! Num of met cells mapped to comp cell
+      integer      ,dimension(:,:,:),pointer,public :: ListMetPoints_in_comp_cell => null() ! list of met cells mapped to comp cell
       real(kind=sp),dimension(:,:,:),pointer,public :: bilin_map_wgt           => null()
 #else
       real(kind=sp),dimension(:),    allocatable,public :: x_comp_sp               ! x-coordinates of computational grid
@@ -548,8 +552,15 @@
       real(kind=sp),dimension(:,:),  allocatable,public :: CompPoint_X_on_Met_sp   ! x-coord (on Met grid) of comp point
       real(kind=sp),dimension(:,:),  allocatable,public :: CompPoint_Y_on_Met_sp   ! y-coord (on Met grid) of comp point
       integer      ,dimension(:,:,:),allocatable,public :: CompPoint_on_subMet_idx ! index on met sub-grid of comp point
+      real(kind=sp),dimension(:,:),  allocatable,public :: MetPoint_X_on_comp_sp   ! x-coord (on comp grid) of Met point
+      real(kind=sp),dimension(:,:),  allocatable,public :: MetPoint_Y_on_comp_sp   ! y-coord (on comp grid) of Met point
+      integer      ,dimension(:,:)  ,allocatable,public :: NumMetPoints_in_comp_cell  ! Num of met cells mapped to comp cell
+      integer      ,dimension(:,:,:),allocatable,public :: ListMetPoints_in_comp_cell ! list of met cells mapped to comp cell
       real(kind=sp),dimension(:,:,:),allocatable,public :: bilin_map_wgt
 #endif
+     logical           ,public :: MR_InterpolateMet = .true. ! This is true if dx_met > 1.5*dx_comp and comp values are interpolated
+                                                             ! from a larger Met grid. If the Met grid is coarser, then this
+                                                             ! gets set to .false. and an averaging is used.
 
       ! Here are a few variables needed for sigma-altitude coordinates
       logical          ,public :: MR_useTopo        = .false.
@@ -780,6 +791,8 @@
        if(associated(CompPoint_X_on_Met_sp         ))deallocate(CompPoint_X_on_Met_sp)
        if(associated(CompPoint_Y_on_Met_sp         ))deallocate(CompPoint_Y_on_Met_sp)
        if(associated(CompPoint_on_subMet_idx       ))deallocate(CompPoint_on_subMet_idx)
+       if(associated(MetPoint_X_on_comp_sp         ))deallocate(MetPoint_X_on_comp_sp)
+       if(associated(MetPoint_Y_on_comp_sp         ))deallocate(MetPoint_Y_on_comp_sp)
        if(associated(bilin_map_wgt                 ))deallocate(bilin_map_wgt)
        if(associated(s_comp_sp                     ))deallocate(s_comp_sp)
        if(associated(MR_Topo_met                   ))deallocate(MR_Topo_met)
@@ -872,6 +885,8 @@
        if(allocated(CompPoint_X_on_Met_sp          ))deallocate(CompPoint_X_on_Met_sp)
        if(allocated(CompPoint_Y_on_Met_sp          ))deallocate(CompPoint_Y_on_Met_sp)
        if(allocated(CompPoint_on_subMet_idx        ))deallocate(CompPoint_on_subMet_idx)
+       if(allocated(MetPoint_X_on_comp_sp          ))deallocate(MetPoint_X_on_comp_sp)
+       if(allocated(MetPoint_Y_on_comp_sp          ))deallocate(MetPoint_Y_on_comp_sp)
        if(allocated(bilin_map_wgt                  ))deallocate(bilin_map_wgt)
        if(allocated(s_comp_sp                      ))deallocate(s_comp_sp)
        if(allocated(MR_Topo_met                    ))deallocate(MR_Topo_met)
@@ -3169,10 +3184,10 @@
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
       call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
-                                 .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
-                                 .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
-                                 .false., &  ! CALLED_MR_Initialize_Met_Grids
-                                 .false.)    ! CALLED_MR_Set_Met_Times
+                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
+                                  .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
+                                  .false., &  ! CALLED_MR_Initialize_Met_Grids
+                                  .false.)    ! CALLED_MR_Set_Met_Times
       nx_comp = nx
       ny_comp = ny
       nz_comp = nz
@@ -4430,10 +4445,10 @@
       ! Check prerequisites
       if(Check_prereq_conditions.eqv..true.) &
       call MR_Check_Prerequisites(.true.,  &  ! CALLED_MR_Allocate_FullMetFileList    (this check is needed)
-                                 .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
-                                 .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
-                                 .true.,  &  ! CALLED_MR_Initialize_Met_Grids        (this check is needed)
-                                 .true.)     ! CALLED_MR_Set_Met_Times(this check is needed)
+                                  .true.,  &  ! CALLED_MR_Read_Met_DimVars            (this check is needed)
+                                  .true.,  &  ! CALLED_MR_Set_CompProjection          (this check is needed)
+                                  .true.,  &  ! CALLED_MR_Initialize_Met_Grids        (this check is needed)
+                                  .true.)     ! CALLED_MR_Set_Met_Times(this check is needed)
 
       if(.not.MR_useCompP)then
         do io=1,MR_nio;if(VB(io).le.verbosity_error)then
@@ -4935,7 +4950,7 @@
                                  .true.)     ! CALLED_MR_Set_Met_Times               (this check is needed)
 
       if(MR_useCompH)then
-        ! convert MR_dum3d_MetP to MR_dum3d_metH
+        ! convert MR_dum3d_metP to MR_dum3d_metH
         call MR_Regrid_MetP_to_MetH(istep)
       endif
 
@@ -5277,7 +5292,7 @@
 !
 !     MR_DelMetP_Dx
 !
-!     Calculated the x derivative of the variable in MR_dum3d_MetP.
+!     Calculated the x derivative of the variable in MR_dum3d_metP.
 !     This subroutine expects the calling program to populate MR_dum3d2_metP.
 !     The unit of dx is always km.
 !
@@ -5357,7 +5372,7 @@
 !
 !     MR_DelMetP_Dy
 !
-!     Calculated the y derivative of the variable in MR_dum3d_MetP.
+!     Calculated the y derivative of the variable in MR_dum3d_metP.
 !     This subroutine expects the calling program to populate MR_dum3d2_metP.
 !     The unit of dy is always km.
 !

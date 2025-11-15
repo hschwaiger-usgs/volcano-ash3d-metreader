@@ -3507,8 +3507,6 @@
 
       nSTAT = nf90_inq_varid(ncid,invar,in_var_id)
 
-
-
       call MR_NC_check_status(nSTAT,0,"nf90_inq_varid")
       nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
                 xtype = var_xtype)
