@@ -860,7 +860,6 @@
       use MetReader,       only : &
          MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
          CompPoint_X_on_Met_sp,CompPoint_Y_on_Met_sp,x_comp_sp,x_submet_sp,nx_submet,&
-         MetPoint_X_on_comp_sp,MetPoint_Y_on_comp_sp,&
          MR_dx_submet,y_submet_sp,ny_submet,MR_dy_submet,MR_u_ER_metP,theta_Met,&
          MR_dum2d_met_int,MR_dum2d_met,MR_dum3d_metP,MR_dum3d2_metP,MR_dum3d_metH,&
          MR_dum2d_comp_int,MR_dum2d_comp,MR_dum3d_compP,MR_dum3d_compH,&
@@ -1589,9 +1588,9 @@
       allocate(MR_geoH_metP_last(nx_submet,ny_submet,np_fullmet))
       allocate(MR_geoH_metP_next(nx_submet,ny_submet,np_fullmet))
 
-      if((Map_Case.eq.1.or.Map_Case.eq.2)then
+      if(Map_Case.eq.1.or.Map_Case.eq.2)then
         ! If Met and comp grids are not the same class, then we need to compare lengths
-        if(dx_comp.gt.1.5_sp*(MR_dx_met(2)-MR_dx_met(1)))then
+        if(dx_comp.gt.1.5_sp*MR_dx_met(1))then
           ! Comp grid is coarser than the met grid, set up list of met points to average for each comp cell
           do io=1,MR_nio;if(VB(io).le.verbosity_info)then
             write(outlog(io),*)"Using averaging of Met cells to comp grid."
@@ -2038,7 +2037,10 @@
 !     MR_Set_Met2Comp_Map
 !
 !     This subroutine generates the mapping from the Met grid to the computational
-!     grid.
+!     grid. The cell-center points of the Met grid are mapped to the computational
+!     grid and set up for interpolation. Additionally, for the cases where the comp
+!     grid is much coarser than the met grid, a list of all Met cells that contribute
+!     to a comp cell are logged for averaging.
 !
 !     Allocates the mapping arrays:
 !
@@ -2046,6 +2048,8 @@
 !        bilin_map_wgt
 !        NetPoint_X_on_comp_sp
 !        MetPoint_Y_on_comp_sp
+!        NumMetPoints_in_comp_cell
+!        ListMetPoints_in_comp_cell
 !
 !##############################################################################
 
@@ -2053,12 +2057,11 @@
       subroutine MR_Set_Met2Comp_Map
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_info,verbosity_production,verbosity_error,&
-         CompPoint_on_subMet_idx,bilin_map_wgt,CompPoint_X_on_Met_sp,CompPoint_Y_on_Met_sp,&
+         MR_nio,VB,outlog,errlog,verbosity_production,verbosity_error,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
          Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
-         y_comp_sp,x_comp_sp,nx_comp,ny_comp,IsLatLon_MetGrid,IsLatLon_CompGrid,Map_Case, &
-         Met_proj4,Comp_proj4,dx_comp,dy_comp,x_submet_sp,y_submet_sp,&
+         y_comp_sp,x_comp_sp,nx_comp,ny_comp,Map_Case, &
+         dx_comp,dy_comp,x_submet_sp,y_submet_sp,&
          MetPoint_X_on_comp_sp,MetPoint_Y_on_comp_sp,&
          nx_submet,ny_submet,x_submet_sp,y_submet_sp,MR_InterpolateMet,&
          NumMetPoints_in_comp_cell,ListMetPoints_in_comp_cell
@@ -2171,14 +2174,6 @@
           enddo
           if(iidx.gt.0.and.jidx.gt.0)then
             NumMetPoints_in_comp_cell(iidx,jidx) = NumMetPoints_in_comp_cell(iidx,jidx) + 1
-          else
-            ! Couldn't find mapped comp cell
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
-              write(errlog(io),*)"MR ERROR: Couldn't find mapping for cell ",i,j,x_in,y_in
-              write(errlog(io),*)"          Comp limits in x: ",x_comp_sp(1)-0.5_sp*dx_comp,x_comp_sp(nx_comp)+0.5_sp*dx_comp
-              write(errlog(io),*)"          Comp limits in y: ",y_comp_sp(1)-0.5_sp*dy_comp,y_comp_sp(ny_comp)+0.5_sp*dy_comp
-            endif;enddo
-            stop 1
           endif
         enddo
       enddo

@@ -323,13 +323,13 @@
           enddo
           ! For the y grid, we need to check if the requested box bumps up against
           ! the poles. Limit the extrema to +-89
-          if((srcy + (nymax-1)/2 * dy).gt.89.0_8)then
+          if((srcy + (nymax-1)*0.5_8 * dy).gt.89.0_8)then
             ! Start from 89.0 N and count down nymax
             starty = 89.0_8 - (nymax-1) * dy
             do i=0,nymax+1
               ygrid(i) = real(starty + (i-1) * dy,kind=4)
             enddo
-          elseif((srcy - (nymax-1)/2 * dy).lt.-89.0_8)then
+          elseif((srcy - (nymax-1)*0.5_8 * dy).lt.-89.0_8)then
             ! Start from 89.0 N and count down nymax
             starty = -89.0_8
             do i=0,nymax+1
