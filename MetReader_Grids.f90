@@ -872,6 +872,8 @@
          y_inverted,wrapgrid,UseFullMetGrid,ny_fullmet,ny_comp,nx_comp,nx_fullmet,&
          irhalf_fm_r,IsLatLon_MetGrid,IsPeriodic_CompGrid,jend,Map_Case,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
+         dx_met_const,dy_met_const,min_cell_area_met,max_cell_area_met,&
+         MR_DEG2RAD,MR_RAD_EARTH,&
          MR_useCompH,MR_useCompP,np_fullmet,nz_comp,MR_InterpolateMet,dx_comp
 
       use projection,      only : &
@@ -883,6 +885,8 @@
 
       integer, parameter :: sp        = 4 ! single precision
       integer, parameter :: dp        = 8 ! double precision
+
+      real(kind=sp), parameter :: PI         = 3.141592653589793_sp
 
       integer :: i, j
       integer :: ii,jj
@@ -901,6 +905,10 @@
       real(kind=dp) :: xout,yout
       logical       :: cond1, cond2, cond3
       integer       :: nx_tmp
+      real(kind=sp) :: phi_1,phi_2
+      real(kind=sp) :: theta_1,theta_2
+      real(kind=sp) :: del_theta,del_costheta,del_lam
+      real(kind=sp) :: cell_area
 
       integer :: io                           ! Index for output streams
 
@@ -1602,6 +1610,26 @@
         do io=1,MR_nio;if(VB(io).le.verbosity_info)then
           write(outlog(io),*)"Using interpolation of comp grid cell-center from Met grid."
         endif;enddo
+      endif
+
+      if(IsLatLon_MetGrid)then
+        do j=1,ny_submet
+          phi_1 = MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*dy_met_const) ! phi at lower y of cell
+          phi_2 = MR_DEG2RAD*(y_submet_sp(j)+0.5_sp*dy_met_const) ! phi at upper y of cell
+          theta_1 = 0.5_sp*PI-phi_1
+          theta_2 = 0.5_sp*PI-phi_2
+          del_theta  = dy_met_const*MR_DEG2RAD
+          del_costheta = cos(theta_2)-cos(theta_1)
+          ! No need to loop over lambda (longitude) since each slice is identical
+          del_lam = dx_met_const*MR_DEG2RAD
+          cell_area = MR_RAD_EARTH*MR_RAD_EARTH*del_lam*del_costheta
+          if(cell_area.lt.min_cell_area_met) min_cell_area_met=cell_area
+          if(cell_area.gt.max_cell_area_met) max_cell_area_met=cell_area
+        enddo
+      else
+        cell_area = dx_met_const*dy_met_const
+        min_cell_area_met = cell_area
+        max_cell_area_met = cell_area
       endif
 
       do io=1,MR_nio;if(VB(io).le.verbosity_production)then

@@ -439,6 +439,8 @@
       logical,public       :: IsRegular_MetGrid                ! True if the grid-spacing is uniform
       real(kind=sp),public :: dx_met_const = 0.0_sp
       real(kind=sp),public :: dy_met_const = 0.0_sp
+      real(kind=sp),public :: min_cell_area_met = 1.0e10_sp
+      real(kind=sp),public :: max_cell_area_met = 0.0_sp
 
       integer,public       :: nx_submet ! length of x or lon of sub-grid
       integer,public       :: ny_submet ! length of y or lat of sub-grid
