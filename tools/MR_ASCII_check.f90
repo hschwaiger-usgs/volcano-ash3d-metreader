@@ -7,7 +7,7 @@
          input_unit,output_unit,error_unit
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_production
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_production
 
       implicit none
 
@@ -45,20 +45,20 @@
       if (nargs.eq.0) then
         ! If no command-line arguments are given, then prompt user
         ! interactively for the two file names and the L2 tolerance
-        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
           write(outlog(io),*)'Enter name of the first ESRI ASCII file:'
         endif;enddo
         read(input_unit,*) file_1
-        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
           write(outlog(io),*)'Enter name of the second ESRI ASCII file:'
         endif;enddo
         read(input_unit,*) file_2
-        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
           write(outlog(io),*)'Enter the L2 tolerance (default is 1.0e-7):'
         endif;enddo
         read(input_unit,*) L2_tol
       elseif (nargs.eq.1.or.nargs.gt.3) then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)'ERROR: Too few command-line arguments.'
           write(errlog(io),*)'  Usage: Ash3d_ASCII_check file1 file2 (tol.)'
         endif;enddo
@@ -66,12 +66,12 @@
       else
         call get_command_argument(1, linebuffer080, status=stat)
         if(stat.gt.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)'ERROR: Could not parse argument 1'
           endif;enddo
           stop 1
         elseif (stat.lt.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)'ERROR: Argument 1 has been truncated.'
             write(errlog(io),*)'       File name length is limited to 80 char.'
           endif;enddo
@@ -82,12 +82,12 @@
 
         call get_command_argument(2, linebuffer080, status=stat)
         if(stat.gt.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)'ERROR: Could not parse argument 2'
           endif;enddo
           stop 1
         elseif (stat.lt.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)'ERROR: Argument 2 has been truncated.'
             write(errlog(io),*)'       File name length is limited to 80 char.'
           endif;enddo
@@ -97,17 +97,17 @@
         inquire( file=adjustl(trim(file_2)), exist=IsThere2 )
 
         if (.not.IsThere1.and..not.IsThere2)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)'ERROR: Neither input files could be found'
           endif;enddo
           stop 1
         elseif (.not.IsThere1)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)'ERROR: Input file 1 could not be found'
           endif;enddo
           stop 1
         elseif (.not.IsThere2)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)'ERROR: Input file 2 could not be found'
           endif;enddo
           stop 1
@@ -119,7 +119,7 @@
           if(stat.eq.0)then
             L2_tol = tmp_ip
           else
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)'WARNING: argument 3 not read correctly.'
               write(errlog(io),*)'         Using default value.'
             endif;enddo
@@ -134,7 +134,7 @@
       if(iostatus.ne.0)then
         ! We might have an empty file
         ! Issue warning and return
-        do io=1,2;if(VB(io).le.verbosity_error)then
+        do io=1,2;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*) 'Error reading file ',trim(adjustl(file_1))
           write(errlog(io),*) 'Check for zero-length file.'
         endif;enddo
@@ -158,7 +158,7 @@
       if(iostatus.ne.0)then
         ! We might have an empty file
         ! Issue warning and return
-        do io=1,2;if(VB(io).le.verbosity_error)then
+        do io=1,2;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*) 'Error reading file ',trim(adjustl(file_2))
           write(errlog(io),*) 'Check for zero-length file.'
         endif;enddo
@@ -186,37 +186,37 @@
 3006  format(10f18.6)
 
       if(nx_1.ne.nx_2)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"FAIL : nx differs"
         endif;enddo
         stop 1
       endif
       if(ny_1.ne.ny_2)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"FAIL : ny differs"
         endif;enddo
         stop 1
       endif
       if(abs(dx_1-dx_2).gt.EPS_TINY)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"FAIL : dx differs"
         endif;enddo
         stop 1
       endif
       if(abs(dy_1-dy_2).gt.EPS_TINY)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"FAIL : dy differs"
         endif;enddo
         stop 1
       endif
       if(abs(xll_1-xll_2).gt.EPS_TINY)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"FAIL : xll differs"
         endif;enddo
         stop 1
       endif
       if(abs(yll_1-yll_2).gt.EPS_TINY)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"FAIL : yll differs"
         endif;enddo
         stop 1
@@ -232,7 +232,7 @@
       L2_toterror = sqrt(L2_toterror)
       L2_toterror = L2_toterror/nx_1/ny_1
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
         if(abs(L2_toterror).lt.L2_tol)then
           write(outlog(io),*)'PASS : ',L2_toterror
         else
@@ -242,12 +242,12 @@
 
       stop 0
 
-2500  do io=1,2;if(VB(io).le.verbosity_error)then
+2500  do io=1,2;if(MR_VB(io).le.verbosity_error)then
         write(errlog(io),*) 'Error opening ASCII file. Program stopped'
       endif;enddo
       stop 1
 
-2600  do io=1,2;if(VB(io).le.verbosity_error)then
+2600  do io=1,2;if(MR_VB(io).le.verbosity_error)then
         write(errlog(io),*) 'Error reading from ASCII file.'
       endif;enddo
       stop 1

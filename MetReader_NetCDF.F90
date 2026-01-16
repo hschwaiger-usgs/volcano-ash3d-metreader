@@ -32,7 +32,7 @@
       subroutine MR_Read_Met_DimVars_netcdf
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
          nlevs_fullmet,nlevs_fullmet,levs_code,nlev_coords_detected,levs_fullmet_sp,&
          p_fullmet_sp,x_fullmet_sp,y_fullmet_sp,MR_dx_met,MR_dy_met,&
          z_approx,dx_met_const,dy_met_const,&
@@ -100,7 +100,7 @@
         end subroutine MR_Set_Met_Dims_Template_netcdf
       END INTERFACE
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Read_Met_DimVars_netcdf         ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -481,7 +481,7 @@
             nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
             if(nSTAT.ne.NF90_NOERR)then
               call MR_NC_check_status(nSTAT,0,"inq_varid")
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)'  Cannot find variable ',trim(adjustl(invar))
                 write(outlog(io),*)'  Testing for known synonyms'
               endif;enddo
@@ -491,7 +491,7 @@
               invar = Met_var_NC_names(ivar)
               nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
               if(nSTAT.ne.NF90_NOERR)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                   write(outlog(io),*)'  Cannot find variable ',trim(adjustl(invar))
                 endif;enddo
                 Met_var_IsAvailable(ivar) = .false.
@@ -503,7 +503,7 @@
                       ndims = var_ndims)   ! get the number of dimensions
             if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable")
             if(var_ndims.ne.Met_var_ndim(ivar))then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: The actual number of dimensions differs from'
                 write(errlog(io),*)'          what is expected'
                 write(errlog(io),*)'      Variable : ',ivar,Met_var_NC_names(ivar)
@@ -538,7 +538,7 @@
                  index(dimname,'g4_lon_3') .eq.0.and.&
                  index(dimname,'west_east').eq.0.and.&
                  index(dimname,trim(adjustl(Met_dim_names(4)))).eq.0)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(outlog(io),*)'MR WARNING: Name of assumed x dimension does not'
                   write(outlog(io),*)'            match any expected names.  Please verify'
                   write(outlog(io),*)'            that this file is COORDS compliant.'
@@ -561,7 +561,7 @@
                 ! copy to local variable
                 !  This is a template code section only; no known x variables are in byte format
                 !x_fullmet_sp(1:nx_fullmet) =  real(temp1d_byte(1:nx_fullmet),kind=sp)
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR variable x is of type BYTE, but real value expected.'
                 endif;enddo
                 stop 1
@@ -574,7 +574,7 @@
                 ! copy to local variable
                 !  This is a template code section only; no known x variables are in char format
                 !x_fullmet_sp(1:nx_fullmet) =  real(temp1d_char(1:nx_fullmet),kind=sp)
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR variable x is of type CHAR, but real value expected.'
                 endif;enddo
                 stop 1
@@ -626,7 +626,7 @@
                 x_fullmet_sp(1:nx_fullmet) = real(temp1d_dp(1:nx_fullmet),kind=sp)
                 deallocate(temp1d_dp)
               else
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: Cannot recognize variable type for x'
                   if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
                   if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
@@ -648,7 +648,7 @@
                                              "units",xtype, length, attnum)
               if(nSTAT.ne.NF90_NOERR)then
                 call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute")
-                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                   write(outlog(io),*)'MR WARNING: Cannot find units ',dimname,nf90_strerror(nSTAT)
                 endif;enddo
               else
@@ -663,7 +663,7 @@
                   ! This is a lon/lat grid
                   IsLatLon_MetGrid  = .true.
                 else
-                  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                     write(errlog(io),*)"MR ERROR: Cannot determine if the grid is lon/lat or projected"
                   endif;enddo
                   stop 1
@@ -704,7 +704,7 @@
                  index(dimname,'g4_lat_2') .eq.0.and.&
                  index(dimname,'south_north').eq.0.and.&
                  index(dimname,trim(adjustl(Met_dim_names(3)))).eq.0)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(outlog(io),*)'MR WARNING: Name of assumed y dimension does not'
                   write(outlog(io),*)'            match any expected names.  Please verify'
                   write(outlog(io),*)'            that this file is COORDS compliant.'
@@ -727,7 +727,7 @@
                 ! copy to local variable
                 !  This is a template code section only; no known y variables are in byte format
                 !y_fullmet_sp(1:ny_fullmet) =  real(temp1d_byte(1:ny_fullmet),kind=sp)
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR variable x is of type BYTE, but real value expected.'
                 endif;enddo
                 stop 1
@@ -740,7 +740,7 @@
                 ! copy to local variable
                 !  This is a template code section only; no known y variables are in char format
                 !y_fullmet_sp(1:ny_fullmet) =  real(temp1d_char(1:ny_fullmet),kind=sp)
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR variable x is of type CHAR, but real value expected.'
                 endif;enddo
                 stop 1
@@ -792,7 +792,7 @@
                 y_fullmet_sp(1:ny_fullmet) = real(temp1d_dp(1:ny_fullmet),kind=sp)
                 deallocate(temp1d_dp)
               else
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: Cannot recognize variable type for y'
                   if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
                   if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
@@ -814,7 +814,7 @@
                                              "units",xtype, length, attnum)
               if(nSTAT.ne.NF90_NOERR)then
                 call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute Y units")
-                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                   write(outlog(io),*)'MR WARNING: Cannot find units ',dimname,nf90_strerror(nSTAT)
                 endif;enddo
               else
@@ -828,7 +828,7 @@
                   ! This is a lon/lat grid
                   IsLatLon_MetGrid  = .true.
                 else
-                  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                     write(errlog(io),*)"MR ERROR: Cannot determine if the grid is lon/lat or projected"
                   endif;enddo
                   stop 1
@@ -872,7 +872,7 @@
                if(index(dimname,'time')        .eq.0.and.&        ! Check this dimension against known names
                   index(dimname,'Time')        .eq.0.and.&
                   index(dimname,trim(adjustl(Met_dim_names(1)))).eq.0)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(outlog(io),*)'MR WARNING: Name of assumed t dimension does not'
                   write(outlog(io),*)'            match any expected names.  Please verify'
                   write(outlog(io),*)'            that this file is COORDS compliant.'
@@ -938,7 +938,7 @@
               endif
             else
               call MR_NC_check_status(nSTAT,0,"nf90_inq_varid")
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: level coordinate is not in pos. 3 for ',invar
                 write(errlog(io),*)'          Expected one of: lev, level, isobaric, pressure,'
                 write(errlog(io),*)'            pressure_level,height, depth, lv_ISBL1,'
@@ -981,7 +981,7 @@
                 ! copy to local variable
                 !  This is a template code section only; no known p variables are in byte format
                 !levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_byte(1:nlevs_fullmet(idx)),kind=sp)
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR variable level is of type BYTE, but real value expected.'
                 endif;enddo
                 stop 1
@@ -994,7 +994,7 @@
                 ! copy to local variable
                 !  This is a template code section only; no known p variables are in char format
                 !levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_char(1:nlevs_fullmet(idx)),kind=sp)
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR variable level is of type CHAR, but real value expected.'
                 endif;enddo
                 stop 1
@@ -1046,7 +1046,7 @@
                 levs_fullmet_sp(idx,1:nlevs_fullmet(idx)) = real(temp1d_dp(1:nlevs_fullmet(idx)),kind=sp)
                 deallocate(temp1d_dp)
               else
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: Cannot recognize variable type for level'
                   if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
                   if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
@@ -1068,7 +1068,7 @@
                                              "units",xtype, length, attnum)
               call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute level units")
               if(nSTAT.ne.NF90_NOERR)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: cannot find dim units ',dimname,nf90_strerror(nSTAT)
                 endif;enddo
                 IsPressureDimension = .false.
@@ -1119,7 +1119,7 @@
         !-----------------------------------------
 
         ! Now report on what we've found
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)" Found these levels"
           write(outlog(io),*)"  VaribleID    LevelIdx       dimID      length"
           do ivar = 1,MR_MAXVARS
@@ -1225,7 +1225,7 @@
       enddo
       MR_Max_geoH_metP_predicted = z_approx(np_fullmet)
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Dimension info:"
         write(outlog(io),*)"  record (time): ",nt_fullmet
         write(outlog(io),*)"  level  (z)   : ",np_fullmet
@@ -1254,7 +1254,7 @@
         yUR_fullmet = y_fullmet_sp(ny_fullmet)
       endif
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -1287,7 +1287,7 @@
       subroutine MR_Get_WRF_grid
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_debug1,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_debug1,&
          Met_Proj_lat,Met_Proj_lon,x_fullmet_sp,y_fullmet_sp,nx_fullmet,ny_fullmet,&
          MR_dx_met,MR_dy_met,p_fullmet_sp,np_fullmet,nlevs_fullmet,levs_code,&
          levs_fullmet_sp,Met_var_zdim_idx,dx_met_const,dy_met_const,IsLatLon_MetGrid,&
@@ -1350,7 +1350,7 @@
         end subroutine MR_NC_check_status
       END INTERFACE
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Get_WRF_grid                    ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -1364,7 +1364,7 @@
         ! First set spatial (x/y) grid
         ! Open first windfile and assume all grids are the same
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"About to open first WRF file : ",MR_windfiles(1)
       endif;enddo
       nSTAT=nf90_open(trim(adjustl(MR_windfiles(1))),NF90_NOWRITE, ncid)
@@ -1423,7 +1423,7 @@
          !   POLE_LON
          !proj +proj=lcc +lon_0=-175.0 +lat_0=55.0 +lat_1=50.0 +lat_2=60.0 +R=6371.229
 
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  WRF projection detected: Lambert Conformal"
         endif;enddo
 
@@ -1520,7 +1520,7 @@
          !   TRUELAT2 (optional) = lat_2 # Cone intersects with the sphere
          !proj +proj=lcc +lon_0=-175.0 +lat_0=55.0 +lat_1=50.0 +lat_2=60.0 +R=6371.229
 
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  WRF projection detected: Polar Stereographic"
         endif;enddo
 
@@ -1618,7 +1618,7 @@
 
          !proj +proj=merc 
 
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  WRF projection detected: Mercator"
         endif;enddo
 
@@ -1704,15 +1704,15 @@
         !   pole_lon
         !   stand_lon
 
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  WRF projection detected: Lon-Lat"
         endif;enddo
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"WRF: MAP_PROJ=6 : Lon-Lat : Not implemented"
         endif;enddo
         stop 1
       else
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"The MAP_PROJ global attribute is either not present or is"
           write(errlog(io),*)"not a recognized projection."
         endif;enddo
@@ -1766,7 +1766,7 @@
       Met_var_zdim_idx(:)  = 1
       !Met_var_zdim_ncid(ivar) = var_dimIDs(i_dim)
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -1793,7 +1793,7 @@
       subroutine MR_Read_Met_Times_netcdf
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
          MR_windfile_starthour,MR_iwindfiles,y_fullmet_sp,ny_fullmet,x_fullmet_sp,nx_fullmet,&
          MR_windfiles_nt_fullmet,MR_windfile_stephour,Met_dim_names,&
          Met_dim_fac,Met_var_NC_names,MR_windfiles,Met_dim_IsAvailable,nt_fullmet,MR_iwindformat,&
@@ -1903,14 +1903,14 @@
         end subroutine MR_Set_iwind5_filenames
       END INTERFACE
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Read_Met_Times_netcdf           ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(.not.Met_dim_IsAvailable(1))then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: Time dimension is required and not listed"
           write(errlog(io),*)"          in template windfile specification file."
         endif;enddo
@@ -1994,7 +1994,7 @@
             call MR_NC_check_status(nSTAT,0,"nf90_open")
             if(iw.eq.1)then
               ! Do a hard stop if we can't even read the first file
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: nf90_open: ',nf90_strerror(nSTAT)
                 write(errlog(io),*)"    Could not open file: ",trim(adjustl(Z_infile))
                 write(errlog(io),*)'Exiting'
@@ -2002,7 +2002,7 @@
               stop 1
             else
               ! This is probably OK as long as the sim time is within the first file
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)'MR WARNING: nf90_open: ',nf90_strerror(nSTAT)
                 write(outlog(io),*)"    Could not open file: ",trim(adjustl(Z_infile))
                 write(outlog(io),*)"    This should be OK if the previous file exits."
@@ -2034,7 +2034,7 @@
           nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
           if(nSTAT.ne.NF90_NOERR)then
             call MR_NC_check_status(nSTAT,0,"inq_varid")
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)'  Cannot find variable ',trim(adjustl(invar))
               write(outlog(io),*)'  Testing for known synonyms'
             endif;enddo
@@ -2044,7 +2044,7 @@
             invar = Met_var_NC_names(ivar)
             nSTAT = nf90_inq_varid(ncid,invar,in_var_id)  ! get the var_id for this named variable
             if(nSTAT.ne.NF90_NOERR)then
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)'  Cannot find variable ',trim(adjustl(invar))
               endif;enddo
               Met_var_IsAvailable(ivar) = .false.
@@ -2090,7 +2090,7 @@
                     ndims = var_ndims)   ! get the number of dimensions
           if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable")
           if(var_ndims.ne.Met_var_ndim(ivar))then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)'MR ERROR: The actual number of dimensions differs from'
               write(errlog(io),*)'          what is expected'
               write(errlog(io),*)'      Variable : ',ivar,Met_var_NC_names(ivar)
@@ -2117,7 +2117,7 @@
              index(dimname,'g4_lon_3') .eq.0.and.&
              index(dimname,'west_east').eq.0.and.&
              index(dimname,trim(adjustl(Met_dim_names(4)))).eq.0)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(outlog(io),*)'MR WARNING: Name of assumed x dimension does not'
               write(outlog(io),*)'            match any expected names.  Please verify'
               write(outlog(io),*)'            that this file is COORDS compliant.'
@@ -2141,7 +2141,7 @@
              index(dimname,'g4_lat_2') .eq.0.and.&
              index(dimname,'south_north').eq.0.and.&
              index(dimname,trim(adjustl(Met_dim_names(3)))).eq.0)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(outlog(io),*)'MR WARNING: Name of assumed y dimension does not'
               write(outlog(io),*)'            match any expected names.  Please verify'
               write(outlog(io),*)'            that this file is COORDS compliant.'
@@ -2161,7 +2161,7 @@
           if(index(dimname,'time')        .eq.0.and.&        ! Check this dimension to see if it contains
              index(dimname,'Time')        .eq.0.and.&        ! 'time' or 'Time'
              index(dimname,trim(adjustl(Met_dim_names(1)))).eq.0)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(outlog(io),*)'MR WARNING: Name of assumed t dimension does not'
               write(outlog(io),*)'            match any expected names.  Please verify'
               write(outlog(io),*)'            that this file is COORDS compliant.'
@@ -2226,7 +2226,7 @@
           call date_and_time(VALUES=values)
           Current_Year = values(1)
           if(MR_Comp_StartYear.lt.Current_Year.and.nt_tst.lt.nt_fullmet)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"WARNING:  The NCEP files are for an archived year yet are incomplete."
               write(outlog(io),*)"          To get the complete year, run the script "
               write(outlog(io),*)"            autorun_scripts/get_NCEP_50YearReanalysis.sh",MR_Comp_StartYear
@@ -2251,7 +2251,7 @@
             nSTAT = nf90_open(trim(adjustl(MR_windfiles(iw))),NF90_NOWRITE,ncid)
             call MR_NC_check_status(nSTAT,0,"nf90_open WRF")
             if(nSTAT.ne.NF90_NOERR)then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: nf90_open to read header:', &
                                nf90_strerror(nSTAT)
                 write(errlog(io),*)'Could not open ',trim(adjustl(MR_windfiles(iw)))
@@ -2270,7 +2270,7 @@
               !   nf90_format_netcdf4
               !   nf90_format_netcdf4_classic
               NCv_datafile = formatNum
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)'  NWP file info:'
                 write(outlog(io),*)'    nDimensions    = ',nDimensions
                 write(outlog(io),*)'    nVariables     = ',nVariables
@@ -2297,7 +2297,7 @@
               ! first before giving up.
               if(nSTAT.ne.NF90_NOERR)then
                 call MR_NC_check_status(nSTAT,0,"inq_varid")
-                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                   write(outlog(io),*)'  Cannot find variable ',Met_var_NC_names(ivar)
                   write(outlog(io),*)'  Testing for known synonyms'
                 endif;enddo
@@ -2307,7 +2307,7 @@
                 invar = Met_var_NC_names(ivar)
                 nSTAT = nf90_inq_varid(ncid,invar,gph_var_id)  ! get the var_id for this named variable
                 if(nSTAT.ne.NF90_NOERR)then
-                  do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                     write(outlog(io),*)'  Cannot find variable ',invar
                   endif;enddo
                   call MR_NC_check_status(nSTAT,1,"nf90_inq_varid GPH")
@@ -2318,7 +2318,7 @@
               nSTAT = nf90_inquire_variable(ncid, gph_var_id, dimids = gph_DimIDs(:gph_ndims))
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable GPH")
               if(gph_ndims.lt.4)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR:'
                   write(errlog(io),*)'GPH variable does not have 4 dimensions.'
                   write(errlog(io),*)'Expecting time, level, y, x'
@@ -2333,7 +2333,7 @@
                 Met_dim_names(1)= trim(adjustl(indim))
               else
                 if(trim(adjustl(Met_dim_names(1))).ne.trim(adjustl(indim)))then
-                  do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                  do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                     write(outlog(io),*)" MR WARNING: time dimension name changed from first file."
                   endif;enddo
                 endif
@@ -2344,7 +2344,7 @@
                 ! Get length of time dimension and allocate MR_windfile_stephour
                 nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_fullmet)
                 call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Time")
-                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                   write(outlog(io),*)"  Assuming all NWP files have the same number of steps."
                   write(outlog(io),*)"   Allocating time arrays for ",MR_iwindfiles,"files(s)"
                   write(outlog(io),*)"                              ",nt_fullmet,"step(s) each"
@@ -2367,7 +2367,7 @@
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable Times")
               allocate(filetime_in_sp(nt_fullmet))
               if(nt_fullmet.gt.1)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)"MR ERROR: Currently WRF files are expected to only have one"
                   write(errlog(io),*)"       timestep/file"
                 endif;enddo
@@ -2387,7 +2387,7 @@
                               itstart_year,itstart_month,itstart_day, &
                               itstart_hour,itstart_min,itstart_sec
             if(iostatus.ne.0)then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR:  Error reading time string from WRF file'
                 write(errlog(io),*)'           Expecting to read: iy,im,id,ih,imm,is'
                 write(errlog(io),*)'           with format: i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x'
@@ -2402,7 +2402,7 @@
             if(itstart_year.lt.MR_BaseYear)then
               ! reset base year to the century before
               MR_BaseYear = itstart_year - mod(itstart_year,100)
-              do io=1,2;if(VB(io).le.verbosity_info)then
+              do io=1,2;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)"WARNING: Resetting MR_BaseYear to ",MR_BaseYear
               endif;enddo
             endif
@@ -2424,13 +2424,13 @@
           do iw = 1,MR_iwindfiles
             ! Each wind file needs a ref-time which in almost all cases is given
             ! in the 'units' attribute of the time variable
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)iw,trim(adjustl(MR_windfiles(iw)))
             endif;enddo
             nSTAT = nf90_open(trim(adjustl(MR_windfiles(iw))),NF90_NOWRITE,ncid)
             call MR_NC_check_status(nSTAT,0,"nf90_open")
             if(nSTAT.ne.NF90_NOERR)then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: nf90_open to read header:', &
                                nf90_strerror(nSTAT)
                 write(errlog(io),*)'Could not open ',trim(adjustl(MR_windfiles(iw)))
@@ -2450,7 +2450,7 @@
               !   nf90_format_netcdf4
               !   nf90_format_netcdf4_classic
               NCv_datafile = formatNum
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)'  NWP file info:'
                 write(outlog(io),*)'    nDimensions    = ',nDimensions
                 write(outlog(io),*)'    nVariables     = ',nVariables
@@ -2479,7 +2479,7 @@
             ! first before giving up.
             if(nSTAT.ne.NF90_NOERR)then
               call MR_NC_check_status(nSTAT,0,"inq_varid")
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)'  Cannot find variable ',Met_var_NC_names(ivar)
                 write(outlog(io),*)'  Testing for known synonyms'
               endif;enddo
@@ -2489,7 +2489,7 @@
               invar = Met_var_NC_names(ivar)
               nSTAT = nf90_inq_varid(ncid,invar,gph_var_id)  ! get the var_id for this named variable
               if(nSTAT.ne.NF90_NOERR)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                   write(outlog(io),*)'  Cannot find variable ',invar
                 endif;enddo
                 call MR_NC_check_status(nSTAT,1,"nf90_inq_varid GPH")
@@ -2500,7 +2500,7 @@
             nSTAT = nf90_inquire_variable(ncid, gph_var_id, dimids = gph_DimIDs(:gph_ndims))
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_variable GPH")
             if(gph_ndims.lt.4)then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR:'
                 write(errlog(io),*)'GPH variable does not have 4 dimensions.'
                 write(errlog(io),*)'Expecting time, level, y, x'
@@ -2522,7 +2522,7 @@
               Met_dim_names(2)= trim(adjustl(indim))
             else
               if(trim(adjustl(Met_dim_names(2))).ne.trim(adjustl(indim)))then
-                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                   write(outlog(io),*)" MR WARNING: level dimension name changed from first file."
                 endif;enddo
               endif
@@ -2534,7 +2534,7 @@
               Met_dim_names(1)= trim(adjustl(indim))
             else
               if(trim(adjustl(Met_dim_names(1))).ne.trim(adjustl(indim)))then
-                do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                   write(outlog(io),*)" MR WARNING: time dimension name changed from first file."
                 endif;enddo
               endif
@@ -2545,7 +2545,7 @@
               ! Get length of time dimension and allocate MR_windfile_stephour
               nSTAT = nf90_Inquire_Dimension(ncid,t_dim_id,len=nt_fullmet)
               call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension Time")
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)"  Assuming all NWP files have the same number of steps."
                 write(outlog(io),*)"   Allocating time arrays for ",MR_iwindfiles,"files(s)"
                 write(outlog(io),*)"                              ",nt_fullmet,"step(s) each"
@@ -2567,7 +2567,7 @@
             else
               ! if the call to check units above failed, issue a warning
               call MR_NC_check_status(nSTAT,0,"nf90_Inquire_Attribute Time units")
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io)  ,*)'  Trying to read GRIB_orgReferenceTime'
               endif;enddo
               ! Try GRIB_orgReferenceTime
@@ -2607,7 +2607,7 @@
                                       itstart_year,itstart_month,itstart_day, &
                                       itstart_hour,itstart_min,itstart_sec
                     if(iostatus.ne.0)then
-                      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                      do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                         write(errlog(io),*)'MR ERROR:  Error reading time string from NetCDF file'
                         write(errlog(io),*)'           Expecting to read: iy,im,id,ih,imm,is'
                         write(errlog(io),*)'           with format: i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2'
@@ -2623,12 +2623,12 @@
                       if(iw.eq.1)then
                         ! If this is the first file, reset base year to the century before
                         MR_BaseYear = itstart_year - mod(itstart_year,100)
-                        do io=1,2;if(VB(io).le.verbosity_info)then
+                        do io=1,2;if(MR_VB(io).le.verbosity_info)then
                           write(outlog(io),*)"WARNING: Resetting MR_BaseYear to ",MR_BaseYear
                         endif;enddo
                       else
                         ! If the base year of subsequent files changes, issue an error
-                        do io=1,2;if(VB(io).le.verbosity_error)then
+                        do io=1,2;if(MR_VB(io).le.verbosity_error)then
                           write(outlog(io),*)"MR ERROR: BaseYear of this file does not agree with previous."
                           write(outlog(io),*)"   BaseYear of file ",1,MR_BaseYear
                           write(outlog(io),*)"   BaseYear of file ",iw,itstart_year
@@ -2636,7 +2636,7 @@
                         stop 1
                       endif
                     endif
-                    do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                    do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                       write(outlog(io),2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
                                                itstart_hour,itstart_min,itstart_sec
                     endif;enddo
@@ -2656,7 +2656,7 @@
               nSTAT = nf90_inq_varid(ncid,'reftime',reftime_var_id)
               call MR_NC_check_status(nSTAT,0,"nf90_inq_varid reftime")
               if(nSTAT.ne.NF90_NOERR)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)"MR ERROR:  Could not read time:units or reftime"
                   write(errlog(io),*)"        Windfile start time is not defined."
                 endif;enddo
@@ -2675,7 +2675,7 @@
               nSTAT = nf90_get_var(ncid,reftime_var_id,tstring2(:reftimedimlen))
               call MR_NC_check_status(nSTAT,0,"nf90_get_var reftime")
               if(nSTAT.ne.0)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)"MR ERROR:  Could not read reftime"
                   write(errlog(io),*)"        Windfile start time is not defined."
                 endif;enddo
@@ -2684,14 +2684,14 @@
               if(index(tstring2,'20').ne.0.or.index(tstring2,'19').ne.0)then
                 do i=1,reftimedimlen-1
                   if(tstring2(i:i+1).eq.'20'.or.tstring2(i:i+1).eq.'19')then
-                    do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                    do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                       write(outlog(io),*)"Found reference time: ",tstring2(i:reftimedimlen)
                     endif;enddo
                     read(tstring2(i:reftimedimlen),103,iostat=iostatus,iomsg=iomessage)&
                                       itstart_year,itstart_month,itstart_day, &
                                       itstart_hour,itstart_min,itstart_sec
                     if(iostatus.ne.0)then
-                      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                      do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                         write(errlog(io),*)'MR ERROR:  Error reading time string from NetCDF file'
                         write(errlog(io),*)'           Expecting to read: iy,im,id,ih,imm,is'
                         write(errlog(io),*)'           with format: i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2'
@@ -2707,12 +2707,12 @@
                       if(iw.eq.1)then
                         ! If this is the first file, reset base year to the century before
                         MR_BaseYear = itstart_year - mod(itstart_year,100)
-                        do io=1,2;if(VB(io).le.verbosity_info)then
+                        do io=1,2;if(MR_VB(io).le.verbosity_info)then
                           write(outlog(io),*)"WARNING: Resetting MR_BaseYear to ",MR_BaseYear
                         endif;enddo
                       else
                         ! If the base year of subsequent files changes, issue an error
-                        do io=1,2;if(VB(io).le.verbosity_error)then
+                        do io=1,2;if(MR_VB(io).le.verbosity_error)then
                           write(outlog(io),*)"MR ERROR: BaseYear of this file does not agree with previous."
                           write(outlog(io),*)"   BaseYear of file ",1,MR_BaseYear
                           write(outlog(io),*)"   BaseYear of file ",iw,itstart_year
@@ -2720,7 +2720,7 @@
                         stop 1
                       endif
                     endif
-                    do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+                    do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                       write(outlog(io),2100)"Ref time = ",itstart_year,itstart_month,itstart_day, &
                                                itstart_hour,itstart_min,itstart_sec
                     endif;enddo
@@ -2782,7 +2782,7 @@
                                                            Met_dim_fac(1)
               deallocate(dum1d_dp)
             else
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)"MR ERROR: Unexpected time variable type ",Met_dim_names(i)
                 if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
                 if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
@@ -2811,7 +2811,7 @@
       endif  ! MR_iwind = 5 v.s. 3/4
       ! Finished setting up the start time of each wind file in HoursSince : MR_windfile_starthour(iw)
       !  and the forecast (offset from start of file) for each step        : MR_windfile_stephour(iw,iwstep)
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         if (MR_iwind.ne.5)then
           write(outlog(io),*)"  File,  step,        Ref,     Offset,  HoursSince"
           do iw = 1,MR_iwindfiles
@@ -2826,7 +2826,7 @@
 
  800  format(i7,i7,3f12.2)
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -2849,7 +2849,7 @@
       subroutine MR_Set_iwind5_filenames(inhour,ivar,infile)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug1,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_debug1,&
          Met_var_NC_names,MR_BaseYear,MR_useLeap,MR_iwindformat,MR_iw5_prefix,MR_iw5_root,&
          MR_DirDelim,MR_DirDelim,MR_iw5_suffix1,MR_iw5_suffix2,&
          MR_Use_RDA,MR_RDAcode,MR_iversion
@@ -2888,7 +2888,7 @@
         end function HS_DayOfEvent
       END INTERFACE
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Set_iwind5_filenames            ----------"
         write(outlog(io),*)inhour,ivar
@@ -2901,7 +2901,7 @@
          ivar.ne.4.and. &
          ivar.ne.5.and. &
          ivar.ne.7)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: iwind=5 only compatible with the following variables:"
           write(errlog(io),*)"  ivar = 1 :: ",Met_var_NC_names(1)
           write(errlog(io),*)"  ivar = 2 :: ",Met_var_NC_names(2)
@@ -3131,7 +3131,7 @@
  430    format(a50,a1,i4,a1,a,a24)
       endif
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_debug1)then
         write(outlog(io),*)" Set filename to : ",trim(adjustl(infile))
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
@@ -3155,7 +3155,7 @@
       subroutine MR_Set_Met_Dims_Template_netcdf
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
          fill_value_sp,FoundFillVAttr,Met_dim_IsAvailable,Met_var_NC_names,MR_windfiles,&
          nt_fullmet,Met_dim_names
 
@@ -3192,7 +3192,7 @@
         end subroutine MR_NC_check_status
       END INTERFACE
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Set_Met_Dims_Template_netcdf    ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -3202,20 +3202,20 @@
       ! windfiles.  There is no checking if this is actually the case.
       ! Just read the first windfile.
       iw = 1
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Opening ",iw,trim(adjustl(MR_windfiles(iw)))
       endif;enddo
       nSTAT = nf90_open(trim(adjustl(MR_windfiles(iw))),NF90_NOWRITE,ncid)
       call MR_NC_check_status(nSTAT,0,"nf90_open")
       if(nSTAT.ne.NF90_NOERR)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)'MR ERROR: nf90_open to read header:', nf90_strerror(nSTAT)
           write(errlog(io),*)'Could not open ',trim(adjustl(MR_windfiles(iw)))
           write(errlog(io),*)'Exiting'
         endif;enddo
         stop 1
       else
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Opened ",trim(adjustl(MR_windfiles(iw)))
         endif;enddo
       endif
@@ -3236,7 +3236,7 @@
       !  are read, but for now, we just want the dimension size
       i = 1
       if(.not.Met_dim_IsAvailable(i))then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: TIME dimension is required and not listed"
           write(errlog(io),*)"          in template windfile specification file."
         endif;enddo
@@ -3265,7 +3265,7 @@
           nSTAT = nf90_get_att(ncid, var_id,"_FillValue",dum_sp)
           call MR_NC_check_status(nSTAT,1,"nf90_get_att _FillValue")
           fill_value_sp = dum_sp
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"    Found fill value",fill_value_sp
           endif;enddo
           exit  ! if we've found _FillValue, then break out of the do loop
@@ -3275,7 +3275,7 @@
       nSTAT = nf90_close(ncid)
       call MR_NC_check_status(nSTAT,0,"nf90_close")
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -3294,7 +3294,7 @@
       subroutine MR_Read_MetP_Variable_netcdf(ivar,istep)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_debug1,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_debug1,&
          MR_geoH_metP_next,MR_geoH_metP_last,levs_fullmet_sp,Met_var_zdim_idx,nlevs_fullmet,&
          temp3d_sp,temp3d_dp,MR_MetStep_File,Met_var_NC_names,MR_MetStep_tindex,&
          MR_MetStep_findex,Met_var_IsAvailable,wrapgrid,z_inverted,MR_MetStep_Hour_since_baseyear,&
@@ -3368,7 +3368,7 @@
         end subroutine MR_Set_iwind5_filenames
       END INTERFACE
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Read_MetP_Variable_netcdf       ----------"
         write(outlog(io),*)" istep = ",istep
@@ -3377,7 +3377,7 @@
       endif;enddo
 
       if(.not.Met_var_IsAvailable(ivar))then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR:  Variable not available for this windfile"
           write(errlog(io),*)"             ivar = ",ivar
           write(errlog(io),*)"            vname = ",Met_var_NC_names(ivar)
@@ -3390,7 +3390,7 @@
       iwstep = MR_MetStep_tindex(istep)
 
       if(Met_var_NC_names(ivar).eq."")then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"Variable ",ivar," not available for MR_iwindformat = ",&
                     MR_iwindformat
         endif;enddo
@@ -3473,14 +3473,14 @@
       write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&
                          ", file = ",iw,&
                          ", slice = ",iwstep
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Reading ",trim(adjustl(invar))," from file : ",&
                 trim(adjustl(infile)),fileposstr
       endif;enddo
       nSTAT = nf90_open(trim(adjustl(infile)),NF90_NOWRITE,ncid)
       call MR_NC_check_status(nSTAT,0,"nf90_open")
       if(nSTAT.ne.NF90_NOERR)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)'MR ERROR open file:',infile,nf90_strerror(nSTAT)
           write(errlog(io),*)trim(adjustl(infile)),NF90_NOWRITE,ncid,nSTAT
           write(errlog(io),*)'Exiting'
@@ -3571,7 +3571,7 @@
                MR_iwindformat.ne.27.and.&
                MR_iwindformat.ne.29.and.&
                MR_iwindformat.ne.30)then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: expecting to read iw=5 with an incompatible'
                 write(errlog(io),*)'          iwindforamt.'
                 write(errlog(io),*)'iwind       = ',MR_iwind
@@ -3600,7 +3600,7 @@
             !elseif(var_xtype.eq.NF90_DOUBLE)then
             !  This is a place-holder for a NWP file that stores variables as doubles
             else
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: Cannot recognize variable type for x'
                 if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
                 if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
@@ -3628,7 +3628,7 @@
                        start = (/iistart(i),jstart,1,iwstep/),       &
                        count = (/iicount(i),ny_submet,np_met_loc+1,1/))
               call MR_NC_check_status(nSTAT,0,"nf90_get_var PHB")
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)istep,"Reading ","PH"," from file : ",trim(adjustl(infile))
               endif;enddo
               nSTAT = nf90_inq_varid(ncid,"PH",in_var_id2)
@@ -3683,7 +3683,7 @@
                 !    and   kappa = R/c_p = 0.2854 (for dry air)
                 ! Temp lives on non-staggered grid, but we need pres. base and pert.
                 ! First get PB (base pressure)
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)istep,"Reading ","PB"," from file : ",trim(adjustl(infile))
               endif;enddo
               nSTAT = nf90_inq_varid(ncid,"PB",in_var_id1)
@@ -3693,7 +3693,7 @@
                        count = (/iicount(i),ny_submet,np_met_loc,1/))
               call MR_NC_check_status(nSTAT,0,"nf90_get_var PB")
                 ! Now get P (perturbation pressure)
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)istep,"Reading ","P"," from file : ",trim(adjustl(infile))
               endif;enddo
               nSTAT = nf90_inq_varid(ncid,"P",in_var_id2)
@@ -3739,12 +3739,12 @@
               MR_dum3d_metP(:,:,:) = temp3d_sp(:,:,:,1)
             else
             ! for any other 3d WRF variable, assume non-staggered grid
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)istep,"Reading ","ivar"," from file : ",trim(adjustl(infile))
               endif;enddo
               !varname = 
               !nSTAT = nf90_inq_varid(ncid,varname,in_var_id1)
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: Need varname for WRF variable > ivar=6'
               endif;enddo
               stop 1
@@ -3773,7 +3773,7 @@
                        count = (/iicount(i),ny_submet,np_met_loc,1/))
               call MR_NC_check_status(nSTAT,0,"nf90_get_var float")
               if(nSTAT.ne.NF90_NOERR)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: get_var: ',nf90_strerror(nSTAT)
                   write(errlog(io),*)i
                   write(errlog(io),*)ileft(i),iright(i)
@@ -3785,7 +3785,7 @@
             !elseif(var_xtype.eq.NF90_DOUBLE)then
             !  This is a place-holder for a NWP file that stores variables as doubles
             else
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: Cannot recognize variable type for x'
                 if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
                 if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
@@ -3839,7 +3839,7 @@
                                       real(temp3d_dp(1:nx_submet,j,1:np_met_loc,1),kind=sp)
               endif
             else
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)'MR ERROR: Cannot recognize variable type for x'
                 if(var_xtype.eq.NF90_BYTE)  write(errlog(io),*)"NF90_BYTE = "  ,NF90_BYTE
                 if(var_xtype.eq.NF90_CHAR)  write(errlog(io),*)"NF90_CHAR = "  ,NF90_CHAR
@@ -3951,7 +3951,7 @@
           do j=1,ny_submet
             do k=1,np_met_loc
               if(ieee_is_nan(MR_dum3d_metP(i,j,k)))then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: Domain contains NaN values'
                   write(errlog(io),*)'   Please inspect the NWP file for valid doamin.'
                   write(errlog(io),*)'   i=',i,x_submet_sp(i)
@@ -4080,7 +4080,7 @@
                 if(abs(del_H).gt.MR_EPS_SMALL)then
                   dpdz  = del_P/del_H
                 else
-                  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                  do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                     write(errlog(io),*)'MR ERROR: failed to calculate dpdz'
                     write(errlog(io),*)i,j,k,del_P,del_H
                     write(errlog(io),*)MR_geoH_metP_last(i,j,:)
@@ -4101,7 +4101,7 @@
       MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_met_loc) =  &
         MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_met_loc) * Met_var_conversion_factor(ivar)
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -4124,7 +4124,7 @@
       subroutine MR_NC_check_status(nSTAT, errcode, operation)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info
 
       use netcdf
 
@@ -4146,11 +4146,11 @@
 
       if (nSTAT.eq.nf90_noerr) return
       if (errcode.eq.0)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io) ,*)severity,errcode,operation,' :: ',trim(adjustl(nf90_strerror(nSTAT)))
         endif;enddo
       else
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io) ,*)severity,errcode,operation,' :: ',trim(adjustl(nf90_strerror(nSTAT)))
         endif;enddo
       endif
@@ -4177,7 +4177,7 @@
 
       use MetReader,       only : &
          Met_var_NC_names,Met_var_IsAvailable,Met_gridtype,MR_nio,&
-         VB,verbosity_production,outlog
+         MR_VB,verbosity_production,outlog
 
       use netcdf
 
@@ -4613,12 +4613,12 @@
       if(index(Met_var_NC_names(ivar),'reset').ne.0)then
         ! If this variable still contains 'reset', then we couldn't find a
         ! synonym. Flag as unavailable
-        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
           write(outlog(io),*)'  Setting Met_var_IsAvailable to .false.'
         endif;enddo
         Met_var_IsAvailable(ivar) = .false.
       else
-        do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
           write(outlog(io),*)'  Variable name has been reset to: ',Met_var_NC_names(ivar)
         endif;enddo
       endif

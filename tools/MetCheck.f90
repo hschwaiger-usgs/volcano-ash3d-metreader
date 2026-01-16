@@ -25,7 +25,7 @@
       program MetCheck
 
       use MetReader,       only : &
-         MR_nio,VB,verbosity_error,verbosity_info,verbosity_production,errlog,outlog,&
+         MR_nio,MR_VB,verbosity_error,verbosity_info,verbosity_production,errlog,outlog,&
          MR_BaseYear,MR_useLeap,MR_nio,MR_Comp_StartHour,MR_Comp_Time_in_hours,&
          IsLatLon_MetGrid,Met_iprojflag,Met_k0,Met_lam0,Met_phi0,Met_phi1,Met_phi2,&
          Met_Re,MR_useCompGrid,MR_useCompTime,nt_fullmet,nx_fullmet,ny_fullmet,&
@@ -143,7 +143,7 @@
         ! Get wind product
         call get_command_argument(1, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read first command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -178,7 +178,7 @@
            iwf.ne.33.and.&
            iwf.ne.41.and.&
            iwf.ne.42)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: windformat not recognized"
             write(errlog(io),*)" iwf = ",iwf
           endif;enddo
@@ -188,7 +188,7 @@
         ! Get data format ID
         call get_command_argument(2, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read second command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -200,7 +200,7 @@
         ! Error-check idf
         if(idf.ne.2.and.&
            idf.ne.3)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Only netcdf (2) and grib (3) supported"
             write(errlog(io),*)" idf = ",idf
           endif;enddo
@@ -209,7 +209,7 @@
 
         call get_command_argument(3, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read third command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -224,7 +224,7 @@
         if(nargs.gt.3)then
           call get_command_argument(4, arg, length=inlen, status=iostatus)
           if(iostatus.ne.0)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR : Could not read fourth command-line argument"
               write(errlog(io),*)" arg = ",arg
             endif;enddo
@@ -239,7 +239,7 @@
         !MR_Comp_StartHour     = HS_hours_since_baseyear(iy,1,1,0.0_8,1900,.True.)
         !MR_Comp_Time_in_hours = 1.0
       endif
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Set up windfile data structure"
       endif;enddo
       if(iwf.eq.25)then
@@ -320,7 +320,7 @@
                 do p=1,np
                   tmp=MR_dum3d_metP(i,j,p)
                   if(tmp.lt.v1.or.tmp.gt.v2)then
-                    do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                    do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                       write(errlog(io),*)"MR ERROR reading value for ivar=",ivar
                       write(errlog(io),*)"         at i,j,p = ",i,j,p
                       write(errlog(io),*)"         Value read = ",tmp
@@ -355,7 +355,7 @@
 
       call MR_Reset_Memory
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"Program ended normally."
       endif;enddo
 
@@ -373,13 +373,13 @@
       subroutine Print_Usage
 
       use MetReader,       only : &
-         MR_nio,VB,verbosity_error,errlog,VB
+         MR_nio,MR_VB,verbosity_error,errlog,MR_VB
 
       implicit none
 
       integer :: io
 
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: not enough command-line arguments."
           write(errlog(io),*)"  Usage: MetCheck iwf idf filename [year]"
           write(errlog(io),*)"   where "

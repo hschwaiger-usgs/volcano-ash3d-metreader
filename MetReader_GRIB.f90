@@ -31,7 +31,7 @@
       subroutine MR_Read_Met_DimVars_GRIB
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
          MR_MAXVARS,x_fullmet_sp,y_fullmet_sp,nx_fullmet,ny_fullmet,&
          Met_var_zdim_idx,nlevs_fullmet,levs_code,levs_fullmet_sp,&
          p_fullmet_sp,np_fullmet,z_approx,&
@@ -127,14 +127,14 @@
         end subroutine MR_GRIB_check_status
       END INTERFACE
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Read_Met_DimVars_GRIB           ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(MR_iwind.eq.5)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR : ",&
               "GRIB reader not implemented for multi-timestep files."
           write(errlog(io),*)"         iwind=5 files are all multi-step"
@@ -149,7 +149,7 @@
           !   Assume all files have the same format
           ! Note: you can inspect the GRIB header using grib_dump tmp.grib2 > header.txt
 
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Opening GRIB file to find version number"
         endif;enddo
         iw = 1
@@ -187,7 +187,7 @@
 !        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
         count1=count1+1
         if (count1.gt.MAXGRIBREC) then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: too many GRIB messages"
             write(errlog(io),*)"          current limit set to ",MAXGRIBREC
           endif;enddo
@@ -199,7 +199,7 @@
 !      call codes_release(igribv(count1),nSTAT)
 !      if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"  Number of grib records found = ",count1
       endif;enddo
       zcount(:)     = 0
@@ -330,7 +330,7 @@
             call codes_get(igribv(ir),'jDirectionIncrementInDegrees',dum_dp,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get jDirectionIncrementInDegrees ")
             dy_met_const = real(dum_dp,kind=4)
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"Setting x grid starting at",Lon_start
               write(outlog(io),*)"with a spacing of ",dx_met_const
             endif;enddo
@@ -338,7 +338,7 @@
               x_fullmet_sp(i) = real(Lon_start,kind=sp)+ &
                                  (i-1)* dx_met_const
             enddo
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"Setting y grid starting at",Lat_start
               write(outlog(io),*)"with a spacing of ",dy_met_const
             endif;enddo
@@ -362,13 +362,13 @@
             ! For Gaussian grid, get the order
             call codes_get(igribv(ir),'N',gg_order,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get N ")
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"Detected regular_gg grid of order N=",gg_order
             endif;enddo
 
             if(gg_order.eq.128)then
               ! this is the N128 grid (512x256) used by ERA Interim
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)"Assuming this is ERA Interim; filling lon and lat"
               endif;enddo
               dx_met_const = 0.7031252_sp
@@ -418,7 +418,7 @@
           -88.76695_sp,-89.46282_sp /)
             elseif(gg_order.eq.80)then
               ! this is the N80 grid (320x160) used by ERA 20C
-              do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)"Assuming this is ERA 20C; filling lon and lat"
               endif;enddo
               dx_met_const = 1.125_sp
@@ -455,7 +455,7 @@
               ! We currently do not have a general gaussian grid calculator.
               ! Might incorporate this file at some point.
               ! https://github.com/NCAR/ncl/blob/develop/ni/src/lib/nfpfort/gaus.f
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)"MR ERROR: Need to fix grid reading for gg grids."
               endif;enddo
               stop 1
@@ -514,14 +514,14 @@
           elseif(index(dum_str,'albers').ne.0)then
             IsLatLon_MetGrid = .false.
             Met_iprojflag     = 2
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: Alber Equal Area not implemented"
             endif;enddo
             stop 1
           elseif(index(dum_str,'UTM').ne.0)then
             IsLatLon_MetGrid = .false.
             Met_iprojflag     = 3
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: UTM not implemented"
             endif;enddo
             stop 1
@@ -552,7 +552,7 @@
             Met_k0   =  0.933_8
             Met_Re   =  6371.229_8
           else
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)'MR ERROR: Cannot determine the projection from the GRIB file.'
             endif;enddo
             stop 1
@@ -579,21 +579,21 @@
             call PJ_proj_for(Lon_start,Lat_start, Met_iprojflag, &
                      Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
                      x_start,y_start)
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then   
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then   
               write(outlog(io),*)"Getting start coordinate for ",Lon_start,Lat_start
               write(outlog(io),*)" Projected coordinate = ",x_start,y_start
             endif;enddo
           endif
 
           if(.not.ReadGrid)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then   
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then   
               write(outlog(io),*)"Setting x grid starting at",x_start
               write(outlog(io),*)"with a spacing of ",dx_met_const
             endif;enddo
             do i = 0,nx_fullmet+1
               x_fullmet_sp(i) = real(x_start + (i-1)*dx_met_const,kind=sp)
             enddo
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then   
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then   
               write(outlog(io),*)"Setting y grid starting at",y_start
               write(outlog(io),*)"with a spacing of ",dy_met_const
             endif;enddo
@@ -838,7 +838,7 @@
         enddo
       endif
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then            
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then            
         write(outlog(io),*)" Found these levels"
         write(outlog(io),*)&
           "  VaribleID    LevelIdx       dimID      length"
@@ -872,7 +872,7 @@
         z_approx(k) = MR_Z_US_StdAtm(p_fullmet_sp(k))
       enddo
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then            
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then            
         write(outlog(io),*)"Dimension info:"
         write(outlog(io),*)"  record (time): ",nt_fullmet
         write(outlog(io),*)"  level  (z)   : ",np_fullmet
@@ -901,7 +901,7 @@
         yUR_fullmet = y_fullmet_sp(ny_fullmet)
       endif
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -930,7 +930,7 @@
       subroutine MR_Read_Met_Times_GRIB
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
          MR_windfile_starthour,MR_iwindfiles,MR_windfile_stephour,&
          MR_BaseYear,MR_useLeap,MR_Comp_StartYear,MR_iwindformat,nt_fullmet,&
          Met_dim_IsAvailable,MR_windfiles,MR_windfiles_nt_fullmet,MR_GRIB_Version
@@ -981,14 +981,14 @@
         end subroutine MR_GRIB_check_status
       END INTERFACE
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Read_Met_Times_GRIB             ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
       if(.not.Met_dim_IsAvailable(1))then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: Time dimension is required and not listed"
           write(errlog(io),*)"          in custom windfile specification file."
         endif;enddo
@@ -998,7 +998,7 @@
       allocate(MR_windfile_starthour(MR_iwindfiles))   ! MR_windfiles_IsAvailable
       if(MR_iwindformat.eq.27)then
         ! GRIB1 reader not yet working for NOAA-CIRES 20th Century Reanalysis
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: iwf=27 is a GRIB1 format."
           write(errlog(io),*)"       The GRIB1 reader is not yet working"
         endif;enddo
@@ -1007,7 +1007,7 @@
         ! Here the branch for when MR_iwindformat = 27
         ! First copy path read in to slot 2
         !if(MR_runAsForecast)then
-        !  do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        !  do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
         !    write(errlog(io),*)"MR ERROR: iwf=27 cannot be used for forecast runs."
         !    write(errlog(io),*)"          These are reanalysis files."
         !  endif;enddo
@@ -1049,14 +1049,14 @@
 
           ! Each wind file needs a ref-time which in almost all cases is given
           ! in the 'units' attribute of the time variable
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
             write(outlog(io),*)iw,trim(adjustl(MR_windfiles(iw)))
           endif;enddo
 
           if(iw.eq.1)then
             ! For now, assume one time step per file
             nt_fullmet = 1
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"  Assuming all NWP files have the same number of steps."
               write(outlog(io),*)"   For GRIB, assume one time step per file."
               write(outlog(io),*)"   Allocating time arrays for ",MR_iwindfiles,"file(s)"
@@ -1075,7 +1075,7 @@
           if(iw.eq.1) then
             call codes_get(igrib,'editionNumber',MR_GRIB_Version,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get editionNumber ")
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"Grib version = ",MR_GRIB_Version
             endif;enddo
           endif
@@ -1142,7 +1142,7 @@
 
       ! Finished setting up the start time of each wind file in HoursSince : MR_windfile_starthour(iw)
       !  and the forecast (offset from start of file) for each step        : MR_windfile_stephour(iw,iwstep)
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
         write(outlog(io),*)"  File,  step,        Ref,     Offset,  HoursSince"
         do iw = 1,MR_iwindfiles
           do iws = 1,nt_fullmet
@@ -1154,7 +1154,7 @@
       endif;enddo
  800  format(i7,i7,3f12.2)
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -1174,7 +1174,7 @@
       subroutine MR_Read_MetP_Variable_GRIB(ivar,istep)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_debug1,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_debug1,&
          np_fullmet,levs_fullmet_sp,nlevs_fullmet,MR_MetStep_File,temp3d_sp,&
          MR_dum3d_metP,temp2d_sp,MR_dum2d_met,MR_EPS_SMALL,MR_geoH_metP_last,&
          fill_value_sp,ilhalf_fm_l,ilhalf_nx,irhalf_fm_l,irhalf_nx,istart,jstart,&
@@ -1280,7 +1280,7 @@
         end subroutine MR_GRIB_check_status
       END INTERFACE
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Read_MetP_Variable_GRIB         ----------"
         write(outlog(io),*)ivar,istep
@@ -1288,7 +1288,7 @@
       endif;enddo
 
       if(.not.Met_var_IsAvailable(ivar))then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR:  Variable not available for this windfile"
           write(errlog(io),*)"             ivar = ",ivar
           write(errlog(io),*)"            vname = ",Met_var_GRIB_names(ivar)
@@ -1319,7 +1319,7 @@
         iv_paramN = Met_var_GRIB2_DPcPnSt(ivar,3)
         iv_typeSf = Met_var_GRIB2_DPcPnSt(ivar,4)
       else
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR:  GRIB type not determined"
         endif;enddo
         stop 1
@@ -1329,7 +1329,7 @@
       iwstep = MR_MetStep_tindex(istep)
 
       if(Met_var_GRIB_names(ivar).eq."")then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: Variable ",ivar,&
                     " not available for MR_iwindformat = ",&
                     MR_iwindformat
@@ -1390,7 +1390,7 @@
 
       if(MR_iwindformat.eq.27)then
         ! Get correct GRIB1 file
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: iwf27 not working for GRIB1"
         endif;enddo
         stop 1
@@ -1413,7 +1413,7 @@
           write(index_file,126)trim(adjustl(MR_MetStep_File(istep))), &
                            "pgrbanl_mean_",MR_iwind5_year(istep), &
                            "_VVEL_pres.nc"
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"+++++++++++++++++++++++++++++++++++++++++++"
             write(errlog(io),*)"  NEED TO FIX THIS Vz"
           endif;enddo
@@ -1440,7 +1440,7 @@
           write(index_file,127)trim(adjustl(MR_MetStep_File(istep))), &
                            "pgrbanl_mean_",MR_iwind5_year(istep), &
                            "_RH_pres.nc"
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"+++++++++++++++++++++++++++++++++++++++++++"
             write(errlog(io),*)"  NEED TO FIX THIS : RH"
           endif;enddo
@@ -1455,7 +1455,7 @@
                            "sflxgrbfg_mean_",MR_iwind5_year(istep), &
                            "_CPRAT_sfc.nc"
         else
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then 
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then 
             write(errlog(io),*)"MR ERROR : Requested variable not available."
           endif;enddo
           stop 1
@@ -1579,7 +1579,7 @@
           write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&
                          ", file = ",iw,&
                          ", slice = ",iwstep
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
             write(outlog(io),*)"Reading ",trim(adjustl(invar)),&
                   " from file : ",trim(adjustl(index_file)),fileposstr
           endif;enddo
@@ -1632,7 +1632,7 @@
                   call codes_get(igrib,'Nj',Nj,nSTAT)
                   if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Nj ")
                   if(nx_fullmet.ne.Ni)then
-                    do io=1,MR_nio;if(VB(io).le.verbosity_error)then 
+                    do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then 
                      write(errlog(io),*)"MR ERROR:  Grid is not the expected size"
                       write(errlog(io),*)"nx_fullmet = ",nx_fullmet
                       write(errlog(io),*)"Ni         = ",Ni
@@ -1640,7 +1640,7 @@
                     stop 1
                   endif
                   if(ny_fullmet.ne.Nj)then
-                    do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                    do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                       write(errlog(io),*)"MR ERROR:  Grid is not the expected size"
                       write(errlog(io),*)"ny_fullmet = ",ny_fullmet
                       write(errlog(io),*)"Nj         = ",Nj
@@ -1693,7 +1693,7 @@
           write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&
                          ", file = ",iw,&
                          ", slice = ",iwstep
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
             write(outlog(io),*)"Reading ",trim(adjustl(invar)),&
                   " from file : ",trim(adjustl(grib_file_path)),fileposstr
           endif;enddo
@@ -1729,7 +1729,7 @@
               if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Nj ")
 
               if(nx_fullmet.ne.Ni)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)"MR ERROR:  Grid is not the expected size"
                   write(errlog(io),*)"nx_fullmet = ",nx_fullmet
                   write(errlog(io),*)"Ni         = ",Ni
@@ -1737,7 +1737,7 @@
                 stop 1
               endif
               if(ny_fullmet.ne.Nj)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*) "MR ERROR:  Grid is not the expected size"
                   write(errlog(io),*)"ny_fullmet = ",ny_fullmet
                   write(errlog(io),*)"Nj         = ",Nj
@@ -1784,7 +1784,7 @@
           write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&
                          ", file = ",iw,&
                          ", slice = ",iwstep
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
             write(outlog(io),*)"Reading ",trim(adjustl(invar)),&
                   " from file : ",trim(adjustl(index_file)),fileposstr
           endif;enddo
@@ -1868,7 +1868,7 @@
               if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Nj ")
 
               if(nx_fullmet.ne.Ni)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)"MR ERROR:  Grid is not the expected size"
                   write(errlog(io),*)"nx_fullmet = ",nx_fullmet
                   write(errlog(io),*)"Ni         = ",Ni
@@ -1876,7 +1876,7 @@
                 stop 1
               endif
               if(ny_fullmet.ne.Nj)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)"MR ERROR:  Grid is not the expected size"
                   write(errlog(io),*)"ny_fullmet = ",ny_fullmet
                   write(errlog(io),*)"Nj         = ",Nj
@@ -1922,7 +1922,7 @@
         else
           ! We don't have/(can't make) the index file so scan all messages of the
           ! GRIB2 file
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then      
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
             write(outlog(io),*)"Reading ",trim(adjustl(invar)),&
                   " from file : ",trim(adjustl(grib_file_path))
           endif;enddo
@@ -1964,7 +1964,7 @@
               if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Nj ")
 
               if(nx_fullmet.ne.Ni)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)"MR ERROR:  Grid is not the expected size"
                   write(errlog(io),*)"nx_fullmet = ",nx_fullmet
                   write(errlog(io),*)"Ni         = ",Ni
@@ -1972,7 +1972,7 @@
                 stop 1
               endif
               if(ny_fullmet.ne.Nj)then
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*) "MR ERROR:  Grid is not the expected size"
                   write(errlog(io),*)"ny_fullmet = ",ny_fullmet
                   write(errlog(io),*)"Nj         = ",Nj
@@ -2053,7 +2053,7 @@
 !                         start = (/iistart(i),jstart,1,iwstep/),       &
 !                         count = (/iicount(i),ny_submet,1,1/))
 !                if(nSTAT.ne.0)then
-!                   do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+!                   do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
 !                     write(errlog(io),*)'MR ERROR: get_var: ',invar,nf90_strerror(nSTAT)
 !                   endif;enddo
 !                   stop 1
@@ -2071,7 +2071,7 @@
 !                         start = (/iistart(i),jstart,iwstep/),       &
 !                         count = (/iicount(i),ny_submet,1/))
 !                if(nSTAT.ne.0)then
-!                   do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+!                   do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
 !                     write(errlog(io),*)'MR ERROR: get_var: ',invar,nf90_strerror(nSTAT)
 !                   endif;enddo
 !                   stop 1
@@ -2213,7 +2213,7 @@
               if(abs(del_H).gt.MR_EPS_SMALL)then
                 dpdz  = del_P/del_H
               else
-                do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: failed to calculate dpdz'
                   write(errlog(io),*)i,j,k,del_P,del_H
                   write(errlog(io),*)MR_geoH_metP_last(i,j,:)
@@ -2227,7 +2227,7 @@
       endif
       MR_dum3d_metP = MR_dum3d_metP * Met_var_conversion_factor(ivar)
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_debug1)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_debug1)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -2250,7 +2250,7 @@
       subroutine MR_GRIB_check_status(nSTAT, errcode, operation)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error
+         MR_nio,MR_VB,outlog,errlog,verbosity_error
 
       use eccodes
 
@@ -2273,7 +2273,7 @@
 
       if (nSTAT == CODES_SUCCESS) return
       call codes_get_error_string(nSTAT,err_message)
-      do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
         if (errcode.eq.0)then
           write(outlog(io) ,*)severity,errcode,operation,' :: ',trim(adjustl(err_message))
         else

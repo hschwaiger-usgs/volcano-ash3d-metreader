@@ -21,7 +21,7 @@
       subroutine MR_Set_Met_NCEPGeoGrid(igrid)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_production,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_production,&
          IsLatLon_MetGrid,IsGlobal_MetGrid,IsRegular_MetGrid,IsGridRelative,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
          MR_iversion,MR_Reannalysis,Met_gridtype,Met_proj4
@@ -32,7 +32,7 @@
 
       integer :: io                           ! Index for output streams
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                          MR_Set_Met_NCEPGeoGrid   ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -816,13 +816,13 @@
         Met_Re            =  6371.229_8
 
       else
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: MR_Set_Met_NCEPGeoGrid called with invalid code."
         endif;enddo
         stop 1
       endif
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -858,7 +858,7 @@
       subroutine MR_Set_MetComp_Grids
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
          CompPoint_X_on_Met_sp,CompPoint_Y_on_Met_sp,x_comp_sp,x_submet_sp,nx_submet,&
          MR_dx_submet,y_submet_sp,ny_submet,MR_dy_submet,MR_u_ER_metP,theta_Met,&
          MR_dum2d_met_int,MR_dum2d_met,MR_dum3d_metP,MR_dum3d2_metP,MR_dum3d_metH,&
@@ -919,7 +919,7 @@
         end subroutine MR_Set_Met2Comp_Map
       END INTERFACE
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                 MR_Set_MetComp_Grids              ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -938,7 +938,7 @@
         xUR = x_comp_sp(nx_comp)
         yUR = y_comp_sp(ny_comp)
       else
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Met and comp grids differ:"
           write(outlog(io),2504)
           write(outlog(io),2505)x_comp_sp(1),&
@@ -980,7 +980,7 @@
         endif
       endif
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Region of Met grid required by comp grid (in Met coordinates):"
 
         write(outlog(io),2501)
@@ -1001,7 +1001,7 @@
         nx_submet = nx_fullmet
         istart = 1
         iend = nx_fullmet
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*) "Computational domain is periodic"
         endif;enddo
       else
@@ -1018,7 +1018,7 @@
             if(cond1.and.cond2) istart = i
           enddo
         else
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: xLL < x_fullmet_sp(1)"
             write(errlog(io),*)"     x_fullmet_sp(1) = ",x_fullmet_sp(1)
             write(errlog(io),*)"     xLL             = ",xLL
@@ -1037,7 +1037,7 @@
           enddo
         else
           if(.not.IsGlobal_MetGrid)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: xUR > x_fullmet_sp(nx_fullmet)"
               write(errlog(io),*)"     x_fullmet_sp(nx_fullmet) = ",x_fullmet_sp(nx_fullmet)
               write(errlog(io),*)"     xUR                      = ",xUR
@@ -1056,14 +1056,14 @@
               if(cond1.and.cond2) iend = nx_fullmet+i+1
             enddo
           else
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: could not find iend"
             endif;enddo
             stop 1
           endif
         endif
         nx_submet = iend-istart+1
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*) "Domain is NOT periodic"
         endif;enddo
       endif
@@ -1072,7 +1072,7 @@
       !  (either the prime or anti-meridian)
       if(iend.le.nx_fullmet)then        !yes
         wrapgrid = .false.
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Comp grid maps within a contiguous region of the Met grid"
           write(outlog(io),*)"           wrapgrid = ",wrapgrid
           write(outlog(io),*)"Met Sub grid specifications:"
@@ -1095,7 +1095,7 @@
           irhalf_fm_r = nx_submet - ilhalf_nx         ! end index of right half on full met grid
           irhalf_nx   = irhalf_fm_r - irhalf_fm_l +1  ! width of right half
 
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Comp grid span beyond the upper end of the Met grid"
             write(outlog(io),*)"           wrapgrid = ",wrapgrid
             write(outlog(io),*)"Met Sub grid specifications:"
@@ -1114,7 +1114,7 @@
             write(outlog(io),*)"         xsubMetMax = ",x_fullmet_sp(irhalf_fm_r)
           endif;enddo
         else
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Comp grid requirements extend beyond Met grid"
             write(errlog(io),*)"                xLL = ",xLL
             write(errlog(io),*)"                xUR = ",xUR
@@ -1126,7 +1126,7 @@
           stop 1
         endif
       endif
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"-------------"
       endif;enddo
 
@@ -1157,7 +1157,7 @@
             jstart = 1
             y_pad_North = .true.
           else
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: yUR > y_fullmet_sp(1)"
               write(errlog(io),*)"     y_fullmet_sp(1).gt.yUR", &
                          y_fullmet_sp(1),yUR
@@ -1181,7 +1181,7 @@
             jend = ny_fullmet
             y_pad_South = .true.
           else
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: y_fullmet_sp(ny_fullmet).lt.yLL",&
                                 y_fullmet_sp(ny_fullmet),yLL
             endif;enddo
@@ -1207,7 +1207,7 @@
             jstart = 1
             y_pad_North = .true.
           else
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: yLL < y_fullmet_sp(1)"
               write(errlog(io),*)"y_fullmet_sp(1) ",y_fullmet_sp(1)
               write(errlog(io),*)"yLL",yLL
@@ -1229,7 +1229,7 @@
             jend = ny_fullmet
             y_pad_South = .true.
           else
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then          
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then          
               write(errlog(io),*)"MR ERROR: yUR > y_fullmet_sp(ny_fullmet)"
               write(errlog(io),*)"y_fullmet_sp(my_fullmet)",y_fullmet_sp(ny_fullmet)
               write(errlog(io),*)"yUr",yUr
@@ -1242,7 +1242,7 @@
       ! Calculate size of arrays that will hold the relevant section of
       ! the mesoscale model
       ny_submet = jend-jstart+1
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"-------------"
         write(outlog(io),*)"             jstart =" ,jstart
         write(outlog(io),*)"               jend =" ,jend
@@ -1300,7 +1300,7 @@
       enddo
 
       ! Set up for interpolation if needed
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)" Calculating mapping of comp "
       endif;enddo
       x_start_sub = x_submet_sp(1)
@@ -1341,7 +1341,7 @@
           endif
           if(.not.IsPeriodic_CompGrid)then
             if(px.lt.x_start_sub.or.px.gt.x_submet_sp(nx_submet))then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then          
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then          
                 write(errlog(io),*)"MR ERROR: Comp point maps out of sub_Met in x."
                 write(errlog(io),*)"Comp i,j, x      :",i,j,px
                 write(errlog(io),*)"sub_Met xmin,xmax:",x_start_sub,x_submet_sp(nx_submet)
@@ -1350,7 +1350,7 @@
             endif
             if((py.lt.y_start_sub           .and..not.y_pad_South).or.&
                (py.gt.y_submet_sp(ny_submet).and..not.y_pad_North))then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then        
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then        
                 write(errlog(io),*)"MR ERROR: Comp point maps out of sub_Met in y."
                 write(errlog(io),*)"Comp i,j, y      :",i,j,px,py
                 write(errlog(io),*)"sub_Met ymin,ymax:",y_start_sub,y_submet_sp(ny_submet)
@@ -1435,7 +1435,7 @@
           if(xfrac.gt.1.0_sp.or.xfrac.lt.0.0_sp.or.&
              yfrac.gt.1.0_sp.or.yfrac.lt.0.0_sp)then
             ! The point is mapping outside the expected cell
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then        
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then        
               write(errlog(io),*)"MR ERROR : Error calculating Met to Comp mapping."
               write(errlog(io),*)"Comp point : ",i,j,x_comp_sp(i),y_comp_sp(j)
               write(errlog(io),*)"Coord on Met: ",CompPoint_X_on_Met_sp(i,j),CompPoint_Y_on_Met_sp(i,j)
@@ -1460,7 +1460,7 @@
       if(.not.IsGridRelative.or. &  ! We are dealing with NARR data
                Map_Case.eq.4.or. &  ! Met Grid is projected and Comp grid is Lat/Lon
                Map_Case.eq.5)then   ! Met Grid and Comp grids have different projections
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  Setting up arrays for rotating vectors on Met grid."
         endif;enddo
         allocate(MR_u_ER_metP(nx_submet,ny_submet,np_fullmet))
@@ -1526,7 +1526,7 @@
          Map_Case.eq.3.or. & ! Met is Lat/Lon, but Comp is projected
          Map_Case.eq.4.or. & ! Met is projected, but Comp is Lat/Lon
          Map_Case.eq.5)then  ! Met Grid and Comp grids have different projections
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  Setting up arrays for rotating vectors on comp grid."
         endif;enddo
         if(MR_useCompH)allocate(MR_dum3d_compH_2(nx_comp,ny_comp,nz_comp))
@@ -1600,14 +1600,14 @@
         ! If Met and comp grids are not the same class, then we need to compare lengths
         if(dx_comp.gt.1.5_sp*MR_dx_met(1))then
           ! Comp grid is coarser than the met grid, set up list of met points to average for each comp cell
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Using averaging of Met cells to comp grid."
           endif;enddo
           MR_InterpolateMet = .false.
           call MR_Set_Met2Comp_Map
         endif
       else
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Using interpolation of comp grid cell-center from Met grid."
         endif;enddo
       endif
@@ -1632,7 +1632,7 @@
         max_cell_area_met = cell_area
       endif
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -1657,7 +1657,7 @@
 !      subroutine MR_Set_LL_mapping
 !
 !      use MetReader,       only : &
-!         MR_nio,VB,outlog,verbosity_production,&
+!         MR_nio,MR_VB,outlog,verbosity_production,&
 !         x_submet_sp,nx_submet,y_submet_sp,ny_submet,IsLatLon_MetGrid,&
 !         Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
 !         MR_Have_LL_mapping,MR_xy2ll_xlon,MR_xy2ll_ylat,&
@@ -1678,7 +1678,7 @@
 !      real(kind=dp) :: xin,yin
 !      real(kind=dp) :: xout,yout
 !
-!      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+!      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
 !        write(outlog(io),*)"-----------------------------------------------------------------------"
 !        write(outlog(io),*)"----------                 MR_Set_LL_mapping                 ----------"
 !        write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -1744,7 +1744,7 @@
       subroutine MR_Set_Comp2Met_Map
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,verbosity_info,verbosity_production,&
+         MR_nio,MR_VB,outlog,verbosity_info,verbosity_production,&
          CompPoint_on_subMet_idx,bilin_map_wgt,CompPoint_X_on_Met_sp,CompPoint_Y_on_Met_sp,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
          Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
@@ -1769,7 +1769,7 @@
       character(len=8) :: fltstr
       integer :: io                           ! Index for output streams
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                          MR_Set_Comp2Met_Map      ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -1931,7 +1931,7 @@
         endif
       endif
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         if(Map_Case.eq.1)then
           write(outlog(io),*)"Map_Case = ",Map_Case
           write(outlog(io),*)"  Both Comp Grid and Met grids are Lat/Lon"
@@ -2054,7 +2054,7 @@
         enddo
       endif ! Map_Case
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -2085,7 +2085,7 @@
       subroutine MR_Set_Met2Comp_Map
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_production,verbosity_error,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_production,verbosity_error,&
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
          Comp_iprojflag,Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re,&
          y_comp_sp,x_comp_sp,nx_comp,ny_comp,Map_Case, &
@@ -2241,7 +2241,7 @@
       ! has no contributing met cells, we turn off the avergaing and return to the interpolation
       if(minval(NumMetPoints_in_comp_cell(:,:)).eq.0) MR_InterpolateMet = .true.
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -2259,7 +2259,7 @@
       subroutine MR_Regrid_Met2Comp(nx1,ny1,wrk_met,nx2,ny2,wrk_comp)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug2,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_debug2,&
          bilin_map_wgt,CompPoint_on_subMet_idx,y_pad_South,y_pad_North,&
          IsPeriodic_CompGrid,MR_InterpolateMet,ny_submet,&
          NumMetPoints_in_comp_cell,ListMetPoints_in_comp_cell
@@ -2285,7 +2285,7 @@
 
       integer :: io                           ! Index for output streams
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_debug2)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_debug2)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_Met2Comp                           ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -2336,13 +2336,13 @@
             ii = CompPoint_on_subMet_idx(i,j,1)
             jj = CompPoint_on_subMet_idx(i,j,2)
             if(ii.lt.1.or.ii.gt.nx_max-1)then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then        
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then        
                 write(errlog(io),*)"MR ERROR: ii maps out of grid: ",ii
               endif;enddo
               stop 1
             endif
             if(jj.lt.0.or.jj.gt.ny1)then
-              do io=1,MR_nio;if(VB(io).le.verbosity_error)then        
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then        
                 write(errlog(io),*)"MR ERROR: jj maps out of grid: ",jj,ny1
               endif;enddo
               stop 1
@@ -2394,7 +2394,7 @@
                                       nzc,z_comp,var_comp)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_debug2
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_debug2
 
       implicit none
 
@@ -2414,7 +2414,7 @@
 
       integer :: io                           ! Index for output streams
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_debug2)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_debug2)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_P2H_linear                         ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -2444,7 +2444,7 @@
         enddo
         ! Check that interval was found
         if(.not.found_interv)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then        
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then        
             write(errlog(io),*)"MR ERROR:  Did not find interval in vertical 1-D interpolation."
             write(errlog(io),*)"z_met = "
             write(errlog(io),*)z_met
@@ -2473,7 +2473,7 @@
       subroutine MR_Read_Met_Template
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,&
          Met_var_IsAvailable,Met_var_NC_names,Met_var_WMO_names,Met_var_ndim,&
          Met_var_zdim_idx,Met_var_conversion_factor,Met_dim_names,Met_dim_fac,&
          Met_dim_IsAvailable,MR_useLeap,MR_MAXVARS,MR_iwf_template,&
@@ -2515,7 +2515,7 @@
 
       inquire( file=trim(adjustl(MR_iwf_template)), exist=IsThere )
       if(.not.IsThere)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then        
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then        
           write(errlog(io),*)"MR ERROR: Could not find NWP template file ",&
                      trim(adjustl(MR_iwf_template))
           write(errlog(io),*)"          Make sure the calling program sets MR_iwf_template"
@@ -2556,7 +2556,7 @@
       if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
       read(linebuffer130,*,iostat=iostatus,iomsg=iomessage)StepInterval
       if(iostatus.ne.0)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)'MR ERROR:  Error reading time step interval from template'
           write(errlog(io),*)'           Expecting to read: StepInterval (real*8)'
           write(errlog(io),*)'           with format: *'
@@ -2567,7 +2567,7 @@
         endif;enddo
         stop 1
       else
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Read StepInterval = ",StepInterval
           write(outlog(io),*)"Note that this is for guidance and might be ignored when"
           write(outlog(io),*)"the time information of each file can be read."
@@ -2578,7 +2578,7 @@
         ! Two values read, process useLeap_str to determine T or F
         if(useLeap_str(1:1).eq.'F'.or.useLeap_str(1:1).eq.'f')then
           MR_useLeap = .false.
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"This windfile template specifies that leap years are NOT to"
             write(outlog(io),*)"be used.  Resetting MR_useLeap = .false."
           endif;enddo
@@ -2588,7 +2588,7 @@
       if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
       read(linebuffer130,*,iostat=iostatus,iomsg=iomessage)ndims_custom,nvars_custom
       if(iostatus.ne.0)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)'MR ERROR:  Error reading number of dims and vars from template'
           write(errlog(io),*)'           Expecting to read: ndims_custom,nvars_custom'
           write(errlog(io),*)'           with format: *'
@@ -2599,7 +2599,7 @@
         endif;enddo
         stop 1
       endif
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"  Reading dimensions: ",ndims_custom
       endif;enddo
       do i = 1,ndims_custom
@@ -2608,7 +2608,7 @@
         read(linebuffer130,1501,iostat=iostatus,iomsg=iomessage)dv_char,dimID,fac,dname
 1501    format(a1,i9,f9.2,a30)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)'MR ERROR:  Error reading dimension specifiers from template'
             write(errlog(io),*)'           Expecting to read: dv_char,dimID,fac,dname'
             write(errlog(io),*)'           with format: a1,i9,f9.2,a30'
@@ -2620,7 +2620,7 @@
           stop 1
         endif
         if(dv_char.ne.'d')then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Expecting to read dimension, but dimension identifier not found."
             write(errlog(io),*)"dv_char = ",dv_char
             write(errlog(io),*)"dimID   = ",dimID
@@ -2638,17 +2638,17 @@
             Met_dim_names(dimID)     = linebuffer130(1:idx)
           endif
           Met_dim_fac(i)             = fac
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)dimID,' ',Met_dim_names(dimID)
           endif;enddo
         else
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: dimID too large",dimID
           endif;enddo
           stop 1
         endif
       enddo
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"  Reading variables: ",nvars_custom
       endif;enddo
       do i = 1,nvars_custom
@@ -2659,7 +2659,7 @@
                                 fac,vname_WMO,vname
 1511    format(a1,i3,i3,i3,f9.2,a7,a71)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)'MR ERROR:  Error reading variable specifiers from template'
             write(errlog(io),*)'           Expecting to read: dv_char,vndim,zindx,varID,fac,vname_WMO,vname'
             write(errlog(io),*)'           with format: a1,i3,i3,i3,f9.2,a7,a71'
@@ -2671,7 +2671,7 @@
           stop 1
         endif
         if(dv_char.ne.'v')then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Expecting to read variable, but variable identifier not found."
             write(errlog(io),*)"dv_char   = ",dv_char
             write(errlog(io),*)"vndim     = ",vndim
@@ -2696,11 +2696,11 @@
           Met_var_ndim(varID)              = vndim
           Met_var_zdim_idx(varID)          = zindx
           Met_var_conversion_factor(varID) = fac
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)varID,Met_var_WMO_names(varID),' ',Met_var_NC_names(varID)
           endif;enddo
         else
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: varID too large",varID
           endif;enddo
           stop 1

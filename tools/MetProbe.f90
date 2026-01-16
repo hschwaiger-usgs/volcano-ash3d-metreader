@@ -58,7 +58,7 @@
       program probe_Met
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_error,verbosity_info,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,&
          Comp_iprojflag,MR_MAXVARS,&
          Met_iprojflag,Met_k0,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_Re,&
          dx_met_const,dy_met_const,IsLatLon_CompGrid,MR_Comp_StartHour,&
@@ -169,7 +169,7 @@
         ! Get file name or windroot for iw=5
         call get_command_argument(1, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read first command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -181,18 +181,18 @@
         ! Error-check infile
         inquire( file=infile, exist=IsThere )
         if(.not.IsThere)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Cannot find input file"
           endif;enddo
           stop 1
         endif
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"infile = ",infile
         endif;enddo
         ! Get time step to use
         call get_command_argument(2, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read second command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -203,7 +203,7 @@
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check intstep
         if(intstep.lt.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Time-step should be a positive integer."
             write(errlog(io),*)" intstep = ",intstep
           endif;enddo
@@ -213,7 +213,7 @@
         ! Get Lat/Lon flag
         call get_command_argument(3, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read third command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -224,17 +224,17 @@
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inLLflag
         if(inLLflag.eq.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Lat/Lon flag not set."
             write(outlog(io),*)"Using native grid of windfile (which may be LL)."
           endif;enddo
         elseif(inLLflag.eq.1)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Lat/Lon flag is set."
             write(outlog(io),*)"Using a Lat/Lon grid regardless of the windfile."
           endif;enddo
         else
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: inLLflag must be either 0 or 1"
           endif;enddo
           stop 1
@@ -242,7 +242,7 @@
         ! Get lon
         call get_command_argument(4, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read fourth command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -254,7 +254,7 @@
         ! Error-check inlon
         if(inlon.lt.-360.0_4.or.&
            inlon.gt.360.0_4)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"MR ERROR: longitude not in range -180->360"
             write(errlog(io),*)" inlon = ",inlon
           endif;enddo
@@ -262,13 +262,13 @@
         endif
         ! round to the nearest third decimel
         inlon = nint(inlon * 1000.0_4)*0.001_4
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"inlon = ",inlon
         endif;enddo
         ! Get lat
         call get_command_argument(5, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read fifth command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -280,7 +280,7 @@
         ! Error-check inlat
         if(inlat.lt.-90.0_4.or.&
            inlat.gt.90.0_4)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"MR ERROR: latitude not in range -90->90"
             write(errlog(io),*)" inlat = ",inlat
           endif;enddo
@@ -288,14 +288,14 @@
         endif
         ! round to the nearest third decimel
         inlat = nint(inlat * 1000.0_4) *0.001_4
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"inlat = ",inlat
         endif;enddo
 
         ! Get truncation flag
         call get_command_argument(6, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read sixth command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -311,11 +311,11 @@
           Truncate = .false.
         endif
         if(Truncate)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Truncate = ",Truncate, "output will be on met node"
           endif;enddo
         else
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Truncate = ",Truncate, &
                       "output will be on interpolated point"
           endif;enddo
@@ -324,7 +324,7 @@
         ! Get number of variables to read/export
         call get_command_argument(7, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read seventh command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -335,20 +335,20 @@
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check invars
         if(invars.lt.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: number of variables must be positive"
             write(errlog(io),*)" invars = ",invars
           endif;enddo
           stop 1
         endif
         if(invars.gt.10)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: number of variables must be no more than 10"
             write(errlog(io),*)" invars = ",invars
           endif;enddo
           stop 1
         endif
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"invars = ",invars
           write(outlog(io),*)"Allocating var list of length ",invars
         endif;enddo
@@ -359,7 +359,7 @@
           dum_i = 7+i
           call get_command_argument(dum_i, arg, length=inlen, status=iostatus)
           if(iostatus.ne.0)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR : Could not read 7+i command-line argument"
               write(errlog(io),*)" arg = ",arg
             endif;enddo
@@ -370,20 +370,20 @@
           if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
           ! Error-check invarlist(i)
           if(invarlist(i).le.0.or.invarlist(i).gt.MR_MAXVARS)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: Variable ID must be in range 1-50"
               write(errlog(io),*)" i invarlist(i) = ",i,invarlist(i)
             endif;enddo
             stop 1
           endif
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)" Requested variable ID ",invarlist(i)
           endif;enddo
         enddo
         ! Get wind format
         call get_command_argument(8+invars, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read 8+nvars command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -398,7 +398,7 @@
            iw.ne.3.and.&
            iw.ne.4.and.&
            iw.ne.5)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: wind format must be one of 1,2,3,4, or 5"
             write(errlog(io),*)" iw = ",iw
           endif;enddo
@@ -408,7 +408,7 @@
         ! Get wind product
         call get_command_argument(9+invars, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read 9+nvars command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -446,7 +446,7 @@
            iwf.ne.33.and.&
            iwf.ne.41.and.&
            iwf.ne.42)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: windformat not recognized"
             write(errlog(io),*)" iwf = ",iwf
           endif;enddo
@@ -456,7 +456,7 @@
         ! Get data format ID
         call get_command_argument(10+invars, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read 10+nvars command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -469,14 +469,14 @@
         if(idf.ne.1.and.&
            idf.ne.2.and.&
            idf.ne.3)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: wind data format must be one of 1,2, or 3"
             write(errlog(io),*)" iw = ",iw
           endif;enddo
           stop 1
         endif
 
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Expecting wind format, NWP product ID and data type:",iw,iwf,idf
         endif;enddo
 
@@ -484,7 +484,7 @@
         if(nargs.ge.11+invars)then
           call get_command_argument(11+invars, arg, length=inlen, status=iostatus)
           if(iostatus.ne.0)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR : Could not read 11+nvars command-line argument"
               write(errlog(io),*)" arg = ",arg
             endif;enddo
@@ -499,7 +499,7 @@
         if(nargs.ge.12+invars)then
           call get_command_argument(12+invars, arg, length=inlen, status=iostatus)
           if(iostatus.ne.0)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR : Could not read 12+nvars command-line argument"
               write(errlog(io),*)" arg = ",arg
             endif;enddo
@@ -511,7 +511,7 @@
           ! Error-check inmonth
           if(inmonth.lt.1.or.&
              inmonth.gt.12)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: month must be in range 1-12"
               write(errlog(io),*)" inmonth = ",inmonth
             endif;enddo
@@ -523,7 +523,7 @@
         if(nargs.ge.13+invars)then
           call get_command_argument(13+invars, arg, length=inlen, status=iostatus)
           if(iostatus.ne.0)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR : Could not read 13+nvars command-line argument"
               write(errlog(io),*)" arg = ",arg
             endif;enddo
@@ -535,7 +535,7 @@
           ! Error-check inday
           if(inday.lt.1.or.&
              inday.gt.31)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: day must be in range 1-31"
               write(errlog(io),*)" inday = ",inday
             endif;enddo
@@ -547,7 +547,7 @@
         if(nargs.ge.14+invars)then
           call get_command_argument(14+invars, arg, length=inlen, status=iostatus)
           if(iostatus.ne.0)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR : Could not read 14+nvars command-line argument"
               write(errlog(io),*)" arg = ",arg
             endif;enddo
@@ -559,7 +559,7 @@
           ! Error-check inhour
           if(inhour.lt.0.0_8.or.&
              inhour.gt.24.0_8)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: hour must be in range 0.0-24.0"
               write(errlog(io),*)" inhour = ",inhour
             endif;enddo
@@ -569,7 +569,7 @@
           inhour=0.0_8
         endif
         if(inyear.gt.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Read date/hour as ",inyear,inmonth,inday,inhour
             write(outlog(io),*)"This will overwrite the requested timestep above"
             write(outlog(io),*)"only when using iw=5"
@@ -577,7 +577,7 @@
           MR_Comp_StartHour = HS_hours_since_baseyear(inyear,inmonth,inday,inhour,&
                                                 MR_BaseYear,MR_useLeap)
         else
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Optional arguments for date/hour not provided"
           endif;enddo
         endif
@@ -585,11 +585,11 @@
       endif
 
       if(Truncate)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Truncating profile onto ",inlon,inlat
         endif;enddo
       else
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Interpolating profile onto ",inlon,inlat
         endif;enddo
       endif
@@ -623,7 +623,7 @@
       endif
       if(IsLatLon_CompGrid)then
         if(inlon.lt.-360.0_4)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Longitude must be gt -360"
           endif;enddo
           stop 1
@@ -632,7 +632,7 @@
       endif
 
       if(Truncate)then
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)&
             "Truncating input coordinate to grid point on Met grid."
         endif;enddo
@@ -654,7 +654,7 @@
             endif
           enddo
         endif
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Coordinate reset to ",inlon,inlat
         endif;enddo
       endif
@@ -672,7 +672,7 @@
         lon_grid(1:3) = (/inlon-1.0_4*abs(dx_met_const),inlon,inlon+1.0_4*abs(dx_met_const)/)
         lat_grid(1:3) = (/inlat-1.0_4*abs(dy_met_const),inlat,inlat+1.0_4*abs(dy_met_const)/)
       endif
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"lon grid = ",lon_grid
         write(outlog(io),*)"lat_grid = ",lat_grid
       endif;enddo
@@ -685,7 +685,7 @@
                                  Met_phi0,Met_phi1,Met_phi2,&
                                  Met_k0,Met_Re)
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Setting up wind grids"
       endif;enddo
       call MR_Initialize_Met_Grids(nxmax,nymax,nzmax,&
@@ -700,7 +700,7 @@
       call MR_Set_Met_Times(steptime,0.0_8)
 
       do i=1,50
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)i,Met_var_NC_names(i),Met_var_IsAvailable(i)
         endif;enddo
       enddo
@@ -713,7 +713,7 @@
       if(allocated( lon_grid)) deallocate(lon_grid)
       if(allocated( lat_grid)) deallocate(lat_grid)
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Program ended normally."
       endif;enddo
 
@@ -740,7 +740,7 @@
       subroutine GetMetProfile(invars,invarlist)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,verbosity_info,&
+         MR_nio,MR_VB,outlog,verbosity_info,&
          MR_dum3d_compP,MR_dum3d_compP_2,np_fullmet,Map_Case,MR_iMetStep_Now,&
          p_fullmet_sp,&
            MR_Read_HGT_arrays,&
@@ -765,7 +765,7 @@
       ! these are small
       allocate(u(np_fullmet))
       allocate(v(np_fullmet))
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)" Inside GetMetProfile"
       endif;enddo
 
@@ -775,13 +775,13 @@
 
       do iv = 1,invars
         ivar = invarlist(iv)
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Map_Case  and varID = ",Map_Case,iv
         endif;enddo
         if (Map_Case.eq.4.and. & ! Only need to do this if Met=proj and
                                  ! comp is LL
             (iv.eq.2.or.iv.eq.3))then
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"MR Calling MR_Rotate_UV_GR2ER_Met to rotate vec"
           endif;enddo
           ! if a vector call, store u and v to rotate
@@ -791,7 +791,7 @@
           if(iv.eq.2)outvars(iv,1:np_fullmet) =u(1:np_fullmet)
           if(iv.eq.3)outvars(iv,1:np_fullmet) =v(1:np_fullmet)
         else
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Calling MR_Read_3d_Met_Variable_to_CompP"
           endif;enddo
           call MR_Read_3d_Met_Variable_to_CompP(ivar,MR_iMetStep_Now)
@@ -825,13 +825,13 @@
       subroutine Print_Usage
 
       use MetReader,       only : &
-         MR_nio,VB,verbosity_error,errlog,VB
+         MR_nio,MR_VB,verbosity_error,errlog,MR_VB
 
       implicit none
 
       integer :: io
 
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: insufficient command-line arguments"
           write(errlog(io),*)"Usage: probe_Met filename tstep llflag lon lat trunc nvars ",&
                                   "vars(nvars) iw iwf (inyear inmonth inday inhour)"

@@ -28,7 +28,7 @@
       program MetSonde
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,verbosity_info,&
+         MR_nio,MR_VB,outlog,verbosity_info,&
          MR_BaseYear,MR_useLeap,&
            MR_Initialize_Met_Grids,&
            MR_Reset_Memory
@@ -112,12 +112,12 @@
       MR_BaseYear = BaseYear
       MR_useLeap  = useLeap
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Set up winfile data structure"
       endif;enddo
       call GetWindFile(inyear,inmonth,inday,inhour,WINDROOT,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Setting up wind grids"
       endif;enddo
       call MR_Initialize_Met_Grids(nxmax,nymax,nzmax,&
@@ -126,14 +126,14 @@
                               z_cc(1:nzmax)    , &
                               IsPeriodic)
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Interpolating profile onto ",inlon,inlat
       endif;enddo
       call GetMetProfile(inlon,inlat,inyear,inmonth,inday,inhour)
 
       call MR_Reset_Memory
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Program ended normally."
       endif;enddo
 
@@ -158,7 +158,7 @@
                     WINDROOT)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_info,verbosity_error,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_info,verbosity_error,&
            MR_Set_CompProjection,&
            MR_FileIO_Error_Handler
 
@@ -203,7 +203,7 @@
       else
         call get_command_argument(1, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read first command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -212,7 +212,7 @@
         read(arg,*,iostat=iostatus,iomsg=iomessage)inlon
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,arg(1:80),iomessage)
         if(inlon.lt.-360.0_4)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Longitude must be gt -360"
           endif;enddo
           stop 1
@@ -220,7 +220,7 @@
         if(inlon.lt.0.0_4.or.inlon.gt.360.0_4)inlon=mod(inlon+360.0_4,360.0_4)
         call get_command_argument(2, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read second command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -229,7 +229,7 @@
         read(arg,*,iostat=iostatus,iomsg=iomessage)inlat
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,arg(1:80),iomessage)
         if(inlat.lt.-90.0_4.or.inlat.gt.90.0_4)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Latitude must be in range -90->90"
           endif;enddo
           stop 1
@@ -237,7 +237,7 @@
 
         call get_command_argument(3, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read third command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -248,7 +248,7 @@
 
         call get_command_argument(4, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read fourth command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -259,7 +259,7 @@
         ! Error-check inmonth
         if(inmonth.lt.1.or.&
            inmonth.gt.12)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: month must be in range 1-12"
             write(errlog(io),*)" inmonth = ",inmonth
           endif;enddo
@@ -268,7 +268,7 @@
 
         call get_command_argument(5, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read fifth command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -279,7 +279,7 @@
         ! Error-check inday
         if(inday.lt.1.or.&
            inday.gt.31)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: day must be in range 1-31"
             write(errlog(io),*)" inday = ",inday
           endif;enddo
@@ -288,7 +288,7 @@
 
         call get_command_argument(6, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read sixth command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -299,7 +299,7 @@
         ! Error-check inhour
         if(inhour.lt.0.0_8.or.&
            inhour.gt.48.0_8)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: hour must be in range 0.0-48.0"
             write(errlog(io),*)" inhour = ",inhour
           endif;enddo
@@ -309,7 +309,7 @@
         if(nargs.ge.7)then
           call get_command_argument(7, arg, length=inlen, status=iostatus)
           if(iostatus.ne.0)then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR : Could not read seventh command-line argument"
               write(errlog(io),*)" arg = ",arg
             endif;enddo
@@ -334,7 +334,7 @@
                                  k0,radius_earth)
 
       ! write out values of parameters defining the run
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"inlon              = ",real(inlon,kind=4)
         write(outlog(io),*)"inlat              = ",real(inlat,kind=4)
         write(outlog(io),*)"inyear             = ",inyear
@@ -370,7 +370,7 @@
                              FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,errlog,verbosity_info,verbosity_error,&
+         MR_nio,MR_VB,outlog,errlog,verbosity_info,verbosity_error,&
          MR_BaseYear,MR_useLeap,MR_Comp_StartHour,MR_Comp_Time_in_hours,&
          MR_iwindfiles,MR_windfiles,&
            MR_Allocate_FullMetFileList,&
@@ -499,7 +499,7 @@
 
       if(RunStartHour-Probe_StartHour.gt.24.0_8*GFS_Archive_Days)then
         ! NCEP case
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Requested start time is too old for GFS archive."
           write(outlog(io),*)"Start time is older than the hardwired threshold of ",&
                     GFS_Archive_Days," days"
@@ -518,24 +518,24 @@
 
       elseif(inyear.lt.1948)then
         ! Too old for NCEP runs, must use control file
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: Requested start time is too old for NCEP Reanalysis."
         endif;enddo
         stop 1
       else
         ! GFS case
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Requested start time is within the GFS archive."
           write(outlog(io),*)"Using archived global forecast data (GFS 0.5-degree)"
         endif;enddo
         if(RunStartHour-Probe_StartHour.lt.0.0_8)then
           ! GFS case for future run
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Requested start time is later than current time,"
             write(outlog(io),*)"but it might fit in the current forecast package."
           endif;enddo
           if (Probe_StartHour-RunStartHour.ge.real(GFS_FC_TotHours,kind=8))then
-            do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR Run cannot complete with the current FC package."
             endif;enddo
             stop 1
@@ -548,7 +548,7 @@
         allocate(GFS_candidate(NumFCpackages))
         allocate(GFS_FC_step_avail(NumFCpackages))
         GFS_candidate = .true.
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Approximate Number of FC packages on system:",NumFCpackages
           write(outlog(io),*)"Checking to see which packages might work for the"
           write(outlog(io),*)"requested start-time"
@@ -571,11 +571,11 @@
 
         ! Loop through all the packages and check which ones might span the needed
         ! time range
-        do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)'Looping backward through packages'
         endif;enddo
         do i = NumFCpackages,1,-1
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Package # ",i
           endif;enddo
           ! Get the start hour of this forecast package
@@ -584,7 +584,7 @@
             ! This package starts after the requested time so dismiss it
             GFS_candidate(i)     = .false.
             GFS_FC_step_avail(i) = 0
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"   Package starts too late"
             endif;enddo
             cycle
@@ -595,7 +595,7 @@
             ! This package ends before the needed time so dismiss it
             GFS_candidate(i)     = .false.
             GFS_FC_step_avail(i) = 0
-            do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"   Package ends too early"
             endif;enddo
             cycle
@@ -606,7 +606,7 @@
           FC_day  = HS_DayOfEvent(FCStartHour,MR_BaseYear,MR_useLeap)
           FC_hour = HS_HourOfDay(FCStartHour,MR_BaseYear,MR_useLeap)
           FC_Package_hour = floor(FC_hour/FC_freq) * FC_freq
-          do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)'   This one could work. Testing each file. ', &
                        FC_year,FC_mon,FC_day,real(FC_hour,kind=4)
           endif;enddo
@@ -638,7 +638,7 @@
               if (IsThere)then
                 GFS_FC_step_avail(i) = ii
                 FCEndHour = FCStartHour + real(FC_hour_int,kind=8)
-                do io=1,MR_nio;if(VB(io).le.verbosity_info)then        
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then        
                   write(outlog(io),*)"     Found: ",trim(adjustl(testfile))
               endif;enddo
               else
@@ -659,7 +659,7 @@
         enddo ! 1,NumFCpackages
 
         if (OptimalPackageNum.eq.0)then
-          do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"No GFS package available on this system will span the"
             write(errlog(io),*)"requested simulation time.  Exiting"
             write(errlog(io),*)"  Probe start time     = ",Probe_StartHour
@@ -712,7 +712,7 @@
 
       call MR_Set_Met_Times(Probe_StartHour, Simtime_in_hours)
 
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Sonde time: ",inyear,inmonth,inday,inhour
         write(outlog(io),*)"Now       : ",RunStartYear,RunStartMonth,RunStartDay,RunStartHr
         write(outlog(io),*)"FC   time : ",inyear,inmonth,inday,FC_Package_hour
@@ -733,7 +733,7 @@
       subroutine GetMetProfile(inlon,inlat,inyear,inmonth,inday,inhour)
 
       use MetReader,       only : &
-         MR_nio,VB,outlog,verbosity_info,&
+         MR_nio,MR_VB,outlog,verbosity_info,&
          MR_geoH_metP_last,MR_geoH_metP_next,dx_met_const,dy_met_const,&
          MR_BaseYear,MR_useLeap,MR_dum3d_MetP,MR_iMetStep_Now,&
          nx_submet,ny_submet,np_fullmet,x_submet_sp,y_submet_sp,p_fullmet_sp,&
@@ -851,7 +851,7 @@
           exit
         endif
       enddo
-      do io=1,MR_nio;if(VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Tropopause Height, Temp, Pressure"
         write(outlog(io),*)TropoH,TropoT,TropoP
       endif;enddo
@@ -871,13 +871,13 @@
       subroutine Print_Usage
 
       use MetReader,       only : &
-         MR_nio,VB,verbosity_error,errlog,VB
+         MR_nio,MR_VB,verbosity_error,errlog,MR_VB
 
       implicit none
 
       integer :: io
 
-        do io=1,MR_nio;if(VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"Too few command-line arguments:"
           write(errlog(io),*)"  Usage: MetSonde lon lat YYYY MM DD HH.H [WIND_ROOT]"
           write(errlog(io),*)"           lon       = longitude of start point"
