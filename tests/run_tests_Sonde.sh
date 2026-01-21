@@ -33,6 +33,24 @@ rc=0
 s=1
 outdir="output${WindLabel}${s}"
 cp ../examples/UpperAirSoundings/UIL_1980051700_raw.dat .
+#                 /- input wind file
+#                 |                   /- timestep in file
+#                 |                   | /- llflag (0 for natural grid of file, 1 for LL)
+#                 |                   | |   /- lon,lat ( or x,y)
+#                 |                   | |   |                /- trunc flag
+#                 |                   | |   |                | /- nvars
+#                 |                   | |   |                | |  ------var list: varID(nvars)
+#                 |                   | |   |                | | / | | \
+#                 |                   | |   |                | | | | | | /-iw
+#                 |                   | |   |                | | | | | | | /-iwf
+#                 |                   | |   |                | | | | | | | | /-idf
+#                 |                   | |   |                | | | | | | | | |  /-year
+#                 |                   | |   |                | | | | | | | | |  |   /-month
+#                 |                   | |   |                | | | | | | | | |  |   |
+#                 |                   | |   |                | | | | | | | | |  |   | /-day
+#                 |                   | |   |                | | | | | | | | |  |   | |   /-hour
+#                 |                   | |   |                | | | | | | | | |  |   | |   |
+#                 v                   v v   v                v v v v v v v v v  v   v v   v
 ../bin/MetProbe UIL_1980051700_raw.dat 1 1 -169.9468 52.8217 F 4 1 2 3 5 1 2 1 1980 5 17 0.0 > /dev/null 2>&1
 rc=$((rc + $?))
 if [[ "$rc" -gt 0 ]] ; then

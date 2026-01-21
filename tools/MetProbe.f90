@@ -1,7 +1,7 @@
 !##############################################################################
 !##############################################################################
 !
-!  probe_Met
+!  MetProbe
 !
 !    This is a stand-alone program that exports a vertical profile of 
 !    pressure variables from windfiles
@@ -26,16 +26,16 @@
 !               the native values
 !
 !    To probe a 0.5-degree GFS file in nc format for GPH only, use:
-!      probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 1 1 4 20 2
+!      MetProbe 2020061000_5.f006.nc 1 0 190.055 52.8222 T 1 1 4 20 2
 !     same, but adding u,v,t
-!      probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 4 1 2 3 5 4 20 2
+!      MetProbe 2020061000_5.f006.nc 1 0 190.055 52.8222 T 4 1 2 3 5 4 20 2
 !    To probe a NAM 91 grid over AK in nc format with a LL coordinate, use:
-!      probe_Met nam.tm06.grib2 1 1 190.055 52.8222 F 4 1 2 3 5 4 13 3
+!      MetProbe nam.tm06.grib2 1 1 190.055 52.8222 F 4 1 2 3 5 4 13 3
 !     with a projected coordinate:
-!      probe_Met nam.tm06.grib2 1 0 -1363.94 -3758.61 F 4 1 2 3 5 4 13 3
+!      MetProbe nam.tm06.grib2 1 0 -1363.94 -3758.61 F 4 1 2 3 5 4 13 3
 !    To  probe the NCEP 2.5-degree data (or other iw=5), we need the
 !    full date
-!      probe_Met 2020061000_5.f006.nc 1 1 190.055 52.8222 T 1 1 4 20 2 2018 1 1 0.0
+!      MetProbe 2020061000_5.f006.nc 1 1 190.055 52.8222 T 1 1 4 20 2 2018 1 1 0.0
 !    Output is written to the file NWP_prof.dat
 !
 ! Note: to test against the 0.5 GFS data using ncks, use the following commands
@@ -55,7 +55,7 @@
 
 !##############################################################################
 
-      program probe_Met
+      program MetProbe
 
       use MetReader,       only : &
          MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,&
@@ -103,6 +103,7 @@
       logical :: IsThere
       logical :: Truncate = .false.
       integer :: i
+      integer :: il
       integer :: dum_i
       real(kind=8) :: steptime
 
@@ -175,14 +176,13 @@
           endif;enddo
           call Print_Usage
         endif
-        read(arg,*,iostat=iostatus,iomsg=iomessage)infile
-        linebuffer080 = arg(1:80)
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        infile = trim(adjustl(arg))
         ! Error-check infile
-        inquire( file=infile, exist=IsThere )
+        inquire( file=trim(adjustl(infile)), exist=IsThere )
         if(.not.IsThere)then
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Cannot find input file"
+            write(errlog(io),'(a)')infile
           endif;enddo
           stop 1
         endif
@@ -701,7 +701,14 @@
 
       do i=1,50
         do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
-          write(outlog(io),*)i,Met_var_NC_names(i),Met_var_IsAvailable(i)
+          il = len(trim(adjustl(Met_var_NC_names(i))))
+          if(il.gt.0)then
+            write(outlog(io),*)i,Met_var_NC_names(i),Met_var_IsAvailable(i)
+          else
+            write(outlog(io),*)i,&
+         "     --Variable unspecified--                                                   ",&
+         Met_var_IsAvailable(i)
+          endif
         endif;enddo
       enddo
       
@@ -717,7 +724,7 @@
         write(outlog(io),*)"Program ended normally."
       endif;enddo
 
-      end program probe_Met
+      end program MetProbe
 
 !##############################################################################
 !
@@ -833,7 +840,7 @@
 
         do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: insufficient command-line arguments"
-          write(errlog(io),*)"Usage: probe_Met filename tstep llflag lon lat trunc nvars ",&
+          write(errlog(io),*)"Usage: MetProbe filename tstep llflag lon lat trunc nvars ",&
                                   "vars(nvars) iw iwf (inyear inmonth inday inhour)"
           write(errlog(io),*)"       file         : string  : name of input file"
           write(errlog(io),*)"       timestep     : integer : step in file"
@@ -860,16 +867,16 @@
           write(errlog(io),*)"       hour         : real    : "
           write(errlog(io),*)"  "
           write(errlog(io),*)"     To probe a 0.5-degree GFS file in nc format for GPH only, use:"
-          write(errlog(io),*)"       probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 1 1 4 20 2"
+          write(errlog(io),*)"       MetProbe 2020061000_5.f006.nc 1 0 190.055 52.8222 T 1 1 4 20 2"
           write(errlog(io),*)"      same, but adding u,v,t"
-          write(errlog(io),*)"       probe_Met 2020061000_5.f006.nc 1 0 190.055 52.8222 T 4 1 2 3 5 4 20 2"
+          write(errlog(io),*)"       MetProbe 2020061000_5.f006.nc 1 0 190.055 52.8222 T 4 1 2 3 5 4 20 2"
           write(errlog(io),*)"     To probe a NAM 91 grid over AK in nc format with a LL coordinate, use:"
-          write(errlog(io),*)"       probe_Met nam.tm06.grib2 1 1 190.055 52.8222 F 4 1 2 3 5 4 13 3"
+          write(errlog(io),*)"       MetProbe nam.tm06.grib2 1 1 190.055 52.8222 F 4 1 2 3 5 4 13 3"
           write(errlog(io),*)"      with a projected coordinate:"
-          write(errlog(io),*)"       probe_Met nam.tm06.grib2 1 0 -1363.94 -3758.61 F 4 1 2 3 5 4 13 3"
+          write(errlog(io),*)"       MetProbe nam.tm06.grib2 1 0 -1363.94 -3758.61 F 4 1 2 3 5 4 13 3"
           write(errlog(io),*)"     To  probe the NCEP 2.5-degree data (or other iw=5), we need the"
           write(errlog(io),*)"     full date"
-          write(errlog(io),*)"       probe_Met 2020061000_5.f006.nc 1 1 190.055 52.8222 T 1 1 4 20 2 2018 1 1 0.0"
+          write(errlog(io),*)"       MetProbe 2020061000_5.f006.nc 1 1 190.055 52.8222 T 1 1 4 20 2 2018 1 1 0.0"
           write(errlog(io),*)"     Output is written to the file NWP_prof.dat"
         endif;enddo
         stop 1

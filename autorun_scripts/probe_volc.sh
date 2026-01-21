@@ -172,8 +172,8 @@ do
   
   
     ln -s ${WINDPATH}/${WINDFILE} .
-    echo "${USGSROOT}/bin/probe_Met ${WINDFILE} ${ARGS}"
-    ${USGSROOT}/bin/probe_Met ${WINDFILE} ${ARGS}
+    echo "${USGSROOT}/bin/MetProbe ${WINDFILE} ${ARGS}"
+    ${USGSROOT}/bin/MetProb ${WINDFILE} ${ARGS}
     HourOffset=`echo "${FChour} + ${t}"  | bc`
     NewYYYYMMDD=`date -d"${yearmonthday} +${HourOffset} hour" -u +%Y%m%d`
     Newhour=`date -d"${yearmonthday} +${HourOffset} hour" -u +%H`

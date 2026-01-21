@@ -24,7 +24,6 @@
 !      and its documentation for any purpose.  We assume no responsibility to provide
 !      technical support to users of this software.
 !
-!      
 !
 !      contains:
 !        subroutine MR_Reset_Memory
@@ -1036,6 +1035,7 @@
       !         files to netcdf.  Reanalysis files might be provided in netcdf format directly, in
       !         which case, the names are overwritten below. Since these name occasionally change,
       !         known variants are checked if the expected name is not found.
+      Met_var_NC_names(1:MR_MAXVARS) = ""
         !  Geopotential Height  (m^2/s^2)
       Met_var_NC_names(1)          = "Geopotential_height_isobaric"
       Met_var_GRIB_names(1)        = "gh"
@@ -1327,7 +1327,7 @@
                     "Radiosonde data"
           write(outlog(io),*)"  Number of radiosonde stations = ",MR_iGridCode
         endif;enddo
-      elseif (MR_iwindformat.eq.3) then 
+      elseif (MR_iwindformat.eq.3) then
         ! NARR3D NAM221 32 km North America files
           ! https://rda.ucar.edu/datasets/ds608.0/
           !   merged_AWIP32.2018062000(.nc)
@@ -1335,7 +1335,7 @@
           !   See  http://www.emc.ncep.noaa.gov/mmb/rreanl/faq.html#eta-winds
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! the lastest version of NARR data is v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "NARR3D NAM221 32 km North America files with Re=6367.47"
         endif;enddo
@@ -1378,7 +1378,7 @@
           !   nam.t00z.awip3200.tm00.grib2
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "NAM221 32 km North America files with Re=6371.229"
         endif;enddo
@@ -1421,7 +1421,7 @@
           !  nam.t00z.awipak00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "NAM216 AK 45km"
         endif;enddo
@@ -1465,7 +1465,7 @@
         !    nam.t00z.grbgrd00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "NAM Regional 90 km grid 104"
         endif;enddo
@@ -1509,7 +1509,7 @@
           !    nam.t00z.awp21100.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "CONUS 212 40km"
         endif;enddo
@@ -1554,7 +1554,7 @@
           !   nam.t00z.awphys00.grb2.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "CONUS 218 (12km)"
         endif;enddo
@@ -1588,7 +1588,7 @@
           !    nam.t00z.conusnest.hiresf00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "CONUS 227 (5.1 km)"
         endif;enddo
@@ -1637,7 +1637,7 @@
           !    nam.t00z.awipak00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "NAM 242 11.25 km AK"
         endif;enddo
@@ -1677,7 +1677,7 @@
           !    nam.t00z.hawaiinest.hiresf00.tm0
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     " NAM 196 2.5 km HI"
         endif;enddo
@@ -1725,7 +1725,7 @@
           !    nam.t00z.alaskanest.hiresf00.tm00
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "NAM 198 5.953 km AK"
         endif;enddo
@@ -1782,7 +1782,7 @@
           !       appears to be in the order they are processed in the GRIB file.
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "NAM 91 2.976 km AK"
         endif;enddo
@@ -1831,7 +1831,7 @@
           !  nam.t00z.conusnest.hiresf00.tm00.grib2.nc
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "CONUS no grid ID (3.0 km)"
         endif;enddo
@@ -1880,7 +1880,7 @@
           !  http://motherlode.ucar.edu/native/conduit/data/nccf/com/gfs/prod/
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "GFS 0.5"
         endif;enddo
@@ -1920,7 +1920,7 @@
           ! http://www.nco.ncep.noaa.gov/pmb/products/gfs/
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "GFS 1.0-degree"
         endif;enddo
@@ -1950,7 +1950,7 @@
           ! http://motherlode.ucar.edu/native/conduit/data/nccf/com/gfs/prod/
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "GFS 0.25"
         endif;enddo
@@ -1988,7 +1988,7 @@
          ! https://rda.ucar.edu/datasets/ds091.0
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! latest is 0, but deprecated
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "NCEP / DOE reanalysis 2.5 degree files"
         endif;enddo
@@ -2017,7 +2017,7 @@
          ! NASA-MERRA reanalysis 0.625 x 0.5 degree files 
 
         if(MR_iversion.eq.-1)MR_iversion = 2 ! v1 finished in 2016
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "NASA-MERRA-2 reanalysis 0.625/0.5 degree files"
         endif;enddo
@@ -2051,7 +2051,7 @@
          ! NCEP/NCAR reanalysis 2.5 degree files 
 
         if(MR_iversion.eq.-1)MR_iversion = 0 !
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                    "NCEP/NCAR reanalysis 2.5 degree files"
         endif;enddo
@@ -2104,7 +2104,7 @@
          ! https://rda.ucar.edu/datasets/ds628.0/
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! 
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "JRA-55 reanalysis 1.25 degree files"
         endif;enddo
@@ -2138,7 +2138,7 @@
         endif
         if(MR_iversion.eq.2)then
 
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                       "NOAA-CIRES reanalysis 2.0 degree files"
           endif;enddo
@@ -2183,7 +2183,7 @@
           ! Note: this is also available from
           ! https://psl.noaa.gov/data/gridded/data.20thC_ReanV3.html, but might
           ! need format verification
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                       "NOAA-CIRES-DOE reanalysis v3"
           endif;enddo
@@ -2209,7 +2209,7 @@
          ! ECMWF Interim Reanalysis (ERA-Interim)
          ! https://rda.ucar.edu/datasets/ds627.0
 
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "ECMWF Interim Reanalysis (ERA-Interim)"
         endif;enddo
@@ -2287,7 +2287,7 @@
           stop 1
         endif
 
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "ECMWF ERA5 reanalysis"
         endif;enddo
@@ -2335,7 +2335,7 @@
          ! https://rda.ucar.edu/datasets/ds626.0
          ! Note: files are provided as one variable per file
 
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "ECMWF ERA20C reanalysis"
         endif;enddo
@@ -2412,7 +2412,7 @@
          ! Air Force Weather Agency subcenter = 0
          ! GALWEM
 
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "Air Force Weather Agency subcenter = 0"
         endif;enddo
@@ -2438,7 +2438,7 @@
          ! http://www.cesm.ucar.edu/models/atm-cam/
          ! peleoclimate monthly averages
 
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "CCSM3.0 Community Atmosphere Model (CAM)"
         endif;enddo
@@ -2502,7 +2502,7 @@
       elseif (MR_iwindformat.eq.40)then
          ! NASA-GEOS Cp
 
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "NASA-GEOS Cp"
         endif;enddo
@@ -2526,7 +2526,7 @@
       elseif (MR_iwindformat.eq.41)then
          ! NASA-GEOS Np
 
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "NASA-GEOS Np"
         endif;enddo
@@ -2550,7 +2550,7 @@
       elseif (MR_iwindformat.eq.50)then
          ! WRF - output
 
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "WRF"
         endif;enddo
@@ -2598,7 +2598,7 @@
         Met_var_conversion_factor(1) = 1.0_sp/9.81_sp
 
       else
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)'MR ERROR : MR_iwindformat not supported'
           write(errlog(io),*)'           MR_iwindformat=',MR_iwindformat,&
                                        '. Program stopped in MetReader.f90'
@@ -2608,16 +2608,16 @@
       ! End of long if-statement on different MR_iwindformat values
       !!!!!!
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then     
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"                grid ID = ",MR_iGridCode
       endif;enddo
       select case (MR_idataFormat)
       case(1)
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then       
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"            data format = ",MR_idataFormat,"ASCII"
         endif;enddo
       case(2)
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then        
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"            data format = ",MR_idataFormat,"NETCDF"
         endif;enddo
 #ifndef USENETCDF
@@ -2629,7 +2629,7 @@
         stop 1
 #endif
       case(3)
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then        
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"            data format = ",MR_idataFormat,"GRIB"
         endif;enddo
 #ifndef USEGRIB
@@ -2654,12 +2654,12 @@
         endif
       end select
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then         
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"     Allocating space for ",MR_iwindfiles,"file(s)."
       endif;enddo
 
       if (MR_iwind.eq.5)then
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then              
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"For iwf=5:: one variable per file."
           write(outlog(io),*)"Only the directory should be listed."
           write(outlog(io),*)"The remaining path is hard-coded."
@@ -2670,7 +2670,7 @@
         if(MR_Comp_Time_in_hours.gt.0.0)then
           if(MR_iwindformat.eq.25)then  ! NCEP 2.5 degree
             MR_iwindfiles = ceiling(MR_Comp_Time_in_hours/MR_iw5_hours_per_file) +1  ! These are yearly files
-          elseif(MR_iwindformat.eq.26)then ! 
+          elseif(MR_iwindformat.eq.26)then
             MR_iwindfiles = ceiling(MR_Comp_Time_in_hours/MR_iw5_hours_per_file) +1 ! Monthly files
           elseif(MR_iwindformat.eq.27)then
             MR_iwindfiles = ceiling(MR_Comp_Time_in_hours/MR_iw5_hours_per_file) +1 ! yearly files
@@ -2926,7 +2926,7 @@
             if(.not.IsThere)then
               if(i.eq.1.or.MR_Comp_EndYear.gt.MR_Comp_StartYear)then
                 ! for iw=5 cases, do a hard stop if the expected file is not found
-                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then           
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)"MR ERROR: Could not find windfile ",i
                   write(errlog(io),*)"          ",trim(adjustl(iw5filename))
                   write(errlog(io),*)"  MR_Comp_StartYear=",MR_Comp_StartYear
@@ -2997,13 +2997,13 @@
           call MR_Read_Met_DimVars_GRIB
 #endif
         else
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then   
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Unknown MR_idataFormat:",MR_idataFormat
           endif;enddo
           stop 1
         endif
       case default
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then    
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR:  MR_iwind not 1-4."
           write(errlog(io),*)"           Exiting in MR_Read_Met_DimVars"
         endif;enddo
@@ -3267,7 +3267,7 @@
         endif
 
       case default
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then       
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR:  MR_iwind not 1:5."
           write(errlog(io),*)"           Exiting in MR_Initialize_Met_Grids"
         endif;enddo
@@ -3719,7 +3719,7 @@
               Found_First_Step = .true.
               istep = istep + 1
               if(MR_windfiles_nt_fullmet(iw).lt.NT_MAXOUT)then
-                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then 
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                   write(outlog(io),150)                    &
                     iw,iwstep,stephour,MR_Comp_StartHour,istep,&
                     "After MR_Comp_StartHour "
@@ -3735,7 +3735,7 @@
           endif
           if(Found_Last_Step &
              .and.MR_windfiles_nt_fullmet(iw).lt.NT_MAXOUT)then ! This condition suppresses output for NCEP 2.5
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then 
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),150)                    &
                   iw,iwstep,stephour,MR_Comp_StartHour,istep,&
                   "At or after END OF SIM  "
@@ -3761,12 +3761,12 @@
           stephour = MR_windfile_starthour(MR_iwindfiles) + &
                        MR_windfile_stephour(MR_iwindfiles,MR_windfiles_nt_fullmet(MR_iwindfiles)) + &
                        StepInterval
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then  
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),150)MR_iwindfiles,1,stephour,&
                        MR_Comp_StartHour,nMetSteps_Comp,"Poststep after END OF SIM  "
           endif;enddo
         else
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then  
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR:  Something is wrong.  Could not find the last MetStep needed for"
             write(errlog(io),*)"           the simulation."
           endif;enddo
@@ -3778,11 +3778,11 @@
       ! We now have the number of steps needed for the computation
       ! Allocate the lists
       MR_MetSteps_Total = nMetSteps_Comp
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then  
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"MR: Allocating space for ",MR_MetSteps_Total,"step(s)"
       endif;enddo
       if(prestep.or.poststep)then
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then  
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"         Including:"
           if(prestep) write(outlog(io),*)"             1 prestep"
           if(poststep)write(outlog(io),*)"             1 poststep"
@@ -3878,7 +3878,7 @@
           MR_MetStep_Hour_Of_Day(istep)     = real(HS_HourOfDay(real(stephour,kind=dp),MR_BaseYear,MR_useLeap),kind=sp)
           MR_iwind5_year(istep)             = MR_MetStep_year(istep)
         else
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then  
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR:  Something is wrong.  Could not find the last MetStep needed for"
             write(errlog(io),*)"           the simulation."
           endif;enddo
@@ -3892,7 +3892,7 @@
       enddo
       MR_MetStep_Interval(MR_MetSteps_Total)=MR_MetStep_Interval(MR_MetSteps_Total-1)
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then  
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),'(a12,f13.2)')"Comp start = ",MR_Comp_StartHour
         write(outlog(io),'(a12,f13.2)')"Comp end   = ",MR_Comp_StartHour+MR_Comp_Time_in_hours
       endif;enddo
@@ -3904,12 +3904,12 @@
       enddo
 
       ! Make sure the wind model time window covers the entire simulation time
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then  
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),99)
       endif;enddo
 99    format(/,4x,'Making sure the mesoscale model time covers the simulation time . . . ')
       if (MR_MetStep_Hour_since_baseyear(1).gt.MR_Comp_StartHour) then
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then  
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR:  Wind data starts after SimStartHour"
           write(errlog(io),*)"WindHour(MR_iwindfiles) = ",MR_MetStep_Hour_since_baseyear(MR_MetSteps_Total)
           write(errlog(io),*)"SimStartHour            = ",MR_Comp_StartHour
@@ -3921,7 +3921,7 @@
         endif;enddo
         stop 1
       elseif (MR_MetStep_Hour_since_baseyear(MR_MetSteps_Total).lt.(MR_Comp_StartHour+MR_Comp_Time_in_hours)) then
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then     
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR:  Last met time is earlier than simulation time"
           write(errlog(io),*)"MR_MetSteps_Total     = ",MR_MetSteps_Total
           write(errlog(io),*)"Last time step       = ",MR_MetStep_Hour_since_baseyear(MR_MetSteps_Total)
@@ -4752,7 +4752,7 @@
         ! calculation, but then can be used later.  Variable diffusivity uses
         ! this.
         if(present(IsNext)) then ! First check if this parameter was provided
-          if(IsNext) then  ! second, check if it is true
+          if(IsNext)then  ! second, check if it is true
             ! MR_dum3d_metP still contains the variable just read
             if(IsNext)then
               MR_vx_metP_last = MR_vx_metP_next
@@ -5874,7 +5874,7 @@
 
       if(test_dimvars.eqv..true.)then
         if(CALLED_MR_Read_Met_DimVars.eqv..false.)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then     
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR:  The subroutine MR_Read_Met_DimVars has not be called."
             write(errlog(io),*)"           This must first be called to determine the size (x,y,z,t) of"
             write(errlog(io),*)"           the windfiles.  The calling format is:"
@@ -5887,7 +5887,7 @@
 
       if(test_compproj.eqv..true.)then
         if(CALLED_MR_Set_CompProjection.eqv..false.)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then     
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR:  The subroutine MR_Set_CompProjection has not be called."
             write(errlog(io),*)"           This must first be called to determine the subgrid needed"
             write(errlog(io),*)"           from the windfiles.  The calling format is:"

@@ -108,8 +108,6 @@
       integer, parameter :: MAX_ROWS  = 300 ! maximum number of row of data
       integer, parameter :: fid       = 120
 
-
-
       integer :: iostatus
       integer :: ioerr
       character(len=120) :: iomessage = ""
@@ -460,7 +458,7 @@
                   Met_var_IsAvailable(2) = .true.  ! U
                 elseif (SndColReadOrder(iv).eq.3)then
                   Met_var_IsAvailable(3) = .true.  ! V
-                elseif (SndColReadOrder(iv).eq.4)then  
+                elseif (SndColReadOrder(iv).eq.4)then
                   Met_var_IsAvailable(4) = .true.  ! W
                   Met_var_IsAvailable(7) = .true.  ! VVP
                 elseif (SndColReadOrder(iv).eq.5)then
@@ -3500,7 +3498,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
         read(stdin,*,iostat=iostatus,iomsg=iomessage) linebuffer080
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) tmp_sp
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then          
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Expecting a real value for station latitude"
             write(errlog(io),*)"          You entered :",linebuffer080
             write(errlog(io),*)'MR System Message: '
@@ -3509,7 +3507,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           stop 1
         endif
         if(tmp_sp.lt.-90.0_sp.or.tmp_sp.gt.90.0_sp)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then                    
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: latitude must be between -90 and 90."
             write(errlog(io),*)"          You entered :",tmp_sp
           endif;enddo
@@ -3524,7 +3522,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
         read(stdin,*,iostat=iostatus,iomsg=iomessage) linebuffer080
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) tmp_sp
         if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then                    
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Expecting a real value for station elevation"
             write(errlog(io),*)"          You entered :",linebuffer080
             write(errlog(io),*)'MR System Message: '
@@ -3533,7 +3531,7 @@ i=i+1;cd(i)="RPMD";id(i)=98753;lt(i)=  7.12;ln(i)= 125.65;el(i)=  18;lnm(i)="DAV
           stop 1
         endif
         if(tmp_sp.lt.0.0_sp.or.tmp_sp.gt.8000.0_sp)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then                    
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: elevation must be between 0 and 8000."
             write(errlog(io),*)"          You entered :",tmp_sp
           endif;enddo

@@ -579,21 +579,21 @@
             call PJ_proj_for(Lon_start,Lat_start, Met_iprojflag, &
                      Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
                      x_start,y_start)
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then   
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"Getting start coordinate for ",Lon_start,Lat_start
               write(outlog(io),*)" Projected coordinate = ",x_start,y_start
             endif;enddo
           endif
 
           if(.not.ReadGrid)then
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then   
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"Setting x grid starting at",x_start
               write(outlog(io),*)"with a spacing of ",dx_met_const
             endif;enddo
             do i = 0,nx_fullmet+1
               x_fullmet_sp(i) = real(x_start + (i-1)*dx_met_const,kind=sp)
             enddo
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then   
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"Setting y grid starting at",y_start
               write(outlog(io),*)"with a spacing of ",dy_met_const
             endif;enddo
@@ -838,12 +838,12 @@
         enddo
       endif
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then            
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)" Found these levels"
         write(outlog(io),*)&
           "  VaribleID    LevelIdx       dimID      length"
         do ivar = 1,MR_MAXVARS
-          if (Met_var_IsAvailable(ivar))then 
+          if (Met_var_IsAvailable(ivar))then
             if(Met_var_zdim_idx(ivar).eq.0)then
               write(outlog(io),*)ivar,Met_var_zdim_idx(ivar),0,0,&
                                            trim(adjustl(Met_var_GRIB_names(ivar)))
@@ -872,7 +872,7 @@
         z_approx(k) = MR_Z_US_StdAtm(p_fullmet_sp(k))
       enddo
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then            
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Dimension info:"
         write(outlog(io),*)"  record (time): ",nt_fullmet
         write(outlog(io),*)"  level  (z)   : ",np_fullmet
@@ -981,7 +981,7 @@
         end subroutine MR_GRIB_check_status
       END INTERFACE
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                MR_Read_Met_Times_GRIB             ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -1049,7 +1049,7 @@
 
           ! Each wind file needs a ref-time which in almost all cases is given
           ! in the 'units' attribute of the time variable
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)iw,trim(adjustl(MR_windfiles(iw)))
           endif;enddo
 
@@ -1142,7 +1142,7 @@
 
       ! Finished setting up the start time of each wind file in HoursSince : MR_windfile_starthour(iw)
       !  and the forecast (offset from start of file) for each step        : MR_windfile_stephour(iw,iwstep)
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"  File,  step,        Ref,     Offset,  HoursSince"
         do iw = 1,MR_iwindfiles
           do iws = 1,nt_fullmet
@@ -1455,7 +1455,7 @@
                            "sflxgrbfg_mean_",MR_iwind5_year(istep), &
                            "_CPRAT_sfc.nc"
         else
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then 
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR : Requested variable not available."
           endif;enddo
           stop 1
@@ -1579,7 +1579,7 @@
           write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&
                          ", file = ",iw,&
                          ", slice = ",iwstep
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Reading ",trim(adjustl(invar)),&
                   " from file : ",trim(adjustl(index_file)),fileposstr
           endif;enddo
@@ -1632,7 +1632,7 @@
                   call codes_get(igrib,'Nj',Nj,nSTAT)
                   if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Nj ")
                   if(nx_fullmet.ne.Ni)then
-                    do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then 
+                    do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                      write(errlog(io),*)"MR ERROR:  Grid is not the expected size"
                       write(errlog(io),*)"nx_fullmet = ",nx_fullmet
                       write(errlog(io),*)"Ni         = ",Ni
@@ -1693,7 +1693,7 @@
           write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&
                          ", file = ",iw,&
                          ", slice = ",iwstep
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Reading ",trim(adjustl(invar)),&
                   " from file : ",trim(adjustl(grib_file_path)),fileposstr
           endif;enddo
@@ -1784,7 +1784,7 @@
           write(fileposstr,'(a9,i4,a9,i4,a10,i4)')"  step = ",istep,&
                          ", file = ",iw,&
                          ", slice = ",iwstep
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Reading ",trim(adjustl(invar)),&
                   " from file : ",trim(adjustl(index_file)),fileposstr
           endif;enddo
@@ -1922,7 +1922,7 @@
         else
           ! We don't have/(can't make) the index file so scan all messages of the
           ! GRIB2 file
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then      
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Reading ",trim(adjustl(invar)),&
                   " from file : ",trim(adjustl(grib_file_path))
           endif;enddo

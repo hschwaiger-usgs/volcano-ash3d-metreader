@@ -1229,7 +1229,7 @@
             jend = ny_fullmet
             y_pad_South = .true.
           else
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then          
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: yUR > y_fullmet_sp(ny_fullmet)"
               write(errlog(io),*)"y_fullmet_sp(my_fullmet)",y_fullmet_sp(ny_fullmet)
               write(errlog(io),*)"yUr",yUr
@@ -1341,7 +1341,7 @@
           endif
           if(.not.IsPeriodic_CompGrid)then
             if(px.lt.x_start_sub.or.px.gt.x_submet_sp(nx_submet))then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then          
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)"MR ERROR: Comp point maps out of sub_Met in x."
                 write(errlog(io),*)"Comp i,j, x      :",i,j,px
                 write(errlog(io),*)"sub_Met xmin,xmax:",x_start_sub,x_submet_sp(nx_submet)
@@ -1350,7 +1350,7 @@
             endif
             if((py.lt.y_start_sub           .and..not.y_pad_South).or.&
                (py.gt.y_submet_sp(ny_submet).and..not.y_pad_North))then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then        
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)"MR ERROR: Comp point maps out of sub_Met in y."
                 write(errlog(io),*)"Comp i,j, y      :",i,j,px,py
                 write(errlog(io),*)"sub_Met ymin,ymax:",y_start_sub,y_submet_sp(ny_submet)
@@ -1435,7 +1435,7 @@
           if(xfrac.gt.1.0_sp.or.xfrac.lt.0.0_sp.or.&
              yfrac.gt.1.0_sp.or.yfrac.lt.0.0_sp)then
             ! The point is mapping outside the expected cell
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then        
+            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR : Error calculating Met to Comp mapping."
               write(errlog(io),*)"Comp point : ",i,j,x_comp_sp(i),y_comp_sp(j)
               write(errlog(io),*)"Coord on Met: ",CompPoint_X_on_Met_sp(i,j),CompPoint_Y_on_Met_sp(i,j)
@@ -2336,13 +2336,13 @@
             ii = CompPoint_on_subMet_idx(i,j,1)
             jj = CompPoint_on_subMet_idx(i,j,2)
             if(ii.lt.1.or.ii.gt.nx_max-1)then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then        
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)"MR ERROR: ii maps out of grid: ",ii
               endif;enddo
               stop 1
             endif
             if(jj.lt.0.or.jj.gt.ny1)then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then        
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)"MR ERROR: jj maps out of grid: ",jj,ny1
               endif;enddo
               stop 1
@@ -2444,7 +2444,7 @@
         enddo
         ! Check that interval was found
         if(.not.found_interv)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then        
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR:  Did not find interval in vertical 1-D interpolation."
             write(errlog(io),*)"z_met = "
             write(errlog(io),*)z_met
@@ -2515,7 +2515,7 @@
 
       inquire( file=trim(adjustl(MR_iwf_template)), exist=IsThere )
       if(.not.IsThere)then
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then        
+        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: Could not find NWP template file ",&
                      trim(adjustl(MR_iwf_template))
           write(errlog(io),*)"          Make sure the calling program sets MR_iwf_template"

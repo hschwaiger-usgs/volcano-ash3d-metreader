@@ -1,3 +1,14 @@
+!##############################################################################
+!##############################################################################
+!
+! gen_grib_index
+!
+! This stand-alone program is a wrapper for the subroutine MR_Set_Gen_Index_GRIB.
+! A grib2 filename as a single argument is expected. This program then generates
+! a grib index file.
+!
+!##############################################################################
+
       program gen_grib_index
 
       use MetReader
