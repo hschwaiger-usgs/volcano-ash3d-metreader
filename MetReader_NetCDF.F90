@@ -13,7 +13,7 @@
 !
 !     MR_Read_Met_DimVars_netcdf
 !
-!     Called once from MR_Read_Met_DimVars 
+!     Called once from MR_Read_Met_DimVars
 !
 !     This subroutine reads the variable and dimension IDs, and fills the
 !     coordinate dimension variables
@@ -25,7 +25,7 @@
 !       The lengths of all the dimensions of the file
 !       p_fullmet_sp (converted to Pa)
 !       x_fullmet_sp, y_fullmet_sp
-!       IsLatLon_MetGrid, IsGlobal_MetGrid, IsRegular_MetGrid 
+!       IsLatLon_MetGrid, IsGlobal_MetGrid, IsRegular_MetGrid
 !
 !##############################################################################
 
@@ -111,7 +111,7 @@
         ! grid geometry
 
         if (MR_iwindformat.eq.25) then
-           ! NCEP/NCAR reanalysis 2.5 degree files 
+           ! NCEP/NCAR reanalysis 2.5 degree files
            ! https://rda.ucar.edu/datasets/ds090.0
           maxdimlen            = 17
           nlev_coords_detected = 3
@@ -174,7 +174,7 @@
           MR_dy_met(ny_fullmet)    = MR_dy_met(ny_fullmet-1)
 
         elseif(MR_iwindformat.eq.26)then
-         ! JRA-55 reanalysis 1.25 degree files 
+         ! JRA-55 reanalysis 1.25 degree files
          !  https://rda.ucar.edu/datasets/ds628.0/
 
           maxdimlen            = 37
@@ -278,7 +278,7 @@
             Met_var_zdim_idx( 4) = 2
             Met_var_zdim_idx( 5) = 1
             Met_var_zdim_idx( 7) = 2
-  
+
             IsLatLon_MetGrid  = .true.
             IsGlobal_MetGrid  = .true.
             IsRegular_MetGrid = .true.
@@ -340,7 +340,7 @@
             Met_var_zdim_idx( 4) = 2
             Met_var_zdim_idx( 5) = 1
             Met_var_zdim_idx( 7) = 2
-  
+
             IsLatLon_MetGrid  = .true.
             IsGlobal_MetGrid  = .true.
             IsRegular_MetGrid = .false.
@@ -458,7 +458,7 @@
         !--------------------------------------------------------------------------
         !  Start of all non-iwind=5 cases
         if(MR_iwindformat.eq.50)then
-          ! WRF files have a special reader, but we still need to set up 
+          ! WRF files have a special reader, but we still need to set up
           call MR_Get_WRF_grid
 
         else  ! MR_iwindformat .ne. 50
@@ -516,7 +516,7 @@
             nSTAT = nf90_inquire_variable(ncid, in_var_id, invar, &
                       dimids = var_dimIDs(:var_ndims))
             if(nSTAT.ne.NF90_NOERR)call MR_NC_check_status(nSTAT,1,"inq_variable")
-    
+
             ! 3-d transient variables should be in the COORDS convention (time, level, y, x)
             !                                                                4      3  2  1
             ! if ivar = 1 (Geopotential Height), then take this opportunity to get all
@@ -687,7 +687,7 @@
               endif
               do i = 1,nx_fullmet
                 MR_dx_met(i) = x_fullmet_sp(i+1)-x_fullmet_sp(i)
-              enddo 
+              enddo
               i_dim = 2  ! get y info
               nSTAT = nf90_inquire_dimension(ncid,var_dimIDs(i_dim), &
                            name =  dimname, &
@@ -880,7 +880,7 @@
                 endif;enddo
               endif
               Met_dim_names(1) = trim(adjustl(dimname))
- 
+
             endif ! ivar.eq.1
 
             ! Dimension variables for x,y,time were read while reading GPH immediately
@@ -890,7 +890,7 @@
             ! This is the third dimension for COORD compliant NetCDF files.
             i_dim = 3
             nSTAT = nf90_inquire_dimension(ncid,var_dimIDs(i_dim), &
-                         name =  dimname, & 
+                         name =  dimname, &
                          len = dimlen)
             call MR_NC_check_status(nSTAT,1,"nf90_inquire_dimension P")
             ! Here is the master list of the known level names. For each
@@ -950,7 +950,7 @@
             ! tidy up
             deallocate(var_dimIDs)
           enddo ! ivar
- 
+
           ! We have all the level dimension names and dim_ids; now we need to get the sizes
           allocate(nlevs_fullmet(nlev_coords_detected))
           allocate(levs_code(nlev_coords_detected))
@@ -1099,7 +1099,7 @@
                   IsPressureDimension = .false.
                 endif
               endif
-              
+
               ! Finally, check for orientation
               if(IsPressureDimension.and. &     ! We are only concerned with orientation in pressure
                  nlevs_fullmet(idx).gt.1)then   ! Neglect single-valued pressure coordinates
@@ -1140,7 +1140,7 @@
         if(.not.associated(p_fullmet_sp))then
 #else
         if(.not.allocated(p_fullmet_sp))then
-#endif            
+#endif
           ! Now invert if necessary and convert to Pa
           allocate(p_fullmet_sp(maxdimlen))
           do idx = 1,nlev_coords_detected
@@ -1156,7 +1156,7 @@
           enddo
           deallocate(p_fullmet_sp)
         endif
- 
+
         ! The native vertical coordinate used in MetReader is that used for GPH.
         ! Here we check each of the vertical coordinates and note how they
         ! compare with that of GPH, assigning the following codes:
@@ -1195,19 +1195,19 @@
             endif
           enddo
         endif
-  
+
         ! Now assign these levels to the working arrays
         np_fullmet    = nlevs_fullmet(Met_var_zdim_idx(1))  ! Assign fullmet the length of H,U,V
-  
+
         ! Geopotential
-#ifdef USEPOINTERS        
+#ifdef USEPOINTERS
         if(.not.associated(p_fullmet_sp))  allocate(p_fullmet_sp(np_fullmet))
 #else
         if(.not.allocated(p_fullmet_sp))   allocate(p_fullmet_sp(np_fullmet))
 #endif
         idx = Met_var_zdim_idx(1)
         p_fullmet_sp(1:nlevs_fullmet(idx)) = levs_fullmet_sp(idx,1:nlevs_fullmet(idx))
-  
+
       endif ! else part of (MR_iwind.eq.5)
       !------------------------------------------------------------------------
 
@@ -1280,7 +1280,7 @@
 !       The lengths of all the dimensions of the file
 !       p_fullmet_sp (converted to Pa)
 !       x_fullmet_sp, y_fullmet_sp
-!       IsLatLon_MetGrid, IsGlobal_MetGrid, IsRegular_MetGrid 
+!       IsLatLon_MetGrid, IsGlobal_MetGrid, IsRegular_MetGrid
 !
 !##############################################################################
 
@@ -1479,7 +1479,7 @@
         lat_in = real(Met_Proj_lat(1,1),kind=8)
 
           ! Setting the projection parameters as libprojection.a expects
-        Met_iprojflag = 4  
+        Met_iprojflag = 4
         Met_lam0   = real(Stand_Lon,kind=8)
         Met_phi0   = real(Moad_Cen_Lat,kind=8)
         Met_phi1   = real(Truelat1,kind=8)
@@ -1616,7 +1616,7 @@
          !   POLE_LON
          !   TRUELAT2 (optional) = lat_2 # Cone intersects with the sphere
 
-         !proj +proj=merc 
+         !proj +proj=merc
 
         do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  WRF projection detected: Mercator"
@@ -1744,7 +1744,7 @@
              start = (/1,1,1,1/),count = (/nx_fullmet,ny_fullmet,neta_fullmet,1/))
       call MR_NC_check_status(nSTAT,1,"nf90_get_var P")
       p_fullmet_sp(:) = p_fullmet_sp(:) + dum4d_sp(1,1,:,1)
-      MR_Max_geoH_metP_predicted = MR_Z_US_StdAtm(p_fullmet_sp(np_fullmet)/100.0_sp) 
+      MR_Max_geoH_metP_predicted = MR_Z_US_StdAtm(p_fullmet_sp(np_fullmet)/100.0_sp)
       !p_fullmet_sp    = p_fullmet_sp    * 100.0_sp   ! convert from hPa to Pa
 
       x_inverted = .false.
@@ -1776,11 +1776,11 @@
 !
 !     MR_Read_Met_Times_netcdf
 !
-!     Called once from MR_Read_Met_DimVars 
+!     Called once from MR_Read_Met_DimVars
 !
 !     This subroutine opens each NetCDF file and determines the time of each
 !     time step of each file in the number of hours since MR_BaseYear.
-!     In most cases, the length of the time variable (nt_fullmet) will be 
+!     In most cases, the length of the time variable (nt_fullmet) will be
 !     read directly from the file and overwritten (is was set in MR_Read_Met_DimVars_netcdf
 !     above).
 !
@@ -2177,7 +2177,7 @@
           if(iw.eq.1.and.(.not.IsRegular_MetGrid))then ! for iwind=5, this is 27,29, or 30
             ! Normally we would populate the x and y arrays in MR_Read_Met_DimVars_netcdf, but
             ! for Gaussian or otherwise irregular grids, it is easier to just read the grids
-            ! directly.  We will do this now while we have the Geopotential Height file open.  
+            ! directly.  We will do this now while we have the Geopotential Height file open.
             nSTAT = nf90_inq_dimid(ncid,Met_dim_names(3),y_dim_id)
             call MR_NC_check_status(nSTAT,1,"nf90_inq_dimid Y (lat)")
             nSTAT = nf90_Inquire_Dimension(ncid,y_dim_id,len=ny_fullmet)
@@ -3742,7 +3742,7 @@
               do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                 write(outlog(io),*)istep,"Reading ","ivar"," from file : ",trim(adjustl(infile))
               endif;enddo
-              !varname = 
+              !varname =
               !nSTAT = nf90_inq_varid(ncid,varname,in_var_id1)
               do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)'MR ERROR: Need varname for WRF variable > ivar=6'
@@ -3907,7 +3907,7 @@
               ! Surface winds usually have a z coordinate as well
             allocate(temp3d_sp(nx_submet,ny_submet,1,1));temp3d_sp(:,:,:,:)=0.0_sp
           endif
-  
+
           do i=1,ict        !read subgrid at current time step
             ! 2d variables for iwf .ne. 25
             if(ivar.eq.11.or.ivar.eq.12)then

@@ -5,14 +5,14 @@
 !      Larry G. Mastin (lgmastin@usgs.gov), and Roger P. Denlinger (roger@usgs.gov).
 !
 !      The model and its source code are products of the U.S. Federal Government and therefore
-!      bear no copyright.  They may be copied, redistributed and freely incorporated 
+!      bear no copyright.  They may be copied, redistributed and freely incorporated
 !      into derivative products.  However as a matter of scientific courtesy we ask that
 !      you credit the authors and cite published documentation of this model (below) when
 !      publishing or distributing derivative products.
 !
 !      Schwaiger, H.F., Denlinger, R.P., and Mastin, L.G., 2012, Ash3d, a finite-
 !         volume, conservative numerical model for ash transport and tephra deposition,
-!         Journal of Geophysical Research, 117, B04204, doi:10.1029/2011JB008968. 
+!         Journal of Geophysical Research, 117, B04204, doi:10.1029/2011JB008968.
 !
 !      Although this program has been used by the USGS, no warranty, expressed or
 !      implied, is made by the USGS or the United States Government as to the accuracy
@@ -89,7 +89,7 @@
         ! Publicly available variables
 #include "MR_version.h"
       ! This file (MR_version.h) is the output of the simple script
-!get_version.sh 
+!get_version.sh
 !  echo -n "      character(len=40),parameter,public :: MR_GitComID ='" > MR_version.h
 !  git log -n 1 | grep commit | cut -f 2 -d' ' | tr -d $'\n' >> MR_version.h
 !  echo -n "'" >> MR_version.h
@@ -135,7 +135,7 @@
       logical          ,public :: MR_useCompS            = .false.
 
       integer,public :: MR_iwind       !     MR_IWIND specifies the type of wind input to the model:
-                             !   MR_IWIND=1 if a 1-D wind sounding is use, 
+                             !   MR_IWIND=1 if a 1-D wind sounding is use,
                              !           =2 if a 3-D grid is read from a ASCII file.
                              !           =3 if a single, multistep 3-D file is used
                              !           =4 if multiple 3-D NetCDF files are used
@@ -212,7 +212,7 @@
       character(len=24)                        ,public :: MR_iw5_suffix2
       real(kind=dp)                            ,public :: MR_iw5_hours_per_file
 
-#if USEPOINTERS      
+#if USEPOINTERS
 !      character(len=130),dimension(:)  ,pointer,public :: fc_windfilename
       character(len=130),dimension(:)  ,pointer,public :: MR_windfiles                 => null() ! name of file
       real(kind=dp)     ,dimension(:)  ,pointer,public :: MR_windfile_starthour        => null()
@@ -272,11 +272,11 @@
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d_metP      => null()
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d2_metP     => null()
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_geoH_metP_last  => null() ! These are needed for compH interpolation
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_geoH_metP_next  => null() 
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vx_metP_last    => null() ! These might need to be stored to avoid a 
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_geoH_metP_next  => null()
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vx_metP_last    => null() ! These might need to be stored to avoid a
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_vx_metP_next    => null() ! second reading
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vy_metP_last    => null() 
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vy_metP_next    => null() 
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vy_metP_last    => null()
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_vy_metP_next    => null()
 #else
       integer      ,dimension(:,:)  ,allocatable, public :: MR_dum2d_met_int         ! Used for categorical variables
       real(kind=sp),dimension(:,:)  ,allocatable, public :: MR_dum2d_met             ! Used for surface variables
@@ -284,7 +284,7 @@
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_dum3d2_metP
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_geoH_metP_last        ! These are needed for compH interpolation
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_geoH_metP_next
-      real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vx_metP_last          ! These might need to be stored to avoid a 
+      real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vx_metP_last          ! These might need to be stored to avoid a
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vx_metP_next          ! second reading
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vy_metP_last
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_vy_metP_next
@@ -298,7 +298,7 @@
       ! Parameter iHeightHandler specifies what to do if the maximum height
       ! of the simulation region exceeds the maximum height in the wind files.
       ! If iHeightHandler = 1, stop the program if the plume height exceeds mesoscale height
-      !                     2, wind direction at levels above the highest node 
+      !                     2, wind direction at levels above the highest node
       !                        equal that of the highest node.  Temperatures in the
       !                        upper nodes don't change between 11 and 20 km; above
       !                        20 km they increase by 2 C/km, as in the Standard
@@ -367,9 +367,9 @@
 #ifdef USEPOINTERS
       integer      ,dimension(:,:)  ,pointer, public :: MR_dum2d_comp_int => null() ! Used for categorical variables
       real(kind=sp),dimension(:,:)  ,pointer, public :: MR_dum2d_comp     => null() ! Used for surface variables
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d_compP    => null() ! 
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d_compP_2  => null() ! 
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d_compH    => null() ! 
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d_compP    => null() !
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d_compP_2  => null() !
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d_compH    => null() !
       real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d_compH_2  => null() ! Used only when a vector field
                                                                                ! rotation is needed
 #else
@@ -471,7 +471,7 @@
       logical,public :: y_inverted     = .false. ! Some LatLon grids start at the North Pole and increment down
       logical,public :: z_inverted     = .false. ! Some grids give top pressure first
       logical,public :: y_pad_North    = .false. ! Some computational grids will require values above the top met point
-      logical,public :: y_pad_South    = .false. !   
+      logical,public :: y_pad_South    = .false. !
 
       ! Met copies of projection variables, used for proj call on Met Grid
       character(len=4),public :: Met_gridtype
@@ -574,7 +574,7 @@
       real(kind=sp),dimension(:,:) ,pointer, public :: MR_Topo_met   => null()
       real(kind=sp),dimension(:,:) ,pointer, public :: MR_Topo_comp  => null()
       real(kind=sp),dimension(:,:) ,pointer, public :: MR_jacob_met  => null() ! Jacobian of trans. = MR_ztop-MR_Topo_met
-      real(kind=sp),dimension(:,:) ,pointer, public :: MR_jacob_comp => null() 
+      real(kind=sp),dimension(:,:) ,pointer, public :: MR_jacob_comp => null()
 #else
       real(kind=sp),dimension(:)   ,allocatable, public :: s_comp_sp ! s-coordinates (scaled z) of computational grid
       real(kind=sp),dimension(:,:) ,allocatable, public :: MR_Topo_met
@@ -635,7 +635,7 @@
       character(len=80),dimension(MR_MAXVARS),public   :: Met_var_GRIB_names       ! name in the file
       character(len=5) ,dimension(MR_MAXVARS),public   :: Met_var_WMO_names        ! WMO version of the name
       integer          ,dimension(MR_MAXVARS),public   :: Met_var_ndim             ! number of expected dimensions for this variable
-      integer          ,dimension(MR_MAXVARS),public   :: Met_var_zdim_idx         ! The index of this coordinate (used in Met_var_nlevs) 
+      integer          ,dimension(MR_MAXVARS),public   :: Met_var_zdim_idx         ! The index of this coordinate (used in Met_var_nlevs)
       integer          ,dimension(MR_MAXVARS),public   :: Met_var_zdim_ncid        ! The dimID of the dimension in the nc file
       integer                                ,public   :: nlev_coords_detected = 0
       integer          ,dimension(MR_MAXVARS,4),public :: Met_var_GRIB2_DPcPnSt    ! Grib2 files have variables identified by
@@ -1022,7 +1022,7 @@
       !   Note: All default names are that assigned by netcdf-java in the grib-to-nc conversion
       !         Command used :: java -Xmx2048m -classpath ~/ncj/netcdfAll-4.5.jar ucar.nc2.dataset.NetcdfDataset \
       !                          -in ${GribFile} -out ${NCFile} -IsLargeFile
-      ! 
+      !
       !         Alternatively, one could use ncl_convert2nc ${GribFile} -L
       !         This creates variable names such as HGT_P0_L100_GLL0; i.e. WMOname_P[param_class]_L[surf_class]_[gridtype]
       !         where gridtype is one of:
@@ -1031,7 +1031,7 @@
       !          Met_gridtype = "GLC0"  ! Lambert Conformal
       !          Met_gridtype = "GST0"  ! Polar stereographic
       !
-      !         The NC_names listed are the names written by netcdf-java when converting GRIB forecast 
+      !         The NC_names listed are the names written by netcdf-java when converting GRIB forecast
       !         files to netcdf.  Reanalysis files might be provided in netcdf format directly, in
       !         which case, the names are overwritten below. Since these name occasionally change,
       !         known variants are checked if the expected name is not found.
@@ -1213,7 +1213,7 @@
       Met_var_WMO_names(30)         = "RH"
       Met_var_GRIB2_DPcPnSt(30,1:4) = (/0, 1, 1, 100/)
       Met_var_GRIB1_Param(30)       = 52
-      Met_var_GRIB1_St(30)          = "pl" 
+      Met_var_GRIB1_St(30)          = "pl"
       Met_var_ndim(30)              = 4
         ! Specific humidity  (kg/kg)
       Met_var_NC_names(31)          = "Specific_humidity_isobaric"
@@ -1341,7 +1341,7 @@
         endif;enddo
 
         MR_iGridCode = 1221  ! This is almost NAM221, but uses a diff Re
-        call MR_Set_Met_NCEPGeoGrid(MR_iGridCode) 
+        call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
         MR_Reannalysis = .true.
 
         ! Mechanical / State variables
@@ -1776,7 +1776,7 @@
           !    nam.t00z.alaskanest.hiresf00.tm00
           !
           ! Note: the dimension names given below are those generated by netcdf-java 4.5
-          !       acting on the truncated GRIB files generated by get_nam91.sh which 
+          !       acting on the truncated GRIB files generated by get_nam91.sh which
           !       uses get_inv.pl to get just the GRIB layers needed.
           !       This is relavent because the numbering of the isobaric dimensions
           !       appears to be in the order they are processed in the GRIB file.
@@ -1827,7 +1827,7 @@
 
       elseif (MR_iwindformat.eq.14) then
         ! CONUS 1227 (3.0 km)
-          !  
+          !
           !  nam.t00z.conusnest.hiresf00.tm00.grib2.nc
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
@@ -1984,7 +1984,7 @@
         fill_value_sp = -9999.0_sp
 
       elseif (MR_iwindformat.eq.23)then
-         ! NCEP / DOE reanalysis 2.5 degree files 
+         ! NCEP / DOE reanalysis 2.5 degree files
          ! https://rda.ucar.edu/datasets/ds091.0
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! latest is 0, but deprecated
@@ -2014,7 +2014,7 @@
         fill_value_sp = -9999.0_sp
 
       elseif (MR_iwindformat.eq.24)then
-         ! NASA-MERRA reanalysis 0.625 x 0.5 degree files 
+         ! NASA-MERRA reanalysis 0.625 x 0.5 degree files
 
         if(MR_iversion.eq.-1)MR_iversion = 2 ! v1 finished in 2016
         do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
@@ -2048,7 +2048,7 @@
         fill_value_sp = 1.0e15_sp
 
       elseif (MR_iwindformat.eq.25)then
-         ! NCEP/NCAR reanalysis 2.5 degree files 
+         ! NCEP/NCAR reanalysis 2.5 degree files
 
         if(MR_iversion.eq.-1)MR_iversion = 0 !
         do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
@@ -2072,7 +2072,7 @@
           Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Pressure_vertical_velocity_isobaric"
           ! Moisture
           Met_var_IsAvailable(30)=.true.
-  
+
           fill_value_sp = -9999.0_sp
 
         elseif(MR_iwind.eq.5)then
@@ -2089,7 +2089,7 @@
           !Met_var_IsAvailable(30)=.true.; Met_var_NC_names(30)="rhum"      ! short  (302.66f,0.01f)
           Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="shum"      ! short SpecHum ~ mixing ratio kg/kg(0.032666f,1.e-06f)
           !Met_var_IsAvailable(32)=.true.; Met_var_NC_names(32)="shum"      ! short should really be QL (liquid)
-  
+
           fill_value_sp = -9999.0_sp
 
         else
@@ -2100,10 +2100,10 @@
         endif
 
       elseif (MR_iwindformat.eq.26)then
-         ! JRA-55 reanalysis 1.25 degree files 
+         ! JRA-55 reanalysis 1.25 degree files
          ! https://rda.ucar.edu/datasets/ds628.0/
 
-        if(MR_iversion.eq.-1)MR_iversion = 0 ! 
+        if(MR_iversion.eq.-1)MR_iversion = 0 !
         do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
                     "JRA-55 reanalysis 1.25 degree files"
@@ -2129,7 +2129,7 @@
         fill_value_sp = -9999.0_sp
 
       elseif (MR_iwindformat.eq.27)then
-         ! NOAA-CIRES reanalysis 2.0 degree files 
+         ! NOAA-CIRES reanalysis 2.0 degree files
          ! https://rda.ucar.edu/datasets/ds131.2/
          ! https://www.esrl.noaa.gov/psd/data/gridded/data.20thC_ReanV2c.pressure.html
 
@@ -2147,16 +2147,16 @@
           call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
           MR_Reannalysis = .true.
           MR_iw5_hours_per_file = 8760.0_dp
-  
+
           Met_var_GRIB1_Table(1:MR_MAXVARS) = 2
-  
+
           if(MR_Use_RDA)then
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! Version 2c (https://rda.ucar.edu/datasets/ds131.2/)
             ! Note: these must be converted from GRIB using
             !   ncl_convert2nc pgrbanl_mean_1912_VVEL_pres.grib -L
             ! netcdf-java does not seem to work on these
-    
+
             ! Momentum / State variables
             Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="HGT_GDS0_ISBL"
             Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_GRD_GDS0_ISBL"
@@ -2164,10 +2164,10 @@
             Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="V_VEL_GDS0_ISBL"
             Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="TMP_GDS0_ISBL"
             Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="V_VEL_GDS0_ISBL"
-          else 
+          else
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             ! Version 2c (https://www.esrl.noaa.gov/psd/data/gridded/data.20thC_ReanV2c.pressure.html)
-    
+
             ! Momentum / State variables
             Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="hgt"
             Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="uwnd"
@@ -2178,7 +2178,7 @@
           endif
           fill_value_sp = 1.0e+20_sp
         elseif(MR_iversion.eq.3)then
-          ! NOAA-CIRES-DOE Twentieth Century Reanalysis Version 3 
+          ! NOAA-CIRES-DOE Twentieth Century Reanalysis Version 3
           ! https://rda.ucar.edu/datasets/ds131.3/
           ! Note: this is also available from
           ! https://psl.noaa.gov/data/gridded/data.20thC_ReanV3.html, but might
@@ -2192,9 +2192,9 @@
           call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
           MR_Reannalysis = .true.
           MR_iw5_hours_per_file = 8760.0_dp
-  
+
           Met_var_GRIB1_Table(1:MR_MAXVARS) = 2
-  
+
           ! Momentum / State variables
           Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="gh"
           Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="u"
@@ -2361,7 +2361,7 @@
 
       elseif (MR_iwindformat.eq.31) then
         ! NAM Caribbean 181 (0.108 degrees)
-          !  
+          !
           !  nam.t00z.afwaca00.tm00.grib2.nc
 
         if(MR_iversion.eq.-1)MR_iversion = 0 ! forecasts are all v.0
@@ -2576,7 +2576,7 @@
         Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W"
         Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T"      ! float K perturbation potential temperature (theta-t0)
         Met_var_IsAvailable(6)=.true.; Met_var_NC_names(6)="PB"
-        Met_var_IsAvailable(7)=.false.; 
+        Met_var_IsAvailable(7)=.false.;
 
         ! Surface
         Met_var_IsAvailable(10)=.true.; Met_var_NC_names(10)="PBLH"
@@ -2760,14 +2760,14 @@
 !     From the calling program, this is called once the names of the NWP files
 !     are specified.  If a custom netcdf template file is to be used (iwf=0), then
 !     the variable MR_iwf_template must also be filled so that it can be read
-!     from MR_Read_Met_DimVars_[].  
+!     from MR_Read_Met_DimVars_[].
 !
 !     After this subroutine completes, the following variables will be set:
 !       All the projection parameters of NWP grid
 !       The lengths of all the dimensions of the file
 !       p_fullmet_sp (converted to Pa)
 !       x_fullmet_sp, y_fullmet_sp
-!       IsLatLon_MetGrid, IsGlobal_MetGrid, IsRegular_MetGrid 
+!       IsLatLon_MetGrid, IsGlobal_MetGrid, IsRegular_MetGrid
 !
 !     The next step is for the calling program to specify the projection parameters
 !     of the computational grid (i.e. the grid MetReader should be returning values to)
@@ -3068,7 +3068,7 @@
       Comp_Re   = 0.0_8
 
       if(.not.isLatLon_CompGrid)then
-        Comp_iprojflag = ipf 
+        Comp_iprojflag = ipf
         if(Comp_iprojflag.eq.1)then
           ! Polar stereographic
           Comp_lam0    = lam0
@@ -3333,12 +3333,12 @@
             enddo
           enddo
         else
-          ! MR_dx_met and MR_dy_met might not be defined for radio sonde or ASCII 
+          ! MR_dx_met and MR_dy_met might not be defined for radio sonde or ASCII
           ! grids.  Just set MR_minlen to 10% of min domain dimension
           MR_minlen = 0.1_sp * (x_comp_sp(nx) - x_comp_sp(1))
           MR_minlen = min(MR_minlen,0.1_sp * (y_comp_sp(ny) - y_comp_sp(1))) ! in km2
           ! HFS: Need to fix this for radio sonde
-          !MR_sigma_nz_submet(i,j) = 
+          !MR_sigma_nz_submet(i,j) =
         endif
       endif
 
@@ -3796,17 +3796,17 @@
         allocate(MR_MetStep_File(MR_MetSteps_Total))               ;MR_MetStep_File(:)=''
         allocate(MR_MetStep_findex(MR_MetSteps_Total))             ;MR_MetStep_findex(:)=0
         allocate(MR_MetStep_tindex(MR_MetSteps_Total))             ;MR_MetStep_tindex(:)=0
-        allocate(MR_MetStep_Hour_since_baseyear(MR_MetSteps_Total));MR_MetStep_Hour_since_baseyear(:)  =0.0_sp  
-        allocate(MR_MetStep_Interval(MR_MetSteps_Total))           ;MR_MetStep_Interval(:)=0  
-        allocate(MR_MetStep_year(MR_MetSteps_Total))               ;MR_MetStep_year(:)=0  
-        allocate(MR_MetStep_month(MR_MetSteps_Total))              ;MR_MetStep_month(:)=  0  
-        allocate(MR_MetStep_day(MR_MetSteps_Total))                ;MR_MetStep_day(:)=0  
-        allocate(MR_MetStep_DOY(MR_MetSteps_Total))                ;MR_MetStep_DOY(:)=0  
+        allocate(MR_MetStep_Hour_since_baseyear(MR_MetSteps_Total));MR_MetStep_Hour_since_baseyear(:)  =0.0_sp
+        allocate(MR_MetStep_Interval(MR_MetSteps_Total))           ;MR_MetStep_Interval(:)=0
+        allocate(MR_MetStep_year(MR_MetSteps_Total))               ;MR_MetStep_year(:)=0
+        allocate(MR_MetStep_month(MR_MetSteps_Total))              ;MR_MetStep_month(:)= 0
+        allocate(MR_MetStep_day(MR_MetSteps_Total))                ;MR_MetStep_day(:)=0
+        allocate(MR_MetStep_DOY(MR_MetSteps_Total))                ;MR_MetStep_DOY(:)=0
         allocate(MR_MetStep_Hour_Of_Day(MR_MetSteps_Total))        ;MR_MetStep_Hour_Of_Day(:)=0.0_sp
         allocate(MR_iwind5_year(MR_MetSteps_Total))                ;MR_iwind5_year(:)=0
       endif
 
-      ! Finally, we need to loop through the steps exactly as above, but this time populate 
+      ! Finally, we need to loop through the steps exactly as above, but this time populate
       ! the lists just allocated
       if(prestep)then
         Found_First_Step = .true.
@@ -4272,7 +4272,7 @@
             write(outlog(io),*)"Callling MR_Regrid_P2H_linear from MR_Read_3d_MetH_Variable for ",i,j
           endif;enddo
 
-          call MR_Regrid_P2H_linear(np_fullmet+2, z_col_metP,       var_col_metP, & 
+          call MR_Regrid_P2H_linear(np_fullmet+2, z_col_metP,       var_col_metP, &
                                     nz_comp,      dumVertCoord_sp,  var_col_metH)
           MR_dum3d_metH(i,j,:) = var_col_metH
 
@@ -4543,7 +4543,7 @@
       subroutine MR_Read_2d_Met_Variable(ivar,istep)
 
       integer,intent(in)        :: ivar
-      integer,intent(in)        :: istep   
+      integer,intent(in)        :: istep
 
       integer :: io                           ! Index for output streams
 
@@ -4779,7 +4779,7 @@
             call MR_Regrid_MetP_to_CompH(istep)
             MR_dum3d_compH_2(1:nx_comp,1:ny_comp,1:nz_comp) = &
               MR_dum3d_compH(1:nx_comp,1:ny_comp,1:nz_comp)
-  
+
             ! copy u to main workspace and regrid
             MR_dum3d_metP(1:nx_submet,1:ny_submet,1:np_fullmet) = &
               MR_u_ER_metP(1:nx_submet,1:ny_submet,1:np_fullmet)
@@ -4869,7 +4869,7 @@
         call MR_Regrid_MetP_to_CompH(istep) ! Takes MR_dum3d_metP and fills MR_dum3d_compH
           MR_dum3d_compH_2 = MR_dum3d_compH
 
-        call MR_Read_3d_MetP_Variable(2,istep) 
+        call MR_Read_3d_MetP_Variable(2,istep)
         call MR_Regrid_MetP_to_CompH(istep)
         ! Now compH and compH_2 have vx and vy
       elseif(Map_Case.eq.5)then
@@ -5085,7 +5085,7 @@
           ! Loop through the nodes and reset any that are negative or non-acsending in p
           ! This is usually never invoked, but would only affect potentially the bottom few nodes
           ! The intent is to maintain a monotonic GPH, while getting irrelevant nodes out of the
-          ! way. 
+          ! way.
           do k=1,np_fullmet
             if(z_col_metP(k).le.real(k,kind=sp)*MR_MIN_DZ) z_col_metP(k)=real(k,kind=sp)*MR_MIN_DZ
           enddo
@@ -5223,7 +5223,7 @@
 !     This subroutine calculates the lon/lat coordinates for each point
 !     of the Met grid.
 !
-!     Sets: 
+!     Sets:
 !           MR_Have_LL_mapping
 !           MR_xy2ll_xlon
 !           MR_xy2ll_ylat

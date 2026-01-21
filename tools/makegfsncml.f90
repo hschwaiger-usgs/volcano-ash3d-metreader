@@ -14,9 +14,9 @@
 !      --The program has been successsfully tested and run on the Linux Operating System using
 !          Red Hat and Ubuntu 10 and 11.
 
-!       Although this program has been used by the USGS, no warranty, expressed or implied, is 
-!         made by the USGS or the United States Government as to the accuracy and functioning 
-!         of the program and related program material nor shall the fact of distribution constitute 
+!       Although this program has been used by the USGS, no warranty, expressed or implied, is
+!         made by the USGS or the United States Government as to the accuracy and functioning
+!         of the program and related program material nor shall the fact of distribution constitute
 !         any such warranty, and no responsibility is assumed by the USGS in connection therewith.
 
 !    program that makes an ncml file that strips out all the variables not used

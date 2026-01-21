@@ -100,8 +100,8 @@
                       WINDROOT)
 
       ! Now set up the computational grid
-      nxmax = 3 ! 
-      nymax = 3 ! 
+      nxmax = 3 !
+      nymax = 3 !
       nzmax = 2 ! This is not really used in this utility
       allocate(lon_grid(nxmax)); lon_grid(1:3) = (/inlon-0.5_4,inlon,inlon+0.5_4/)
       allocate(lat_grid(nymax)); lat_grid(1:3) = (/inlat-0.5_4,inlat,inlat+0.5_4/)
@@ -149,7 +149,7 @@
 ! Read_ComdLine
 !
 !  This subroutine will parse the command-line options and set up the run
-!  specifications. 
+!  specifications.
 !
 !##############################################################################
 
@@ -638,7 +638,7 @@
               if (IsThere)then
                 GFS_FC_step_avail(i) = ii
                 FCEndHour = FCStartHour + real(FC_hour_int,kind=8)
-                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then        
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                   write(outlog(io),*)"     Found: ",trim(adjustl(testfile))
               endif;enddo
               else
@@ -794,7 +794,6 @@
       call MR_Read_3d_MetP_Variable(ivar,MR_iMetStep_Now+1)
       AirTemp_meso_next_step_MetP_sp = MR_dum3d_MetP
 
-      
       ! Get the fractional time between forecast steps
       Probe_StartHour = HS_hours_since_baseyear(inyear,inmonth,inday,inhour,&
                                                 MR_BaseYear,MR_useLeap)

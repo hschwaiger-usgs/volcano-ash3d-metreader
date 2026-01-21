@@ -26,7 +26,7 @@ endif
 
 # Production run flags
 ifeq ($(RUN), OPT)
-    FFLAGS = -O3 -w -fno-math-errno -fno-trapping-math -fno-signaling-nans -fcx-limited-range -fno-rounding-math -ftree-vectorize -funroll-loops -finline-functions 
+    FFLAGS = -O3 -w -fno-math-errno -fno-trapping-math -fno-signaling-nans -fcx-limited-range -fno-rounding-math -ftree-vectorize -funroll-loops -finline-functions
 endif
 
   # Preprocessing flags

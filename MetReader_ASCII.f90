@@ -66,7 +66,7 @@
 !           the 1d array, p_fullmet_sp, is allocated as the intersection of all
 !           the individual pressure profiles so that programs can have data on the
 !           metP grid
-!     
+!
 !     Allocated the dummy arrays for storing met data on met and computational
 !     grids:  MR_dum2d_met(nx_submet,ny_submet)
 !             MR_dum3d_metP(nx_submet,ny_submet,np_fullmet)
@@ -126,7 +126,7 @@
       real(kind=sp),dimension(16) :: pres_Snd_tmp
       real(kind=sp) :: WindTime
       integer :: iw,iws
-      real(kind=sp) :: rvalue1,rvalue2,rvalue3 
+      real(kind=sp) :: rvalue1,rvalue2,rvalue3
       real(kind=sp),dimension(10) :: rvalues
       integer       :: ivalue1,ivalue2,ivalue3,ivalue4,ivalue5
       real(kind=sp) :: rvalue1_o,rvalue3_o
@@ -849,7 +849,7 @@
           ! or hPa
           z_approx(k) = MR_Z_US_StdAtm(p_fullmet_sp(k))
         enddo
- 
+
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       elseif(MR_iwind.eq.1.and.MR_iwindformat.eq.2)then
         ! We are reading radiosonde data from http://weather.uwyo.edu/ or https://ruc.noaa.gov/raobs/
@@ -1186,7 +1186,7 @@
                     read(fid,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080_2
                     if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080_2,iomessage)
                     read(linebuffer080  ,154,iostat=iostatus,iomsg=iomessage) &
-                         dumstr1,dumstr2,dumstr3,dumstr4,GTSstr(39:44) 
+                         dumstr1,dumstr2,dumstr3,dumstr4,GTSstr(39:44)
                     if(iostatus.ne.0)then
                       do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                         if(iostatus.lt.0)then
@@ -1203,7 +1203,7 @@
                       endif;enddo
                       stop 1
                     endif
-                    read(linebuffer080_2,154,iostat=iostatus,iomsg=iomessage)GTSstr(45:53)                         
+                    read(linebuffer080_2,154,iostat=iostatus,iomsg=iomessage)GTSstr(45:53)
                     if(iostatus.ne.0)then
                       do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                         if(iostatus.lt.0)then
@@ -1375,7 +1375,7 @@
               !  Pressure: No error-checking
               MR_SndVars_metP(iloc,itime,1,:) = MR_SndVars_metP(iloc,itime,1,:) * 100.0_sp ! convert to Pa
               ! Height:  also assume valid
-              !  do the block-specific adjustments to get the correct m blocks for 1000 mb 
+              !  do the block-specific adjustments to get the correct m blocks for 1000 mb
               if(H_tmp(1).ge.500)then   ! kludge for negative heights
                 MR_SndVars_metP(iloc,itime,2,1)  = -1.0_sp * real(H_tmp(1)-500,kind=sp)
               else
@@ -1591,7 +1591,7 @@
               ! The line buffer contains numeric values.  Assume the first value is pressure and
               ! compare with the mandatory levels
               ! Turns out some 'mandatory' levels might be absent, so we track the last level read
-              ! and interpolater if needed. 
+              ! and interpolater if needed.
               il = 0  ! counter for the number of data lines read
               iil = 1 ! index for which mandatory pressure level we are currently at
               ! Plan to read up to MAX_ROWS
@@ -1868,7 +1868,7 @@
           z_approx(k) = MR_Z_US_StdAtm(p_fullmet_sp(k))
         enddo
       else
-        ! Neither MR_iwind.eq.1.and.MR_iwindformat.eq.1 nor 
+        ! Neither MR_iwind.eq.1.and.MR_iwindformat.eq.1 nor
         !         MR_iwind.eq.1.and.MR_iwindformat.eq.2
         ! Not sure what to do
         do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
@@ -1926,7 +1926,7 @@
 !
 !     Allocates the dummy arrays for storing met data on met and computational grids
 !
-!     Sets: 
+!     Sets:
 !           n[t,x,y,p]_met     :: sets the size of the dimensions of the sub-met grid
 !           [x,y,p]_met_sp     :: arrays holding dimension values of the sub-met grid
 !           MR_dum2d_met(nx_submet,ny_submet)
@@ -1999,7 +1999,7 @@
         allocate(MR_Snd2Comp_map_wgt(nx_comp,ny_comp,MR_nSnd_Locs))
         allocate(MR_Snd2Comp_map_idx(nx_comp,ny_comp,MR_nSnd_Locs)) ! contains the indeces of the
                                                                     ! MR_nstat stations used in weighting
-        ! For the radiosonde case, compare computational grid with internal station list and 
+        ! For the radiosonde case, compare computational grid with internal station list and
         ! list available stations in the domain.
         if(MR_iwindformat.eq.2)then
           call MR_Get_Radiosonde_Stations_InDomain
@@ -2011,7 +2011,7 @@
           MR_Snd2Comp_map_wgt(1:nx_comp,1:ny_comp,1:MR_nSnd_Locs) = 1.0_sp
           MR_Snd2Comp_map_idx(1:nx_comp,1:ny_comp,1:MR_nSnd_Locs) = 1
         else
-          ! Lots of algorithms to consider: 
+          ! Lots of algorithms to consider:
           !  Triangulation would be a good one if we had heaps of stations; assume we don't
           !  Nearest Neighbor is easiest.
           !call MR_Calc_Snd_Weights_NearNeigh
@@ -2040,9 +2040,9 @@
 !
 !     MR_Set_Met_Times_ASCII
 !
-!     Called once from 
+!     Called once from
 !
-!     This subroutine 
+!     This subroutine
 !
 !     Allocated the dummy arrays for storing met data on met and computational
 !
@@ -2229,7 +2229,7 @@
       character(len=2 ),dimension(MAX_STAT_NUM) :: ct   ! Station country
       integer :: i
 
-      ! Load the station data.  This is from two files available on 
+      ! Load the station data.  This is from two files available on
       ! https://ruc.noaa.gov/raobs/General_Information.html
       ! stat2000.txt (for US sites) and international_sites.txt for the rest of the world
       ! These files are modified to only contain stations currently active
@@ -2943,7 +2943,7 @@ i=i+1;cd(i)="ZLYA";id(i)=53845;lt(i)= 36.60;ln(i)= 109.50;el(i)= 959;lnm(i)="YAN
 i=i+1;cd(i)="9999";id(i)=53915;lt(i)= 35.55;ln(i)= 106.67;el(i)=1348;lnm(i)="PINGLIANG                ";st(i)="  ";ct(i)="CN"
 i=i+1;cd(i)="9999";id(i)=54102;lt(i)= 43.95;ln(i)= 116.07;el(i)= 991;lnm(i)="XILIN HOT/ABAGNAR        ";st(i)="  ";ct(i)="CN"
 i=i+1;cd(i)="9999";id(i)=54135;lt(i)= 43.60;ln(i)= 122.27;el(i)= 180;lnm(i)="TONGLIAO                 ";st(i)="  ";ct(i)="CN"
-i=i+1;cd(i)="ZYCC";id(i)=54161;lt(i)= 43.90;ln(i)= 125.22;el(i)= 238;lnm(i)="CHANGCHUN                ";st(i)="  ";ct(i)="CN" 
+i=i+1;cd(i)="ZYCC";id(i)=54161;lt(i)= 43.90;ln(i)= 125.22;el(i)= 238;lnm(i)="CHANGCHUN                ";st(i)="  ";ct(i)="CN"
 i=i+1;cd(i)="9999";id(i)=54218;lt(i)= 42.27;ln(i)= 118.97;el(i)= 572;lnm(i)="CHIFENG/ULANHAD          ";st(i)="  ";ct(i)="CN"
 i=i+1;cd(i)="9999";id(i)=54292;lt(i)= 42.88;ln(i)= 129.47;el(i)= 178;lnm(i)="YANJI                    ";st(i)="  ";ct(i)="CN"
 i=i+1;cd(i)="9999";id(i)=54337;lt(i)= 41.12;ln(i)= 121.07;el(i)=  70;lnm(i)="JINZHOU                  ";st(i)="  ";ct(i)="CN"
@@ -3135,10 +3135,10 @@ i=i+1;cd(i)="SKRH";id(i)=80035;lt(i)= 11.53;ln(i)= -72.93;el(i)=   4;lnm(i)="RIO
 i=i+1;cd(i)="SKBO";id(i)=80222;lt(i)=  4.70;ln(i)= -74.13;el(i)=2548;lnm(i)="BOGOTA/ELDORADO          ";st(i)="  ";ct(i)="CO"
 i=i+1;cd(i)="9999";id(i)=80241;lt(i)=  4.55;ln(i)= -70.92;el(i)= 167;lnm(i)="GAVIOTAS                 ";st(i)="  ";ct(i)="CO"
 i=i+1;cd(i)="SKLT";id(i)=80398;lt(i)= -4.17;ln(i)= -69.95;el(i)=  84;lnm(i)="LETICIA/VASQUEZ COBO     ";st(i)="  ";ct(i)="CO"
-i=i+1;cd(i)="SMR_VBS";id(i)=80413;lt(i)= 10.25;ln(i)= -67.65;el(i)= 437;lnm(i)="MARACAY                  ";st(i)="  ";ct(i)="VN"
+i=i+1;cd(i)="SVBS";id(i)=80413;lt(i)= 10.25;ln(i)= -67.65;el(i)= 437;lnm(i)="MARACAY                  ";st(i)="  ";ct(i)="VN"
 i=i+1;cd(i)="9999";id(i)=80422;lt(i)= 10.67;ln(i)= -63.25;el(i)=  10;lnm(i)="CARUPANO                 ";st(i)="  ";ct(i)="VN"
 i=i+1;cd(i)="SVCB";id(i)=80444;lt(i)=  8.15;ln(i)= -63.55;el(i)=   8;lnm(i)="CIUDAD BOLIVAR           ";st(i)="  ";ct(i)="VN"
-i=i+1;cd(i)="SVSA";id(i)=80447;lt(i)=  7.85;ln(i)= -72.45;el(i)= 378;lnm(i)="SAN ANTONIO TACHIRA      ";st(i)="  ";ct(i)="VN" 
+i=i+1;cd(i)="SVSA";id(i)=80447;lt(i)=  7.85;ln(i)= -72.45;el(i)= 378;lnm(i)="SAN ANTONIO TACHIRA      ";st(i)="  ";ct(i)="VN"
 i=i+1;cd(i)="SVSR";id(i)=80450;lt(i)=  7.90;ln(i)= -67.42;el(i)=  48;lnm(i)="SAN FERNANDO DE APURE    ";st(i)="  ";ct(i)="VN"
 i=i+1;cd(i)="SVSE";id(i)=80462;lt(i)=  4.60;ln(i)= -61.12;el(i)= 907;lnm(i)="SANTA ELENA UAIREN       ";st(i)="  ";ct(i)="VN"
 i=i+1;cd(i)="SOCA";id(i)=81405;lt(i)=  4.83;ln(i)= -52.37;el(i)=   9;lnm(i)="CAYENNE/ROCHAMBEAU       ";st(i)="  ";ct(i)="GF"

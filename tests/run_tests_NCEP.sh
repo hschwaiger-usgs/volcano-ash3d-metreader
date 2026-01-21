@@ -57,7 +57,7 @@ outdir="output${WindLabel}${s}"
 #                 |  | |   |               | | | | | | | |  |  |   | |   /-hour
 #                 |  | |   |               | | | | | | | |  |  |   | |   |
 #                 v  v v   v               v v v v v v v v  v  v   v v   v
-../bin/MetProbe NCEP 1 1 -169.9468 52.8217 F 4 1 2 3 5 5 25 2 1980 5 17 0.0 > /dev/null 2>&1 
+../bin/MetProbe NCEP 1 1 -169.9468 52.8217 F 4 1 2 3 5 5 25 2 1980 5 17 0.0 > /dev/null 2>&1
 rc=$((rc + $?))
 if [[ "$rc" -gt 0 ]] ; then
   echo "Error: MetProbe returned error code"

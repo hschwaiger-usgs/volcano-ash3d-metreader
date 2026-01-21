@@ -13,12 +13,12 @@ compiled directly with other source code.
 
 NWP data are generally made available by agencies (NCEP, NOAA, NASA, ECMWF, etc.)
 in a variety of formats (NetCDF, GRIB, ASCII); each product having
-its own data structure, naming convention, units, etc.  This library 
+its own data structure, naming convention, units, etc.  This library
 isolates the calling program from the peculiarities of interfacing with
 a particular NWP product.  Data can be returned to the calling program on
 the native grid of the NWP product, or on any grid needed by the calling
 program.  Projection and interpolation of NWP data to the required grid, along
-with any rotation of velocity vectors to grid-relative, is calculated internally by 
+with any rotation of velocity vectors to grid-relative, is calculated internally by
 MetReader.
 
 For details on usage, please see the [User's Guide](doc/MetReader_manual.pdf).
@@ -38,7 +38,7 @@ To compile as a library, simply type:
 
   `make all`
 
-This will build the requested components of the library.  If GRIB2 is enabled, 
+This will build the requested components of the library.  If GRIB2 is enabled,
 it is recommended to also build the GRIB2 indexer:
 
   `make gen_GRIB2_index`

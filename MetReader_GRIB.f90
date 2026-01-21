@@ -13,7 +13,7 @@
 !
 !     MR_Read_Met_DimVars_GRIB
 !
-!     Called once from MR_Read_Met_DimVars 
+!     Called once from MR_Read_Met_DimVars
 !
 !     This subroutine reads the variable and dimension IDs, and fills the
 !     coordinate dimension variables
@@ -24,7 +24,7 @@
 !       The lengths of all the dimensions of the file
 !       p_fullmet_sp (converted to Pa)
 !       x_fullmet_sp, y_fullmet_sp
-!       IsLatLon_MetGrid, IsGlobal_MetGrid, IsRegular_MetGrid 
+!       IsLatLon_MetGrid, IsGlobal_MetGrid, IsRegular_MetGrid
 !
 !##############################################################################
 
@@ -41,7 +41,7 @@
          x_inverted,y_inverted,z_inverted,MR_windfiles,Met_var_IsAvailable,&
          nlev_coords_detected,nt_fullmet,Met_var_GRIB1_Param,Met_var_GRIB1_St,&
          Met_var_GRIB2_DPcPnSt,Met_var_GRIB_names,&
-           MR_Z_US_StdAtm        
+           MR_Z_US_StdAtm
 
       use projection,      only : &
            PJ_Set_Proj_Params,&
@@ -170,7 +170,7 @@
       maxdimlen = 0
 
       ! Loop through all the GRIB messages,
-      ! If we find a message that matches a variable criterion, then log the level to 
+      ! If we find a message that matches a variable criterion, then log the level to
       !  a dummy array.
       ! Finally sort the pressure values and evaluate the distinct pressure coordinates
       grib_file_path  = trim(adjustl(MR_windfiles(1)))
@@ -280,7 +280,7 @@
               ! 3  Earth assumed oblate spheroid with major and minor axes specified by data producer
             Met_Re =  6371.229_8
           elseif(dum_int.eq.4)then
-              ! 4  Earth assumed oblate spheroid as defined in IAG-GRS80 model 
+              ! 4  Earth assumed oblate spheroid as defined in IAG-GRS80 model
               !    (major axis = 6,378,137.0 m, minor axis = 6,356,752.314 m, f = 1/298.257222101)
             Met_Re =  6371.229_8
           elseif(dum_int.eq.5)then
@@ -463,8 +463,8 @@
 
             !Lat_start = y_start
             !Lon_start = x_start
-            y_start = Lat_start 
-            x_start = Lon_start 
+            y_start = Lat_start
+            x_start = Lon_start
 
             call codes_get(igribv(ir),'numberOfPoints',numberOfPoints,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get numberOfPoints ")
@@ -913,11 +913,11 @@
 !
 !     MR_Read_Met_Times_GRIB
 !
-!     Called once from MR_Read_Met_DimVars 
+!     Called once from MR_Read_Met_DimVars
 !
 !     This subroutine opens each GRIB file and determines the time of each
 !     time step of each file in the number of hours since MR_BaseYear.
-!     In most cases, the length of the time variable (nt_fullmet) will be 
+!     In most cases, the length of the time variable (nt_fullmet) will be
 !     read directly from the file and overwritten (is was set in MR_Read_Met_DimVars_GRIB
 !     above).
 !
@@ -1605,7 +1605,7 @@
           call codes_index_get(idx,'level',level_idx,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get ")
 
-          ! Start marching through the index file and look for the match with the 
+          ! Start marching through the index file and look for the match with the
           ! keys
           count1=0
           do l=1,parameterNumberSize
@@ -1812,7 +1812,7 @@
           allocate(parameterNumber_idx(parameterNumberSize))
           allocate(level_idx(levelSize))
           allocate(forecastTime_idx(forecastTimeSize))
-          
+
             ! get the list of distinct key values from the index
           call codes_index_get(idx,'discipline',discipline_idx,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get ")
@@ -1825,7 +1825,7 @@
           call codes_index_get(idx,'forecastTime',forecastTime_idx,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get ")
 
-          ! Start marching through the index file and look for the match with the 
+          ! Start marching through the index file and look for the match with the
           ! keys
           count1=0
           do l=1,disciplineSize
@@ -1852,7 +1852,7 @@
 
                     do while (nSTAT /= GRIB_END_OF_INDEX)
                       count1=count1+1
-    
+
             call codes_get(igrib,'typeOfFirstFixedSurface', typeOfFirstFixedSurface,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get typeOfFirstFixedSurface ")
 
@@ -1893,7 +1893,7 @@
                   slice(1:Ni,m) = values(rstrt:rend)
                 enddo
                 deallocate(values)
-        
+
                ! There is no guarantee that GRIB levels are in order so...
                ! Now loop through the pressure values for this variable and put this
                ! slice at the correct level.
@@ -1989,7 +1989,7 @@
                 slice(1:Ni,m) = values(rstrt:rend)
               enddo
               deallocate(values)
-  
+
                ! There is no guarantee that GRIB levels are in order so...
                ! Now loop through the pressure values for this variable and put
                ! this slice at the correct level.
@@ -2041,7 +2041,7 @@
               ! Surface winds usually have a z coordinate as well
             allocate(temp3d_sp(nx_submet,ny_submet,1,1))
           endif
-  
+
           do i=1,ict        !read subgrid at current time step
             if(MR_iwindformat.eq.25)then
 

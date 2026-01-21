@@ -524,10 +524,10 @@
         GFS_Archive_Days   = 14     ! Number of days GFS data are archived on local machine
 
         iw      = 0 ! These are all set for autoruns in GetWindFile
-        iwf     = 0 
-        igrid   = 0 
+        iwf     = 0
+        igrid   = 0
         idf     = 0
-        iwfiles = 0 
+        iwfiles = 0
 
         ! Make user MetReader is using the same calendar
         MR_BaseYear = BaseYear  ! This defaults to 1900 for autoruns, but can be something else
@@ -703,14 +703,14 @@
               endif;enddo
               stop 1
             elseif(ntraj.gt.9)then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then 
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)"MR ERROR: ntraj is currently limited to 9"
               endif;enddo
               stop 1
             endif
             !allocate(OutputLevels(ntraj))
             if(nargs-8.lt.ntraj)then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then 
+              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)"MR ERROR:  There are not enough arguments for ",&
                           ntraj," levels"
                 endif;enddo
@@ -734,7 +734,7 @@
               linebuffer080 = arg(1:80)
               if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
               if(OutputLevels(i).le.0.0.or.OutputLevels(i).gt.30.0)then
-                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then 
+                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                   write(errlog(io),*)"MR ERROR: trajectory levels must be in range 0-30 km"
                   write(errlog(io),*)"          Failing on trajectory ",i,OutputLevels(i)
                 endif;enddo
@@ -1103,7 +1103,7 @@
 !  GetWindFile
 !
 !  This subroutine sets the list of windfiles to be used in the calculation.
-!  These will either be an explicit list provided by the control file, or 
+!  These will either be an explicit list provided by the control file, or
 !  through an assessment of the current GFS and NCEP files on the system.
 !
 !##############################################################################
@@ -1261,7 +1261,7 @@
                                                   MR_BaseYear,MR_useLeap)
         MR_Comp_StartHour     = Probe_StartHour
         MR_Comp_Time_in_hours = Simtime_in_hours
-  
+
         ! Calculate the earliest Met data needed
         ! We want this to be as close to the beginning of a forecast package as
         ! possible
@@ -1417,7 +1417,7 @@
               write(string2,'(I4.4,I2.2,I2.2,I2.2,a2,I3.3,a3)')&
                             FC_year,FC_mon,FC_day,FC_Package_hour, &
                             '.f',FC_hour_int,'.nc'
-    
+
               write(testfile,*)trim(ADJUSTL(WINDROOT)), &
                                    trim(ADJUSTL(string1)), &
                                    trim(ADJUSTL(string2))
@@ -1474,7 +1474,7 @@
           FC_Package_hour = floor(FC_hour/FC_freq) * FC_freq
 
           do i=1,MR_iwindfiles
-            
+
             FCStartHour = FC_Archive_StartHour + real((OptimalPackageNum-1)*FC_freq,kind=8)
 
             FC_year = HS_YearOfEvent(FCStartHour,MR_BaseYear,MR_useLeap)
@@ -1520,7 +1520,7 @@
         ! Reread the input file to get the windfile names
 
         do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
-          write(outlog(io),*)"Reading control file" 
+          write(outlog(io),*)"Reading control file"
         endif;enddo
         call get_command_argument(1, arg, length=inlen, status=iostatus)
         read(arg,*,iostat=iostatus,iomsg=iomessage) infile
@@ -1733,7 +1733,7 @@
         MR_iMetStep_Now = 1
       else
         ! Backward trajectory
-        MR_iMetStep_Now = MR_MetSteps_Total-1 
+        MR_iMetStep_Now = MR_MetSteps_Total-1
       endif
       !call MR_Read_HGT_arrays(MR_iMetStep_Now)
 

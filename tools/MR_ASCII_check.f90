@@ -12,7 +12,7 @@
       implicit none
 
       integer, parameter :: ip             =  8 ! Internal precision
-      integer, parameter :: fid_ascii2din  = 20 
+      integer, parameter :: fid_ascii2din  = 20
       real(kind=ip), parameter :: EPS_TINY   = 1.0e-12_ip      ! Very small number
 
       integer           :: nargs

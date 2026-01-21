@@ -3,11 +3,11 @@
 !
 !  MetProbe
 !
-!    This is a stand-alone program that exports a vertical profile of 
+!    This is a stand-alone program that exports a vertical profile of
 !    pressure variables from windfiles
 !    This program takes 15+ command-line arguments:
 !       file         : string  : name of input file
-!       timestep     : integer : 
+!       timestep     : integer :
 !       llflag       : integer : 0 for using windfile grid; 1 for forcing Lat/Lon
 !       lon/x        : real    : longitude (or x) of sonde point
 !       lat/y        : real    : latitude (or y) of sonde point
@@ -18,9 +18,9 @@
 !       iwf          : integer : windfile product code
 !       idf          : integer : igrid (2 for nc, 3 for grib)
 !       year         : integer : only needed for iw = 5 files
-!       month        : integer : 
-!       day          : integer : 
-!       hour         : real    : 
+!       month        : integer :
+!       day          : integer :
+!       hour         : real    :
 
 !               if true, then truncate x and y to gridpoint and return
 !               the native values
@@ -594,7 +594,7 @@
         endif;enddo
       endif
 
-      igrid   = 0 ! 
+      igrid   = 0 !
       iwfiles = 1 ! single command-line argument or folder path for iw=5
       call MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)
       MR_windfiles(1) = trim(adjustl(infile))
@@ -659,8 +659,8 @@
         endif;enddo
       endif
 
-      nxmax = 3 ! 
-      nymax = 3 ! 
+      nxmax = 3 !
+      nymax = 3 !
       nzmax = 2 ! This is not really used in this utility
       allocate(lon_grid(nxmax))
       allocate(lat_grid(nymax))
@@ -711,7 +711,7 @@
           endif
         endif;enddo
       enddo
-      
+
       call GetMetProfile(invars,invarlist)
 
       call MR_Reset_Memory

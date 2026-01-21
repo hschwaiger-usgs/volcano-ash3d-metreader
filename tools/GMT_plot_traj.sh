@@ -5,14 +5,14 @@
 #      Larry G. Mastin (lgmastin@usgs.gov), and Roger P. Denlinger (roger@usgs.gov).
 
 #      The model and its source code are products of the U.S. Federal Government and therefore
-#      bear no copyright.  They may be copied, redistributed and freely incorporated 
+#      bear no copyright.  They may be copied, redistributed and freely incorporated
 #      into derivative products.  However as a matter of scientific courtesy we ask that
 #      you credit the authors and cite published documentation of this model (below) when
 #      publishing or distributing derivative products.
 
 #      Schwaiger, H.F., Denlinger, R.P., and Mastin, L.G., 2012, Ash3d, a finite-
 #         volume, conservative numerical model for ash transport and tephra deposition,
-#         Journal of Geophysical Research, 117, B04204, doi:10.1029/2011JB008968. 
+#         Journal of Geophysical Research, 117, B04204, doi:10.1029/2011JB008968.
 
 #      We make no guarantees, expressed or implied, as to the usefulness of the software
 #      and its documentation for any purpose.  We assume no responsibility to provide
@@ -135,7 +135,7 @@ fi
 PROJ="-JM${VCLON}/${VCLAT}/20"
 COAST="-G220/220/220 -W"            # RGB values for land areas (220/220/220=light gray)
 BOUNDARIES="-Na"                    # -N=draw political boundaries, a=all national, Am. state & marine b.
-  
+
 #############################################################################
 ### Plot the base map
 echo "gmt pscoast $AREA $PROJ $BASE $DETAIL $COAST $BOUNDARIES -K  > temp.ps"
@@ -185,7 +185,7 @@ mv temp.gif trajectory_${SUB}.gif
 #if [ "$CLEANFILES" == "T" ]; then
 #   rm -f *.grd *.lev
 #   rm -f caption*.txt cities.xy map_range*txt legend_positions*txt
-#   rm -f temp.* 
+#   rm -f temp.*
 #   rm -f gmt.conf gmt.history
 #   rm -f world_cities.txt
 #   rm -f legend*png

@@ -80,7 +80,7 @@
       character(len=20)   :: filename_root
 
       real(kind=4),dimension(:,:,:),allocatable :: out3d_t1,out3d_t2,out3d
-      
+
       integer :: io                           ! Index for output streams
 
       INTERFACE
@@ -145,7 +145,7 @@
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Resetting to range 0->360"
           endif;enddo
-        elseif(xLL.gt.360.0_4)then 
+        elseif(xLL.gt.360.0_4)then
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"WARNING: xLL is greater than 360"
             write(outlog(io),*)"Resetting to range 0->360"
@@ -321,7 +321,7 @@
         do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
           write(errlog(io),*)"MR ERROR: Output index must be non-negative"
           write(errlog(io),*)"   iidx = ", iidx
-          write(errlog(io),*)"   jidx = ", jidx 
+          write(errlog(io),*)"   jidx = ", jidx
           write(errlog(io),*)"   kidx = ", kidx
         endif;enddo
         stop 1
@@ -360,7 +360,7 @@
         do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Writing point data at:"
           write(outlog(io),*)"    ", iidx
-          write(outlog(io),*)"    ", jidx 
+          write(outlog(io),*)"    ", jidx
           write(outlog(io),*)"    ", kidx
         endif;enddo
         if(outgrid_ID.eq.1)then
@@ -708,8 +708,8 @@
 !
 ! Example control file:
 ! 1 1 -135.0 90.0 0.933 6371.229  ! Proj flags and params of computational grid
-! -125.0  38.0   0.0              ! x,y,z of bottom LL corner of grid (km, or deg. if latlongflag=1)  
-! 15.0    15.0  25.0              ! grid x-width, y-width, depth (km, or deg. if latlonflag=1)    
+! -125.0  38.0   0.0              ! x,y,z of bottom LL corner of grid (km, or deg. if latlongflag=1)
+! 15.0    15.0  25.0              ! grid x-width, y-width, depth (km, or deg. if latlonflag=1)
 ! 0.5     0.5    2.0              ! DX, DY, Dz of grid cells  (km, or deg.)
 ! 1                               ! iHeightHandler
 ! 1980 5 18 15.5                  ! YYYY MM DD HH.H

@@ -10,14 +10,14 @@
 #      Larry G. Mastin (lgmastin@usgs.gov), and Roger P. Denlinger (roger@usgs.gov).
 
 #      The model and its source code are products of the U.S. Federal Government and therefore
-#      bear no copyright.  They may be copied, redistributed and freely incorporated 
+#      bear no copyright.  They may be copied, redistributed and freely incorporated
 #      into derivative products.  However as a matter of scientific courtesy we ask that
 #      you credit the authors and cite published documentation of this model (below) when
 #      publishing or distributing derivative products.
 
 #      Schwaiger, H.F., Denlinger, R.P., and Mastin, L.G., 2012, Ash3d, a finite-
 #         volume, conservative numerical model for ash transport and tephra deposition,
-#         Journal of Geophysical Research, 117, B04204, doi:10.1029/2011JB008968. 
+#         Journal of Geophysical Research, 117, B04204, doi:10.1029/2011JB008968.
 
 #      We make no guarantees, expressed or implied, as to the usefulness of the software
 #      and its documentation for any purpose.  We assume no responsibility to provide
@@ -67,11 +67,11 @@ WINDROOT=/data/WindFiles
 #####  END OF USER SPECIFIED FLAGS  ###########################################
 ###############################################################################
 
-FPPFLAGS = 
+FPPFLAGS =
 ifeq ($(USENETCDF), T)
  ncFPPFLAG = -DUSENETCDF
  ncOBJS = MetReader_NetCDF.o
- nclib = -lnetcdf -lnetcdff 
+ nclib = -lnetcdf -lnetcdff
 else
  ncFPPFLAG =
  ncOBJS =

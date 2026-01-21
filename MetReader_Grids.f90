@@ -59,7 +59,7 @@
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
-        ! 0 4 262.5 38.5 38.5 38.5 6371.229    #Proj flags and params  
+        ! 0 4 262.5 38.5 38.5 38.5 6371.229    #Proj flags and params
         ! -JL262.5/38.5/38.5/38.5/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=262.5 +lat_0=38.5 +lat_1=38.5 +lat_2=38.5 +R=6371.229"
@@ -98,11 +98,11 @@
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6367.47 : earth radius for spherical earth
-        ! 0 4 -107.0 50.0 50.0 50.0 6367.47    #Proj flags and params  
+        ! 0 4 -107.0 50.0 50.0 50.0 6367.47    #Proj flags and params
         ! -JL-107/50/50/50/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6367.47"
-        IsLatLon_MetGrid  = .false.   
+        IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
         IsGridRelative    = .false.
@@ -274,7 +274,7 @@
         ! NAM 3-km Polar Stereographic
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID91
         !   1822145-point (1649x1105) N. Hemisphere Polar Stereographic grid
-        !   oriented 150W; 
+        !   oriented 150W;
         !        Polar_Stereographic:grid_mapping_name = "polar_stereographic" ;
         !        Polar_Stereographic:longitude_of_projection_origin = 210. ;
         !        Polar_Stereographic:straight_vertical_longitude_from_pole = 210.;
@@ -319,7 +319,7 @@
         ! -JS-150/90/12c
 
         Met_proj4 = "proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.9330127 +R=6371.229"
-        IsLatLon_MetGrid  = .false.   
+        IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
         IsGridRelative    = .true.
@@ -348,7 +348,7 @@
         ! invproj +proj=stere  +lon_0=255  +lat_0=90 +k_0=0.9330127 +R=6371.229 -f '%.8f'
         !
         ! -6761.21 -9846.821
-        ! 
+        !
         !  6489.02 45.47379
         !
         !  latlonflag  = 0         : projected grid
@@ -361,7 +361,7 @@
         ! -JS-105/90/12c
 
         Met_proj4 = "proj +proj=stere  +lon_0=255  +lat_0=90 +k_0=0.9330127 +R=6371.229"
-        IsLatLon_MetGrid  = .false.   
+        IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
         IsGridRelative    = .true.
@@ -401,7 +401,7 @@
         Met_gridtype      = "GLL0"
 
       elseif(igrid.eq.182)then
-        ! HI N.Pacific 
+        ! HI N.Pacific
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID182
 
         Met_proj4 = "LL"
@@ -462,7 +462,7 @@
         ! -JM198.475/20.0/12c
 
         Met_proj4 = "proj +proj=merc  +lat_ts=20.0 +lon_0=198.475 +R=6371.229"
-        IsLatLon_MetGrid  = .false.   
+        IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
         IsGridRelative    = .true.
@@ -480,7 +480,7 @@
         ! NAM 6-km Polar Stereographic
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID198
         !   456225-point (825x553) N. Hemisphere Polar Stereographic grid
-        !   oriented 150W; 
+        !   oriented 150W;
         !        Polar_Stereographic:grid_mapping_name = "polar_stereographic" ;
         !        Polar_Stereographic:longitude_of_projection_origin = 210. ;
         !        Polar_Stereographic:straight_vertical_longitude_from_pole = 210.;
@@ -525,7 +525,7 @@
         ! -JS-150/90/12c
 
         Met_proj4 = "proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.9330127 +R=6371.229"
-        IsLatLon_MetGrid  = .false.   
+        IsLatLon_MetGrid  = .false.
         IsGlobal_MetGrid  = .false.
         IsRegular_MetGrid = .true.
         IsGridRelative    = .true.
@@ -561,7 +561,7 @@
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
-        ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params                               
+        ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params
         ! -JL265/25/25/25/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
@@ -601,7 +601,7 @@
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
-        ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params  
+        ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params
         ! -JL265/25/25/25/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
@@ -679,7 +679,7 @@
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
-        ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params  
+        ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params
         ! -JL-107/50/50/50/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
@@ -719,7 +719,7 @@
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
-        ! 0 4 -107.0 50.0 50.0 50.0 6371.229    #Proj flags and params  
+        ! 0 4 -107.0 50.0 50.0 50.0 6371.229    #Proj flags and params
         ! -JL-107/50/50/50/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6371.229"
@@ -758,7 +758,7 @@
         !  phi1        =  25.0     : latitude of cone intersection 1
         !  phi2        =  25.0     : latitude of cone intersection 2
         !  radius      =  6371.229 : earth radius for spherical earth
-        ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params  
+        ! 0 4 265.0 25.0 25.0 25.0 6371.229    #Proj flags and params
         ! -JL265/25/25/25/12c
 
         Met_proj4 = "proj +proj=lcc +lon_0=265.0 +lat_0=25.0 +lat_1=25.0 +lat_2=25.0 +R=6371.229"
@@ -837,7 +837,7 @@
 !     then the mapping from each computational grid point onto the NWP grid
 !     is calculated through MR_Set_Comp2Met_Map.
 !
-!     Sets: 
+!     Sets:
 !           n[t,x,y,p]_met     :: sets the size of the dimensions of the sub-met grid
 !           [x,y,p]_met_sp     :: arrays holding dimension values of the sub-met grid
 !           MR_dum2d_met(nx_submet,ny_submet)
@@ -1105,7 +1105,7 @@
             write(outlog(io),*)"        irhalf_fm_l = ",irhalf_fm_l  ! start index of right half on full met grid
             write(outlog(io),*)"        irhalf_fm_r = ",irhalf_fm_r  ! end index of right half on full met grid
             write(outlog(io),*)"          irhalf_nx = ",irhalf_nx    ! width of right half
-  
+
             write(outlog(io),*)"          nx_submet = ",nx_submet
             write(outlog(io),*)"ilhalf_nx+irhalf_nx = ",ilhalf_nx+irhalf_nx
             write(outlog(io),*)"         xsubMetMin = ",x_fullmet_sp(ilhalf_fm_l)
@@ -1645,7 +1645,7 @@
 !     This subroutine calculates the lon/lat coordinates for each point
 !     of the Met grid.
 !
-!     Sets: 
+!     Sets:
 !           MR_Have_LL_mapping
 !           MR_xy2ll_xlon
 !           MR_xy2ll_ylat
@@ -1729,7 +1729,7 @@
 !     MR_Set_Comp2Met_Map
 !
 !     This subroutine generates the mapping between the computational grid and
-!     the Met grid.  
+!     the Met grid.
 !
 !     Allocates the mapping arrays:
 !
@@ -1787,7 +1787,7 @@
       !             CompPoint_Meti, CompPoint_Metj (these are the i,j indices of the sub-Met grid)
       !             CompPoint_Met_Wgt (weights given to the four surrounding points
       if(IsLatLon_MetGrid.and.IsLatLon_CompGrid)then
-        ! Both Comp and Met are in Lat/Lon 
+        ! Both Comp and Met are in Lat/Lon
         Map_Case = 1
       elseif(IsLatLon_MetGrid.and..not.IsLatLon_CompGrid)then
         ! Met is Lat/Lon, but Comp is projected
@@ -2110,7 +2110,7 @@
       integer :: met_indx
       real(kind=dp) :: x_in ,y_in
       real(kind=dp) :: x_out,y_out
-      integer :: io   
+      integer :: io
       integer :: max_met_in_comp
 
       allocate(MetPoint_X_on_comp_sp(nx_submet,ny_submet))
@@ -2306,7 +2306,7 @@
         else
           wrk_loc(0:nx1+1,0) = 0.0_sp
         endif
-        wrk_loc(1:nx1,1:ny1) = wrk_met(1:nx1,1:ny1) 
+        wrk_loc(1:nx1,1:ny1) = wrk_met(1:nx1,1:ny1)
         wrk_loc(0    ,1:ny1) = wrk_met(  nx1,1:ny1)
         wrk_loc(nx1+1,1:ny1) = wrk_met(1    ,1:ny1)
       else

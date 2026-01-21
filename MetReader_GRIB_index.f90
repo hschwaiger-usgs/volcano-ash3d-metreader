@@ -102,7 +102,7 @@
         ! 1 Hydrological products
         ! 2 Land surface products
         !10 Oceanographic products
-        
+
         ! parameterCategory
         ! 0 Temperature
         ! 1 Moisture
@@ -112,10 +112,10 @@
         ! 5 Long-wave Radiation
         ! 6 Cloud
         ! 7 Thermodynamic Stability indices
-        
+
         ! parameterNumber
         !  This is a sub-category of the discipline and parameterCategory
-        
+
         ! typeOfFirstFixedSurface
         !  1 Ground or water surface
         !  2 Cloud base level
@@ -125,9 +125,9 @@
         !106 Depth below land surface  (m)
         !200 Unknown code table entry
         ! http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table4-1.shtml
-        !    shortName 
-        !            discipline 
-        !              parameterCategory 
+        !    shortName
+        !            discipline
+        !              parameterCategory
         !                  parameterNumber
         ! 1  gh      0 3   5 100   HGT   Geopotential_height_isobaric
         ! 2  u       0 2   2 100  UGRD   u-component_of_wind_isobaric
@@ -181,7 +181,7 @@
         allocate(parameterNumber_idx(parameterNumberSize))
         allocate(level_idx(levelSize))
         allocate(forecastTime_idx(forecastTimeSize))
-      
+
           ! get the list of distinct key values from the index
         call codes_index_get(idx,'discipline',discipline_idx)
         call codes_index_get(idx,'parameterCategory',parameterCategory_idx)
@@ -215,7 +215,7 @@
             enddo ! loop on parameterNumber
           enddo ! loop on parameterCategory
         enddo ! loop on discipline
-      
+
         call codes_index_write(idx,trim(adjustl(index_file)))
         call codes_index_release(idx)
 
