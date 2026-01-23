@@ -137,6 +137,7 @@
       character(len=80)  :: linebuffer080_2
       character(len=80)  :: linebuffer080_3
       character(len=80)  :: linebuffer080_4
+      character(len=:),allocatable :: tmpfile
       character(len=7)   :: field_str
       character(len=6),dimension(53) :: GTSstr
       character(len=6)   :: dumstr1,dumstr2,dumstr3,dumstr4
@@ -375,11 +376,13 @@
           do iloc = 1,MR_nSnd_Locs
             iw_idx = (itime-1)*MR_nSnd_Locs + iloc
             do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
-              write(outlog(io),*)"Opening sonde file ",iw_idx,&
-                                   trim(adjustl(MR_windfiles(iw_idx)))
+              write(outlog(io),*)"Opening sonde file ",iw_idx
+              write(outlog(io),"(a)")'-' // trim(adjustl(MR_windfiles(iw_idx))) // '-'
             endif;enddo
+            il=len(trim(adjustl(MR_windfiles(iw_idx))))
+            tmpfile = trim(adjustl(MR_windfiles(iw_idx)))
+            open(unit=fid,file=tmpfile, status='old',action='read',err=1971,iostat=iostatus,iomsg=iomessage)
 
-            open(unit=fid,file=trim(adjustl(MR_windfiles(iw_idx))), status='old',action='read',err=1971)
             ! skip over first line (Comment line, maybe the location name)
             read(fid,*,iostat=iostatus,iomsg=iomessage)linebuffer080
             if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)

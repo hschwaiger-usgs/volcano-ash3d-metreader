@@ -1005,6 +1005,38 @@
       Met_var_nlevs(1:MR_MAXVARS)             = 0
       IsGridRelative = .true.
 
+      if(MR_iwind.eq.1)then
+        ! For the 1d profile or radiosonde case, igrid is used for the number of sonde
+        ! locations.  If it is not provided, set it to one
+        if(igrid.eq.0)then
+          MR_iGridCode = 1
+          MR_nSnd_Locs = MR_iGridCode
+        else
+          MR_iGridCode = igrid
+          MR_nSnd_Locs = MR_iGridCode
+        endif
+          ! Now make sure that the number of windfiles is a multiple of the number of locations
+          ! since this will be the number of timesteps
+        if(mod(MR_iwindfiles,MR_nSnd_Locs).eq.0)then
+          MR_Snd_nt_fullmet = MR_iwindfiles / MR_nSnd_Locs
+        else
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            write(errlog(io),*)"MR ERROR:  The grid code for 1d ASCII input is interpreted to be"
+            write(errlog(io),*)"           the number of sonde locations.  Each group of sondes can"
+            write(errlog(io),*)"           be repeated, correspoding to multiple timesteps.  The"
+            write(errlog(io),*)"           number of windfiles must be a multiple of the number of"
+            write(errlog(io),*)"           locations"
+            write(errlog(io),*)"                   MR_iwind = ",MR_iwind
+            write(errlog(io),*)"             MR_iwindformat = ",MR_iwindformat
+            write(errlog(io),*)"               MR_iGridCode = ",MR_iGridCode
+            write(errlog(io),*)"             MR_idataFormat = ",MR_idataFormat
+            write(errlog(io),*)"               MR_nSnd_Locs = ",MR_iGridCode
+            write(errlog(io),*)"          MR_Snd_nt_fullmet = ",real(MR_iwindfiles)/real(MR_nSnd_Locs)
+          endif;enddo
+          stop 1
+        endif
+      endif
+
       !--------------------------------
       ! Dimensions
       !--------------------------------
@@ -2700,38 +2732,6 @@
         do i=1,MR_iwindfiles
           write(MR_windfiles_GRIB_index(i),'(130x)')
         enddo
-      endif
-
-      if(MR_iwind.eq.1)then
-        ! For the 1d profile or radiosonde case, igrid is used for the number of sonde
-        ! locations.  If it is not provided, set it to one
-        if(igrid.eq.0)then
-          MR_iGridCode = 1
-          MR_nSnd_Locs = MR_iGridCode
-        else
-          MR_iGridCode = igrid
-          MR_nSnd_Locs = MR_iGridCode
-        endif
-          ! Now make sure that the number of windfiles is a multiple of the number of locations
-          ! since this will be the number of timesteps
-        if(mod(MR_iwindfiles,MR_nSnd_Locs).eq.0)then
-          MR_Snd_nt_fullmet = MR_iwindfiles / MR_nSnd_Locs
-        else
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
-            write(errlog(io),*)"MR ERROR:  The grid code for 1d ASCII input is interpreted to be"
-            write(errlog(io),*)"           the number of sonde locations.  Each group of sondes can"
-            write(errlog(io),*)"           be repeated, correspoding to multiple timesteps.  The"
-            write(errlog(io),*)"           number of windfiles must be a multiple of the number of"
-            write(errlog(io),*)"           locations"
-            write(errlog(io),*)"                   MR_iwind = ",MR_iwind
-            write(errlog(io),*)"             MR_iwindformat = ",MR_iwindformat
-            write(errlog(io),*)"               MR_iGridCode = ",MR_iGridCode
-            write(errlog(io),*)"             MR_idataFormat = ",MR_idataFormat
-            write(errlog(io),*)"               MR_nSnd_Locs = ",MR_iGridCode
-            write(errlog(io),*)"          MR_Snd_nt_fullmet = ",real(MR_iwindfiles)/real(MR_nSnd_Locs)
-          endif;enddo
-          stop 1
-        endif
       endif
 
       do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
