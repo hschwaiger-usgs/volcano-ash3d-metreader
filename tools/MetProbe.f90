@@ -208,6 +208,10 @@
             write(errlog(io),*)" intstep = ",intstep
           endif;enddo
           stop 1
+        else
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Time step of windfile = ",intstep
+          endif;enddo
         endif
 
         ! Get Lat/Lon flag
@@ -312,10 +316,12 @@
         endif
         if(Truncate)then
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Truncation argument read as: ",intrunc
             write(outlog(io),*)"Truncate = ",Truncate, "output will be on met node"
           endif;enddo
         else
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+            write(outlog(io),*)"Truncation argument read as: ",intrunc
             write(outlog(io),*)"Truncate = ",Truncate, &
                       "output will be on interpolated point"
           endif;enddo
@@ -380,6 +386,7 @@
             write(outlog(io),*)" Requested variable ID ",invarlist(i)
           endif;enddo
         enddo
+
         ! Get wind format
         call get_command_argument(8+invars, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
@@ -403,6 +410,10 @@
             write(errlog(io),*)" iw = ",iw
           endif;enddo
           stop 1
+        else
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+            write(outlog(io),*)" iw = ",iw
+          endif;enddo
         endif
 
         ! Get wind product
@@ -451,6 +462,10 @@
             write(errlog(io),*)" iwf = ",iwf
           endif;enddo
           stop 1
+        else
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+            write(outlog(io),*)" iwf = ",iwf
+          endif;enddo
         endif
 
         ! Get data format ID
@@ -471,16 +486,29 @@
            idf.ne.3)then
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: wind data format must be one of 1,2, or 3"
-            write(errlog(io),*)" iw = ",iw
+            write(errlog(io),*)"          where 1 = ASCII"
+            write(errlog(io),*)"                2 = NetCDF"
+            write(errlog(io),*)"                3 = grib"
+            write(errlog(io),*)" idf = ",idf
           endif;enddo
           stop 1
+        else
+          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+            if(idf.eq.1)then
+              write(outlog(io),*)" idf = ",idf, "ASCII"
+            elseif(idf.eq.2)then
+              write(outlog(io),*)" idf = ",idf, "NetCDF"
+            elseif(idf.eq.3)then
+              write(outlog(io),*)" idf = ",idf, "grib"
+            endif
+          endif;enddo
         endif
 
         do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           write(outlog(io),*)"Expecting wind format, NWP product ID and data type:",iw,iwf,idf
         endif;enddo
 
-        ! Get year, month, day, hour
+        ! Get year, month, day, hour if provided (otherwise use intstep provided above)
         if(nargs.ge.11+invars)then
           call get_command_argument(11+invars, arg, length=inlen, status=iostatus)
           if(iostatus.ne.0)then
@@ -579,6 +607,7 @@
         else
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Optional arguments for date/hour not provided"
+            write(outlog(io),*)"The time step provided above will be used.",intstep
           endif;enddo
         endif
 
@@ -699,6 +728,9 @@
 
       call MR_Set_Met_Times(steptime,0.0_8)
 
+      if(il.gt.0)then
+        write(outlog(io),*)"Checking full variable list for availability in this file."
+      endif;enddo
       do i=1,50
         do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
           il = len(trim(adjustl(Met_var_NC_names(i))))
