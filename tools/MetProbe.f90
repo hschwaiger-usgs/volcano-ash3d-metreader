@@ -728,7 +728,7 @@
 
       call MR_Set_Met_Times(steptime,0.0_8)
 
-      if(il.gt.0)then
+      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"Checking full variable list for availability in this file."
       endif;enddo
       do i=1,50

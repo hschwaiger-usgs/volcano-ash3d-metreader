@@ -86,6 +86,9 @@
       integer, parameter,private :: dp = selected_real_kind(15,  307) ! double precision
       integer, parameter,private :: qp = selected_real_kind(33, 4931) ! quad precision
 
+      integer,parameter,public :: MR_WARN = 0
+      integer,parameter,public :: MR_FAIL = 1
+
         ! Publicly available variables
 #include "MR_version.h"
       ! This file (MR_version.h) is the output of the simple script
@@ -2608,7 +2611,7 @@
         Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W"
         Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T"      ! float K perturbation potential temperature (theta-t0)
         Met_var_IsAvailable(6)=.true.; Met_var_NC_names(6)="PB"
-        Met_var_IsAvailable(7)=.false.;
+        Met_var_IsAvailable(7)=.false.                              ! PVV is not available for WRF files, but Vz is provided directely
 
         ! Surface
         Met_var_IsAvailable(10)=.true.; Met_var_NC_names(10)="PBLH"

@@ -34,7 +34,7 @@
          MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
          MR_MAXVARS,x_fullmet_sp,y_fullmet_sp,nx_fullmet,ny_fullmet,&
          Met_var_zdim_idx,nlevs_fullmet,levs_code,levs_fullmet_sp,&
-         p_fullmet_sp,np_fullmet,z_approx,&
+         p_fullmet_sp,np_fullmet,z_approx,MR_WARN,MR_FAIL,&
          MR_dx_met,MR_dy_met,dx_met_const,dy_met_const,IsLatLon_MetGrid,IsRegular_MetGrid,&
          Met_iprojflag,Met_k0,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_Re,MR_EPS_SMALL,&
          MR_GRIB_Version,MR_iwind,MR_iwindformat,MR_Max_geoH_metP_predicted,&
@@ -155,13 +155,13 @@
         iw = 1
 
         call codes_open_file(ifile,trim(adjustl(MR_windfiles(iw))),'R',nSTAT)
-        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
+        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_open_file ")
         call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
-        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
+        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_new_from_file ")
         call codes_release(igrib,nSTAT)
-        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_release ")
         call codes_close_file(ifile,nSTAT)
-        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_close_file ")
+        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_close_file ")
 
       endif
       !------------------------------------------------------------------------
@@ -176,15 +176,15 @@
       grib_file_path  = trim(adjustl(MR_windfiles(1)))
 
       call codes_open_file(ifile,grib_file_path,'R',nSTAT)
-      if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
+      if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_open_file ")
 
       count1=1
       call codes_new_from_file(ifile,igribv(count1),CODES_PRODUCT_GRIB,nSTAT)
-      if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
+      if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_new_from_file ")
 
       do while (nSTAT.eq.CODES_SUCCESS)
 !        call codes_release(igribv(count1),nSTAT)
-!        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+!        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_release ")
         count1=count1+1
         if (count1.gt.MAXGRIBREC) then
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
@@ -197,7 +197,7 @@
       enddo
       count1 = count1-1
 !      call codes_release(igribv(count1),nSTAT)
-!      if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+!      if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_release ")
 
       do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
         write(outlog(io),*)"  Number of grib records found = ",count1
@@ -211,28 +211,28 @@
           !      information we need.
           ReadGrid = .false.
           call codes_get(igribv(ir),'Ni',nx_fullmet,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Ni ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get Ni ")
           call codes_get(igribv(ir),'Nj',ny_fullmet,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Nj ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get Nj ")
           allocate(x_fullmet_sp(0:nx_fullmet+1))
           allocate(y_fullmet_sp(ny_fullmet))
           allocate(MR_dx_met(nx_fullmet))
           allocate(MR_dy_met(ny_fullmet))
 
           call codes_get(igribv(ir),'gridType',dum_str,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get gridType ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get gridType ")
           call codes_get(igribv(ir),'latitudeOfFirstGridPointInDegrees',dum_dp,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get latitudeOfFirstGridPointInDegrees ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get latitudeOfFirstGridPointInDegrees ")
           Lat_start = dum_dp
           call codes_get(igribv(ir),'longitudeOfFirstGridPointInDegrees',dum_dp,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get longitudeOfFirstGridPointInDegrees ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get longitudeOfFirstGridPointInDegrees ")
           Lon_start = dum_dp
 
           ! Check for end lat/lon in order to determine if either coordinate is
           ! inverted
           call codes_get(igribv(ir),'latitudeOfLastGridPointInDegrees',dum_dp,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)then
-            !call MR_GRIB_check_status(nSTAT,0,"codes_get latitudeOfLastGridPointInDegrees ")
+            !call MR_GRIB_check_status(nSTAT,MR_WARN,"codes_get latitudeOfLastGridPointInDegrees ")
             ! assume it is not inverted
             y_inverted = .false.
           else
@@ -245,7 +245,7 @@
           endif
           call codes_get(igribv(ir),'longitudeOfLastGridPointInDegrees',dum_dp,nSTAT)
           if(nSTAT.ne.CODES_SUCCESS)then
-            !call MR_GRIB_check_status(nSTAT,0,"codes_get longitudeOfLastGridPointInDegrees ")
+            !call MR_GRIB_check_status(nSTAT,MR_WARN,"codes_get longitudeOfLastGridPointInDegrees ")
             ! Note: ecmwf forecasts have longitudeOfFirstGridPointInDegrees = 180.0
             !                            longitudeOfLastGridPointInDegrees  = 179.75
             !       Grid is not actually inverted, just wraps around
@@ -263,7 +263,7 @@
           dum_int = 0
           Met_Re =  6371.229_8
           call codes_get(igribv(ir),'shapeOfTheEarth',dum_int,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get shapeOfTheEarth ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get shapeOfTheEarth ")
           if (dum_int.eq.0)then
               ! 0  Earth assumed spherical with radius = 6,367,470.0 m
             Met_Re =  6367.470_8
@@ -303,14 +303,14 @@
             x_start = Lon_start
 
             call codes_get(igribv(ir),'numberOfPoints',numberOfPoints,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get numberOfPoints ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get numberOfPoints ")
             allocate(values(numberOfPoints))
             call codes_get(igribv(ir),'values',values,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get values ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get values ")
             ReadGrid = .true.
             deallocate(values)
             !call codes_get(igribv(ir),'latitudeOfLastGridPointInDegrees',dum_dp,nSTAT)
-            !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get latitudeOfLastGridPointInDegrees ")
+            !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get latitudeOfLastGridPointInDegrees ")
             !if(Lat_start.gt.dum_dp)then
             !  y_inverted = .true.
             !else
@@ -318,17 +318,17 @@
             !endif
             !call codes_get(igribv(ir),&
             !      'longitudeOfLastGridPointInDegrees',dum_dp,nSTAT)
-            !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get longitudeOfLastGridPointInDegrees ")
+            !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get longitudeOfLastGridPointInDegrees ")
             !if(Lon_start.gt.dum_dp)then
             !  x_inverted = .true.
             !else
             !  x_inverted = .false.
             !endif
             call codes_get(igribv(ir),'iDirectionIncrementInDegrees',dum_dp,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get iDirectionIncrementInDegrees ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get iDirectionIncrementInDegrees ")
             dx_met_const = real(dum_dp,kind=4)
             call codes_get(igribv(ir),'jDirectionIncrementInDegrees',dum_dp,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get jDirectionIncrementInDegrees ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get jDirectionIncrementInDegrees ")
             dy_met_const = real(dum_dp,kind=4)
             do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"Setting x grid starting at",Lon_start
@@ -361,7 +361,7 @@
             IsLatLon_MetGrid = .true.
             ! For Gaussian grid, get the order
             call codes_get(igribv(ir),'N',gg_order,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get N ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get N ")
             do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"Detected regular_gg grid of order N=",gg_order
             endif;enddo
@@ -467,14 +467,14 @@
             x_start = Lon_start
 
             call codes_get(igribv(ir),'numberOfPoints',numberOfPoints,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get numberOfPoints ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get numberOfPoints ")
             allocate(values(numberOfPoints))
             call codes_get(igribv(ir),'values',values,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get values ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get values ")
             ReadGrid = .true.
             deallocate(values)
             !call codes_get(igribv(ir),'latitudeOfLastGridPointInDegrees',dum_dp,nSTAT)
-            !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get latitudeOfLastGridPointInDegrees ")
+            !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get latitudeOfLastGridPointInDegrees ")
             !if(Lat_start.gt.dum_dp)then
             !  y_inverted = .true.
             !else
@@ -482,7 +482,7 @@
             !endif
             !call codes_get(igribv(ir),&
             !      'longitudeOfLastGridPointInDegrees',dum_dp,nSTAT)
-            !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get longitudeOfLastGridPointInDegrees ")
+            !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get longitudeOfLastGridPointInDegrees ")
             !if(Lon_start.gt.dum_dp)then
             !  x_inverted = .true.
             !else
@@ -495,12 +495,12 @@
             IsLatLon_MetGrid = .false.
             Met_iprojflag     = 1
             call codes_get(igribv(ir),'orientationOfTheGridInDegrees',dum_dp,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get orientationOfTheGridInDegrees ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get orientationOfTheGridInDegrees ")
             Met_lam0 = dum_dp
             Met_phi0 = 90.0_8
             call codes_get(igribv(ir),'LaDInDegrees',dum_dp,nSTAT)
             if(nSTAT.ne.CODES_SUCCESS)then
-              call MR_GRIB_check_status(nSTAT,1,"codes_get LaDInDegrees")
+              call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get LaDInDegrees")
               Met_phi1 = 90.0_8
               Met_k0   =  0.933012701892219_8
             else
@@ -529,16 +529,16 @@
             IsLatLon_MetGrid = .false.
             Met_iprojflag     = 4
             call codes_get(igribv(ir),'LoVInDegrees',dum_dp,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get LoVInDegrees ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get LoVInDegrees ")
             Met_lam0 = dum_dp
             call codes_get(igribv(ir),'LaDInDegrees',dum_dp,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get LaDInDegrees ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get LaDInDegrees ")
             Met_phi0 = dum_dp
             call codes_get(igribv(ir),'Latin1InDegrees',dum_dp,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Latin1InDegrees ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get Latin1InDegrees ")
             Met_phi1 = dum_dp
             call codes_get(igribv(ir),'Latin2InDegrees',dum_dp,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Latin2InDegrees ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get Latin2InDegrees ")
             Met_phi2 = dum_dp
             Met_k0   =  0.933_8
             Met_Re   =  6371.229_8
@@ -547,7 +547,7 @@
             Met_iprojflag     = 5
             Met_lam0 = Lon_start
             call codes_get(igribv(ir),'LaDInDegrees',dum_dp,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get LaDInDegrees ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get LaDInDegrees ")
             Met_phi0 = dum_dp
             Met_k0   =  0.933_8
             Met_Re   =  6371.229_8
@@ -562,17 +562,17 @@
 
           if(.not.IsLatLon_MetGrid)then
             call codes_get(igribv(ir),'DxInMetres',dum_int,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,0,"codes_get DxInMetres ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_WARN,"codes_get DxInMetres ")
             if(nSTAT.ne.0)then
               call codes_get(igribv(ir),'DiInMetres',dum_int,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get DiInMetres ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get DiInMetres ")
             endif
             dx_met_const = real(dum_int,kind=4)/1000.0_sp
             call codes_get(igribv(ir),'DyInMetres',dum_int,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,0,"codes_get DyInMetres ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_WARN,"codes_get DyInMetres ")
             if(nSTAT.ne.0)then
               call codes_get(igribv(ir),'DjInMetres',dum_int,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get DjInMetres ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get DjInMetres ")
             endif
             dy_met_const = real(dum_int,kind=4)/1000.0_sp
 
@@ -634,14 +634,14 @@
 
         if(MR_GRIB_Version.eq.1)then
           call codes_get(igribv(ir),'indicatorOfTypeOfLevel',grb_typeSfc,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get indicatorOfTypeOfLevel ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get indicatorOfTypeOfLevel ")
           ! for populating z-levels, we are only concerned with specific level types
           if(index(grb_typeSfc,'pl').ne.0.or. & ! Isobaric surface  (Pa)
              index(grb_typeSfc,'105').ne.0)then  ! Specified height level above ground  (m)
             call codes_get(igribv(ir),'indicatorOfParameter',grb_parameterNumber,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get indicatorOfParameter ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get indicatorOfParameter ")
             call codes_get(igribv(ir),'table2Version',grb_Table,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get table2Version ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get table2Version ")
 
             ! Loop through all the variables and see if we have a match with this GRIB record
             do ivar = 1,MR_MAXVARS
@@ -652,7 +652,7 @@
                    iv_typeSfc.eq.grb_typeSfc)then
                 ! This is one we are tracking, log the level
                 call codes_get(igribv(ir),'level',grb_level,nSTAT)
-                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get level ")
+                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get level ")
                 zcount(ivar) = zcount(ivar) + 1
                 zlev_dum(ivar,zcount(ivar)) = grb_level * 100
               endif
@@ -665,25 +665,25 @@
           grb_parameterNumber                = -1
           grb_scaledValueOfFirstFixedSurface = -1
           call codes_get(igribv(ir),'typeOfFirstFixedSurface', typeOfFirstFixedSurface,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get typeOfFirstFixedSurface ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get typeOfFirstFixedSurface ")
           ! for populating z-levels, we are only concerned with specific level types
           if(typeOfFirstFixedSurface.eq.100.or. & ! Isobaric surface  (Pa)
              typeOfFirstFixedSurface.eq.103.or. & ! Specified height level above ground  (m)
              typeOfFirstFixedSurface.eq.106)then  ! Depth below land surface  (m)
             call codes_get(igribv(ir),'discipline',        grb_discipline,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get discipline ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get discipline ")
             call codes_get(igribv(ir),'parameterCategory', grb_parameterCategory,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get parameterCategory ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get parameterCategory ")
             call codes_get(igribv(ir),'parameterNumber', grb_parameterNumber,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get parameterNumber ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get parameterNumber ")
             call codes_get(igribv(ir),'shortName',         grb_shortName,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get shortName ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get shortName ")
             call codes_get(igribv(ir),'cfNameECMF',        grb_longName,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get cfNameECMF ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get cfNameECMF ")
             call codes_get(igribv(ir),&
                  'scaledValueOfFirstFixedSurface',&
                  grb_scaledValueOfFirstFixedSurface,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get scaledValueOfFirstFixedSurface ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get scaledValueOfFirstFixedSurface ")
 
             ! Loop through all the variables and see if we have a match with this GRIB record
             do ivar = 1,MR_MAXVARS
@@ -700,7 +700,7 @@
                 call codes_get(igribv(ir),&
                      'scaledValueOfFirstFixedSurface',&
                      grb_scaledValueOfFirstFixedSurface,nSTAT)
-                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get scaledValueOfFirstFixedSurface ")
+                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get scaledValueOfFirstFixedSurface ")
 
                 ! Double-check that this isn't a duplicate record
                 IsNewLevel = .true.
@@ -722,11 +722,11 @@
 
       do ir = 1,count1
         call codes_release(igribv(ir),nSTAT)
-        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+        if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_release ")
       enddo
       call codes_close_file(ifile,nSTAT)
 
-      if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_close_file ")
+      if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_close_file ")
 
       maxdimlen = maxval(zcount(:))
       nlev_coords_detected = 1
@@ -931,7 +931,7 @@
 
       use MetReader,       only : &
          MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
-         MR_windfile_starthour,MR_iwindfiles,MR_windfile_stephour,&
+         MR_windfile_starthour,MR_iwindfiles,MR_windfile_stephour,MR_WARN,MR_FAIL,&
          MR_BaseYear,MR_useLeap,MR_Comp_StartYear,MR_iwindformat,nt_fullmet,&
          Met_dim_IsAvailable,MR_windfiles,MR_windfiles_nt_fullmet,MR_GRIB_Version
 
@@ -1066,15 +1066,15 @@
           endif
 
           call codes_open_file(ifile,trim(adjustl(MR_windfiles(iw))),'R',nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_open_file ")
 
           count1=1
           call codes_grib_new_from_file(ifile,igrib,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_new_from_file ")
           typeOfFirstFixedSurface = -1
           if(iw.eq.1) then
             call codes_get(igrib,'editionNumber',MR_GRIB_Version,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get editionNumber ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get editionNumber ")
             do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"Grib version = ",MR_GRIB_Version
             endif;enddo
@@ -1094,25 +1094,25 @@
               ! are not for the expected forcast hour
               ! Release this record and get the next one.
               call codes_release(igrib,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_release ")
               ! New record for testing
               count1 = count1+1
               call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
             enddo
           endif
 
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_new_from_file ")
           call codes_get(igrib,'dataDate',dataDate,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get dataDate ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get dataDate ")
           call codes_get(igrib,'dataTime',dataTime,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get dataTime ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get dataTime ")
 
           if(MR_GRIB_Version.eq.1)then
             ! The only grib1 files we deal with are reanalysis files with no FC time
             forecastTime = 0
           else
             call codes_get(igrib,'forecastTime',forecastTime,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get forecastTime ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get forecastTime ")
           endif
 
           itstart_year  = int(dataDate/10000)
@@ -1124,9 +1124,9 @@
 
           call codes_release(igrib,nSTAT)
 
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_release ")
           call codes_close_file(ifile,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_close_file ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_close_file ")
 
           filestart_hour = real(itstart_hour,kind=sp) + &
                            real(itstart_min,kind=sp)/60.0_sp      + &
@@ -1175,7 +1175,7 @@
 
       use MetReader,       only : &
          MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_debug1,&
-         np_fullmet,levs_fullmet_sp,nlevs_fullmet,MR_MetStep_File,temp3d_sp,&
+         np_fullmet,levs_fullmet_sp,nlevs_fullmet,MR_MetStep_File,temp3d_sp,MR_WARN,MR_FAIL,&
          MR_dum3d_metP,temp2d_sp,MR_dum2d_met,MR_EPS_SMALL,MR_geoH_metP_last,&
          fill_value_sp,ilhalf_fm_l,ilhalf_nx,irhalf_fm_l,irhalf_nx,istart,jstart,&
          MR_GRIB_Version,MR_iMetStep_Now,MR_iwindformat,nx_fullmet,ny_fullmet,&
@@ -1585,15 +1585,15 @@
           endif;enddo
 
           call codes_index_read(idx,index_file)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_read ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_read ")
           !call codes_grib_multi_support_on()
-          !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_grib_multi_support_on")
+          !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_grib_multi_support_on")
 
             ! get the number of distinct values of all the keys in the index
           call codes_index_get_size(idx,'indicatorOfParameter',parameterNumberSize)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get_size ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get_size ")
           call codes_index_get_size(idx,'level',levelSize,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get_size ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get_size ")
 
             ! allocate the array to contain the list of distinct values
           allocate(parameterNumber_idx(parameterNumberSize))
@@ -1601,36 +1601,36 @@
 
             ! get the list of distinct key values from the index
           call codes_index_get(idx,'indicatorOfParameter',parameterNumber_idx,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get ")
           call codes_index_get(idx,'level',level_idx,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get ")
 
           ! Start marching through the index file and look for the match with the
           ! keys
           count1=0
           do l=1,parameterNumberSize
             call codes_index_select(idx,'indicatorOfParameter',parameterNumber_idx(l),nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_select ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_select ")
 
             do i=1,levelSize
               call codes_index_select(idx,'level',level_idx(i),nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_select ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_select ")
               call codes_new_from_index(idx,igrib,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_index ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_new_from_index ")
 
               do while (nSTAT /= GRIB_END_OF_INDEX)
                 count1=count1+1
                 call codes_get(igrib,'indicatorOfTypeOfLevel',grb_typeSfc,nSTAT)
-                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get indicatorOfTypeOfLevel ")
+                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get indicatorOfTypeOfLevel ")
 
                 if( parameterNumber_idx(l)           .eq. iv_paramN .and. &
                     grb_typeSfc(1:3)        .eq. iv_typeSfc) then
                   call codes_get(igrib,'numberOfPoints',numberOfPoints,nSTAT)
-                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get numberOfPoints ")
+                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get numberOfPoints ")
                   call codes_get(igrib,'Ni',Ni,nSTAT)
-                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Ni ")
+                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get Ni ")
                   call codes_get(igrib,'Nj',Nj,nSTAT)
-                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Nj ")
+                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get Nj ")
                   if(nx_fullmet.ne.Ni)then
                     do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                      write(errlog(io),*)"MR ERROR:  Grid is not the expected size"
@@ -1652,7 +1652,7 @@
                   ! HFS we can get a subset of the slice using this subroutine
                   !       call codes_get_element(igrib, key, index, value, status)
                   call codes_get(igrib,'values',values,nSTAT)
-                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get values ")
+                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get values ")
                   do m = 1,Nj
                     rstrt = (m-1)*Ni + 1
                     rend  = m*Ni
@@ -1664,7 +1664,7 @@
                   ! Now loop through the pressure values for this variable and put
                   ! this slice at the correct level.
                   call codes_get(igrib,'level',grb_level,nSTAT)
-                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get level ")
+                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get level ")
                   do kk = 1,np_met_loc
                     if(p_met_loc(kk).eq.grb_level)then
                       full_values(:,:,kk) = real(slice(:,:),kind=sp)
@@ -1675,12 +1675,12 @@
                 endif
 
                 call codes_release(igrib,nSTAT)
-                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_release ")
                 call codes_new_from_index(idx,igrib,nSTAT)
-                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_index ")
+                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_new_from_index ")
               enddo ! while
               call codes_release(igrib,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_release ")
             enddo ! loop on level
           enddo ! loop on marsParam
 
@@ -1700,33 +1700,33 @@
 
           ifile=5
           call codes_open_file(ifile,grib_file_path,'R',nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_open_file ")
 
           !     turn on support for multi fields messages */
           call codes_grib_multi_support_on()
-          !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_grib_multi_support_on ")
+          !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_grib_multi_support_on ")
 
           ! Loop on all the messages in a file.
           call codes_new_from_file(ifile,igrib,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_new_from_file ")
           count1=0
 
           do while (nSTAT.eq.CODES_SUCCESS.and.igrib.gt.0)
             count1=count1+1
 
             call codes_get(igrib,'indicatorOfParameter',grb_parameterNumber,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get indicatorOfParameter ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get indicatorOfParameter ")
             call codes_get(igrib,'indicatorOfTypeOfLevel',grb_typeSfc,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get indicatorOfTypeOfLevel ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get indicatorOfTypeOfLevel ")
 
             if ( grb_parameterNumber  .eq. iv_paramN .and. &
                  grb_typeSfc(1:3)     .eq. iv_typeSfc) then
               call codes_get(igrib,'numberOfPoints',numberOfPoints,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get numberOfPoints ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get numberOfPoints ")
               call codes_get(igrib,'Ni',Ni,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Ni ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get Ni ")
               call codes_get(igrib,'Nj',Nj,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Nj ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get Nj ")
 
               if(nx_fullmet.ne.Ni)then
                 do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
@@ -1747,7 +1747,7 @@
               allocate(values(numberOfPoints))
               allocate(slice(Ni,Nj))
               call codes_get(igrib,'values',values,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get values ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get values ")
               do m = 1,Nj
                 rstrt = (m-1)*Ni + 1
                 rend  = m*Ni
@@ -1759,7 +1759,7 @@
                ! Now loop through the pressure values for this variable and put
                ! this slice at the correct level.
                call codes_get(igrib,'level',grb_level,nSTAT)
-               if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get level ")
+               if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get level ")
                do kk = 1,np_met_loc
                  if(p_met_loc(kk).eq.grb_level)then
                    full_values(:,:,kk) = real(slice(:,:),kind=sp)
@@ -1769,13 +1769,13 @@
                deallocate(slice)
             endif
             call codes_release(igrib,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_release ")
             call codes_new_from_file(ifile,igrib,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_file ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_new_from_file ")
 
           enddo
           call codes_close_file(ifile,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_close_file ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_close_file ")
 
         endif
 
@@ -1790,21 +1790,21 @@
           endif;enddo
 
           call codes_index_read(idx,index_file,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_read ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_read ")
           call codes_grib_multi_support_on()
-          !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_grib_multi_support_on")
+          !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_grib_multi_support_on")
 
             ! get the number of distinct values of all the keys in the index
           call codes_index_get_size(idx,'discipline',disciplineSize,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get_size ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get_size ")
           call codes_index_get_size(idx,'parameterCategory',parameterCategorySize,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get_size ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get_size ")
           call codes_index_get_size(idx,'parameterNumber',parameterNumberSize,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get_size ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get_size ")
           call codes_index_get_size(idx,'scaledValueOfFirstFixedSurface',levelSize,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get_size ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get_size ")
           call codes_index_get_size(idx,'forecastTime',forecastTimeSize,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get_size ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get_size ")
 
             ! allocate the array to contain the list of distinct values
           allocate(discipline_idx(disciplineSize))
@@ -1815,57 +1815,57 @@
 
             ! get the list of distinct key values from the index
           call codes_index_get(idx,'discipline',discipline_idx,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get ")
           call codes_index_get(idx,'parameterCategory',parameterCategory_idx,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get ")
           call codes_index_get(idx,'parameterNumber',parameterNumber_idx,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get ")
           call codes_index_get(idx,'scaledValueOfFirstFixedSurface',level_idx,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get ")
           call codes_index_get(idx,'forecastTime',forecastTime_idx,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_get ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_get ")
 
           ! Start marching through the index file and look for the match with the
           ! keys
           count1=0
           do l=1,disciplineSize
             call codes_index_select(idx,'discipline',discipline_idx(l),nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_select ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_select ")
             do j=1,parameterCategorySize
               call codes_index_select(idx,'parameterCategory',parameterCategory_idx(j),nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_select ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_select ")
               do k=1,parameterNumberSize
                 call codes_index_select(idx,'parameterNumber',parameterNumber_idx(k),nSTAT)
-                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_select ")
+                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_select ")
                 do i=1,levelSize
                   call codes_index_select(idx,'level',level_idx(i),nSTAT)
-                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_select ")
+                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_select ")
                   call codes_index_select(idx,&
                          'scaledValueOfFirstFixedSurface',level_idx(i),nSTAT)
-                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_select ")
+                  if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_select ")
 
                   do t=1,forecastTimeSize
                     call codes_index_select(idx,'forecastTime',forecastTime_idx(t),nSTAT)
-                    if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_select ")
+                    if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_select ")
                     call codes_new_from_index(idx,igrib,nSTAT)
-                    if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_new_from_index ")
+                    if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_new_from_index ")
 
                     do while (nSTAT /= GRIB_END_OF_INDEX)
                       count1=count1+1
 
             call codes_get(igrib,'typeOfFirstFixedSurface', typeOfFirstFixedSurface,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get typeOfFirstFixedSurface ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get typeOfFirstFixedSurface ")
 
             if ( discipline_idx(l)       .eq. iv_discpl .and. &
                  parameterCategory_idx(j).eq. iv_paramC .and. &
                  parameterNumber_idx(k)  .eq. iv_paramN .and. &
                  typeOfFirstFixedSurface .eq. iv_typeSf) then
               call codes_get(igrib,'numberOfPoints',numberOfPoints,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get numberOfPoints ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get numberOfPoints ")
               call codes_get(igrib,'Ni',Ni,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Ni ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get Ni ")
               call codes_get(igrib,'Nj',Nj,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Nj ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get Nj ")
 
               if(nx_fullmet.ne.Ni)then
                 do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
@@ -1886,7 +1886,7 @@
               allocate(values(numberOfPoints))
               allocate(slice(Ni,Nj))
                 call codes_get(igrib,'values',values,nSTAT)
-                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get values ")
+                if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get values ")
                 do m = 1,Nj
                   rstrt = (m-1)*Ni + 1
                   rend  = m*Ni
@@ -1910,7 +1910,7 @@
                       call grib_new_from_index(idx,igrib,nSTAT)
                     enddo
                     call codes_release(igrib,nSTAT)
-                    if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+                    if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_release ")
                   enddo ! loop on forecastTime
                 enddo ! loop on level
               enddo ! loop on parameterNumber
@@ -1918,7 +1918,7 @@
           enddo ! loop on discipline
 
           call codes_index_release(idx,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_index_release ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_index_release ")
         else
           ! We don't have/(can't make) the index file so scan all messages of the
           ! GRIB2 file
@@ -1928,11 +1928,11 @@
           endif;enddo
           ifile=5
           call codes_open_file(ifile,grib_file_path,'R',nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_open_file ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_open_file ")
 
           !     turn on support for multi fields messages */
           call codes_grib_multi_support_on()
-          !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"")
+          !if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"")
 
           ! Loop on all the messages in a file.
           call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
@@ -1940,28 +1940,28 @@
           do while (nSTAT.eq.CODES_SUCCESS.and.igrib.gt.0)
             count1=count1+1
             call codes_get(igrib,'discipline',              grb_discipline,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get discipline ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get discipline ")
             call codes_get(igrib,'parameterCategory',       grb_parameterCategory,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get parameterCategory ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get parameterCategory ")
             call codes_get(igrib,'parameterNumber', grb_parameterNumber,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get parameterNumber ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get parameterNumber ")
             call codes_get(igrib,'typeOfFirstFixedSurface', typeOfFirstFixedSurface,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get typeOfFirstFixedSurface ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get typeOfFirstFixedSurface ")
             call codes_get(igrib,'scaledValueOfFirstFixedSurface',grb_level,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get scaledValueOfFirstFixedSurface ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get scaledValueOfFirstFixedSurface ")
             call codes_get(igrib,'scaledValueOfFirstFixedSurface',grb_scaledValueOfFirstFixedSurface,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get scaledValueOfFirstFixedSurface ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get scaledValueOfFirstFixedSurface ")
 
             if ( grb_discipline              .eq. iv_discpl .and. &
                  grb_parameterCategory       .eq. iv_paramC .and. &
                  grb_parameterNumber         .eq. iv_paramN .and. &
                  typeOfFirstFixedSurface     .eq. iv_typeSf) then
               call codes_get(igrib,'numberOfPoints',numberOfPoints,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get numberOfPoints ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get numberOfPoints ")
               call codes_get(igrib,'Ni',Ni,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Ni ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get Ni ")
               call codes_get(igrib,'Nj',Nj,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get Nj ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get Nj ")
 
               if(nx_fullmet.ne.Ni)then
                 do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
@@ -1982,7 +1982,7 @@
               allocate(values(numberOfPoints))
               allocate(slice(Ni,Nj))
               call codes_get(igrib,'values',values,nSTAT)
-              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_get values ")
+              if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_get values ")
               do m = 1,Nj
                 rstrt = (m-1)*Ni + 1
                 rend  = m*Ni
@@ -2003,11 +2003,11 @@
                deallocate(slice)
             endif
             call codes_release(igrib,nSTAT)
-            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_release ")
+            if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_release ")
             call codes_new_from_file(ifile,igrib,CODES_PRODUCT_GRIB,nSTAT)
           enddo
           call codes_close_file(ifile,nSTAT)
-          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,1,"codes_close_file ")
+          if(nSTAT.ne.CODES_SUCCESS)call MR_GRIB_check_status(nSTAT,MR_FAIL,"codes_close_file ")
         endif ! Use_GRIB_index
       endif ! MR_GRIB_Version eq 1 or 2
 
