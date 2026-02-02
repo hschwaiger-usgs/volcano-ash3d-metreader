@@ -130,20 +130,25 @@ EXEC = \
  bin/makegfsncml $(GRIBTOOL)
 
 AUTOSCRIPTS = \
- autorun_scripts/autorun_gfs.sh \
- autorun_scripts/get_gfs.sh     \
- autorun_scripts/convert_gfs.sh \
- autorun_scripts/autorun_ecmwf.sh \
- autorun_scripts/get_ecmwf.sh     \
- autorun_scripts/convert_ecmwf.sh \
- autorun_scripts/autorun_nam.sh \
- autorun_scripts/get_nam.sh     \
+ autorun_scripts/autorun_gfs.sh                   \
+ autorun_scripts/get_gfs.sh                       \
+ autorun_scripts/convert_gfs.sh                   \
+ autorun_scripts/autorun_ecmwf.sh                 \
+ autorun_scripts/get_ecmwf.sh                     \
+ autorun_scripts/convert_ecmwf.sh                 \
+ autorun_scripts/autorun_nam.sh                   \
+ autorun_scripts/get_nam.sh                       \
  autorun_scripts/autorun_NCEP_50YearReanalysis.sh \
  autorun_scripts/get_NCEP_50YearReanalysis.sh     \
- autorun_scripts/grib2nc.sh \
- autorun_scripts/prune_windfiles.sh \
- autorun_scripts/get_gmao.sh \
- autorun_scripts/probe_volc.sh
+ autorun_scripts/grib2nc.sh                       \
+ autorun_scripts/prune_windfiles.sh               \
+ autorun_scripts/get_gmao.sh                      \
+ autorun_scripts/probe_volc.sh                    \
+ get_NWP_testfiles_FC_gmao.sh                     \
+ get_NWP_testfiles_FC_ncep.sh                     \
+ get_NWP_testfiles_RA_merra.sh                    \
+ get_NWP_testfiles_RA_rdancep.sh
+
 ###############################################################################
 # TARGETS
 ###############################################################################
