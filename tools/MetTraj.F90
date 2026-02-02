@@ -47,7 +47,7 @@
 
       use MetReader,       only : &
          MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,verbosity_production,&
-         dx_met_const,dy_met_const,IsLatLon_CompGrid,x_comp_sp,&
+         dx_met_const,dy_met_const,IsLatLon_CompGrid,x_comp_sp,IsRegular_MetGrid,&
            MR_Initialize_Met_Grids,&
            MR_Reset_Memory,&
            MR_FileIO_Error_Handler
@@ -252,7 +252,7 @@
           xwidth = 1500.0_4
           ywidth = 1200.0_4
         endif
-      elseif(Simtime_in_hours.le.24.0_8)then
+      elseif(Simtime_in_hours.le.30.0_8)then
         if(IsLatLon_CompGrid)then
           ! +-35 in lon ; +-20 in lat
           xwidth = 70.0_4
@@ -500,7 +500,9 @@
 
       ! Test read command line arguments
       nargs = command_argument_count()
-      if (nargs.gt.1.and.nargs.lt.6) then
+      if (nargs.eq.0) then
+        call Print_Usage
+      elseif (nargs.gt.1.and.nargs.lt.6) then
         ! We need either one command-line argument (input file name) or at least
         ! 6 parameter to define the run.
         ! Write usage to stdout and exit
@@ -654,7 +656,7 @@
           stop 1
         endif
 
-        if(nargs.gt.6)then
+        if(nargs.ge.7)then
           ! First optional parameter is the simulation time
           call get_command_argument(7, arg, length=inlen, status=iostatus)
           if(iostatus.ne.0)then
@@ -681,7 +683,7 @@
                        Simtime_in_hours," hours."
             endif;enddo
 
-          if(nargs.gt.7)then
+          if(nargs.ge.8)then
             ! Next optional is the number of trajectories followed by the
             ! trajectory levels (in km)
             call get_command_argument(8, arg, length=inlen, status=iostatus)
@@ -743,6 +745,7 @@
             enddo
           endif
         else
+          ! No additional command-line arguments, so set default
           ! Default simulation time is 24 hours
           Simtime_in_hours = 24.0_8
         endif
@@ -901,7 +904,6 @@
           endif;enddo
           stop 1
         endif
-        !allocate(OutputLevels(ntraj))
 
         ! Line 7: Trajectory levels in km
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
@@ -999,7 +1001,7 @@
         MR_useCompH = .false.
 
         close(fid_ctrlfile)
-      endif
+      endif ! nargs.eq.1 End of control file block
 
       call MR_Set_CompProjection(IsLatLon_CompGrid,PJ_iprojflag,PJ_lam0,&
                                  PJ_phi0,PJ_phi1,PJ_phi2,&
@@ -1032,11 +1034,21 @@
           write(outlog(io),*)"                  ",i," at ",tmp_4,"km (",tmp_4*3280.8_4," ft)."
         enddo
         write(outlog(io),*)"IsLatLon           = ",IsLatLon_CompGrid
-        write(outlog(io),*)"iw                 = ",iw
-        write(outlog(io),*)"iwf                = ",iwf
-        write(outlog(io),*)"igrid              = ",igrid
-        write(outlog(io),*)"idf                = ",idf
         write(outlog(io),*)"autoflag           = ",autoflag
+
+        if(autoflag.eq.0)then
+          write(outlog(io),*)"iw                 = ",iw
+          write(outlog(io),*)"iwf                = ",iwf
+          write(outlog(io),*)"igrid              = ",igrid
+          write(outlog(io),*)"idf                = ",idf
+        else
+          write(outlog(io),*)"Auto-selection of windfile turned on. Below are place-holders"
+          write(outlog(io),*)"but iwf will either be 20 (gfs) or 25 (NCEP re) based on run date."
+          write(outlog(io),*)"  iw                 = ",iw
+          write(outlog(io),*)"  iwf                = ",iwf
+          write(outlog(io),*)"  igrid              = ",igrid
+          write(outlog(io),*)"  idf                = ",idf
+        endif
         write(outlog(io),*)"FC_freq            = ",FC_freq
         write(outlog(io),*)"GFS_Archive_Days   = ",GFS_Archive_Days
         write(outlog(io),*)"iwfiles            = ",iwfiles
@@ -1115,7 +1127,7 @@
 
       use MetReader,       only : &
          MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_info,&
-         MR_windfiles,MR_BaseYear,MR_useLeap,&
+         MR_windfiles,MR_BaseYear,MR_useLeap,IsRegular_MetGrid,&
          MR_Comp_StartHour,MR_Comp_StartYear,MR_Comp_StartMonth,MR_Comp_StartDay, &
          MR_Comp_Time_in_hours,MR_iwindfiles,MR_iwind,&
            MR_Allocate_FullMetFileList,&
@@ -1290,7 +1302,7 @@
           call MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)
 
           do i=1,MR_iwindfiles
-            write(MR_windfiles(i),*)trim(ADJUSTL(WINDROOT)),'/NCEP'
+            write(MR_windfiles(i),*)trim(adjustl(WINDROOT)),'/NCEP'
           enddo
 
           FC_year    = HS_YearOfEvent(RunStartHour,MR_BaseYear,MR_useLeap)
@@ -1418,9 +1430,9 @@
                             FC_year,FC_mon,FC_day,FC_Package_hour, &
                             '.f',FC_hour_int,'.nc'
 
-              write(testfile,*)trim(ADJUSTL(WINDROOT)), &
-                                   trim(ADJUSTL(string1)), &
-                                   trim(ADJUSTL(string2))
+              write(testfile,*)trim(adjustl(WINDROOT)), &
+                                   trim(adjustl(string1)), &
+                                   trim(adjustl(string2))
               inquire( file=trim(adjustl(testfile)), exist=IsThere )
               if (IsThere)then
                 GFS_FC_step_avail(i) = ii
@@ -1489,9 +1501,9 @@
                           FC_year,FC_mon,FC_day,FC_Package_hour, &
                           '.f',FC_hour_int,'.nc'
 
-            write(MR_windfiles(i),*)trim(ADJUSTL(WINDROOT)), &
-                                 trim(ADJUSTL(string1)), &
-                                 trim(ADJUSTL(string2))
+            write(MR_windfiles(i),*)trim(adjustl(WINDROOT)), &
+                                 trim(adjustl(string1)), &
+                                 trim(adjustl(string2))
           enddo
         endif  ! automatic cases: NCEP, then GFS
       else ! autoflag.eq.1
@@ -1841,7 +1853,6 @@
         endif
       enddo
 
-
       ! Find location of initial trajectory heights
       ! Get interpolation coefficients
       it = 1
@@ -1876,22 +1887,23 @@
           dvydt(:,:,:) = (Vy_full(:,:,:,it+1)-Vy_full(:,:,:,it))/MR_MetStep_Interval(it)
         endif
         do kk = 1,ntraj
-          ! Get current time and position indecies
+          ! Get current time and position indicies
           if(IsRegular_MetGrid)then
-            ! For regular grids, finding the indecies is trivial
+            ! For regular grids, finding the indicies is trivial
             ix = floor((x1(kk)-x_comp_sp(1))/abs(dx_met_const)) + 1
             iy = floor((y1(kk)-y_comp_sp(1))/abs(dy_met_const)) + 1
           else
             ! For non-regular grids (e.g. Gaussian), we need to march over the
             ! subgrid to find the index of the current point.  This could be
             ! faster.
-!            do ix=max(ixold(kk),1),nx_comp-1
+            !do ix=max(ixold(kk)-1,1),nx_comp-1
             do ix=1,nx_comp-1
               if (x1(kk).ge.x_comp_sp(ix).and.x1(kk).lt.x_comp_sp(ix+1))then
                 exit
               endif
             enddo
-            do iy=max(iyold(kk),1),ny_comp-1
+            do iy=1,ny_comp-1
+            !do iy=max(iyold(kk)-1,1),ny_comp-1
               if (y1(kk).ge.y_comp_sp(iy).and.y1(kk).lt.y_comp_sp(iy+1))then
                 exit
               endif
@@ -1905,7 +1917,8 @@
             if(ix.le.0.or.ix.ge.nx_comp.or.&
                iy.le.0.or.iy.ge.ny_comp)then
               do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
-                write(outlog(io),*)"out of bounds:",kk,ix,iy,nx_comp,ny_comp
+                write(outlog(io),'(a32,7i5)')"point out of bounds (ignoring): ",&
+                            ti,abs(int(Simtime_in_hours/dt)),kk,ix,iy,nx_comp,ny_comp
               endif;enddo
               cycle
             endif
