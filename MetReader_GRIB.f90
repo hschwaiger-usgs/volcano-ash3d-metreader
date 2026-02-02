@@ -619,12 +619,12 @@
           ! We need to check if this is a regular grid
           IsRegular_MetGrid = .true.
           do i = 1,nx_fullmet-1
-            if(abs(MR_dx_met(i+1)-MR_dx_met(i)).gt.tol*MR_dx_met(i))then
+            if(abs(MR_dx_met(i+1)-MR_dx_met(i)).gt.tol*abs(MR_dx_met(i)))then
               IsRegular_MetGrid = .false.
             endif
           enddo
           do i = 1,ny_fullmet-1
-            if(abs(MR_dy_met(i+1)-MR_dy_met(i)).gt.tol*MR_dy_met(i))then
+            if(abs(MR_dy_met(i+1)-MR_dy_met(i)).gt.tol*abs(MR_dy_met(i)))then
               IsRegular_MetGrid = .false.
             endif
           enddo
