@@ -144,10 +144,10 @@ AUTOSCRIPTS = \
  autorun_scripts/prune_windfiles.sh               \
  autorun_scripts/get_gmao.sh                      \
  autorun_scripts/probe_volc.sh                    \
- get_NWP_testfiles_FC_gmao.sh                     \
- get_NWP_testfiles_FC_ncep.sh                     \
- get_NWP_testfiles_RA_merra.sh                    \
- get_NWP_testfiles_RA_rdancep.sh
+ autorun_scripts/get_NWP_testfiles_FC_gmao.sh     \
+ autorun_scripts/get_NWP_testfiles_FC_ncep.sh     \
+ autorun_scripts/get_NWP_testfiles_RA_merra.sh    \
+ autorun_scripts/get_NWP_testfiles_RA_rdancep.sh
 
 ###############################################################################
 # TARGETS
