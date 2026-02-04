@@ -99,9 +99,9 @@ echo "  Calling ${SCRIPTDIR}/get_ecmwf.sh ${RES} ${yearmonthday} ${FChour}"
 ${SCRIPTDIR}/get_ecmwf.sh ${RES} ${yearmonthday} ${FChour}
 
 #script that converts grib2 to netcdf
-# Note: this is commented out since both ncl and netcdf-java are failing to convert
-#echo "  Calling ${SCRIPTDIR}/convert_ecmwf.sh ${RES} ${yearmonthday} ${FChour}"
-#${SCRIPTDIR}/convert_ecmwf.sh ${RES} ${yearmonthday} ${FChour}
+# Note: Both ncl and netcdf-java are failing to convert, but this sets the links
+echo "  Calling ${SCRIPTDIR}/convert_ecmwf.sh ${RES} ${yearmonthday} ${FChour}"
+${SCRIPTDIR}/convert_ecmwf.sh ${RES} ${yearmonthday} ${FChour}
 
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 echo "finished autorun_ecmwf script"

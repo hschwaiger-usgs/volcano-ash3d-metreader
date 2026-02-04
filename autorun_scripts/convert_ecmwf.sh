@@ -105,7 +105,7 @@ case ${RES} in
   #        20250211000000-0h-oper-fc.grib2
   FilePre="${yearmonthday}${FChour}0000-"
   FilePost="h-oper-fc.grib2"
-  iwf=22
+  iwf=34
   ;;
  *)
   echo "ECMWF product not recognized"
@@ -138,56 +138,56 @@ rm -f ${ECMWFDATAHOME}/${FC_day}/${validlist}
 touch ${ECMWFDATAHOME}/${FC_day}/${validlist}
 vcount=0
 while [ "$t" -le ${HourMax} ]
-do
-  if [ "$t" -le 9 ]; then
-      hour="00$t"
-   elif [ "$t" -le 99 ]; then
-      hour="0$t"
-   else
-      hour="$t"
-  fi
-  ecmwffile=${FilePre}${hour}
-  ncmlfile="ecmwf.t${FChour}z.f${hour}.ncml"
-  netcdffile="${yearmonthday}${FChour}.f${hour}.nc"
-  netcdf4file="${yearmonthday}${FChour}.f${hour}.nc4"
-  if test -r ${ecmwffile}
-  then
-     #echo "making ${ncmlfile}"
-     #${USGSROOT}/bin/makegfsncml ${ecmwffile} ${ncmlfile}
-     #if [[ $? -ne 0 ]]; then
-     #     exit 1
-     #fi
-     echo "Converting ${ecmwffile} to ${netcdffile}"
-     # Note: nc4 is significantly smaller, but the direct conversion to nc4 from netcdf-java via the flag -netcdf4
-     #       results in incompatible files.  Here, we use netcdf-java to product a temporary file, then convert
-     #       to nc4 with nccopy
-     echo "java -Xmx2048m -classpath ${NCJv} ucar.nc2.dataset.NetcdfDataset -in ${ecmwffile} -out ${netcdffile} -IsLargeFile"
-     if [ $NCv -eq 4 ]
-     then
-       ${JAVA} -Xmx2048m -classpath ${NCJv} ucar.nc2.dataset.NetcdfDataset -in ${ecmwffile} -out tmp.nc -IsLargeFile
-       nccopy -k 4 -d 5 tmp.nc ${netcdffile}
-       rm tmp.nc
-     else
-       ${JAVA} -Xmx2048m -classpath ${NCJv} ucar.nc2.dataset.NetcdfDataset -in ${ecmwffile} -out ${netcdffile} -IsLargeFile
-     fi
-     if [[ $? -ne 0 ]]; then
-          exit 1
-     fi
-     # Check converted file for valid values
-     echo "checking ${netcdffile} for corrupt values"
-     ${USGSROOT}/bin/MetCheck ${iwf} 2 ${netcdffile}
-     if [[ $? -eq 0 ]]; then
-       cat MetCheck_log.txt >> ${ECMWFDATAHOME}/${FC_day}/${validlist}
-       vcount=$((vcount+1))
-     fi
-   else
-     echo "Warning: ${ecmwffile} does not exist. Skipping."
-   fi
-   t=$((t+${HourStep}))
-done
+#do
+#  if [ "$t" -le 9 ]; then
+#      hour="00$t"
+#   elif [ "$t" -le 99 ]; then
+#      hour="0$t"
+#   else
+#      hour="$t"
+#  fi
+  #INFILE=${FilePre}${t}${FilePost}
+  #ncmlfile="ecmwf.t${FChour}z.f${hour}.ncml"
+  #netcdffile="${yearmonthday}${FChour}.f${hour}.nc"
+  #netcdf4file="${yearmonthday}${FChour}.f${hour}.nc4"
+  #if test -r ${ecmwffile}
+  #then
+  #   #echo "making ${ncmlfile}"
+  #   #${USGSROOT}/bin/makegfsncml ${ecmwffile} ${ncmlfile}
+  #   #if [[ $? -ne 0 ]]; then
+  #   #     exit 1
+  #   #fi
+  #   echo "Converting ${ecmwffile} to ${netcdffile}"
+  #   # Note: nc4 is significantly smaller, but the direct conversion to nc4 from netcdf-java via the flag -netcdf4
+  #   #       results in incompatible files.  Here, we use netcdf-java to product a temporary file, then convert
+  #   #       to nc4 with nccopy
+  #   echo "java -Xmx2048m -classpath ${NCJv} ucar.nc2.dataset.NetcdfDataset -in ${ecmwffile} -out ${netcdffile} -IsLargeFile"
+  #   if [ $NCv -eq 4 ]
+  #   then
+  #     ${JAVA} -Xmx2048m -classpath ${NCJv} ucar.nc2.dataset.NetcdfDataset -in ${ecmwffile} -out tmp.nc -IsLargeFile
+  #     nccopy -k 4 -d 5 tmp.nc ${netcdffile}
+  #     rm tmp.nc
+  #   else
+  #     ${JAVA} -Xmx2048m -classpath ${NCJv} ucar.nc2.dataset.NetcdfDataset -in ${ecmwffile} -out ${netcdffile} -IsLargeFile
+  #   fi
+  #   if [[ $? -ne 0 ]]; then
+  #        exit 1
+  #   fi
+  #   # Check converted file for valid values
+  #   echo "checking ${netcdffile} for corrupt values"
+  #   ${USGSROOT}/bin/MetCheck ${iwf} 2 ${netcdffile}
+  #   if [[ $? -eq 0 ]]; then
+  #     cat MetCheck_log.txt >> ${ECMWFDATAHOME}/${FC_day}/${validlist}
+  #     vcount=$((vcount+1))
+  #   fi
+  # else
+  #   echo "Warning: ${ecmwffile} does not exist. Skipping."
+  # fi
+   #t=$((t+${HourStep}))
+#done
 
 #Make sure the netcdf files all exist
-echo "making sure all netcdf files exist"
+echo "making sure all grib2 files exist"
 t=0        # time index
 numfiles=0 # file index
 while [ "$t" -le ${HourMax} ]
@@ -199,14 +199,15 @@ do
    else
       hour="$t"
   fi
-  netcdffile="${yearmonthday}${FChour}.f${hour}.nc"
-  if test -r ${netcdffile}
+  INFILE=${FilePre}${t}${FilePost}
+  #netcdffile="${yearmonthday}${FChour}.f${hour}.nc"
+  if test -r ${INFILE}
   then
-     echo "${netcdffile} exists"
+     echo "${INFILE} exists"
      t=$((t+${HourStep}))
      numfiles=$((numfiles+1))
    else
-     echo "error: ${netcdffile} does not exist."
+     echo "error: ${INFILE} does not exist."
      exit 1
    fi
 done
@@ -230,17 +231,18 @@ do
    else
       hour="$t"
   fi
-  netcdffile="${yearmonthday}${FChour}.f${hour}.nc"
-  linkfile="latest.f${hour}.nc"
-  echo "creating soft link for ${netcdffile}"
-  ln -s ${ECMWFDATAHOME}/${FC_day}/${netcdffile} ${ECMWFDATAHOME}/latest/${linkfile}
+  ecmwffile=${FilePre}${t}${FilePost}
+  #ecmwffile="${yearmonthday}${FChour}.f${hour}.nc"
+  linkfile="latest.f${hour}.grib2"
+  echo "creating soft link for ${ecmwffile}"
+  ln -s ${ECMWFDATAHOME}/${FC_day}/${ecmwffile} ${ECMWFDATAHOME}/latest/${linkfile}
   echo "latest/${linkfile}" >> ${ECMWFDATAHOME}/ecmwflist.txt
   t=$((t+3))
 done
 
-echo "removing *.ncml, *.ncx2, and *.gbx9 files"
-echo "rm ${ECMWFDATAHOME}/${FC_day}/*.ncml ${ECMWFDATAHOME}/${FC_day}/*.gbx9"
-rm -f ${ECMWFDATAHOME}/${FC_day}/*.ncml ${ECMWFDATAHOME}/${FC_day}/*.gbx9 ${ECMWFDATAHOME}/${FC_day}/*.ncx2
+#echo "removing *.ncml, *.ncx2, and *.gbx9 files"
+#echo "rm ${ECMWFDATAHOME}/${FC_day}/*.ncml ${ECMWFDATAHOME}/${FC_day}/*.gbx9"
+#rm -f ${ECMWFDATAHOME}/${FC_day}/*.ncml ${ECMWFDATAHOME}/${FC_day}/*.gbx9 ${ECMWFDATAHOME}/${FC_day}/*.ncx2
 
 echo "writing last_downloaded.txt"
 echo ${yearmonthday}${FChour} > ${ECMWFDATAHOME}/last_downloaded.txt
