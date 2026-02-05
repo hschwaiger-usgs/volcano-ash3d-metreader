@@ -137,7 +137,7 @@ t=0
 rm -f ${ECMWFDATAHOME}/${FC_day}/${validlist}
 touch ${ECMWFDATAHOME}/${FC_day}/${validlist}
 vcount=0
-while [ "$t" -le ${HourMax} ]
+#while [ "$t" -le ${HourMax} ]
 #do
 #  if [ "$t" -le 9 ]; then
 #      hour="00$t"
