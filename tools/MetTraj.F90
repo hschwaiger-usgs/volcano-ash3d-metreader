@@ -57,21 +57,30 @@
          !PJ_ilatlonflag,PJ_lam1,PJ_lam2, &
            PJ_proj_for
 
+      ! This module requires Fortran 2003 or later
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
+
       implicit none
+      !implicit none (type, external)
+
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
       ! These are the variables that must be set in the input file or command line
-      real(kind=8)        :: inlon
-      real(kind=8)        :: inlat
-      real(kind=8)        :: srcx
-      real(kind=8)        :: srcy
+      real(kind=dp)        :: inlon
+      real(kind=dp)        :: inlat
+      real(kind=dp)        :: srcx
+      real(kind=dp)        :: srcy
       integer             :: inyear,inmonth,inday
-      real(kind=8)        :: inhour
-      real(kind=8)        :: Simtime_in_hours
-      real(kind=8)        :: Met_hours_needed
+      real(kind=dp)        :: inhour
+      real(kind=dp)        :: Simtime_in_hours
+      real(kind=dp)        :: Met_hours_needed
       integer             :: StreamFlag
       integer             :: OutStepInc_Minutes
       integer             :: ntraj
-      real(kind=8), dimension(9) :: OutputLevels
+      real(kind=dp), dimension(9) :: OutputLevels
       integer             :: iw
       integer             :: iwf
       integer             :: igrid
@@ -85,15 +94,15 @@
       integer             :: TrajFlag  ! .ge. 0 for forward, .lt.0 for backward
 
       integer             :: nxmax,nymax,nzmax
-      real(kind=8)        :: dx,dy
-      real(kind=8)        :: xwidth,ywidth
-      real(kind=4),dimension(:)    ,allocatable :: xgrid
-      real(kind=4),dimension(:)    ,allocatable :: ygrid
-      real(kind=4),dimension(:)    ,allocatable :: z_cc
+      real(kind=dp)        :: dx,dy
+      real(kind=dp)        :: xwidth,ywidth
+      real(kind=sp),dimension(:)    ,allocatable :: xgrid
+      real(kind=sp),dimension(:)    ,allocatable :: ygrid
+      real(kind=sp),dimension(:)    ,allocatable :: z_cc
       logical             :: IsPeriodic
       integer             :: i
 
-      real(kind=8)        :: starty
+      real(kind=dp)        :: starty
 
       logical             :: IsGlobal
 
@@ -105,7 +114,9 @@
                       StreamFlag,OutStepInc_Minutes,ntraj,OutputLevels,&
                       iw,iwf,igrid,idf,iwfiles,&
                       autoflag,FC_freq,GFS_Archive_Days)
-          integer,parameter   :: dp        = 8 ! double precision
+          implicit none
+          !implicit none (type, external)
+          integer,parameter                       :: dp        = 8 ! double precision
           real(kind=dp)              ,intent(out) :: inlon
           real(kind=dp)              ,intent(out) :: inlat
           integer                    ,intent(out) :: inyear,inmonth,inday
@@ -128,7 +139,7 @@
                                 Simtime_in_hours,TrajFlag,&
                                 iw,iwf,igrid,idf,iwfiles,&
                                 autoflag,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
-          integer,parameter   :: dp        = 8 ! double precision
+          integer,parameter           :: dp        = 8 ! double precision
           integer         ,intent(in) :: inyear
           integer         ,intent(in) :: inmonth
           integer         ,intent(in) :: inday
@@ -147,7 +158,7 @@
         end subroutine GetWindFile
         subroutine Integrate_ConstH_Traj(IsGlobal,srcx,srcy,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj,output_interv,inlon,inlat)
-          integer,parameter   :: dp        = 8 ! double precision
+          integer,parameter              :: dp        = 8 ! double precision
           logical      , intent(in)      :: IsGlobal
           real(kind=dp), intent(in)      :: srcx
           real(kind=dp), intent(in)      :: srcy
@@ -209,7 +220,7 @@
         write(outlog(io),*)"Calling GetWindFile"
       endif;enddo
       if(StreamFlag.eq.0)then
-        Met_hours_needed = 0.0_8
+        Met_hours_needed = 0.0_dp
       else
         Met_hours_needed = Simtime_in_hours
       endif
@@ -222,56 +233,56 @@
       nzmax = ntraj
       IsGlobal = .false.
       ! Define grid padding based on the integration time
-      if(Simtime_in_hours.le.6.0_8)then
+      if(Simtime_in_hours.le.6.0_dp)then
         if(IsLatLon_CompGrid)then
           ! +-7.5 in lon ; +-5.0 in lat
-          xwidth = 15.0_4
-          ywidth = 10.0_4
+          xwidth = 15.0_sp
+          ywidth = 10.0_sp
         else
           ! +-75km in x ; +-75 in y
-          xwidth = 800.0_4
-          ywidth = 800.0_4
+          xwidth = 800.0_sp
+          ywidth = 800.0_sp
         endif
-      elseif(Simtime_in_hours.le.8.0_8)then
+      elseif(Simtime_in_hours.le.8.0_dp)then
         if(IsLatLon_CompGrid)then
           ! +-15 in lon ; +-10 in lat
-          xwidth = 30.0_4
-          ywidth = 20.0_4
+          xwidth = 30.0_sp
+          ywidth = 20.0_sp
         else
           ! +-125km in x ; +-125 in y
-          xwidth = 1000.0_4
-          ywidth = 1000.0_4
+          xwidth = 1000.0_sp
+          ywidth = 1000.0_sp
         endif
-      elseif(Simtime_in_hours.le.16.0_8)then
+      elseif(Simtime_in_hours.le.16.0_dp)then
         if(IsLatLon_CompGrid)then
           ! +-25 in lon ; +-15 in lat
-          xwidth = 50.0_4
-          ywidth = 30.0_4
+          xwidth = 50.0_sp
+          ywidth = 30.0_sp
         else
           ! +-300km in x ; +-300 in y
-          xwidth = 1500.0_4
-          ywidth = 1200.0_4
+          xwidth = 1500.0_sp
+          ywidth = 1200.0_sp
         endif
-      elseif(Simtime_in_hours.le.30.0_8)then
+      elseif(Simtime_in_hours.le.30.0_dp)then
         if(IsLatLon_CompGrid)then
           ! +-35 in lon ; +-20 in lat
-          xwidth = 70.0_4
-          ywidth = 40.0_4
+          xwidth = 70.0_sp
+          ywidth = 40.0_sp
         else
           ! +-500km in x ; +-500 in y
-          xwidth = 2000.0_4
-          ywidth = 1500.0_4
+          xwidth = 2000.0_sp
+          ywidth = 1500.0_sp
         endif
       else
         if(IsLatLon_CompGrid)then
           ! Full globe
-          xwidth = 360.0_4
-          ywidth = 180.0_4
+          xwidth = 360.0_sp
+          ywidth = 180.0_sp
           IsGlobal = .true.
         else
           ! +-1500km in x ; +-1500 in y
-          xwidth = 1500.0_4
-          ywidth = 1500.0_4
+          xwidth = 1500.0_sp
+          ywidth = 1500.0_sp
         endif
       endif
 
@@ -279,8 +290,8 @@
         ! For the ASCII case, the met grid is not a 2-d grid, but maybe
         ! scattered points.  We need to set up comp grid independent of
         ! the met grid. Note ASCII cases are lon/lat
-        dx = 0.5_4
-        dy = 0.5_4
+        dx = 0.5_sp
+        dy = 0.5_sp
       else
         if(dx_met_const.gt.0.0.and.dy_met_const.gt.0.0)then
           dx = dx_met_const
@@ -288,10 +299,10 @@
         else
           if(IsLatLon_CompGrid)then
             ! Absent other information, choose 0.5 degree for lon/lat cases
-            dx = 0.5_4
-            dy = 0.5_4
+            dx = 0.5_sp
+            dy = 0.5_sp
           else
-            dx = xwidth/20.0_4
+            dx = xwidth/20.0_sp
             dy = dx
           endif
         endif
@@ -312,48 +323,48 @@
         if(IsGlobal)then
           IsPeriodic = .true.
           do i=0,nxmax+1
-            xgrid(i) = real((i-1) * dx,kind=4)
+            xgrid(i) = real((i-1) * dx,kind=sp)
           enddo
           do i=0,nymax+1
-            ygrid(i) = real(-90.0_4 + (i-1) * dy,kind=4)
+            ygrid(i) = real(-90.0_sp + (i-1) * dy,kind=sp)
           enddo
         else
           do i=0,nxmax+1
-            xgrid(i) = real(srcx - 0.5_4*(nxmax-1) * dx + (i-1) * dx,kind=4)
+            xgrid(i) = real(srcx - 0.5_sp*(nxmax-1) * dx + (i-1) * dx,kind=sp)
           enddo
           ! For the y grid, we need to check if the requested box bumps up against
           ! the poles. Limit the extrema to +-89
-          if((srcy + (nymax-1)*0.5_8 * dy).gt.89.0_8)then
+          if((srcy + (nymax-1)*0.5_dp * dy).gt.89.0_dp)then
             ! Start from 89.0 N and count down nymax
-            starty = 89.0_8 - (nymax-1) * dy
+            starty = 89.0_dp - (nymax-1) * dy
             do i=0,nymax+1
-              ygrid(i) = real(starty + (i-1) * dy,kind=4)
+              ygrid(i) = real(starty + (i-1) * dy,kind=sp)
             enddo
-          elseif((srcy - (nymax-1)*0.5_8 * dy).lt.-89.0_8)then
+          elseif((srcy - (nymax-1)*0.5_dp * dy).lt.-89.0_dp)then
             ! Start from 89.0 N and count down nymax
-            starty = -89.0_8
+            starty = -89.0_dp
             do i=0,nymax+1
-              ygrid(i) = real(starty + (i-1) * dy,kind=4)
+              ygrid(i) = real(starty + (i-1) * dy,kind=sp)
             enddo
           else
             ! lat grid doesn't involve poles; center grid over inlat or srcy
             do i=0,nymax+1
-              ygrid(i) = real(srcy - 0.5_8*(nymax-1) * dy + (i-1) * dy,kind=4)
+              ygrid(i) = real(srcy - 0.5_dp*(nymax-1) * dy + (i-1) * dy,kind=sp)
             enddo
           endif
           ! Shift xgrid to preferred range
-          !if(xgrid(1).lt.0.0_4)then
-          !  xgrid(:) = xgrid(:) + 360.0_4
-          !  srcx     = srcx + 360.0_8
+          !if(xgrid(1).lt.0.0_sp)then
+          !  xgrid(:) = xgrid(:) + 360.0_sp
+          !  srcx     = srcx + 360.0_dp
           !endif
         endif
       else
         ! Projected grids
         do i=0,nxmax+1
-          xgrid(i) = real(srcx - 0.5_4*(nxmax-1) * dx + (i-1) * dx,kind=4)
+          xgrid(i) = real(srcx - 0.5_sp*(nxmax-1) * dx + (i-1) * dx,kind=sp)
         enddo
         do i=0,nymax+1
-          ygrid(i) = real(srcy - 0.5_4*(nymax-1) * dy + (i-1) * dy,kind=4)
+          ygrid(i) = real(srcy - 0.5_sp*(nymax-1) * dy + (i-1) * dy,kind=sp)
         enddo
       endif
 
@@ -377,7 +388,7 @@
       endif;enddo
 
       if(srcx.lt.x_comp_sp(1).or.srcx.gt.x_comp_sp(nxmax))then
-        srcx = srcx - 360.0_8
+        srcx = srcx - 360.0_dp
       endif
 
       call Integrate_ConstH_Traj(IsGlobal,srcx,srcy,inyear,inmonth,inday,inhour,&
@@ -450,20 +461,29 @@
            PJ_Set_Proj_Params, &
            PJ_proj_for
 
+      ! This module requires Fortran 2003 or later
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
+
       implicit none
+      !implicit none (type, external)
+
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
       integer,parameter :: fid_ctrlfile = 10
 
       ! These are the variables that must be set in the input file or command line
-      real(kind=8)              ,intent(out) :: inlon
-      real(kind=8)              ,intent(out) :: inlat
+      real(kind=dp)              ,intent(out) :: inlon
+      real(kind=dp)              ,intent(out) :: inlat
       integer                   ,intent(out) :: inyear,inmonth,inday
-      real(kind=8)              ,intent(out) :: inhour
-      real(kind=8)              ,intent(out) :: Simtime_in_hours
+      real(kind=dp)              ,intent(out) :: inhour
+      real(kind=dp)              ,intent(out) :: Simtime_in_hours
       integer                   ,intent(out) :: StreamFlag
       integer                   ,intent(out) :: OutStepInc_Minutes
       integer                   ,intent(out) :: ntraj
-      real(kind=8), dimension(9),intent(out) :: OutputLevels
+      real(kind=dp), dimension(9),intent(out) :: OutputLevels
       integer                   ,intent(out) :: iw
       integer                   ,intent(out) :: iwf
       integer                   ,intent(out) :: igrid
@@ -483,18 +503,20 @@
       integer :: BaseYear = 1900
       logical :: useLeap  = .true.
       integer :: i
-      real(kind=4) :: tmp_4
+      real(kind=sp) :: tmp_sp
 
       character(len=100):: infile
       logical           :: IsThere
       character(len=80) :: linebuffer080
       character(len=80) :: Comp_projection_line
-      real(kind=8)      :: srcx,srcy
+      real(kind=dp)      :: srcx,srcy
 
       integer :: io                           ! Index for output streams
 
       INTERFACE
         subroutine Print_Usage
+          implicit none
+          !implicit none (type, external)
         end subroutine Print_Usage
       END INTERFACE
 
@@ -515,7 +537,7 @@
         endif;enddo
         !  And here is what we assume:
         StreamFlag = 1  ! This means we are doing streamlines, NOT streaklines
-        Simtime_in_hours = 24.0_8   ! Length of time to integrate (can be changed on command-line)
+        Simtime_in_hours = 24.0_dp   ! Length of time to integrate (can be changed on command-line)
         OutStepInc_Minutes = 60     ! Minutes between output points
         ntraj              = 0      ! Number of trajectories (can be changed on command-line)
         ! OutputLevels : this is allocated once ntraj is locked in
@@ -550,15 +572,15 @@
         linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inlon
-        if(inlon.lt.-360.0_8.or.&
-           inlon.gt.360.0_8)then
+        if(inlon.lt.-360.0_dp.or.&
+           inlon.gt.360.0_dp)then
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"MR ERROR: longitude not in range -180->360"
             write(errlog(io),*)" inlon = ",inlon
           endif;enddo
           stop 1
         endif
-        if(inlon.lt.0.0_8.or.inlon.gt.360.0_8)inlon=mod(inlon+360.0_8,360.0_8)
+        if(inlon.lt.0.0_dp.or.inlon.gt.360.0_dp)inlon=mod(inlon+360.0_dp,360.0_dp)
 
         call get_command_argument(2, arg, length=inlen, status=iostatus)
         if(iostatus.ne.0)then
@@ -572,8 +594,8 @@
         linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inlat
-        if(inlat.lt.-90.0_4.or.&
-           inlat.gt.90.0_4)then
+        if(inlat.lt.-90.0_sp.or.&
+           inlat.gt.90.0_sp)then
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"MR ERROR: latitude not in range -90->90"
             write(errlog(io),*)" inlat = ",inlat
@@ -647,8 +669,8 @@
         linebuffer080 = arg(1:80)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inhour
-        if(inhour.lt.0.0_8.or.&
-           inhour.gt.48.0_8)then
+        if(inhour.lt.0.0_dp.or.&
+           inhour.gt.48.0_dp)then
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: hour must be in range 0.0-48.0"
             write(errlog(io),*)" inhour = ",inhour
@@ -670,7 +692,7 @@
           linebuffer080 = arg(1:80)
           if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
           ! Error-checkSimtime_in_hours
-          if(Simtime_in_hours.lt.0.0_8)then
+          if(Simtime_in_hours.lt.0.0_dp)then
             do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: Sim Time must be positive."
               write(errlog(io),*)" inhour = ",inhour
@@ -747,28 +769,28 @@
         else
           ! No additional command-line arguments, so set default
           ! Default simulation time is 24 hours
-          Simtime_in_hours = 24.0_8
+          Simtime_in_hours = 24.0_dp
         endif
         if(ntraj.eq.0)then
           ! These are the default trajectory levels if none are specified
           ntraj = 6
-          OutputLevels(1) =  1.524_4 !  5000 ft
-          OutputLevels(2) =  3.048_4 ! 10000 ft
-          OutputLevels(3) =  6.096_4 ! 20000 ft
-          OutputLevels(4) =  9.144_4 ! 30000 ft
-          OutputLevels(5) = 12.192_4 ! 40000 ft
-          OutputLevels(6) = 15.240_4 ! 50000 ft
+          OutputLevels(1) =  1.524_sp !  5000 ft
+          OutputLevels(2) =  3.048_sp ! 10000 ft
+          OutputLevels(3) =  6.096_sp ! 20000 ft
+          OutputLevels(4) =  9.144_sp ! 30000 ft
+          OutputLevels(5) = 12.192_sp ! 40000 ft
+          OutputLevels(6) = 15.240_sp ! 50000 ft
         endif
 
         ! Now we need to set the projection for the computational grid, which
         ! for the command-line runs will always be lon/lat
         PJ_iprojflag = 1
-        PJ_lam0      = -105.0_8
-        PJ_phi0      = 90.0_8
-        PJ_phi1      = 90.0_8
-        PJ_phi2      = 90.0_8
-        PJ_k0        = 0.933_8
-        PJ_Re        = 6371.229_8
+        PJ_lam0      = -105.0_dp
+        PJ_phi0      = 90.0_dp
+        PJ_phi1      = 90.0_dp
+        PJ_phi2      = 90.0_dp
+        PJ_k0        = 0.933_dp
+        PJ_Re        = 6371.229_dp
 
       elseif(nargs.eq.1)then
         ! we're using a control file.  This is the most general case where non-
@@ -803,14 +825,14 @@
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) inlon, inlat
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
-        if(inlon.lt.-360.0_8.or.inlon.gt.360.0_8)then
+        if(inlon.lt.-360.0_dp.or.inlon.gt.360.0_dp)then
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Longitude must be in range -360->360"
           endif;enddo
           stop 1
         endif
-        if(inlon.lt.0.0_8.or.inlon.gt.360.0_8)inlon=mod(inlon+360.0_8,360.0_8)
-        if(inlat.lt.-90.0_8.or.inlat.gt.90.0_8)then
+        if(inlon.lt.0.0_dp.or.inlon.gt.360.0_dp)inlon=mod(inlon+360.0_dp,360.0_dp)
+        if(inlat.lt.-90.0_dp.or.inlat.gt.90.0_dp)then
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: Latitude must be in range -90->90"
           endif;enddo
@@ -841,8 +863,8 @@
           stop 1
         endif
         ! Error-check inhour
-        if(inhour.lt.0.0_8.or.&
-           inhour.gt.24.0_8)then
+        if(inhour.lt.0.0_dp.or.&
+           inhour.gt.24.0_dp)then
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: hour must be in range 0.0-24.0"
             write(errlog(io),*)" inhour = ",inhour
@@ -856,7 +878,7 @@
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) Simtime_in_hours
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check Simtime_in_hours
-        if(Simtime_in_hours.lt.0.0_8)then
+        if(Simtime_in_hours.lt.0.0_dp)then
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
             write(errlog(io),*)"MR ERROR: hour must be positive"
             write(errlog(io),*)" Simtime_in_hours = ",Simtime_in_hours
@@ -911,7 +933,7 @@
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) OutputLevels(1:ntraj)
         if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         do i=1,ntraj
-          if(OutputLevels(i).lt.0.0_8)then
+          if(OutputLevels(i).lt.0.0_dp)then
             do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
               write(errlog(io),*)"MR ERROR: OutputLevels must be positive"
               write(errlog(io),*)" i OutputLevels(i) = ",i,OutputLevels(i)
@@ -1014,8 +1036,8 @@
 
       ! write out values of parameters defining the run
       do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
-        write(outlog(io),*)"inlon              = ",real(inlon,kind=4)
-        write(outlog(io),*)"inlat              = ",real(inlat,kind=4)
+        write(outlog(io),*)"inlon              = ",real(inlon,kind=sp)
+        write(outlog(io),*)"inlat              = ",real(inlat,kind=sp)
         if(.not.IsLatLon_CompGrid)then
           write(outlog(io),*)"projected x        = ",srcx
           write(outlog(io),*)"projected y        = ",srcy
@@ -1023,15 +1045,15 @@
         write(outlog(io),*)"inyear             = ",inyear
         write(outlog(io),*)"inmonth            = ",inmonth
         write(outlog(io),*)"inday              = ",inday
-        write(outlog(io),*)"inhour             = ",real(inhour,kind=4)
-        write(outlog(io),*)"Simtime_in_hours   = ",real(Simtime_in_hours,kind=4)
+        write(outlog(io),*)"inhour             = ",real(inhour,kind=sp)
+        write(outlog(io),*)"Simtime_in_hours   = ",real(Simtime_in_hours,kind=sp)
         write(outlog(io),*)"StreamFlag         = ",StreamFlag
         write(outlog(io),*)"OutStepInc_Minutes = ",OutStepInc_Minutes
         write(outlog(io),*)"ntraj              = ",ntraj
         write(outlog(io),*)"OutputLevels       = "
         do i=1,ntraj
-          tmp_4 = real(OutputLevels(i),kind=4)
-          write(outlog(io),*)"                  ",i," at ",tmp_4,"km (",tmp_4*3280.8_4," ft)."
+          tmp_sp = real(OutputLevels(i),kind=sp)
+          write(outlog(io),*)"                  ",i," at ",tmp_sp,"km (",tmp_sp*3280.8_sp," ft)."
         enddo
         write(outlog(io),*)"IsLatLon           = ",IsLatLon_CompGrid
         write(outlog(io),*)"autoflag           = ",autoflag
@@ -1135,15 +1157,23 @@
            MR_Set_Met_Times,&
            MR_FileIO_Error_Handler
 
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
+
       implicit none
+      !implicit none (type, external)
+
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
       integer,parameter :: fid_ctrlfile = 10
 
       integer        ,intent(in) :: inyear
       integer        ,intent(in) :: inmonth
       integer        ,intent(in) :: inday
-      real(kind=8)   ,intent(in) :: inhour
-      real(kind=8)   ,intent(in) :: Simtime_in_hours
+      real(kind=dp)  ,intent(in) :: inhour
+      real(kind=dp)  ,intent(in) :: Simtime_in_hours
       integer        ,intent(in) :: TrajFlag
       integer        ,intent(inout) :: iw
       integer        ,intent(inout) :: iwf
@@ -1162,13 +1192,13 @@
       integer            :: values(8)   ! return values from date_and_time
       integer            :: timezone    ! timezone of grid relative to UTC
 
-      real(kind=8)      :: StartHour
-      real(kind=8)      :: RunStartHour    ! Current UTC time, in hours since MR_BaseYear
+      real(kind=dp)      :: StartHour
+      real(kind=dp)      :: RunStartHour    ! Current UTC time, in hours since MR_BaseYear
       character(len=17) :: RunStartHour_ch
-      real(kind=8)      :: Probe_StartHour
-      real(kind=8)      :: Probe_EndHour
-      real(kind=8)      :: Met_needed_StartHour
-      real(kind=8)      :: Met_needed_EndHour
+      real(kind=dp)      :: Probe_StartHour
+      real(kind=dp)      :: Probe_EndHour
+      real(kind=dp)      :: Met_needed_StartHour
+      real(kind=dp)      :: Met_needed_EndHour
 
       integer      :: RunStartYear
       integer      :: RunStartMonth
@@ -1180,20 +1210,20 @@
       integer      :: FC_Package_day
       integer      :: FC_Package_hour
       integer      :: FC_hour_int
-      real(kind=8) :: FC_Package_StartHour
-      real(kind=8) :: FC_Archive_StartHour
+      real(kind=dp) :: FC_Package_StartHour
+      real(kind=dp) :: FC_Archive_StartHour
 
       character(len=100) :: WINDROOT = '/data/WindFiles'
       character(len=47) :: string1,string2
 
       integer :: i,ii
       integer :: FC_year,FC_mon,FC_day
-      real(kind=8) :: FC_hour,FC_Package_hour_dp,FC_intvl
+      real(kind=dp) :: FC_hour,FC_Package_hour_dp,FC_intvl
       integer :: NumFCpackages
 
       character (len=130):: testfile
-      real(kind=8)       :: FCStartHour
-      real(kind=8)       :: FCEndHour
+      real(kind=dp)       :: FCStartHour
+      real(kind=dp)       :: FCEndHour
       logical            :: IsThere
 
       logical,dimension(:),allocatable :: GFS_candidate
@@ -1211,37 +1241,55 @@
 
       INTERFACE
         character (len=13) function HS_yyyymmddhhmm_since(HoursSince,byear,useLeaps)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in)  :: HoursSince
+          integer        ,intent(in)  :: byear
+          logical        ,intent(in)  :: useLeaps
         end function HS_yyyymmddhhmm_since
         integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in)  :: HoursSince
+          integer        ,intent(in)  :: byear
+          logical        ,intent(in)  :: useLeaps
         end function HS_YearOfEvent
         integer function HS_MonthOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in)  :: HoursSince
+          integer        ,intent(in)  :: byear
+          logical        ,intent(in)  :: useLeaps
         end function HS_MonthOfEvent
         integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in)  :: HoursSince
+          integer        ,intent(in)  :: byear
+          logical        ,intent(in)  :: useLeaps
         end function HS_DayOfEvent
         real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in)  :: HoursSince
+          integer        ,intent(in)  :: byear
+          logical        ,intent(in)  :: useLeaps
         end function HS_HourOfDay
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
-          integer     ,intent(in) :: iyear
-          integer     ,intent(in) :: imonth
-          integer     ,intent(in) :: iday
-          real(kind=8),intent(in) :: hours
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter   :: dp        = 8 ! double precision
+          integer        ,intent(in)  :: iyear
+          integer        ,intent(in)  :: imonth
+          integer        ,intent(in)  :: iday
+          real(kind=dp)  ,intent(in)  :: hours
+          integer        ,intent(in)  :: byear
+          logical        ,intent(in)  :: useLeaps
         end function HS_hours_since_baseyear
       END INTERFACE
 
@@ -1250,8 +1298,8 @@
       call date_and_time(date,time2,zone,values)
       read(zone,'(i3)') timezone
         ! Find time in UTC
-      StartHour = real(values(5)-timezone,kind=8) + &
-                  real(values(6)/60.0_8,kind=8)
+      StartHour = real(values(5)-timezone,kind=dp) + &
+                  real(values(6)/60.0_dp,kind=dp)
         ! find time in hours since BaseYear
       RunStartHour = HS_hours_since_baseyear(values(1),values(2),values(3),&
                                              StartHour,MR_BaseYear,MR_useLeap)
@@ -1285,7 +1333,7 @@
         Met_needed_StartHour = min(Probe_StartHour,Probe_EndHour)
         Met_needed_EndHour   = max(Probe_StartHour,Probe_EndHour)
 
-        if(RunStartHour-Met_needed_StartHour.gt.24.0_8*GFS_Archive_Days)then
+        if(RunStartHour-Met_needed_StartHour.gt.24.0_dp*GFS_Archive_Days)then
           ! NCEP case
           do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
             write(outlog(io),*)"Requested start time is too old for GFS archive."
@@ -1326,20 +1374,20 @@
             write(outlog(io),*)"Requested start time is within the GFS archive."
             write(outlog(io),*)"Using archived global forecast data (GFS 0.5-degree)"
           endif;enddo
-          if(RunStartHour-Met_needed_StartHour.lt.0.0_8)then
+          if(RunStartHour-Met_needed_StartHour.lt.0.0_dp)then
             ! GFS case for future run
             do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)"Requested start time is later than current time,"
               write(outlog(io),*)"but it might fit in the current forecast package."
             endif;enddo
-            if (Met_needed_EndHour-RunStartHour.ge.real(GFS_FC_TotHours,kind=8))then
+            if (Met_needed_EndHour-RunStartHour.ge.real(GFS_FC_TotHours,kind=dp))then
               do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
                 write(errlog(io),*)" Run cannot complete with the current FC package."
               endif;enddo
               stop 1
             endif
           endif
-          FC_intvl = 3.0_8
+          FC_intvl = 3.0_dp
 
           ! calculate the number of forecast packages stored on system
           NumFCpackages = GFS_Archive_Days * (24/FC_freq)
@@ -1362,10 +1410,10 @@
           FC_Package_hour    = floor(FC_Package_hour_dp/FC_freq) * FC_freq
           ! and get the hours since base time for that FC package
           FC_Package_StartHour = HS_hours_since_baseyear(FC_Package_year,&
-                                   FC_Package_month,FC_Package_day,real(FC_Package_hour,kind=8),&
+                                   FC_Package_month,FC_Package_day,real(FC_Package_hour,kind=dp),&
                                    MR_BaseYear,MR_useLeap)
           ! estimate the start time of the oldest forecast package on the system
-          FC_Archive_StartHour = FC_Package_StartHour - GFS_Archive_Days*24.0_8
+          FC_Archive_StartHour = FC_Package_StartHour - GFS_Archive_Days*24.0_dp
 
           ! Loop through all the packages and check which ones might span the needed
           ! time range
@@ -1377,7 +1425,7 @@
               write(outlog(io),*)"Package # ",i
             endif;enddo
             ! Get the start hour of this forecast package
-            FCStartHour = FC_Archive_StartHour + real((i-1)*FC_freq,kind=8)
+            FCStartHour = FC_Archive_StartHour + real((i-1)*FC_freq,kind=dp)
             if (FCStartHour.gt.Met_needed_StartHour)then
               ! This package starts after the requested time so dismiss it
               GFS_candidate(i)     = .false.
@@ -1388,7 +1436,7 @@
               cycle
             endif
 
-            FCEndHour = FCStartHour + real(GFS_FC_TotHours,kind=8)
+            FCEndHour = FCStartHour + real(GFS_FC_TotHours,kind=dp)
             if (FCEndHour.lt.Met_needed_EndHour)then
               ! This package ends before the needed time so dismiss it
               GFS_candidate(i)     = .false.
@@ -1406,7 +1454,7 @@
             FC_Package_hour = floor(FC_hour/FC_freq) * FC_freq
             do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
               write(outlog(io),*)'   This one could work. Testing each file. ', &
-                         FC_year,FC_mon,FC_day,real(FC_hour,kind=4)
+                         FC_year,FC_mon,FC_day,real(FC_hour,kind=sp)
             endif;enddo
 
             FC_hour_int = 0
@@ -1436,7 +1484,7 @@
               inquire( file=trim(adjustl(testfile)), exist=IsThere )
               if (IsThere)then
                 GFS_FC_step_avail(i) = ii
-                FCEndHour = FCStartHour + real(FC_hour_int,kind=8)
+                FCEndHour = FCStartHour + real(FC_hour_int,kind=dp)
                 do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
                   write(outlog(io),*)"     Found: ",trim(adjustl(testfile))
                 endif;enddo
@@ -1478,7 +1526,7 @@
           call MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)
 
           !  Now list the windfiles we will use and copy to MR_windfiles
-          FCStartHour = FC_Archive_StartHour + real((OptimalPackageNum-1)*FC_freq,kind=8)
+          FCStartHour = FC_Archive_StartHour + real((OptimalPackageNum-1)*FC_freq,kind=dp)
           FC_year = HS_YearOfEvent(FCStartHour,MR_BaseYear,MR_useLeap)
           FC_mon  = HS_MonthOfEvent(FCStartHour,MR_BaseYear,MR_useLeap)
           FC_day  = HS_DayOfEvent(FCStartHour,MR_BaseYear,MR_useLeap)
@@ -1487,7 +1535,7 @@
 
           do i=1,MR_iwindfiles
 
-            FCStartHour = FC_Archive_StartHour + real((OptimalPackageNum-1)*FC_freq,kind=8)
+            FCStartHour = FC_Archive_StartHour + real((OptimalPackageNum-1)*FC_freq,kind=dp)
 
             FC_year = HS_YearOfEvent(FCStartHour,MR_BaseYear,MR_useLeap)
             FC_mon  = HS_MonthOfEvent(FCStartHour,MR_BaseYear,MR_useLeap)
@@ -1647,61 +1695,69 @@
          !PJ_ilatlonflag,PJ_lam1,PJ_lam2, &
            PJ_proj_inv
 
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
+
       implicit none
+      !implicit none (type, external)
 
-      logical     , intent(in)      :: IsGlobal
-      real(kind=8), intent(in)      :: srcx
-      real(kind=8), intent(in)      :: srcy
-      integer     , intent(in)      :: inyear
-      integer     , intent(in)      :: inmonth
-      integer     , intent(in)      :: inday
-      real(kind=8), intent(in)      :: inhour
-      real(kind=8), intent(in)      :: Simtime_in_hours
-      integer     , intent(in)      :: TrajFlag
-      integer     , intent(in)      :: ntraj
-      integer     , intent(in)      :: output_interv
-      real(kind=8), intent(in)      :: inlon
-      real(kind=8), intent(in)      :: inlat
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
-      real(kind=8), parameter :: PI        = 3.141592653589793
-      real(kind=8), parameter :: DEG2RAD   = 1.7453292519943295e-2
-      real(kind=8), parameter :: KM_2_M    = 1.0e3
-      real(kind=8), parameter :: RAD_EARTH = 6371.229 ! Radius of Earth in km
+      logical      , intent(in)      :: IsGlobal
+      real(kind=dp), intent(in)      :: srcx
+      real(kind=dp), intent(in)      :: srcy
+      integer      , intent(in)      :: inyear
+      integer      , intent(in)      :: inmonth
+      integer      , intent(in)      :: inday
+      real(kind=dp), intent(in)      :: inhour
+      real(kind=dp), intent(in)      :: Simtime_in_hours
+      integer      , intent(in)      :: TrajFlag
+      integer      , intent(in)      :: ntraj
+      integer      , intent(in)      :: output_interv
+      real(kind=dp), intent(in)      :: inlon
+      real(kind=dp), intent(in)      :: inlat
 
-      real(kind=8)       :: Probe_StartHour
+      real(kind=dp), parameter :: PI        = 3.141592653589793
+      real(kind=dp), parameter :: DEG2RAD   = 1.7453292519943295e-2
+      real(kind=dp), parameter :: KM_2_M    = 1.0e3
+      real(kind=dp), parameter :: RAD_EARTH = 6371.229 ! Radius of Earth in km
+
+      real(kind=dp)      :: Probe_StartHour
       integer            :: ivar
       integer            :: kk
       integer,dimension(9) :: ixold,iyold
       integer            :: ix,iy
 
-      real(kind=4),dimension(:,:,:),allocatable :: Vx_meso_last_step_MetH_sp
-      real(kind=4),dimension(:,:,:),allocatable :: Vx_meso_next_step_MetH_sp
-      real(kind=4),dimension(:,:,:),allocatable :: Vy_meso_last_step_MetH_sp
-      real(kind=4),dimension(:,:,:),allocatable :: Vy_meso_next_step_MetH_sp
+      real(kind=sp),dimension(:,:,:),allocatable :: Vx_meso_last_step_MetH_sp
+      real(kind=sp),dimension(:,:,:),allocatable :: Vx_meso_next_step_MetH_sp
+      real(kind=sp),dimension(:,:,:),allocatable :: Vy_meso_last_step_MetH_sp
+      real(kind=sp),dimension(:,:,:),allocatable :: Vy_meso_next_step_MetH_sp
 
-      real(kind=8) :: tfrac,tc
-      real(kind=8) :: xfrac,xc,yfrac,yc
-      real(kind=4) :: a1,a2,a3,a4
-      real(kind=8), dimension(ntraj) :: x1,y1
+      real(kind=dp) :: tfrac,tc
+      real(kind=dp) :: xfrac,xc,yfrac,yc
+      real(kind=sp) :: a1,a2,a3,a4
+      real(kind=dp), dimension(ntraj) :: x1,y1
 
-      real(kind=8),dimension(:,:,:,:),allocatable :: Vx_full
-      real(kind=8),dimension(:,:,:,:),allocatable :: Vy_full
-      real(kind=8),dimension(:)      ,allocatable :: Step_Time_since1900
-      real(kind=8),dimension(:,:,:)  ,allocatable :: dvxdt
-      real(kind=8),dimension(:,:,:)  ,allocatable :: dvydt
+      real(kind=dp),dimension(:,:,:,:),allocatable :: Vx_full
+      real(kind=dp),dimension(:,:,:,:),allocatable :: Vy_full
+      real(kind=dp),dimension(:)      ,allocatable :: Step_Time_since1900
+      real(kind=dp),dimension(:,:,:)  ,allocatable :: dvxdt
+      real(kind=dp),dimension(:,:,:)  ,allocatable :: dvydt
 
       integer      :: istep,stepindx
       integer      :: ti,iit,it
-      real(kind=8) :: vx1,vx2,vx3,vx4
-      real(kind=8) :: vy1,vy2,vy3,vy4
-      real(kind=8),dimension(2)  :: vel_1
-      real(kind=8) :: dt
-      real(kind=8) :: mstodeghr
-      real(kind=8) :: t1
-      real(kind=8) :: x_fin,y_fin
-      real(kind=8) :: xstep,ystep
-      real(kind=8) :: lonmin,lonmax,latmin,latmax
-      real(kind=8) :: outlon,outlat
+      real(kind=dp) :: vx1,vx2,vx3,vx4
+      real(kind=dp) :: vy1,vy2,vy3,vy4
+      real(kind=dp),dimension(2)  :: vel_1
+      real(kind=dp) :: dt
+      real(kind=dp) :: mstodeghr
+      real(kind=dp) :: t1
+      real(kind=dp) :: x_fin,y_fin
+      real(kind=dp) :: xstep,ystep
+      real(kind=dp) :: lonmin,lonmax,latmin,latmax
+      real(kind=dp) :: outlon,outlat
       character    :: dirchar
       integer      :: ofile
       integer      :: ofrmt
@@ -1711,12 +1767,15 @@
 
       INTERFACE
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
-          integer     ,intent(in) :: iyear
-          integer     ,intent(in) :: imonth
-          integer     ,intent(in) :: iday
-          real(kind=8),intent(in) :: hours
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter   :: dp        = 8 ! double precision
+          integer        ,intent(in)  :: iyear
+          integer        ,intent(in)  :: imonth
+          integer        ,intent(in)  :: iday
+          real(kind=dp)  ,intent(in)  :: hours
+          integer        ,intent(in)  :: byear
+          logical        ,intent(in)  :: useLeaps
         end function HS_hours_since_baseyear
       END INTERFACE
 
@@ -1733,10 +1792,10 @@
       allocate(dvxdt(0:nx_comp+1,0:ny_comp+1,ntraj))
       allocate(dvydt(0:nx_comp+1,0:ny_comp+1,ntraj))
 
-      lonmin = 360.0_8
-      lonmax =   0.0_8
-      latmin =  90.0_8
-      latmax = -90.0_8
+      lonmin = 360.0_dp
+      lonmax =   0.0_dp
+      latmin =  90.0_dp
+      latmax = -90.0_dp
 
        ! Load the full sub-grid for all times
         ! First load the Met grids for Geopotential
@@ -1754,7 +1813,7 @@
                                                 MR_BaseYear,MR_useLeap)
       tfrac = (Probe_StartHour-MR_MetStep_Hour_since_baseyear(MR_iMetStep_Now))/ &
                MR_MetStep_Interval(MR_iMetStep_Now)
-      tc    = 1.0_8-tfrac
+      tc    = 1.0_dp-tfrac
 
       ! Loop through all the steps in proper chronological order, but store in
       ! Vx_full, and Vy_full in order of integration (forward or backward)
@@ -1809,13 +1868,13 @@
 
       ! Assume an integration step of 1 min and a max v of around 100m/s
       if(TrajFlag.ge.0)then
-        dt =  1.0_8/60.0_8
+        dt =  1.0_dp/60.0_dp
       else
-        dt = -1.0_8/60.0_8
+        dt = -1.0_dp/60.0_dp
       endif
 
-      mstodeghr = 3600.0_8                     * & ! seconds / hour
-                  360.0_8/(2.0_8*PI*RAD_EARTH) / & ! degree  / km arclength
+      mstodeghr = 3600.0_dp                     * & ! seconds / hour
+                  360.0_dp/(2.0_dp*PI*RAD_EARTH) / & ! degree  / km arclength
                   KM_2_M                           ! km / m
 
       if(TrajFlag.ge.0)then
@@ -1843,7 +1902,7 @@
         endif
         ofile = 20+kk
         open(unit=ofile,file=ofilename)
-        write(ofile,*)real(outlon,kind=4),real(outlat,kind=4)
+        write(ofile,*)real(outlon,kind=sp),real(outlat,kind=sp)
 
         if(.not.IsGlobal)then
           if(x1(kk).lt.lonmin)lonmin=outlon
@@ -1926,13 +1985,13 @@
           ! Get the fractional position within the cell
           xfrac = (x1(kk)-x_comp_sp(ix))/(x_comp_sp(ix+1)-x_comp_sp(ix))
           yfrac = (y1(kk)-y_comp_sp(iy))/(y_comp_sp(iy+1)-y_comp_sp(iy))
-          xc = 1.0_4-xfrac
-          yc = 1.0_4-yfrac
+          xc = 1.0_sp-xfrac
+          yc = 1.0_sp-yfrac
           ! Build interpolation coefficients
-          a1 = real(xc   *   yc,kind=4)
-          a2 = real(xfrac*   yc,kind=4)
-          a3 = real(xfrac*yfrac,kind=4)
-          a4 = real(xc   *yfrac,kind=4)
+          a1 = real(xc   *   yc,kind=sp)
+          a2 = real(xfrac*   yc,kind=sp)
+          a3 = real(xfrac*yfrac,kind=sp)
+          a4 = real(xc   *yfrac,kind=sp)
 
           ! Corner velocities for current time
           vx1 = Vx_full(ix  ,iy  ,kk,it) + tfrac*dvxdt(ix  ,iy  ,kk)
@@ -1949,12 +2008,12 @@
           vel_1(2) = (a1*vy1+a2*vy2+a3*vy3+a4*vy4)
           if(IsLatLon_CompGrid)then
             !  now convert to deg/hr
-            vel_1(1) = vel_1(1)*mstodeghr/sin((90.0_4-y1(kk))*DEG2RAD)
+            vel_1(1) = vel_1(1)*mstodeghr/sin((90.0_sp-y1(kk))*DEG2RAD)
             vel_1(2) = vel_1(2)*mstodeghr
           else
             !  now convert to km/hr
-            vel_1(1) = vel_1(1)*3.6_8
-            vel_1(2) = vel_1(2)*3.6_8
+            vel_1(1) = vel_1(1)*3.6_dp
+            vel_1(2) = vel_1(2)*3.6_dp
           endif
           ! Now advect via Forward Euler
           xstep = vel_1(1) * dt
@@ -1962,8 +2021,8 @@
           x_fin = x1(kk) + xstep
           y_fin = y1(kk) + ystep
           !if(IsLatLon_CompGrid)then
-          !  if (x_fin.ge.360.0_8)x_fin=x_fin - 360.0_8
-          !  if (x_fin.lt.0.0_8)x_fin=x_fin + 360.0_8
+          !  if (x_fin.ge.360.0_dp)x_fin=x_fin - 360.0_dp
+          !  if (x_fin.lt.0.0_dp)x_fin=x_fin + 360.0_dp
           !endif
 
           x1(kk) = x_fin
@@ -1983,7 +2042,7 @@
                           outlon,outlat)
             endif
             ofrmt = 20+kk
-            write(ofrmt,*)real(outlon,kind=4),real(outlat,kind=4)
+            write(ofrmt,*)real(outlon,kind=sp),real(outlat,kind=sp)
 
             if(.not.IsGlobal)then
               if(x1(kk).lt.lonmin)lonmin=outlon
@@ -1996,18 +2055,18 @@
       enddo ! time
       ! We want the lon/lat min/max to reflect a somewhat broader range than the trajectory
       ! data to expand to the nearest 10th degree
-      lonmin = floor(0.1_8*lonmin)*10.0_8
-      latmin = floor(0.1_8*latmin)*10.0_8
-      lonmax = ceiling(0.1_8*lonmax)*10.0_8
-      latmax = ceiling(0.1_8*latmax)*10.0_8
+      lonmin = floor(0.1_dp*lonmin)*10.0_dp
+      latmin = floor(0.1_dp*latmin)*10.0_dp
+      lonmax = ceiling(0.1_dp*lonmax)*10.0_dp
+      latmax = ceiling(0.1_dp*latmax)*10.0_dp
 
       open(unit=40,file='map_range_traj.txt')
-      write(40,*)real(lonmin,kind=4),&
-                 real(lonmax,kind=4),&
-                 real(latmin,kind=4),&
-                 real(latmax,kind=4),&
-                 real( inlon,kind=4),&
-                 real( inlat,kind=4)
+      write(40,*)real(lonmin,kind=sp),&
+                 real(lonmax,kind=sp),&
+                 real(latmin,kind=sp),&
+                 real(latmax,kind=sp),&
+                 real( inlon,kind=sp),&
+                 real( inlat,kind=sp)
       close(40)
 
       do kk=1,ntraj

@@ -26,19 +26,27 @@
          Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re,&
          MR_iversion,MR_Reannalysis,Met_gridtype,Met_proj4
 
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
+
       implicit none
+      !implicit none (type, external)
+
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
       integer,intent(in) :: igrid
 
       integer :: io                           ! Index for output streams
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                          MR_Set_Met_NCEPGeoGrid   ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
-      if(igrid.eq.1227)then
+      if(igrid == 1227)then
         ! CONUS 3.0-km Lambert Conformal
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID218
         !        LambertConformal_Projection:grid_mapping_name = "lambert_conformal_conic" ;
@@ -70,14 +78,14 @@
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
-        Met_lam0          =  262.5_8
-        Met_phi0          =  38.5_8
-        Met_phi1          =  38.5_8
-        Met_phi2          =  38.5_8
-        Met_k0            =  0.93301270_8
-        Met_Re            =  6371.229_8
+        Met_lam0          =  262.5_dp
+        Met_phi0          =  38.5_dp
+        Met_phi1          =  38.5_dp
+        Met_phi2          =  38.5_dp
+        Met_k0            =  0.93301270_dp
+        Met_Re            =  6371.229_dp
 
-      elseif(igrid.eq.1221)then
+      elseif(igrid == 1221)then
         ! NAM 32-km Lambert Conformal used by NARR (used Met_Re=6367.470, not 6371.229)
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID221
         !        LambertConformal_Projection:grid_mapping_name = "lambert_conformal_conic" ;
@@ -110,14 +118,14 @@
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
-        Met_lam0          =  -107.0_8
-        Met_phi0          =  50.0_8
-        Met_phi1          =  50.0_8
-        Met_phi2          =  50.0_8
-        Met_k0            =  0.93301270_8
-        Met_Re            =  6367.470_8
+        Met_lam0          =  -107.0_dp
+        Met_phi0          =  50.0_dp
+        Met_phi1          =  50.0_dp
+        Met_phi2          =  50.0_dp
+        Met_k0            =  0.93301270_dp
+        Met_Re            =  6367.470_dp
 
-      elseif(igrid.eq.1050)then
+      elseif(igrid == 1050)then
          ! Not an NCEP grid
          !  This grid is for the WRF runs (must be read from file)
 
@@ -129,7 +137,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.1041)then
+      elseif(igrid == 1041)then
          ! Not an NCEP grid
          !  This grid is for the NASA Np
 
@@ -141,7 +149,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.1040.or.igrid.eq.1024)then
+      elseif(igrid == 1040.or.igrid == 1024)then
          ! Not an NCEP grid
          !  This grid is for the NASA GEOS-5 Cp or MERRA-2
 
@@ -153,7 +161,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.1033)then
+      elseif(igrid == 1033)then
          ! Not an NCEP grid
          !  This grid is for the CAM files
 
@@ -165,7 +173,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.1032)then
+      elseif(igrid == 1032)then
          ! Not an NCEP grid
          !  This grid is for the AFWA files
 
@@ -177,7 +185,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.1030)then
+      elseif(igrid == 1030)then
          ! Not an NCEP grid
          !  This grid is for the ECMWF ERA-20c
 
@@ -189,7 +197,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.1029)then
+      elseif(igrid == 1029)then
          ! Not an NCEP grid
          !  This grid is for the ECMWF ERA5
 
@@ -201,18 +209,18 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.1027)then
+      elseif(igrid == 1027)then
          ! Not an NCEP grid
          !  This grid is for the NOAA Reanalysis
         Met_proj4 = "LL"
-        if(MR_iversion.eq.2)then
+        if(MR_iversion == 2)then
           !v2
           IsLatLon_MetGrid  = .true.
           IsGlobal_MetGrid  = .true.
           IsRegular_MetGrid = .true.
           IsGridRelative    = .true.
           Met_gridtype      = "GLL0"
-        elseif(MR_iversion.eq.3)then
+        elseif(MR_iversion == 3)then
           !v3
           IsLatLon_MetGrid  = .true.
           IsGlobal_MetGrid  = .true.
@@ -220,7 +228,7 @@
           IsGridRelative    = .true.
           Met_gridtype      = "GLL0"
         endif
-      elseif(igrid.eq.2)then
+      elseif(igrid == 2)then
        ! Used by NCEP DOE reanalysis, NCEP-1
        !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid002.gif
 
@@ -232,7 +240,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.3)then
+      elseif(igrid == 3)then
         ! Used by GFS forecast
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID3
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid003.gif
@@ -245,7 +253,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.4)then
+      elseif(igrid == 4)then
         ! Used by GFS forecast
          !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid003.gif
 
@@ -257,7 +265,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.45)then
+      elseif(igrid == 45)then
         ! Used by JMA 55
           !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID45
           !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/grids/grid045.gif
@@ -270,7 +278,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.91)then
+      elseif(igrid == 91)then
         ! NAM 3-km Polar Stereographic
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID91
         !   1822145-point (1649x1105) N. Hemisphere Polar Stereographic grid
@@ -326,14 +334,14 @@
 
         Met_gridtype      = "GST0"
         Met_iprojflag     = 1
-        Met_lam0          = -150.0_8
-        Met_phi0          =  90.0_8
-        Met_phi1          =  90.0_8
-        Met_phi2          =  90.0_8
-        Met_k0            =  0.93301270_8
-        Met_Re            =  6371.229_8
+        Met_lam0          = -150.0_dp
+        Met_phi0          =  90.0_dp
+        Met_phi1          =  90.0_dp
+        Met_phi2          =  90.0_dp
+        Met_k0            =  0.93301270_dp
+        Met_Re            =  6371.229_dp
 
-      elseif(igrid.eq.104)then
+      elseif(igrid == 104)then
         ! NAM 90-km Polar Stereographic
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID104
         !   16170-point (147x110) N. Hemisphere Polar Stereographic grid oriented
@@ -368,14 +376,14 @@
 
         Met_gridtype      = "GST0"
         Met_iprojflag     = 1
-        Met_lam0          = -105.0_8
-        Met_phi0          =  90.0_8
-        Met_phi1          =  90.0_8
-        Met_phi2          =  90.0_8
-        Met_k0            =  0.93301270_8
-        Met_Re            =  6371.229_8
+        Met_lam0          = -105.0_dp
+        Met_phi0          =  90.0_dp
+        Met_phi1          =  90.0_dp
+        Met_phi2          =  90.0_dp
+        Met_k0            =  0.93301270_dp
+        Met_Re            =  6371.229_dp
 
-      elseif(igrid.eq.170)then
+      elseif(igrid == 170)then
         ! Global Gaussian Lat/Lon T170
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID170
         ! This is used by the ERA-Itrm data
@@ -388,7 +396,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.181)then
+      elseif(igrid == 181)then
         ! Caribbean
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID181
 
@@ -400,7 +408,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.182)then
+      elseif(igrid == 182)then
         ! HI N.Pacific
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID182
 
@@ -412,7 +420,7 @@
 
         Met_gridtype      = "GLL0"
 
-      elseif(igrid.eq.193)then
+      elseif(igrid == 193)then
        ! Used by GFS forecast (0.25)
        !  http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID193
 
@@ -423,7 +431,7 @@
         IsGridRelative    = .true.
 
         Met_gridtype      = "GLL0"
-      elseif(igrid.eq.196)then
+      elseif(igrid == 196)then
         ! HI 2.5-km Mercator
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID196
         !   72225-point (321x225) Mercator
@@ -469,14 +477,14 @@
 
         Met_gridtype      = "GME0"
         Met_iprojflag     = 5
-        Met_lam0          = 198.475_8
-        Met_phi0          =  20.0_8
-        Met_phi1          =  20.0_8
-        Met_phi2          =  20.0_8
-        Met_k0            =  0.93301270_8
-        Met_Re            =  6371.229_8
+        Met_lam0          = 198.475_dp
+        Met_phi0          =  20.0_dp
+        Met_phi1          =  20.0_dp
+        Met_phi2          =  20.0_dp
+        Met_k0            =  0.93301270_dp
+        Met_Re            =  6371.229_dp
 
-      elseif(igrid.eq.198)then
+      elseif(igrid == 198)then
         ! NAM 6-km Polar Stereographic
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID198
         !   456225-point (825x553) N. Hemisphere Polar Stereographic grid
@@ -532,14 +540,14 @@
 
         Met_gridtype      = "GST0"
         Met_iprojflag     = 1
-        Met_lam0          = -150.0_8
-        Met_phi0          =  90.0_8
-        Met_phi1          =  90.0_8
-        Met_phi2          =  90.0_8
-        Met_k0            =  0.93301270_8
-        Met_Re            =  6371.229_8
+        Met_lam0          = -150.0_dp
+        Met_phi0          =  90.0_dp
+        Met_phi1          =  90.0_dp
+        Met_phi2          =  90.0_dp
+        Met_k0            =  0.93301270_dp
+        Met_Re            =  6371.229_dp
 
-      elseif(igrid.eq.212)then
+      elseif(igrid == 212)then
         ! CONUS 40-km Lambert Conformal
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID212
         !        LambertConformal_Projection:grid_mapping_name = "lambert_conformal_conic" ;
@@ -572,14 +580,14 @@
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
-        Met_lam0          =  265.0_8
-        Met_phi0          =  25.0_8
-        Met_phi1          =  25.0_8
-        Met_phi2          =  25.0_8
-        Met_k0            =  0.93301270_8
-        Met_Re            =  6371.229_8
+        Met_lam0          =  265.0_dp
+        Met_phi0          =  25.0_dp
+        Met_phi1          =  25.0_dp
+        Met_phi2          =  25.0_dp
+        Met_k0            =  0.93301270_dp
+        Met_Re            =  6371.229_dp
 
-      elseif(igrid.eq.215)then
+      elseif(igrid == 215)then
         ! CONUS 20-km Lambert Conformal
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID215
         !        LambertConformal_Projection:grid_mapping_name = "lambert_conformal_conic" ;
@@ -612,14 +620,14 @@
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
-        Met_lam0          =  265.0_8
-        Met_phi0          =  25.0_8
-        Met_phi1          =  25.0_8
-        Met_phi2          =  25.0_8
-        Met_k0            =  0.93301270_8
-        Met_Re            =  6371.229_8
+        Met_lam0          =  265.0_dp
+        Met_phi0          =  25.0_dp
+        Met_phi1          =  25.0_dp
+        Met_phi2          =  25.0_dp
+        Met_k0            =  0.93301270_dp
+        Met_Re            =  6371.229_dp
 
-      elseif(igrid.eq.216)then
+      elseif(igrid == 216)then
         ! NAM 45-km Polar Stereographic
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID216
         !        PolarStereographic_Projection:grid_mapping_name = "stereographic" ;
@@ -651,14 +659,14 @@
 
         Met_gridtype      = "GST0"
         Met_iprojflag     = 1
-        Met_lam0          = -135.0_8
-        Met_phi0          =  90.0_8
-        Met_phi1          =  90.0_8
-        Met_phi2          =  90.0_8
-        Met_k0            =  0.93301270_8
-        Met_Re            =  6371.229_8
+        Met_lam0          = -135.0_dp
+        Met_phi0          =  90.0_dp
+        Met_phi1          =  90.0_dp
+        Met_phi2          =  90.0_dp
+        Met_k0            =  0.93301270_dp
+        Met_Re            =  6371.229_dp
 
-      elseif(igrid.eq.218)then
+      elseif(igrid == 218)then
         ! CONUS 12-km Lambert Conformal
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID218
         !        LambertConformal_Projection:grid_mapping_name = "lambert_conformal_conic" ;
@@ -690,14 +698,14 @@
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
-        Met_lam0          =  265.0_8
-        Met_phi0          =  25.0_8
-        Met_phi1          =  25.0_8
-        Met_phi2          =  25.0_8
-        Met_k0            =  0.93301270_8
-        Met_Re            =  6371.229_8
+        Met_lam0          =  265.0_dp
+        Met_phi0          =  25.0_dp
+        Met_phi1          =  25.0_dp
+        Met_phi2          =  25.0_dp
+        Met_k0            =  0.93301270_dp
+        Met_Re            =  6371.229_dp
 
-      elseif(igrid.eq.221)then
+      elseif(igrid == 221)then
         ! NAM 32-km Lambert Conformal
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID221
         !        LambertConformal_Projection:grid_mapping_name = "lambert_conformal_conic" ;
@@ -730,14 +738,14 @@
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
-        Met_lam0          =  -107.0_8
-        Met_phi0          =  50.0_8
-        Met_phi1          =  50.0_8
-        Met_phi2          =  50.0_8
-        Met_k0            =  0.9330127_8
-        Met_Re            =  6371.229_8
+        Met_lam0          =  -107.0_dp
+        Met_phi0          =  50.0_dp
+        Met_phi1          =  50.0_dp
+        Met_phi2          =  50.0_dp
+        Met_k0            =  0.9330127_dp
+        Met_Re            =  6371.229_dp
 !
-      elseif(igrid.eq.227)then
+      elseif(igrid == 227)then
         ! CONUS 5.079-km Lambert Conformal
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID218
         !        LambertConformal_Projection:grid_mapping_name = "lambert_conformal_conic" ;
@@ -769,14 +777,14 @@
 
         Met_gridtype      = "GLC0"
         Met_iprojflag     = 4
-        Met_lam0          =  265.0_8
-        Met_phi0          =  25.0_8
-        Met_phi1          =  25.0_8
-        Met_phi2          =  25.0_8
-        Met_k0            =  0.93301270_8
-        Met_Re            =  6371.229_8
+        Met_lam0          =  265.0_dp
+        Met_phi0          =  25.0_dp
+        Met_phi1          =  25.0_dp
+        Met_phi2          =  25.0_dp
+        Met_k0            =  0.93301270_dp
+        Met_Re            =  6371.229_dp
 
-      elseif(igrid.eq.242)then
+      elseif(igrid == 242)then
         ! NAM 11.25-km Polar Stereographic
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID242
         !        PolarStereographic_Projection:grid_mapping_name = "stereographic" ;
@@ -808,21 +816,21 @@
 
         Met_gridtype      = "GST0"
         Met_iprojflag     = 1
-        Met_lam0          = -135.0_8
-        Met_phi0          =  90.0_8
-        Met_phi1          =  90.0_8
-        Met_phi2          =  90.0_8
-        Met_k0            =  0.93301270_8
-        Met_Re            =  6371.229_8
+        Met_lam0          = -135.0_dp
+        Met_phi0          =  90.0_dp
+        Met_phi1          =  90.0_dp
+        Met_phi2          =  90.0_dp
+        Met_k0            =  0.93301270_dp
+        Met_Re            =  6371.229_dp
 
       else
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
           write(errlog(io),*)"MR ERROR: MR_Set_Met_NCEPGeoGrid called with invalid code."
         endif;enddo
         stop 1
       endif
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -881,12 +889,17 @@
            PJ_proj_for,&
            PJ_proj_inv
 
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
+
       implicit none
+      !implicit none (type, external)
 
-      integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
-      real(kind=sp), parameter :: PI         = 3.141592653589793_sp
+      real(kind=sp), parameter :: PI  = 3.141592653589793_sp
 
       integer :: i, j
       integer :: ii,jj
@@ -914,12 +927,16 @@
 
       INTERFACE
         subroutine MR_Set_Comp2Met_Map
+          implicit none
+          !implicit none (type, external)
         end subroutine MR_Set_Comp2Met_Map
         subroutine MR_Set_Met2Comp_Map
+          implicit none
+          !implicit none (type, external)
         end subroutine MR_Set_Met2Comp_Map
       END INTERFACE
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                 MR_Set_MetComp_Grids              ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -931,14 +948,14 @@
       ! Now calculate the indices of the subgrid containing the
       ! computational grid.  Note, the subgrid of the wind file
       ! will be much coarser than the computational grid
-      if(Map_Case.eq.1.or. & !  Both Comp Grid and Met grids are Lat/Lon
-         Map_Case.eq.2)then  !  Both Comp Grid and Met grids are the same projection
+      if(Map_Case == 1.or. & !  Both Comp Grid and Met grids are Lat/Lon
+         Map_Case == 2)then  !  Both Comp Grid and Met grids are the same projection
         xLL = x_comp_sp(1)
         yLL = y_comp_sp(1)
         xUR = x_comp_sp(nx_comp)
         yUR = y_comp_sp(ny_comp)
       else
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*)"Met and comp grids differ:"
           write(outlog(io),2504)
           write(outlog(io),2505)x_comp_sp(1),&
@@ -970,7 +987,7 @@
       endif
 
       if(IsLatLon_MetGrid)then
-        if(xLL.gt.x_fullmet_sp(nx_fullmet).and.x_fullmet_sp(nx_fullmet).le.180.0_sp)then
+        if(xLL > x_fullmet_sp(nx_fullmet).and.x_fullmet_sp(nx_fullmet) <= 180.0_sp)then
           ! If the comp grid starts in the western hemisphere (xLL>180) and if
           ! the global Met grid only extends to 180, then shift the comp grid
           ! into the domain of the met grid
@@ -980,7 +997,7 @@
         endif
       endif
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"Region of Met grid required by comp grid (in Met coordinates):"
 
         write(outlog(io),2501)
@@ -1001,43 +1018,43 @@
         nx_submet = nx_fullmet
         istart = 1
         iend = nx_fullmet
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*) "Computational domain is periodic"
         endif;enddo
       else
-        if(x_fullmet_sp(1).le.xLL)then
+        if(x_fullmet_sp(1) <= xLL)then
           ! Make sure the start of the comp grid is not below the domain of the
           ! met files
           istart = 1
           do i = 1,nx_fullmet
             ! For the start index, we assign the lower node of the interval
-            ! Note: cond1 is not satisfied when xLL.eq.x_fullmet_sp(1) so we
+            ! Note: cond1 is not satisfied when xLL == x_fullmet_sp(1) so we
             !       must initialize istart to 1
-            cond1 = x_fullmet_sp(i  ).lt.xLL
-            cond2 = x_fullmet_sp(i+1).ge.xLL
+            cond1 = x_fullmet_sp(i  ) < xLL
+            cond2 = x_fullmet_sp(i+1) >= xLL
             if(cond1.and.cond2) istart = i
           enddo
         else
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: xLL < x_fullmet_sp(1)"
             write(errlog(io),*)"     x_fullmet_sp(1) = ",x_fullmet_sp(1)
             write(errlog(io),*)"     xLL             = ",xLL
           endif;enddo
           stop 1
         endif
-        if(x_fullmet_sp(nx_fullmet).ge.xUR)then
+        if(x_fullmet_sp(nx_fullmet) >= xUR)then
           ! Make sure the end of the comp grid is not beyond the domain of the
           ! met files
           iend = 1
           do i = 1,nx_fullmet
             ! For the end index, we assign the upper node of the interval
-            cond1 = x_fullmet_sp(i  ).lt.xUR
-            cond2 = x_fullmet_sp(i+1).ge.xUR
+            cond1 = x_fullmet_sp(i  ) < xUR
+            cond2 = x_fullmet_sp(i+1) >= xUR
             if(cond1.and.cond2) iend = i+1
           enddo
         else
           if(.not.IsGlobal_MetGrid)then
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
               write(errlog(io),*)"MR ERROR: xUR > x_fullmet_sp(nx_fullmet)"
               write(errlog(io),*)"     x_fullmet_sp(nx_fullmet) = ",x_fullmet_sp(nx_fullmet)
               write(errlog(io),*)"     xUR                      = ",xUR
@@ -1045,34 +1062,34 @@
             stop 1
           endif
         endif
-        if(iend.eq.1)then
+        if(iend == 1)then
           if(IsGlobal_MetGrid)then
             ! If iend was not assigned, then the wrap back to the beginning
             iend = nx_fullmet
             do i = 1,nx_fullmet
               ! For the end index, we assign the upper node of the interval
-              cond1 = x_fullmet_sp(i  ).lt.xUR-360.0_sp
-              cond2 = x_fullmet_sp(i+1).ge.xUR-360.0_sp
+              cond1 = x_fullmet_sp(i  ) < xUR-360.0_sp
+              cond2 = x_fullmet_sp(i+1) >= xUR-360.0_sp
               if(cond1.and.cond2) iend = nx_fullmet+i+1
             enddo
           else
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
               write(errlog(io),*)"MR ERROR: could not find iend"
             endif;enddo
             stop 1
           endif
         endif
         nx_submet = iend-istart+1
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*) "Domain is NOT periodic"
         endif;enddo
       endif
 
       ! See if computational region straddles the break in the wind file
       !  (either the prime or anti-meridian)
-      if(iend.le.nx_fullmet)then        !yes
+      if(iend <= nx_fullmet)then        !yes
         wrapgrid = .false.
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*)"Comp grid maps within a contiguous region of the Met grid"
           write(outlog(io),*)"           wrapgrid = ",wrapgrid
           write(outlog(io),*)"Met Sub grid specifications:"
@@ -1095,7 +1112,7 @@
           irhalf_fm_r = nx_submet - ilhalf_nx         ! end index of right half on full met grid
           irhalf_nx   = irhalf_fm_r - irhalf_fm_l +1  ! width of right half
 
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)"Comp grid span beyond the upper end of the Met grid"
             write(outlog(io),*)"           wrapgrid = ",wrapgrid
             write(outlog(io),*)"Met Sub grid specifications:"
@@ -1114,7 +1131,7 @@
             write(outlog(io),*)"         xsubMetMax = ",x_fullmet_sp(irhalf_fm_r)
           endif;enddo
         else
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: Comp grid requirements extend beyond Met grid"
             write(errlog(io),*)"                xLL = ",xLL
             write(errlog(io),*)"                xUR = ",xUR
@@ -1126,7 +1143,7 @@
           stop 1
         endif
       endif
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"-------------"
       endif;enddo
 
@@ -1138,16 +1155,16 @@
       else
         if(y_inverted)then
           ! Find start index
-          if(y_fullmet_sp(1).ge.yUR)then
+          if(y_fullmet_sp(1) >= yUR)then
               ! This is the normal case where the UR of the comp grid is within
               ! the lat values of the wind file
             jstart = 1
             do j = 1,ny_fullmet-1
               ! For the start index, we assign the lower node of the interval
-              ! Note: cond1 is not satisfied when yUR.eq.y_fullmet_sp(1) so we
+              ! Note: cond1 is not satisfied when yUR == y_fullmet_sp(1) so we
               !       must initialize jstart to 1
-              cond1 = y_fullmet_sp(j  ).gt.yUR
-              cond2 = y_fullmet_sp(j+1).le.yUR
+              cond1 = y_fullmet_sp(j  ) > yUR
+              cond2 = y_fullmet_sp(j+1) <= yUR
               if(cond1.and.cond2) jstart = j
             enddo
           elseif(IsGlobal_MetGrid)then
@@ -1157,23 +1174,23 @@
             jstart = 1
             y_pad_North = .true.
           else
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
               write(errlog(io),*)"MR ERROR: yUR > y_fullmet_sp(1)"
-              write(errlog(io),*)"     y_fullmet_sp(1).gt.yUR", &
+              write(errlog(io),*)"     y_fullmet_sp(1) > yUR", &
                          y_fullmet_sp(1),yUR
             endif;enddo
             stop 1
           endif
 
           ! Find end index
-          if(y_fullmet_sp(ny_fullmet).le.yLL)then
+          if(y_fullmet_sp(ny_fullmet) <= yLL)then
               ! Again, this is the normal case where the LL of the comp grid is within
               ! the lat values of the wind file
             jend = 1
             do j = 1,ny_fullmet-1
               ! For the end index, we assign the lower node of the interval
-              cond1 = y_fullmet_sp(j  ).gt.yLL
-              cond2 = y_fullmet_sp(j+1).le.yLL
+              cond1 = y_fullmet_sp(j  ) > yLL
+              cond2 = y_fullmet_sp(j+1) <= yLL
               if(cond1.and.cond2) jend = j + 1
             enddo
           elseif(IsGlobal_MetGrid)then
@@ -1181,8 +1198,8 @@
             jend = ny_fullmet
             y_pad_South = .true.
           else
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
-              write(errlog(io),*)"MR ERROR: y_fullmet_sp(ny_fullmet).lt.yLL",&
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
+              write(errlog(io),*)"MR ERROR: y_fullmet_sp(ny_fullmet) < yLL",&
                                 y_fullmet_sp(ny_fullmet),yLL
             endif;enddo
             stop 1
@@ -1190,14 +1207,14 @@
 
         else ! .not.y_inverted
           ! y values go from - to +
-          if(y_fullmet_sp(1).le.yLL)then
+          if(y_fullmet_sp(1) <= yLL)then
             jstart = 1
             do j = 1,ny_fullmet-1
               ! For the start index, we assign the lower node of the interval
-              ! Note: cond1 is not satisfied when yLL.eq.y_fullmet_sp(1) so we
+              ! Note: cond1 is not satisfied when yLL == y_fullmet_sp(1) so we
               !       must initialize jstart to 1
-              cond1 = y_fullmet_sp(j  ).lt.yLL
-              cond2 = y_fullmet_sp(j+1).ge.yLL
+              cond1 = y_fullmet_sp(j  ) < yLL
+              cond2 = y_fullmet_sp(j+1) >= yLL
               if(cond1.and.cond2) jstart = j
             enddo
           elseif(IsGlobal_MetGrid)then
@@ -1207,21 +1224,21 @@
             jstart = 1
             y_pad_North = .true.
           else
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
               write(errlog(io),*)"MR ERROR: yLL < y_fullmet_sp(1)"
               write(errlog(io),*)"y_fullmet_sp(1) ",y_fullmet_sp(1)
               write(errlog(io),*)"yLL",yLL
-              write(errlog(io),*)"y_fullmet_sp(1).lt.yLL",y_fullmet_sp(1).lt.yLL
+              write(errlog(io),*)"y_fullmet_sp(1) < yLL",y_fullmet_sp(1) < yLL
               write(errlog(io),*)"y_fullmet_sp(1)-yLL",y_fullmet_sp(1)-yLL
             endif;enddo
             stop 1
           endif
-          if(y_fullmet_sp(ny_fullmet).ge.yUR)then
+          if(y_fullmet_sp(ny_fullmet) >= yUR)then
             jend = 1
             do j = 1,ny_fullmet-1
               ! For the end index, we assign the upper node of the interval
-              cond1 = y_fullmet_sp(j  ).lt.yUR
-              cond2 = y_fullmet_sp(j+1).ge.yUR
+              cond1 = y_fullmet_sp(j  ) < yUR
+              cond2 = y_fullmet_sp(j+1) >= yUR
               if(cond1.and.cond2) jend = j + 1
             enddo
           elseif(IsGlobal_MetGrid)then
@@ -1229,7 +1246,7 @@
             jend = ny_fullmet
             y_pad_South = .true.
           else
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
               write(errlog(io),*)"MR ERROR: yUR > y_fullmet_sp(ny_fullmet)"
               write(errlog(io),*)"y_fullmet_sp(my_fullmet)",y_fullmet_sp(ny_fullmet)
               write(errlog(io),*)"yUr",yUr
@@ -1242,7 +1259,7 @@
       ! Calculate size of arrays that will hold the relevant section of
       ! the mesoscale model
       ny_submet = jend-jstart+1
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"-------------"
         write(outlog(io),*)"             jstart =" ,jstart
         write(outlog(io),*)"               jend =" ,jend
@@ -1300,7 +1317,7 @@
       enddo
 
       ! Set up for interpolation if needed
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)" Calculating mapping of comp "
       endif;enddo
       x_start_sub = x_submet_sp(1)
@@ -1316,41 +1333,41 @@
               if(IsPeriodic_CompGrid)then
                 ! For global Lon/Lat Met data, allow points up to
                 ! x_fullmet_sp(nx_fullmet)+dx
-                if(px.ge.x_fullmet_sp(1)+360.0_sp)then
+                if(px >= x_fullmet_sp(1)+360.0_sp)then
                   px=px-360.0_sp
                 endif
               else
                 ! For global Lon/Lat, but not a periodic comp grid
-                if(px.gt.x_submet_sp(nx_submet))then
+                if(px > x_submet_sp(nx_submet))then
                   px=px-360.0_sp
                 endif
-                if(px.lt.x_submet_sp(1))then
+                if(px < x_submet_sp(1))then
                   px=px+360.0_sp
                 endif
               endif
             else
               ! For non-global Met data, require values to be strictly within
               ! limits of the SUB-grid (i.e. might be >360)
-              if(px.gt.x_submet_sp(nx_submet))then
+              if(px > x_submet_sp(nx_submet))then
                 px=px-360.0_sp
               endif
-              if(px.lt.x_submet_sp(1))then
+              if(px < x_submet_sp(1))then
                 px=px+360.0_sp
               endif
             endif
           endif
           if(.not.IsPeriodic_CompGrid)then
-            if(px.lt.x_start_sub.or.px.gt.x_submet_sp(nx_submet))then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            if(px < x_start_sub.or.px > x_submet_sp(nx_submet))then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
                 write(errlog(io),*)"MR ERROR: Comp point maps out of sub_Met in x."
                 write(errlog(io),*)"Comp i,j, x      :",i,j,px
                 write(errlog(io),*)"sub_Met xmin,xmax:",x_start_sub,x_submet_sp(nx_submet)
               endif;enddo
               stop 1
             endif
-            if((py.lt.y_start_sub           .and..not.y_pad_South).or.&
-               (py.gt.y_submet_sp(ny_submet).and..not.y_pad_North))then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            if((py < y_start_sub           .and..not.y_pad_South).or.&
+               (py > y_submet_sp(ny_submet).and..not.y_pad_North))then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
                 write(errlog(io),*)"MR ERROR: Comp point maps out of sub_Met in y."
                 write(errlog(io),*)"Comp i,j, y      :",i,j,px,py
                 write(errlog(io),*)"sub_Met ymin,ymax:",y_start_sub,y_submet_sp(ny_submet)
@@ -1368,10 +1385,10 @@
           endif
           do ii = 1,nx_tmp
               ! Set interval inclusive of lower node
-            cond1 = px.ge.x_submet_sp(ii  )
-            cond2 = px.lt.x_submet_sp(ii+1)
-            cond3 = px.le.x_submet_sp(ii+1)
-            if(ii.lt.nx_tmp)then
+            cond1 = px >= x_submet_sp(ii  )
+            cond2 = px < x_submet_sp(ii+1)
+            cond3 = px <= x_submet_sp(ii+1)
+            if(ii < nx_tmp)then
               if(cond1.and.cond2)then
                 isubmet = ii
                 exit
@@ -1386,43 +1403,43 @@
           CompPoint_on_subMet_idx(i,j,1) = isubmet
 
             ! Check if the point is within the upper and lower bounds
-          if(py.lt.y_submet_sp(ny_submet).and.py.ge.y_submet_sp(1))then
+          if(py < y_submet_sp(ny_submet).and.py >= y_submet_sp(1))then
             jsubmet = 1
             do jj = 1,ny_submet-1
               ! Set interval inclusive of lower node
-              cond1 = py.ge.y_submet_sp(jj  )
-              cond2 = py.lt.y_submet_sp(jj+1)
+              cond1 = py >= y_submet_sp(jj  )
+              cond2 = py < y_submet_sp(jj+1)
               if(cond1.and.cond2)then
                 jsubmet = jj
                 exit
               endif
             enddo
-          elseif(abs(py-y_submet_sp(ny_submet)).lt.1.0e-7_sp)then
+          elseif(abs(py-y_submet_sp(ny_submet)) < 1.0e-7_sp)then
               ! This is to fix the occasional instances where the top comp point
               ! maps almost right on the top submet point
             jsubmet = 1
             do jj = 1,ny_submet-1
               ! Set interval inclusive of lower node
-              cond1 = py.ge.y_submet_sp(jj  )
-              cond2 = py.le.y_submet_sp(jj+1)
+              cond1 = py >= y_submet_sp(jj  )
+              cond2 = py <= y_submet_sp(jj+1)
               if(cond1.and.cond2)then
                 jsubmet = jj
                 exit
               endif
             enddo
-          elseif(py.gt.y_submet_sp(ny_submet).and.IsGlobal_MetGrid.and.y_pad_North)then
+          elseif(py > y_submet_sp(ny_submet).and.IsGlobal_MetGrid.and.y_pad_North)then
             jsubmet = ny_submet
-          elseif(py.lt.y_submet_sp(1)        .and.IsGlobal_MetGrid.and.y_pad_South)then
+          elseif(py < y_submet_sp(1)        .and.IsGlobal_MetGrid.and.y_pad_South)then
             jsubmet = 1
           endif
           CompPoint_on_subMet_idx(i,j,2) = jsubmet
 
           ! Get fractional position of comp point in met cell
           xfrac=(px-x_submet_sp(isubmet))/MR_dx_submet(isubmet)
-          if(py.gt.y_submet_sp(ny_submet).and.IsGlobal_MetGrid.and.y_pad_North)then
+          if(py > y_submet_sp(ny_submet).and.IsGlobal_MetGrid.and.y_pad_North)then
               ! If comp point is above all met points
             yfrac=(py- y_submet_sp(ny_submet) ) /  MR_dy_submet(ny_submet)
-          elseif(py.lt.y_submet_sp(1).and.IsGlobal_MetGrid.and.y_pad_South)then
+          elseif(py < y_submet_sp(1).and.IsGlobal_MetGrid.and.y_pad_South)then
               ! If comp point is below all met points
             yfrac=(py- (y_submet_sp(1)-abs(MR_dy_submet(1))) ) / abs(MR_dy_submet(1))
           else
@@ -1432,10 +1449,10 @@
           xc = 1.0_sp-xfrac
           yc = 1.0_sp-yfrac
 
-          if(xfrac.gt.1.0_sp.or.xfrac.lt.0.0_sp.or.&
-             yfrac.gt.1.0_sp.or.yfrac.lt.0.0_sp)then
+          if(xfrac > 1.0_sp.or.xfrac < 0.0_sp.or.&
+             yfrac > 1.0_sp.or.yfrac < 0.0_sp)then
             ! The point is mapping outside the expected cell
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
               write(errlog(io),*)"MR ERROR : Error calculating Met to Comp mapping."
               write(errlog(io),*)"Comp point : ",i,j,x_comp_sp(i),y_comp_sp(j)
               write(errlog(io),*)"Coord on Met: ",CompPoint_X_on_Met_sp(i,j),CompPoint_Y_on_Met_sp(i,j)
@@ -1458,9 +1475,9 @@
       !   we need to convert ER to GR for the same grid or
       !   we need ER vectors from a projected Met grid
       if(.not.IsGridRelative.or. &  ! We are dealing with NARR data
-               Map_Case.eq.4.or. &  ! Met Grid is projected and Comp grid is Lat/Lon
-               Map_Case.eq.5)then   ! Met Grid and Comp grids have different projections
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+               Map_Case == 4.or. &  ! Met Grid is projected and Comp grid is Lat/Lon
+               Map_Case == 5)then   ! Met Grid and Comp grids have different projections
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*)"  Setting up arrays for rotating vectors on Met grid."
         endif;enddo
         allocate(MR_u_ER_metP(nx_submet,ny_submet,np_fullmet))
@@ -1469,7 +1486,7 @@
                                                   ! Met grid and the earth grid; used for rotating
                                                   ! grid velocities to Earth-Relative, or in the
                                                   ! special NARR case, rotating ER to GR
-        if(Met_iprojflag.eq.5)then
+        if(Met_iprojflag == 5)then
           ! Mercator projections have grid lines aligned with lat, lon
           theta_Met(:,:) = 0.0_dp
         else
@@ -1522,17 +1539,17 @@
       ! underlying wind data are projected.  We might, however, need to rotate these
       ! ER values to a projected computational grid.  So we set up another rotation
       ! to map ER values that were interpolated onto a computational grid to GR
-      if((Map_Case.eq.2.and..not.IsGridRelative).or. &
-         Map_Case.eq.3.or. & ! Met is Lat/Lon, but Comp is projected
-         Map_Case.eq.4.or. & ! Met is projected, but Comp is Lat/Lon
-         Map_Case.eq.5)then  ! Met Grid and Comp grids have different projections
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      if((Map_Case == 2.and..not.IsGridRelative).or. &
+         Map_Case == 3.or. & ! Met is Lat/Lon, but Comp is projected
+         Map_Case == 4.or. & ! Met is projected, but Comp is Lat/Lon
+         Map_Case == 5)then  ! Met Grid and Comp grids have different projections
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*)"  Setting up arrays for rotating vectors on comp grid."
         endif;enddo
         if(MR_useCompH)allocate(MR_dum3d_compH_2(nx_comp,ny_comp,nz_comp))
         if(MR_useCompP)allocate(MR_dum3d_compP_2(nx_comp,ny_comp,np_fullmet))
         allocate(theta_Comp(nx_comp,ny_comp))
-        if(Map_Case.eq.3.or.Map_Case.eq.5)then
+        if(Map_Case == 3.or.Map_Case == 5)then
           ! We only need to calculate inverse projections if the comp grid is projected.
           ! If met and comp grids differ, first get Met grid winds as Earth-relative
           ! Note: This is only needed if Met grid is projected, ie for Map_Case = 4 or 5
@@ -1596,18 +1613,18 @@
       allocate(MR_geoH_metP_last(nx_submet,ny_submet,np_fullmet))
       allocate(MR_geoH_metP_next(nx_submet,ny_submet,np_fullmet))
 
-      if(Map_Case.eq.1.or.Map_Case.eq.2)then
+      if(Map_Case == 1.or.Map_Case == 2)then
         ! If Met and comp grids are not the same class, then we need to compare lengths
-        if(dx_comp.gt.1.5_sp*MR_dx_met(1))then
+        if(dx_comp > 1.5_sp*MR_dx_met(1))then
           ! Comp grid is coarser than the met grid, set up list of met points to average for each comp cell
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)"Using averaging of Met cells to comp grid."
           endif;enddo
           MR_InterpolateMet = .false.
           call MR_Set_Met2Comp_Map
         endif
       else
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*)"Using interpolation of comp grid cell-center from Met grid."
         endif;enddo
       endif
@@ -1623,8 +1640,8 @@
           ! No need to loop over lambda (longitude) since each slice is identical
           del_lam = dx_met_const*MR_DEG2RAD
           cell_area = MR_RAD_EARTH*MR_RAD_EARTH*del_lam*del_costheta
-          if(cell_area.lt.min_cell_area_met) min_cell_area_met=cell_area
-          if(cell_area.gt.max_cell_area_met) max_cell_area_met=cell_area
+          if(cell_area < min_cell_area_met) min_cell_area_met=cell_area
+          if(cell_area > max_cell_area_met) max_cell_area_met=cell_area
         enddo
       else
         cell_area = dx_met_const*dy_met_const
@@ -1632,7 +1649,7 @@
         max_cell_area_met = cell_area
       endif
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -1668,17 +1685,22 @@
 !           PJ_proj_for,&
 !           PJ_proj_inv
 !
-!      implicit none
+!      use, intrinsic :: iso_fortran_env, only : &
+!         real32,real64,input_unit,output_unit,error_unit
 !
-!      integer, parameter :: sp        = 4 ! single precision
-!      integer, parameter :: dp        = 8 ! double precision
+!      implicit none
+!      !implicit none (type, external)
+!
+!        ! These single and double precision parameters should be 4 and 8
+!      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+!      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 !
 !      integer :: io
 !      integer :: i,j
 !      real(kind=dp) :: xin,yin
 !      real(kind=dp) :: xout,yout
 !
-!      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
+!      do io=1,MR_nio;if(MR_VB(io) <= verbosity_production)then
 !        write(outlog(io),*)"-----------------------------------------------------------------------"
 !        write(outlog(io),*)"----------                 MR_Set_LL_mapping                 ----------"
 !        write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -1700,19 +1722,19 @@
 !        MR_lonmax = -360.0_sp
 !        do i=1,nx_submet
 !          do j=1,ny_submet
-!            xin = real(x_submet_sp(i),kind=dp)  ! Projection routines use kind=8
+!            xin = real(x_submet_sp(i),kind=dp)  ! Projection routines use kind=dp
 !            yin = real(y_submet_sp(j),kind=dp)
 !            call PJ_proj_inv(xin,yin, &
 !                           Met_iprojflag, Met_lam0,Met_phi0,Met_phi1,Met_phi2, &
 !                           Met_k0,Met_Re, &
 !                           xout,yout)
-!            if(xout.lt.MR_lonmin)MR_lonmin=real(xout,kind=sp)
-!            if(xout.gt.MR_lonmax)MR_lonmax=real(xout,kind=sp)
-!            if(yout.lt.MR_latmin)MR_latmin=real(yout,kind=sp)
-!            if(yout.gt.MR_latmax)MR_latmax=real(yout,kind=sp)
+!            if(xout < MR_lonmin)MR_lonmin=real(xout,kind=sp)
+!            if(xout > MR_lonmax)MR_lonmax=real(xout,kind=sp)
+!            if(yout < MR_latmin)MR_latmin=real(yout,kind=sp)
+!            if(yout > MR_latmax)MR_latmax=real(yout,kind=sp)
 !            MR_xy2ll_xlon(i,j) = real(xout,kind=sp)
 !            MR_xy2ll_ylat(i,j) = real(yout,kind=sp)
-!            if(MR_xy2ll_xlon(i,j).lt.0.0_sp) MR_xy2ll_xlon(i,j) = MR_xy2ll_xlon(i,j) + 360.0_sp
+!            if(MR_xy2ll_xlon(i,j) < 0.0_sp) MR_xy2ll_xlon(i,j) = MR_xy2ll_xlon(i,j) + 360.0_sp
 !            write(*,*)i,j,MR_xy2ll_xlon(i,j),MR_xy2ll_ylat(i,j)
 !          enddo
 !        enddo
@@ -1756,10 +1778,16 @@
            PJ_proj_for,&
            PJ_proj_inv
 
-      implicit none
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
 
-      integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      implicit none
+      !implicit none (type, external)
+
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
+
       real(kind=dp), parameter :: tol = 1.0e-3_dp
 
       real(kind=dp) :: dum1,dum2,dum3,dum4,dum5
@@ -1769,7 +1797,7 @@
       character(len=8) :: fltstr
       integer :: io                           ! Index for output streams
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------                          MR_Set_Comp2Met_Map      ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -1798,96 +1826,96 @@
       else
         ! Both Met and Comp are projected.
         ! Test if the projections are the same.
-        if(Met_iprojflag.ne.Comp_iprojflag)then
+        if(Met_iprojflag /= Comp_iprojflag)then
           ! Met and Comp are completely different projection types
           Map_Case = 5
         else
           ! Projections are the same type, test individual parameters
-          if(Comp_iprojflag.eq.0)then
+          if(Comp_iprojflag == 0)then
             ! Both Comp and Met are non-geographic, Cartesian grids
             Map_Case = 2
-          elseif(Comp_iprojflag.eq.1)then
+          elseif(Comp_iprojflag == 1)then
             ! Polar stereographic
             dum1 = abs(Comp_lam0 - Met_lam0)
             dum2 = abs(Comp_phi0 - Met_phi0)
             dum3 = abs(Comp_k0 - Met_k0)
             dum4 = abs(Comp_Re - Met_Re)
-            if(dum1.gt.tol.and.&
-               dum2.gt.tol.and.&
-               dum3.gt.tol.and.&
-               dum4.gt.tol)then
+            if(dum1 > tol.and.&
+               dum2 > tol.and.&
+               dum3 > tol.and.&
+               dum4 > tol)then
               Map_Case = 5
             else
               Map_Case = 2
             endif
-          elseif(Comp_iprojflag.eq.2)then
+          elseif(Comp_iprojflag == 2)then
             ! Albers Equal Area
             dum1 = abs(Comp_lam0 - Met_lam0)
             dum2 = abs(Comp_phi0 - Met_phi0)
             dum3 = abs(Comp_phi1 - Met_phi1)
             dum4 = abs(Comp_phi2 - Met_phi2)
-            if(dum1.gt.tol.and.&
-               dum2.gt.tol.and.&
-               dum3.gt.tol.and.&
-               dum4.gt.tol)then
+            if(dum1 > tol.and.&
+               dum2 > tol.and.&
+               dum3 > tol.and.&
+               dum4 > tol)then
               Map_Case = 5
             else
               Map_Case = 2
             endif
-          elseif(Comp_iprojflag.eq.3)then
+          elseif(Comp_iprojflag == 3)then
             ! UTM
             stop 1
-          elseif(Comp_iprojflag.eq.4)then
+          elseif(Comp_iprojflag == 4)then
             ! Lambert conformal conic (NARR, NAM218, NAM221)
             dum1 = abs(Comp_lam0 - Met_lam0)
             dum2 = abs(Comp_phi0 - Met_phi0)
             dum3 = abs(Comp_phi1 - Met_phi1)
             dum4 = abs(Comp_phi2 - Met_phi2)
             dum5 = abs(Comp_Re - Met_Re)
-            if(dum1.gt.tol.and.&
-               dum2.gt.tol.and.&
-               dum3.gt.tol.and.&
-               dum4.gt.tol.and.&
-               dum5.gt.tol)then
+            if(dum1 > tol.and.&
+               dum2 > tol.and.&
+               dum3 > tol.and.&
+               dum4 > tol.and.&
+               dum5 > tol)then
               Map_Case = 5
             else
               Map_Case = 2
             endif
-          elseif(Comp_iprojflag.eq.5)then
+          elseif(Comp_iprojflag == 5)then
             ! Mercator (NAM196)
             dum1 = abs(Comp_lam0 - Met_lam0)
             dum2 = abs(Comp_phi0 - Met_phi0)
             dum3 = abs(Comp_Re - Met_Re)
-            if(dum1.gt.tol.and.&
-               dum2.gt.tol.and.&
-               dum3.gt.tol)then
+            if(dum1 > tol.and.&
+               dum2 > tol.and.&
+               dum3 > tol)then
               Map_Case = 5
             else
               Map_Case = 2
             endif
           endif !Comp_iprojflag
-        endif !Met_iprojflag.ne.Comp_iprojflag
+        endif !Met_iprojflag /= Comp_iprojflag
       endif ! Met and Comp projected
 
       ! Write out the proj4 line for the projection of the computational grid.
       ! This can be used in post-processing, if desired
-      if(Map_Case.eq.1)then
+      if(Map_Case == 1)then
         ! (1) Both Comp Grid and Met grids are Lat/Lon
         Comp_proj4 = "LL"
-      elseif(Map_Case.eq.2)then
+      elseif(Map_Case == 2)then
         ! (2) Both Comp Grid and Met grids are the same projection
         Comp_proj4 = Met_proj4
-      elseif(Map_Case.eq.4)then
+      elseif(Map_Case == 4)then
         ! (4) Met Grid is projected and Comp grid is Lat/Lon
         Comp_proj4 = "LL"
-      elseif(Map_Case.eq.3.or.Map_Case.eq.5)then
+      elseif(Map_Case == 3.or.Map_Case == 5)then
         ! (3) Met Grid is Lat/Lon and Comp grid is projected
         ! (5) Met Grid and Comp grids have different projections
         ! In these cases, we need to build the proj4 line.
-        if(Comp_iprojflag.eq.0)then
+        if(Comp_iprojflag == 0)then
           ! Both Comp and Met are non-geographic, Cartesian grids
           Comp_proj4 = "XY"
-        elseif(Comp_iprojflag.eq.1)then
+        elseif(Comp_iprojflag == 1)then
           ! Polar stereographic
           ! proj +proj=stere  +lon_0=210  +lat_0=90 +k_0=0.933 +R=6371.229
           write(fltstr,'(f6.1)')Comp_lam0
@@ -1898,16 +1926,16 @@
           Comp_proj4 = trim(adjustl(Comp_proj4)) // " +k_0=" // trim(adjustl(fltstr))
           write(fltstr,'(f8.3)')Comp_Re
           Comp_proj4 = trim(adjustl(Comp_proj4)) // " +R=" // trim(adjustl(fltstr))
-        elseif(Comp_iprojflag.eq.2)then
+        elseif(Comp_iprojflag == 2)then
           ! Albers Equal Area
 !          Comp_proj4 = "proj +proj=aea +lat_1=" // real(Comp_phi0,kind=sp) // &
 !                                     " +lat_2=" // real(Comp_phi2,kind=sp)
           write(Comp_proj4,2020)Comp_phi0,Comp_phi2
 2020      format('proj +proj=aea +lat_1=',f5.1,' +lat_2=',f5.1)
-        elseif(Comp_iprojflag.eq.3)then
+        elseif(Comp_iprojflag == 3)then
           ! UTM
           stop 1
-        elseif(Comp_iprojflag.eq.4)then
+        elseif(Comp_iprojflag == 4)then
           ! Lambert conformal conic (NARR, NAM218, NAM221)
           ! proj +proj=lcc +lon_0=-107.0 +lat_0=50.0 +lat_1=50.0 +lat_2=50.0 +R=6371.229
           write(fltstr,'(f6.1)')Comp_lam0
@@ -1920,7 +1948,7 @@
           Comp_proj4 = trim(adjustl(Comp_proj4)) // " +lat_2=" // trim(adjustl(fltstr))
           write(fltstr,'(f8.3)')Comp_Re
           Comp_proj4 = trim(adjustl(Comp_proj4)) // " +R=" // trim(adjustl(fltstr))
-        elseif(Comp_iprojflag.eq.5)then
+        elseif(Comp_iprojflag == 5)then
           ! Mercator (NAM196)
           write(fltstr,'(f5.1)')Comp_phi0
           Comp_proj4 = "proj +proj=merc  +lat_ts=" // trim(adjustl(fltstr))
@@ -1931,11 +1959,11 @@
         endif
       endif
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
-        if(Map_Case.eq.1)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
+        if(Map_Case == 1)then
           write(outlog(io),*)"Map_Case = ",Map_Case
           write(outlog(io),*)"  Both Comp Grid and Met grids are Lat/Lon"
-        elseif(Map_Case.eq.2)then
+        elseif(Map_Case == 2)then
           write(outlog(io),*)"Map_Case = ",Map_Case
           write(outlog(io),*)"  Both Comp Grid and Met grids are the same projection"
           write(outlog(io),*)"   Met_iprojflag",Met_iprojflag
@@ -1952,7 +1980,7 @@
           write(outlog(io),*)"   Comp_phi2",real(Comp_phi2,kind=sp)
           write(outlog(io),*)"   Comp_Re  ",real(Comp_Re,kind=sp)
           write(outlog(io),*)"   Comp_k0  ",real(Comp_k0,kind=sp)
-        elseif(Map_Case.eq.3)then
+        elseif(Map_Case == 3)then
           write(outlog(io),*)"Map_Case = ",Map_Case
           write(outlog(io),*)"  Met Grid is Lat/Lon and Comp grid is projected"
           write(outlog(io),*)"   Comp_iprojflag",Comp_iprojflag
@@ -1962,7 +1990,7 @@
           write(outlog(io),*)"   Comp_phi2",real(Comp_phi2,kind=sp)
           write(outlog(io),*)"   Comp_Re  ",real(Comp_Re,kind=sp)
           write(outlog(io),*)"   Comp_k0  ",real(Comp_k0,kind=sp)
-        elseif(Map_Case.eq.4)then
+        elseif(Map_Case == 4)then
           write(outlog(io),*)"Map_Case = ",Map_Case
           write(outlog(io),*)"  Met Grid is projected and Comp grid is Lat/Lon"
           write(outlog(io),*)"   Met_iprojflag",Met_iprojflag
@@ -1972,7 +2000,7 @@
           write(outlog(io),*)"   Met_phi2",real(Met_phi2,kind=sp)
           write(outlog(io),*)"   Met_Re  ",real(Met_Re,kind=sp)
           write(outlog(io),*)"   Met_k0  ",real(Met_k0,kind=sp)
-        elseif(Map_Case.eq.5)then
+        elseif(Map_Case == 5)then
           write(outlog(io),*)"Map_Case = ",Map_Case
           write(outlog(io),*)"  Met Grid and Comp grids have different projections"
           write(outlog(io),*)"   Met_iprojflag",Met_iprojflag
@@ -1997,7 +2025,7 @@
       allocate(CompPoint_X_on_Met_sp(nx_comp,ny_comp))
       allocate(CompPoint_Y_on_Met_sp(nx_comp,ny_comp))
 
-      if(Map_Case.eq.1.or.Map_Case.eq.2)then
+      if(Map_Case == 1.or.Map_Case == 2)then
         ! Map and Comp are on same grid
         do i=1,nx_comp
           x_in = x_comp_sp(i)
@@ -2007,7 +2035,7 @@
             CompPoint_Y_on_Met_sp(i,j) = real(y_in,kind=sp)
           enddo
         enddo
-      elseif(Map_Case.eq.3)then
+      elseif(Map_Case == 3)then
           ! We just need to map the projected comp grid to the Lon/Lat Met grid
         do i=1,nx_comp
           x_in = x_comp_sp(i)
@@ -2020,7 +2048,7 @@
             CompPoint_Y_on_Met_sp(i,j) = real(y_out,kind=sp)
           enddo
         enddo
-      elseif(Map_Case.eq.4)then
+      elseif(Map_Case == 4)then
           ! We just need to map the Lon/Lat comp grid to the projected Met grid
         do i=1,nx_comp
           x_in = x_comp_sp(i)
@@ -2033,7 +2061,7 @@
             CompPoint_Y_on_Met_sp(i,j) = real(y_out,kind=sp)
           enddo
         enddo
-      elseif(Map_Case.eq.5)then
+      elseif(Map_Case == 5)then
           ! Here, we need to map the projected comp grid to a Lon/Lat grid, then
           ! map to the projected Met grid
         do i=1,nx_comp
@@ -2054,7 +2082,7 @@
         enddo
       endif ! Map_Case
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -2099,10 +2127,15 @@
            PJ_proj_for,&
            PJ_proj_inv
 
-      implicit none
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
 
-      integer, parameter :: sp        = 4 ! single precision
-      integer, parameter :: dp        = 8 ! double precision
+      implicit none
+      !implicit none (type, external)
+
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
       integer :: i,j
       integer :: ii,jj
@@ -2118,7 +2151,7 @@
       allocate(NumMetPoints_in_comp_cell(nx_comp,ny_comp))
       NumMetPoints_in_comp_cell(:,:)    = 0
 
-      if(Map_Case.eq.1.or.Map_Case.eq.2)then
+      if(Map_Case == 1.or.Map_Case == 2)then
         ! Map and Comp are on same grid; either Map_Case=1 (both LL) or Map_Case=2 (both proj)
         do i=1,nx_submet
           x_in = x_submet_sp(i)
@@ -2128,7 +2161,7 @@
             MetPoint_Y_on_comp_sp(i,j) = real(y_in,kind=sp)
           enddo
         enddo
-      elseif(Map_Case.eq.3)then
+      elseif(Map_Case == 3)then
         ! Map_Case = 3 : Met=LL,   Comp=proj
 
           ! We just need to map the Lon/Lat Met grid to the projected comp grid
@@ -2144,7 +2177,7 @@
             MetPoint_Y_on_comp_sp(i,j) = real(y_out,kind=sp)
           enddo
         enddo
-      elseif(Map_Case.eq.4)then
+      elseif(Map_Case == 4)then
           ! We just need to map the projected Met grid to the Lon/Lat comp grid
         do i=1,nx_submet
           x_in = x_submet_sp(i)
@@ -2157,7 +2190,7 @@
             MetPoint_Y_on_comp_sp(i,j) = real(y_out,kind=sp)
           enddo
         enddo
-      elseif(Map_Case.eq.5)then
+      elseif(Map_Case == 5)then
           ! Here, we need to map the projected met grid to a Lon/Lat grid, then
           ! map to the projected comp grid
         do i=1,nx_submet
@@ -2188,19 +2221,19 @@
           y_in = MetPoint_Y_on_comp_sp(i,j)
           iidx = 0
           do ii=1,nx_comp
-            if(x_in.ge.(x_comp_sp(ii)-0.5_sp*dx_comp).and. &
-               x_in.lt.(x_comp_sp(ii)+0.5_sp*dx_comp))then
+            if(x_in >= (x_comp_sp(ii)-0.5_sp*dx_comp).and. &
+               x_in < (x_comp_sp(ii)+0.5_sp*dx_comp))then
               iidx = ii
             endif
           enddo
           jidx = 0
           do jj=1,ny_comp
-            if(y_in.ge.(y_comp_sp(jj)-0.5_sp*dy_comp).and. &
-               y_in.lt.(y_comp_sp(jj)+0.5_sp*dy_comp))then
+            if(y_in >= (y_comp_sp(jj)-0.5_sp*dy_comp).and. &
+               y_in < (y_comp_sp(jj)+0.5_sp*dy_comp))then
               jidx = jj
             endif
           enddo
-          if(iidx.gt.0.and.jidx.gt.0)then
+          if(iidx > 0.and.jidx > 0)then
             NumMetPoints_in_comp_cell(iidx,jidx) = NumMetPoints_in_comp_cell(iidx,jidx) + 1
           endif
         enddo
@@ -2216,19 +2249,19 @@
           y_in = MetPoint_Y_on_comp_sp(i,j)
           iidx = 0
           do ii=1,nx_comp
-            if(x_in.ge.(x_comp_sp(ii)-0.5_sp*dx_comp).and. &
-               x_in.lt.(x_comp_sp(ii)+0.5_sp*dx_comp))then
+            if(x_in >= (x_comp_sp(ii)-0.5_sp*dx_comp).and. &
+               x_in < (x_comp_sp(ii)+0.5_sp*dx_comp))then
               iidx = ii
             endif
           enddo
           jidx = 0
           do jj=1,ny_comp
-            if(y_in.ge.(y_comp_sp(jj)-0.5_sp*dy_comp).and. &
-               y_in.lt.(y_comp_sp(jj)+0.5_sp*dy_comp))then
+            if(y_in >= (y_comp_sp(jj)-0.5_sp*dy_comp).and. &
+               y_in < (y_comp_sp(jj)+0.5_sp*dy_comp))then
               jidx = jj
             endif
           enddo
-          if(iidx.gt.0.and.jidx.gt.0)then
+          if(iidx > 0.and.jidx > 0)then
             NumMetPoints_in_comp_cell(iidx,jidx) = NumMetPoints_in_comp_cell(iidx,jidx) + 1
             ListMetPoints_in_comp_cell(iidx,jidx,NumMetPoints_in_comp_cell(iidx,jidx)) = met_indx
           endif
@@ -2239,9 +2272,9 @@
       ! and for met grids coarser than comp grids, we have a mapping to average all met cells
       ! that contribute to a comp cell. For the pathalogical case where a coarse grid comp cell
       ! has no contributing met cells, we turn off the avergaing and return to the interpolation
-      if(minval(NumMetPoints_in_comp_cell(:,:)).eq.0) MR_InterpolateMet = .true.
+      if(minval(NumMetPoints_in_comp_cell(:,:)) == 0) MR_InterpolateMet = .true.
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_production)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
       endif;enddo
 
@@ -2264,10 +2297,15 @@
          IsPeriodic_CompGrid,MR_InterpolateMet,ny_submet,&
          NumMetPoints_in_comp_cell,ListMetPoints_in_comp_cell
 
-      implicit none
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
 
-      integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
+      implicit none
+      !implicit none (type, external)
+
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
       integer                         ,intent(in)  :: nx1,ny1
       real(kind=sp),dimension(nx1,ny1),intent(in)  :: wrk_met
@@ -2285,7 +2323,7 @@
 
       integer :: io                           ! Index for output streams
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_debug2)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_debug2)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_Met2Comp                           ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -2335,14 +2373,14 @@
             ! Get the Met cell id this comp point maps to
             ii = CompPoint_on_subMet_idx(i,j,1)
             jj = CompPoint_on_subMet_idx(i,j,2)
-            if(ii.lt.1.or.ii.gt.nx_max-1)then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            if(ii < 1.or.ii > nx_max-1)then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
                 write(errlog(io),*)"MR ERROR: ii maps out of grid: ",ii
               endif;enddo
               stop 1
             endif
-            if(jj.lt.0.or.jj.gt.ny1)then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            if(jj < 0.or.jj > ny1)then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
                 write(errlog(io),*)"MR ERROR: jj maps out of grid: ",jj,ny1
               endif;enddo
               stop 1
@@ -2396,9 +2434,15 @@
       use MetReader,       only : &
          MR_nio,MR_VB,outlog,errlog,verbosity_error,verbosity_debug2
 
-      implicit none
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
 
-      integer, parameter :: sp        = 4 ! single precision
+      implicit none
+      !implicit none (type, external)
+
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      !integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
       integer                     ,intent(in)  :: nzm
       real(kind=sp),dimension(nzm),intent(in)  :: z_met
@@ -2414,7 +2458,7 @@
 
       integer :: io                           ! Index for output streams
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_debug2)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_debug2)then
         write(outlog(io),*)"-----------------------------------------------------------------------"
         write(outlog(io),*)"----------      MR_Regrid_P2H_linear                         ----------"
         write(outlog(io),*)"-----------------------------------------------------------------------"
@@ -2429,7 +2473,7 @@
         ! For each comp point, check which met interval it is in, starting from
         ! the last interval found
         do km = km_interv,nzm-1
-          if(z1.ge.z_met(km).and.z1.le.z_met(km+1))then
+          if(z1 >= z_met(km).and.z1 <= z_met(km+1))then
             found_interv = .true.
             km_interv = km
             dz = z_met(km_interv+1)-z_met(km_interv)
@@ -2444,7 +2488,7 @@
         enddo
         ! Check that interval was found
         if(.not.found_interv)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR:  Did not find interval in vertical 1-D interpolation."
             write(errlog(io),*)"z_met = "
             write(errlog(io),*)z_met
@@ -2485,37 +2529,45 @@
          PJ_ilatlonflag,PJ_iprojflag,PJ_k0,PJ_lam0,PJ_lam1,PJ_lam2,PJ_phi0,PJ_phi1,PJ_phi2,PJ_Re,&
            PJ_Set_Proj_Params
 
-      implicit none
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
 
-      integer, parameter :: sp        = 4 ! single precision
-      !integer, parameter :: dp        = 8 ! double precision
+      implicit none
+      !implicit none (type, external)
+
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
       integer, parameter :: fid       = 110
 
       integer :: iostatus
-      character(len=120) :: iomessage = ""
+      character(len=120) :: iomessage
 
       logical            :: IsThere
       character(len=130) :: linebuffer130       ! We need to accommodate very long variable names
       character(len=80)  :: Met_projection_line
 
       character(len=3)   :: useLeap_str
-      integer :: ndims_custom, nvars_custom
-      integer :: i
-      integer :: idx
-      character     :: dv_char
-      integer       :: dimID,varID,zindx,vndim
-      real(kind=sp) :: fac
-      character(len=30) :: dname
-      character(len=71) :: vname
-      character(len=5)  :: vname_WMO
-      real(kind=8)      :: StepInterval
+      integer            :: ndims_custom, nvars_custom
+      integer            :: i
+      integer            :: idx
+      character          :: dv_char
+      integer            :: dimID,varID,zindx,vndim
+      real(kind=sp)      :: fac
+      character (len=30) :: dname
+      character (len=71) :: vname
+      character (len=5)  :: vname_WMO
+      real(kind=dp)      :: StepInterval
 
       integer :: io                           ! Index for output streams
 
+      ! Initialization
+      iomessage = ""
+
       inquire( file=trim(adjustl(MR_iwf_template)), exist=IsThere )
       if(.not.IsThere)then
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
           write(errlog(io),*)"MR ERROR: Could not find NWP template file ",&
                      trim(adjustl(MR_iwf_template))
           write(errlog(io),*)"          Make sure the calling program sets MR_iwf_template"
@@ -2526,17 +2578,17 @@
 
       open(unit=fid,file=trim(adjustl(MR_iwf_template)),status='old',action='read')
       read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
-      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+      if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
 
       Met_projection_line = linebuffer130(1:80)
       call PJ_Set_Proj_Params(Met_projection_line)
 
-      if(PJ_ilatlonflag.eq.0)then
+      if(PJ_ilatlonflag == 0)then
         IsLatLon_MetGrid = .false.
         IsGlobal_MetGrid = .false.
       else
         IsLatLon_MetGrid = .true.
-        if(PJ_iprojflag.eq.0)then
+        if(PJ_iprojflag == 0)then
           IsGlobal_MetGrid = .false.
         else
           IsGlobal_MetGrid = .true.
@@ -2553,10 +2605,10 @@
       Met_Re        = PJ_Re
 
       read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
-      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+      if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
       read(linebuffer130,*,iostat=iostatus,iomsg=iomessage)StepInterval
-      if(iostatus.ne.0)then
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+      if(iostatus /= 0)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
           write(errlog(io),*)'MR ERROR:  Error reading time step interval from template'
           write(errlog(io),*)'           Expecting to read: StepInterval (real*8)'
           write(errlog(io),*)'           with format: *'
@@ -2567,28 +2619,28 @@
         endif;enddo
         stop 1
       else
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*)"Read StepInterval = ",StepInterval
           write(outlog(io),*)"Note that this is for guidance and might be ignored when"
           write(outlog(io),*)"the time information of each file can be read."
         endif;enddo
       endif
       read(linebuffer130,*,iostat=iostatus,iomsg=iomessage)StepInterval,useLeap_str
-      if (iostatus.eq.0)then
+      if (iostatus == 0)then
         ! Two values read, process useLeap_str to determine T or F
-        if(useLeap_str(1:1).eq.'F'.or.useLeap_str(1:1).eq.'f')then
+        if(useLeap_str(1:1) == 'F'.or.useLeap_str(1:1) == 'f')then
           MR_useLeap = .false.
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)"This windfile template specifies that leap years are NOT to"
             write(outlog(io),*)"be used.  Resetting MR_useLeap = .false."
           endif;enddo
         endif
       endif
       read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
-      if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+      if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
       read(linebuffer130,*,iostat=iostatus,iomsg=iomessage)ndims_custom,nvars_custom
-      if(iostatus.ne.0)then
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+      if(iostatus /= 0)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
           write(errlog(io),*)'MR ERROR:  Error reading number of dims and vars from template'
           write(errlog(io),*)'           Expecting to read: ndims_custom,nvars_custom'
           write(errlog(io),*)'           with format: *'
@@ -2599,16 +2651,16 @@
         endif;enddo
         stop 1
       endif
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"  Reading dimensions: ",ndims_custom
       endif;enddo
       do i = 1,ndims_custom
         read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
         read(linebuffer130,1501,iostat=iostatus,iomsg=iomessage)dv_char,dimID,fac,dname
 1501    format(a1,i9,f9.2,a30)
-        if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)'MR ERROR:  Error reading dimension specifiers from template'
             write(errlog(io),*)'           Expecting to read: dv_char,dimID,fac,dname'
             write(errlog(io),*)'           with format: a1,i9,f9.2,a30'
@@ -2619,8 +2671,8 @@
           endif;enddo
           stop 1
         endif
-        if(dv_char.ne.'d')then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(dv_char /= 'd')then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR : Expecting to read dimension, but dimension identifier not found."
             write(errlog(io),*)"dv_char = ",dv_char
             write(errlog(io),*)"dimID   = ",dimID
@@ -2629,37 +2681,37 @@
           endif;enddo
           stop 1
         endif
-        if(dimID.le.9)then
+        if(dimID <= 9)then
           Met_dim_IsAvailable(dimID) = .true.
           Met_dim_names(dimID)       = trim(adjustl(dname))
           idx=index(Met_dim_names(dimID),' ')
-          if(idx.gt.1)then
+          if(idx > 1)then
             linebuffer130 = Met_dim_names(dimID)
             Met_dim_names(dimID)     = linebuffer130(1:idx)
           endif
           Met_dim_fac(i)             = fac
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)dimID,' ',Met_dim_names(dimID)
           endif;enddo
         else
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: dimID too large",dimID
           endif;enddo
           stop 1
         endif
       enddo
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"  Reading variables: ",nvars_custom
       endif;enddo
       do i = 1,nvars_custom
         read(fid,'(a130)',iostat=iostatus,iomsg=iomessage)linebuffer130
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
         read(linebuffer130,1511,iostat=iostatus,iomsg=iomessage)&
                                 dv_char,vndim,zindx,varID, &
                                 fac,vname_WMO,vname
 1511    format(a1,i3,i3,i3,f9.2,a7,a71)
-        if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)'MR ERROR:  Error reading variable specifiers from template'
             write(errlog(io),*)'           Expecting to read: dv_char,vndim,zindx,varID,fac,vname_WMO,vname'
             write(errlog(io),*)'           with format: a1,i3,i3,i3,f9.2,a7,a71'
@@ -2670,8 +2722,8 @@
           endif;enddo
           stop 1
         endif
-        if(dv_char.ne.'v')then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(dv_char /= 'v')then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR : Expecting to read variable, but variable identifier not found."
             write(errlog(io),*)"dv_char   = ",dv_char
             write(errlog(io),*)"vndim     = ",vndim
@@ -2684,23 +2736,23 @@
           stop 1
         endif
 
-        if(varID.le.MR_MAXVARS)then
+        if(varID <= MR_MAXVARS)then
           Met_var_IsAvailable(varID)       = .true.
           Met_var_NC_names(varID)          = trim(adjustl(vname))
           Met_var_WMO_names(varID)         = trim(adjustl(vname_WMO))
           idx=index(Met_var_NC_names(varID),' ')
-          if(idx.gt.1)then
+          if(idx > 1)then
             linebuffer130 = Met_var_NC_names(varID)
             Met_var_NC_names(varID)        = linebuffer130(1:idx)
           endif
           Met_var_ndim(varID)              = vndim
           Met_var_zdim_idx(varID)          = zindx
           Met_var_conversion_factor(varID) = fac
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)varID,Met_var_WMO_names(varID),' ',Met_var_NC_names(varID)
           endif;enddo
         else
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: varID too large",varID
           endif;enddo
           stop 1

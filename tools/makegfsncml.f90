@@ -1,59 +1,73 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!      This file is a component of the volcanic ash transport and dispersion model Ash3d,
+!      written at the U.S. Geological Survey by Hans F. Schwaiger (hschwaiger@usgs.gov),
+!      Larry G. Mastin (lgmastin@usgs.gov), and Roger P. Denlinger (roger@usgs.gov).
+!
+!      The model and its source code are products of the U.S. Federal Government and therefore
+!      bear no copyright.  They may be copied, redistributed and freely incorporated
+!      into derivative products.  However as a matter of scientific courtesy we ask that
+!      you credit the authors and cite published documentation of this model (below) when
+!      publishing or distributing derivative products.
+!
+!      Schwaiger, H.F., Denlinger, R.P., and Mastin, L.G., 2012, Ash3d, a finite-
+!         volume, conservative numerical model for ash transport and tephra deposition,
+!         Journal of Geophysical Research, 117, B04204, doi:10.1029/2011JB008968.
+!
+!      Although this program has been used by the USGS, no warranty, expressed or
+!      implied, is made by the USGS or the United States Government as to the accuracy
+!      and functioning  of the program and related program material nor shall the fact of
+!      distribution constitute  any such warranty, and no responsibility is assumed by
+!      the USGS in connection therewith.
+!
+!      We make no guarantees, expressed or implied, as to the usefulness of the software
+!      and its documentation for any purpose.  We assume no responsibility to provide
+!      technical support to users of this software.
+!
+!    program that makes an ncml file that strips out all the variables not used
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
       program makencml
 
-!      --This file is a component of the USGS program Ash3d for volcanic ash transport
-!          and dispersion.
-
-!      --Use of this program is described in:
-
-!        Schwaiger, H.F., Denlinger, R.P., and Mastin, L.G., in press, Ash3d, a finite-
-!           volume, conservative numerical model for ash transport and tephra deposition,
-!           Journal of Geophysical Research, 117, B04204, doi:10.1029/2011JB008968
-
-!      --Written in Fortran 90
-
-!      --The program has been successsfully tested and run on the Linux Operating System using
-!          Red Hat and Ubuntu 10 and 11.
-
-!       Although this program has been used by the USGS, no warranty, expressed or implied, is
-!         made by the USGS or the United States Government as to the accuracy and functioning
-!         of the program and related program material nor shall the fact of distribution constitute
-!         any such warranty, and no responsibility is assumed by the USGS in connection therewith.
-
-!    program that makes an ncml file that strips out all the variables not used
+      use, intrinsic :: iso_fortran_env, only : &
+         input_unit,output_unit,error_unit
 
       implicit none
+      !implicit none (type, external)
+
       integer            :: nargs
       character(len=130) :: infile
       character(len=18)  :: outfile
       integer            :: status
 
-!     TEST READ COMMAND LINE ARGUMENTS
+      ! Test read command-line arguments
       nargs = command_argument_count()
-      if (nargs.eq.2) then                !If there's 1 command-line argument,
+      if (nargs == 2) then                ! If there's 1 command-line argument,
                                           ! it's the input file name.  Read it.
            call get_command_argument(1, infile, status)
            call get_command_argument(2, outfile, status)
          else
-           write(6,*)'Enter name of input file:$'
-           write(6,*)'Example: gfs.t18z.pgrb2f00'
-           read(5,'(a35)') infile
-           write(6,*) 'Enter name of output file (17 chars):$'
-           write(6,*) 'Example: gfs.t18z.f00.ncml'
-           read(5,'(a35)') outfile
+           write(output_unit,*)'Enter name of input file:$'
+           write(output_unit,*)'Example: gfs.t18z.pgrb2f00'
+           read(input_unit,'(a35)') infile
+           write(output_unit,*) 'Enter name of output file (17 chars):$'
+           write(output_unit,*) 'Example: gfs.t18z.f00.ncml'
+           read(input_unit,'(a35)') outfile
       end if
 
-      write(6,2) infile, outfile
+      write(output_unit,2) infile, outfile
 2     format('making ncml wrapper for ',a35,/, &
              'Creating ncml file ',a17)
 
       open(unit=10,file=outfile)
       write(10,1) infile
-      write(6,*)  'Task completed'
+      write(output_unit,*)  'Task completed'
       close(10)
 
       stop 0
 
-!the following variables will remain in the netcdf file
+      ! the following variables will remain in the netcdf file
             !float lat(lat)
             !float lon(lon)
             !double reftime(reftime)
@@ -197,4 +211,6 @@
              '  <remove name="v-component_of_wind_pressure_difference_layer" type="variable" />',/, &
              '  <remove name="v-component_of_wind_potential_vorticity_surface" type="variable" />',/, &
              '</netcdf>')
-        end
+
+      end program makencml
+

@@ -2,36 +2,50 @@
 
       use eccodes
 
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
+
       implicit none
+      !implicit none (type, external)
+
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
       character(len=130),intent(in)  :: grib_file
 
-      integer            :: MR_global_info   = 6
-      integer            :: MR_global_error  = 0
+      integer            :: MR_global_info
+      integer            :: MR_global_error
 
       character(len=130)  :: index_file
 
       integer            :: idx
       integer            :: iret
       integer            :: i,j,k,l,t
-      integer            :: count1=0
+      integer            :: count1
         ! Used for keys
-      integer(kind=4) ,dimension(:),allocatable :: level_idx
-      integer(kind=4)  :: levelSize
+      integer(kind=sp) ,dimension(:),allocatable :: level_idx
+      integer(kind=sp)  :: levelSize
 
-      integer(kind=4) ,dimension(:),allocatable :: discipline_idx
-      integer(kind=4) ,dimension(:),allocatable :: parameterCategory_idx
-      integer(kind=4) ,dimension(:),allocatable :: parameterNumber_idx
-      integer(kind=4) ,dimension(:),allocatable :: forecastTime_idx
-      integer(kind=4)  :: disciplineSize
-      integer(kind=4)  :: parameterCategorySize
-      integer(kind=4)  :: parameterNumberSize
-      integer(kind=4)  :: forecastTimeSize
+      integer(kind=sp) ,dimension(:),allocatable :: discipline_idx
+      integer(kind=sp) ,dimension(:),allocatable :: parameterCategory_idx
+      integer(kind=sp) ,dimension(:),allocatable :: parameterNumber_idx
+      integer(kind=sp) ,dimension(:),allocatable :: forecastTime_idx
+      integer(kind=sp)  :: disciplineSize
+      integer(kind=sp)  :: parameterCategorySize
+      integer(kind=sp)  :: parameterNumberSize
+      integer(kind=sp)  :: forecastTimeSize
 
       ! Message identifier.
       integer          :: igrib
       integer          :: gribver
-      logical          :: Got_Version = .false.
+      logical          :: Got_Version
+
+      ! Initialization
+      count1           = 0
+      MR_global_info   = 6
+      MR_global_error  = 0
+      Got_Version      = .false.
 
       ! First, open grib file and determine if we have a grib1 or grib2 file
       call codes_open_file(idx,trim(adjustl(grib_file)),'r')
@@ -39,7 +53,7 @@
       call codes_get(igrib,'editionNumber',gribver)
       call codes_close_file(idx)
 
-      if(gribver.eq.1.or.gribver.eq.2)then
+      if(gribver == 1.or.gribver == 2)then
         write(MR_global_info,*)"Grib version detected = ",gribver
         Got_Version = .true.
       else
@@ -52,7 +66,7 @@
       index_file = trim(adjustl(grib_file)) // ".index"
       write(MR_global_info,*)"Generating index file: ",index_file
 
-      if(gribver.eq.1)then
+      if(gribver == 1)then
         ! For grib1 files, we use the parameter numbers
         !!!  grib_ls -p indicatorOfParameter,date,time,level
           ! create an index from a grib file using some keys
@@ -92,7 +106,7 @@
         call codes_index_write(idx,trim(adjustl(index_file)))
         call codes_index_release(idx)
 
-      elseif(gribver.eq.2)then
+      elseif(gribver == 2)then
         ! For grib2 files, we use the message discipline, parameter category, parameter number,
         ! and layer type (pressure level, surface, tropopause, etc.) as keys for builing the index
 

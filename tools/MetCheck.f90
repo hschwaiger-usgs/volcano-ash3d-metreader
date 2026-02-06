@@ -41,18 +41,26 @@
            MR_Reset_Memory,&
            MR_FileIO_Error_Handler
 
-      implicit none
+      use, intrinsic :: iso_fortran_env, only : &
+         real32,real64,input_unit,output_unit,error_unit
 
-      real(kind=4), parameter  :: H_MIN = -1000.0_4
-      real(kind=4), parameter  :: H_MAX = 80000.0_4
-      real(kind=4), parameter  :: U_MIN = -200.0_4
-      real(kind=4), parameter  :: U_MAX =  200.0_4
-      real(kind=4), parameter  :: V_MIN = -200.0_4
-      real(kind=4), parameter  :: V_MAX =  200.0_4
-      real(kind=4), parameter  :: W_MIN = -40.0_4
-      real(kind=4), parameter  :: W_MAX =  40.0_4
-      real(kind=4), parameter  :: T_MIN = 130.0_4
-      real(kind=4), parameter  :: T_MAX = 350.0_4
+      implicit none
+      !implicit none (type, external)
+
+        ! These single and double precision parameters should be 4 and 8
+      integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
+
+      real(kind=sp), parameter  :: H_MIN = -1000.0_sp
+      real(kind=sp), parameter  :: H_MAX = 80000.0_sp
+      real(kind=sp), parameter  :: U_MIN = -200.0_sp
+      real(kind=sp), parameter  :: U_MAX =  200.0_sp
+      real(kind=sp), parameter  :: V_MIN = -200.0_sp
+      real(kind=sp), parameter  :: V_MAX =  200.0_sp
+      real(kind=sp), parameter  :: W_MIN = -40.0_sp
+      real(kind=sp), parameter  :: W_MAX =  40.0_sp
+      real(kind=sp), parameter  :: T_MIN = 130.0_sp
+      real(kind=sp), parameter  :: T_MAX = 350.0_sp
 
       integer             :: nargs
       integer             :: iostatus
@@ -60,32 +68,32 @@
       character(len=120)  :: iomessage
       character(len=100)  :: arg
 
-      real(kind=4)        :: inlon,inlat
+      real(kind=sp)        :: inlon,inlat
 
       character(len=100)  :: infile1
       integer             :: nxmax,nymax,nzmax
-      real(kind=4),dimension(:)    ,allocatable :: lon_grid
-      real(kind=4),dimension(:)    ,allocatable :: lat_grid
-      real(kind=4),dimension(:)    ,allocatable :: z_cc
+      real(kind=sp),dimension(:)    ,allocatable :: lon_grid
+      real(kind=sp),dimension(:)    ,allocatable :: lat_grid
+      real(kind=sp),dimension(:)    ,allocatable :: z_cc
       logical             :: IsPeriodic
 
       integer :: idf, igrid, iw, iwf, iwfiles
       integer :: ivar
       integer :: iy
       integer :: i,j,p,np,imetstep
-      real(kind=4) :: v1,v2,tmp
+      real(kind=sp) :: v1,v2,tmp
 
       integer :: iprojflag
-      real(kind=8) :: lambda0,phi0,phi1,phi2,k0,radius_earth
+      real(kind=dp) :: lambda0,phi0,phi1,phi2,k0,radius_earth
       logical :: IsLatLon
 
       integer :: BaseYear = 1900
       logical :: useLeap  = .true.
         ! min and max possible for this var (for error-checking)
-      real(kind=4)    ,dimension(50,2) :: Met_var_MinMax
+      real(kind=sp)    ,dimension(50,2) :: Met_var_MinMax
       integer,dimension(8) :: values
       integer :: Current_Year
-      real(kind=8) :: hsince
+      real(kind=dp) :: hsince
       integer      :: idx
 
       integer :: io                           ! Index for output streams
@@ -93,42 +101,59 @@
 
       INTERFACE
         subroutine Print_Usage
+          implicit none
+          !implicit none (type, external)
         end subroutine Print_Usage
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
-          integer     ,intent(in) :: iyear
-          integer     ,intent(in) :: imonth
-          integer     ,intent(in) :: iday
-          real(kind=8),intent(in) :: hours
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter  :: dp        = 8 ! double precision
+          integer        ,intent(in) :: iyear
+          integer        ,intent(in) :: imonth
+          integer        ,intent(in) :: iday
+          real(kind=dp)  ,intent(in) :: hours
+          integer        ,intent(in) :: byear
+          logical        ,intent(in) :: useLeaps
         end function HS_hours_since_baseyear
         integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter  :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in) :: HoursSince
+          integer        ,intent(in) :: byear
+          logical        ,intent(in) :: useLeaps
         end function HS_YearOfEvent
         integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter  :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in) :: HoursSince
+          integer        ,intent(in) :: byear
+          logical        ,intent(in) :: useLeaps
         end function HS_DayOfEvent
         integer function HS_DayOfYear(HoursSince,byear,useLeaps)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter  :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in) :: HoursSince
+          integer        ,intent(in) :: byear
+          logical        ,intent(in) :: useLeaps
         end function HS_DayOfYear
         real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter  :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in) :: HoursSince
+          integer        ,intent(in) :: byear
+          logical        ,intent(in) :: useLeaps
         end function HS_HourOfDay
       END INTERFACE
 
-      Met_var_MinMax(1,1:2) = (/ H_MIN , H_MAX  /)  ! GPH
-      Met_var_MinMax(2,1:2) = (/ U_MIN , U_MAX  /)  ! U
-      Met_var_MinMax(3,1:2) = (/ V_MIN , V_MAX  /)  ! V
-      Met_var_MinMax(4,1:2) = (/ W_MIN , W_MAX  /)  ! W
-      Met_var_MinMax(5,1:2) = (/ T_MIN , T_MAX  /)  ! T
+      Met_var_MinMax(1,1:2) = [ H_MIN , H_MAX ]   ! GPH
+      Met_var_MinMax(2,1:2) = [ U_MIN , U_MAX ]   ! U
+      Met_var_MinMax(3,1:2) = [ V_MIN , V_MAX ]   ! V
+      Met_var_MinMax(4,1:2) = [ W_MIN , W_MAX ]   ! W
+      Met_var_MinMax(5,1:2) = [ T_MIN , T_MAX ]   ! T
 
       ! Make user MetReader is using the same calendar
       MR_BaseYear = BaseYear
@@ -136,14 +161,14 @@
 
 !     TEST READ COMMAND LINE ARGUMENTS
       nargs = command_argument_count()
-      if (nargs.lt.3) then
+      if (nargs < 3) then
         ! Not enough arguments; print usage and exit
         call Print_Usage
       else
         ! Get wind product
         call get_command_argument(1, arg, length=inlen, status=iostatus)
-        if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read first command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -151,34 +176,34 @@
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)iwf
         linebuffer080 = arg(1:80)
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check iwf
-        if(iwf.ne.3.and.&
-           iwf.ne.4.and.&
-           iwf.ne.5.and.&
-           iwf.ne.6.and.&
-           iwf.ne.7.and.&
-           iwf.ne.8.and.&
-           iwf.ne.10.and.&
-           iwf.ne.11.and.&
-           iwf.ne.12.and.&
-           iwf.ne.13.and.&
-           iwf.ne.20.and.&
-           iwf.ne.21.and.&
-           iwf.ne.22.and.&
-           iwf.ne.23.and.&
-           iwf.ne.24.and.&
-           iwf.ne.25.and.&
-           iwf.ne.26.and.&
-           iwf.ne.27.and.&
-           iwf.ne.28.and.&
-           iwf.ne.29.and.&
-           iwf.ne.30.and.&
-           iwf.ne.32.and.&
-           iwf.ne.33.and.&
-           iwf.ne.41.and.&
-           iwf.ne.42)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iwf /= 3.and.&
+           iwf /= 4.and.&
+           iwf /= 5.and.&
+           iwf /= 6.and.&
+           iwf /= 7.and.&
+           iwf /= 8.and.&
+           iwf /= 10.and.&
+           iwf /= 11.and.&
+           iwf /= 12.and.&
+           iwf /= 13.and.&
+           iwf /= 20.and.&
+           iwf /= 21.and.&
+           iwf /= 22.and.&
+           iwf /= 23.and.&
+           iwf /= 24.and.&
+           iwf /= 25.and.&
+           iwf /= 26.and.&
+           iwf /= 27.and.&
+           iwf /= 28.and.&
+           iwf /= 29.and.&
+           iwf /= 30.and.&
+           iwf /= 32.and.&
+           iwf /= 33.and.&
+           iwf /= 41.and.&
+           iwf /= 42)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: windformat not recognized"
             write(errlog(io),*)" iwf = ",iwf
           endif;enddo
@@ -187,8 +212,8 @@
 
         ! Get data format ID
         call get_command_argument(2, arg, length=inlen, status=iostatus)
-        if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read second command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -196,11 +221,11 @@
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)idf
         linebuffer080 = arg(1:80)
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check idf
-        if(idf.ne.2.and.&
-           idf.ne.3)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(idf /= 2.and.&
+           idf /= 3)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: Only netcdf (2) and grib (3) supported"
             write(errlog(io),*)" idf = ",idf
           endif;enddo
@@ -208,8 +233,8 @@
         endif
 
         call get_command_argument(3, arg, length=inlen, status=iostatus)
-        if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read third command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -221,10 +246,10 @@
         ! Now check for optional  argument for year (use for checking NCEP files
         call date_and_time(VALUES=values)
         Current_Year = values(1)
-        if(nargs.gt.3)then
+        if(nargs > 3)then
           call get_command_argument(4, arg, length=inlen, status=iostatus)
-          if(iostatus.ne.0)then
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          if(iostatus /= 0)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
               write(errlog(io),*)"MR ERROR : Could not read fourth command-line argument"
               write(errlog(io),*)" arg = ",arg
             endif;enddo
@@ -232,19 +257,19 @@
           endif
           read(arg,*,iostat=iostatus,iomsg=iomessage)iy
           linebuffer080 = arg(1:80)
-          if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+          if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         else
           iy = Current_Year
         endif
-        !MR_Comp_StartHour     = HS_hours_since_baseyear(iy,1,1,0.0_8,1900,.True.)
+        !MR_Comp_StartHour     = HS_hours_since_baseyear(iy,1,1,0.0_dp,1900,.True.)
         !MR_Comp_Time_in_hours = 1.0
       endif
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"Set up windfile data structure"
       endif;enddo
-      if(iwf.eq.25)then
+      if(iwf == 25)then
         iw      = 5
-        MR_Comp_StartHour     = HS_hours_since_baseyear(iy,1,1,0.0_8,1900,.True.)
+        MR_Comp_StartHour     = HS_hours_since_baseyear(iy,1,1,0.0_dp,1900,.True.)
         MR_Comp_Time_in_hours = 1.0
       else
         iw      = 4
@@ -260,19 +285,19 @@
       ! This allows us to pass zero's for starttime and duration and get
       ! the whole metstep list
       MR_useCompTime = .false.
-      call MR_Set_Met_Times(0.0_8,0.0_8)
+      call MR_Set_Met_Times(0.0_dp,0.0_dp)
 
       ! These are dummy values.
       nxmax = 2 !
       nymax = 2 !
 
       nzmax = 2 ! This is not really used in this utility
-      inlon = 0.0_4
-      inlat = 0.0_4
-      allocate(lon_grid(nxmax)); lon_grid(1:nxmax) = (/inlon-0.5_4,inlon+0.5_4/)
-      allocate(lat_grid(nymax)); lat_grid(1:nymax) = (/inlat-0.5_4,inlat+0.5_4/)
+      inlon = 0.0_sp
+      inlat = 0.0_sp
+      allocate(lon_grid(nxmax)); lon_grid(1:nxmax) = [inlon-0.5_sp,inlon+0.5_sp]
+      allocate(lat_grid(nymax)); lat_grid(1:nymax) = [inlat-0.5_sp,inlat+0.5_sp]
 
-      allocate(z_cc(nzmax))    ; z_cc(1:2) = (/0.0_4, 10.0_4/)
+      allocate(z_cc(nzmax))    ; z_cc(1:2) = [0.0_sp, 10.0_sp]
       IsPeriodic = .false.
       IsPeriodic = .true.
 
@@ -310,7 +335,7 @@
       do imetstep = 1,nt_fullmet
         do ivar=1,5
           idx = Met_var_zdim_idx(ivar)
-          if(Met_dim_IsAvailable(ivar).eqv..true.)then
+          if(Met_dim_IsAvailable(ivar))then
             np = nlevs_fullmet(idx)
             v1 = Met_var_MinMax(ivar,1)
             v2 = Met_var_MinMax(ivar,2)
@@ -319,8 +344,8 @@
               do j=1,ny_fullmet
                 do p=1,np
                   tmp=MR_dum3d_metP(i,j,p)
-                  if(tmp.lt.v1.or.tmp.gt.v2)then
-                    do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+                  if(tmp < v1.or.tmp > v2)then
+                    do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
                       write(errlog(io),*)"MR ERROR reading value for ivar=",ivar
                       write(errlog(io),*)"         at i,j,p = ",i,j,p
                       write(errlog(io),*)"         Value read = ",tmp
@@ -335,18 +360,18 @@
           endif
         enddo
 
-        if(iwf.eq.25)then
+        if(iwf == 25)then
           write(19,*)adjustl(trim(MR_windfiles(1)))," : ", &
                      imetstep                      ," : ", &
                      iy                            ," : ", &
-                     real((imetstep-1),kind=4)*6.0_4/24_4
+                     real((imetstep-1),kind=sp)*6.0_sp/24_sp
         else
           hsince = MR_windfile_starthour(1)+MR_windfile_stephour(1,imetstep)
           write(19,*)adjustl(trim(MR_windfiles(1)))," : ", &
                      imetstep                      ," : ", &
                      HS_YearOfEvent(hsince,MR_BaseYear,MR_useLeap)," : ",&
                      real(HS_DayOfYear(hsince,MR_BaseYear,MR_useLeap)+ &
-                       HS_HourOfDay(hsince,MR_BaseYear,MR_useLeap)/24.0_8,kind=4)
+                       HS_HourOfDay(hsince,MR_BaseYear,MR_useLeap)/24.0_dp,kind=sp)
         endif
 
       enddo
@@ -355,7 +380,7 @@
 
       call MR_Reset_Memory
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_production)then
         write(outlog(io),*)"Program ended normally."
       endif;enddo
 
@@ -379,7 +404,7 @@
 
       integer :: io
 
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
           write(errlog(io),*)"MR ERROR: not enough command-line arguments."
           write(errlog(io),*)"  Usage: MetCheck iwf idf filename [year]"
           write(errlog(io),*)"   where "
