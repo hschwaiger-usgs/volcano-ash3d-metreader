@@ -1540,16 +1540,16 @@
         allocate(MR_dx_met(nx_fullmet))
         allocate(MR_dy_met(ny_fullmet))
 
-        lon_in = real(Met_Proj_lon(1,1),kind=8)
-        lat_in = real(Met_Proj_lat(1,1),kind=8)
+        lon_in = real(Met_Proj_lon(1,1),kind=dp)
+        lat_in = real(Met_Proj_lat(1,1),kind=dp)
 
           ! Setting the projection parameters as libprojection.a expects
         Met_iprojflag = 4
-        Met_lam0   = real(Cen_Lon,kind=8)
-        Met_phi0   = real(Moad_Cen_Lat,kind=8)
-        Met_phi1   = real(Truelat1,kind=8)
-        Met_phi2   = real(Truelat2,kind=8)
-        Met_k0     = real(1.0,kind=8)
+        Met_lam0   = real(Cen_Lon,kind=dp)
+        Met_phi0   = real(Moad_Cen_Lat,kind=dp)
+        Met_phi1   = real(Truelat1,kind=dp)
+        Met_phi2   = real(Truelat2,kind=dp)
+        Met_k0     = real(1.0,kind=dp)
         Met_Re     = 6370.0_8
         call PJ_proj_for(lon_in,lat_in, &
                        Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
@@ -1690,17 +1690,17 @@
         allocate(MR_dx_met(nx_fullmet))
         allocate(MR_dy_met(ny_fullmet))
 
-        lon_in = real(Met_Proj_lon(1,1),kind=8)
-        lat_in = real(Met_Proj_lat(1,1),kind=8)
+        lon_in = real(Met_Proj_lon(1,1),kind=dp)
+        lat_in = real(Met_Proj_lat(1,1),kind=dp)
 
           ! Setting the projection parameters as libprojection.a expects
         Met_iprojflag = 1
-        Met_lam0   = real(Cen_Lon,kind=8)
-        Met_phi0   = real(-Pole_Lat,kind=8) ! phi0 is the lat of projection origin
-        Met_phi1   = real(Truelat1,kind=8)
-        Met_phi2   = real(Truelat2,kind=8)
-        !Met_k0     = real(0.972759,kind=8)
-        Met_k0     = real(1.0,kind=8)
+        Met_lam0   = real(Cen_Lon,kind=dp)
+        Met_phi0   = real(-Pole_Lat,kind=dp) ! phi0 is the lat of projection origin
+        Met_phi1   = real(Truelat1,kind=dp)
+        Met_phi2   = real(Truelat2,kind=dp)
+        !Met_k0     = real(0.972759,kind=dp)
+        Met_k0     = real(1.0,kind=dp)
         Met_Re     = 6370.0_8
         call PJ_proj_for(lon_in,lat_in, &
                        Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
@@ -1831,16 +1831,16 @@
         allocate(MR_dx_met(nx_fullmet))
         allocate(MR_dy_met(ny_fullmet))
 
-        lon_in = real(Met_Proj_lon(1,1),kind=8)
-        lat_in = real(Met_Proj_lat(1,1),kind=8)
+        lon_in = real(Met_Proj_lon(1,1),kind=dp)
+        lat_in = real(Met_Proj_lat(1,1),kind=dp)
 
           ! Setting the projection parameters as libprojection.a expects
         Met_iprojflag = 5
-        Met_lam0   = real(Cen_Lon,kind=8)
-        Met_phi0   = real(Cen_Lat,kind=8)
-        Met_phi1   = real(Truelat1,kind=8)
-        Met_phi2   = real(Truelat2,kind=8)
-        Met_k0     = real(1.0,kind=8)
+        Met_lam0   = real(Cen_Lon,kind=dp)
+        Met_phi0   = real(Cen_Lat,kind=dp)
+        Met_phi1   = real(Truelat1,kind=dp)
+        Met_phi2   = real(Truelat2,kind=dp)
+        Met_k0     = real(1.0,kind=dp)
         Met_Re     = 6370.0_8
         call PJ_proj_for(lon_in,lat_in, &
                        Met_iprojflag,Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
@@ -2015,14 +2015,14 @@
       character(len=NF90_MAX_NAME) :: indim
       integer            :: xtype, length, attnum
       character(len=31)  :: tstring2
-      real(kind=8)       :: iwf_int,iwf_tot
+      real(kind=dp)       :: iwf_int,iwf_tot
       integer            :: iwstep
       logical            :: TimeHasUnitsAttr = .false.
       integer            :: i,ii
       real(kind=dp),dimension(:),   allocatable :: dum1d_dp
       real(kind=sp),dimension(:),   allocatable :: dum1d_sp
       integer(kind=4),dimension(:), allocatable :: dum1d_int4
-      integer(kind=8),dimension(:), allocatable :: dum1d_int8
+      integer(kind=dp),dimension(:), allocatable :: dum1d_int8
       integer,dimension(8)  :: values
       integer               :: Current_Year,nt_tst
       character(len=130)    :: Z_infile
@@ -2035,53 +2035,58 @@
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          integer     ,intent(in) :: iyear
-          integer     ,intent(in) :: imonth
-          integer     ,intent(in) :: iday
-          real(kind=8),intent(in) :: hours
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          integer            ,parameter   :: dp        = 8 ! double precision
+          integer            ,intent(in)  :: iyear
+          integer            ,intent(in)  :: imonth
+          integer            ,intent(in)  :: iday
+          real(kind=dp)      ,intent(in)  :: hours
+          integer            ,intent(in)  :: byear
+          logical            ,intent(in)  :: useLeaps
         end function HS_hours_since_baseyear
         integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          real(kind=8),intent(in) :: HoursSince
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          integer            ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)      ,intent(in)  :: HoursSince
+          integer            ,intent(in)  :: byear
+          logical            ,intent(in)  :: useLeaps
         end function HS_YearOfEvent
         integer function HS_MonthOfEvent(HoursSince,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          real(kind=8),intent(in) :: HoursSince
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          integer            ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)      ,intent(in)  :: HoursSince
+          integer            ,intent(in)  :: byear
+          logical            ,intent(in)  :: useLeaps
         end function HS_MonthOfEvent
         integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          real(kind=8),intent(in) :: HoursSince
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          integer            ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)      ,intent(in)  :: HoursSince
+          integer            ,intent(in)  :: byear
+          logical            ,intent(in)  :: useLeaps
         end function HS_DayOfEvent
         subroutine MR_NC_check_var_synonyms(ivar,ncid)
           implicit none
           !implicit none (type, external)
-          integer, intent(in) :: ivar
-          integer, intent(in) :: ncid
+          integer          ,intent(in) :: ivar
+          integer          ,intent(in) :: ncid
         end subroutine MR_NC_check_var_synonyms
         subroutine MR_NC_check_status(nSTAT, errcode, operation)
           implicit none
           !implicit none (type, external)
-          integer, intent(in) :: nSTAT
-          integer, intent(in) :: errcode
-          character(len=*), intent(in) :: operation
+          integer          ,intent(in) :: nSTAT
+          integer          ,intent(in) :: errcode
+          character (len=*),intent(in) :: operation
         end subroutine MR_NC_check_status
         subroutine MR_Set_iwind5_filenames(inhour,ivar,infile)
           implicit none
           !implicit none (type, external)
-          real(kind=8)      ,intent(in)  :: inhour
-          integer           ,intent(in)  :: ivar
-          character(len=130),intent(out) :: infile
+          integer            ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)      ,intent(in)  :: inhour
+          integer            ,intent(in)  :: ivar
+          character (len=130),intent(out) :: infile
         end subroutine MR_Set_iwind5_filenames
       END INTERFACE
 
@@ -2594,7 +2599,7 @@
  121        format(i4,1x,i2,1x,i2,1x,i2,1x,i2,1x,i2,1x)
             MR_windfiles_nt_fullmet(iw)=nt_fullmet
             MR_windfile_starthour(iw) = real(HS_hours_since_baseyear(itstart_year,itstart_month, &
-                                         itstart_day,real(filestart_hour,kind=8),MR_BaseYear,MR_useLeap),kind=4)
+                                         itstart_day,real(filestart_hour,kind=dp),MR_BaseYear,MR_useLeap),kind=4)
             do iwstep = 1,nt_fullmet
               MR_windfile_stephour(iw,iwstep) = MR_windfile_stephour(iw,1) + filetime_in_sp(iwstep)
             enddo
@@ -2987,7 +2992,7 @@
 
             MR_windfiles_nt_fullmet(iw) = nt_fullmet
             MR_windfile_starthour(iw) =  real(HS_hours_since_baseyear(itstart_year,itstart_month, &
-                                           itstart_day,real(filestart_hour,kind=8),MR_BaseYear,MR_useLeap),kind=4)
+                                           itstart_day,real(filestart_hour,kind=dp),MR_BaseYear,MR_useLeap),kind=4)
           enddo
         endif  ! MR_iwindformat = 50 v.s. all others
       endif  ! MR_iwind = 5 v.s. 3/4
@@ -3045,9 +3050,9 @@
 
         ! These single and double precision parameters should be 4 and 8
       !integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
-      !integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
+      integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
-      real(kind=8)      ,intent(in)  :: inhour
+      real(kind=dp)      ,intent(in)  :: inhour
       integer           ,intent(in)  :: ivar
       character(len=130),intent(out) :: infile
 
@@ -3062,28 +3067,31 @@
         logical function HS_IsLeapYear(iyear)
           implicit none
           !implicit none (type, external)
-          integer     ,intent(in) :: iyear
+          integer            ,intent(in)  :: iyear
         end function HS_IsLeapYear
         integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          real(kind=8),intent(in) :: HoursSince
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          integer            ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)      ,intent(in)  :: HoursSince
+          integer            ,intent(in)  :: byear
+          logical            ,intent(in)  :: useLeaps
         end function HS_YearOfEvent
         integer function HS_MonthOfEvent(HoursSince,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          real(kind=8),intent(in) :: HoursSince
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          integer            ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)      ,intent(in)  :: HoursSince
+          integer            ,intent(in)  :: byear
+          logical            ,intent(in)  :: useLeaps
         end function HS_MonthOfEvent
         integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          real(kind=8),intent(in) :: HoursSince
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          integer            ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)      ,intent(in)  :: HoursSince
+          integer            ,intent(in)  :: byear
+          logical            ,intent(in)  :: useLeaps
         end function HS_DayOfEvent
       END INTERFACE
 
@@ -3581,9 +3589,10 @@
         subroutine MR_Set_iwind5_filenames(inhour,ivar,infile)
           implicit none
           !implicit none (type, external)
-          real(kind=8)      ,intent(in)  :: inhour
-          integer           ,intent(in)  :: ivar
-          character(len=130),intent(out) :: infile
+          integer            ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)      ,intent(in)  :: inhour
+          integer            ,intent(in)  :: ivar
+          character (len=130),intent(out) :: infile
         end subroutine MR_Set_iwind5_filenames
       END INTERFACE
 

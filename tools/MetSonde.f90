@@ -475,47 +475,53 @@
         character (len=13) function HS_yyyymmddhhmm_since(HoursSince,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          integer        ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in)  ::  HoursSince
+          integer        ,intent(in)  ::  byear
+          logical        ,intent(in)  ::  useLeaps
         end function HS_yyyymmddhhmm_since
         integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          integer        ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in)  ::  HoursSince
+          integer        ,intent(in)  ::  byear
+          logical        ,intent(in)  ::  useLeaps
         end function HS_YearOfEvent
         integer function HS_MonthOfEvent(HoursSince,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          integer        ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in)  ::  HoursSince
+          integer        ,intent(in)  ::  byear
+          logical        ,intent(in)  ::  useLeaps
         end function HS_MonthOfEvent
         integer function HS_DayOfEvent(HoursSince,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          integer        ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in)  ::  HoursSince
+          integer        ,intent(in)  ::  byear
+          logical        ,intent(in)  ::  useLeaps
         end function HS_DayOfEvent
         real(kind=8) function HS_HourOfDay(HoursSince,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          real(kind=8)   ,intent(in) ::  HoursSince
-          integer        ,intent(in) ::  byear
-          logical        ,intent(in) ::  useLeaps
+          integer        ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)  ,intent(in)  ::  HoursSince
+          integer        ,intent(in)  ::  byear
+          logical        ,intent(in)  ::  useLeaps
         end function HS_HourOfDay
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          integer     ,intent(in) :: iyear
-          integer     ,intent(in) :: imonth
-          integer     ,intent(in) :: iday
-          real(kind=8),intent(in) :: hours
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          integer        ,parameter   :: dp        = 8 ! double precision
+          integer        ,intent(in)  :: iyear
+          integer        ,intent(in)  :: imonth
+          integer        ,intent(in)  :: iday
+          real(kind=dp)  ,intent(in)  :: hours
+          integer        ,intent(in)  :: byear
+          logical        ,intent(in)  :: useLeaps
         end function HS_hours_since_baseyear
       END INTERFACE
 
@@ -802,9 +808,9 @@
 
       real(kind=sp), intent(in)  :: inlon
       real(kind=sp), intent(in)  :: inlat
-      integer     , intent(in)  :: inyear
-      integer     , intent(in)  :: inmonth
-      integer     , intent(in)  :: inday
+      integer      , intent(in)  :: inyear
+      integer      , intent(in)  :: inmonth
+      integer      , intent(in)  :: inday
       real(kind=dp), intent(in)  :: inhour
 
       real(kind=dp)       :: Probe_StartHour
@@ -825,12 +831,13 @@
         real(kind=8) function HS_hours_since_baseyear(iyear,imonth,iday,hours,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          integer     ,intent(in) :: iyear
-          integer     ,intent(in) :: imonth
-          integer     ,intent(in) :: iday
-          real(kind=8),intent(in) :: hours
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          integer        ,parameter   :: dp        = 8 ! double precision
+          integer        ,intent(in)  :: iyear
+          integer        ,intent(in)  :: imonth
+          integer        ,intent(in)  :: iday
+          real(kind=dp)  ,intent(in)  :: hours
+          integer        ,intent(in)  :: byear
+          logical        ,intent(in)  :: useLeaps
         end function HS_hours_since_baseyear
       END INTERFACE
       allocate(AirTemp_meso_last_step_MetP_sp(nx_submet,ny_submet,np_fullmet))

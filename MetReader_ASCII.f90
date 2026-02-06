@@ -1306,7 +1306,8 @@
 
               ! Block D: temperature/dew-point for last pressure
               if(GTSstr(4)(1:1) /= '/')then
-                read(GTSstr(4)(1:3),*,iostat=iostatus,iomsg=iomessage)SurfTemp_int  ! temperature is characters 1-3, dew-point 4-5
+                read(GTSstr(4)(1:3),*,iostat=iostatus,iomsg=iomessage)SurfTemp_int  ! temperature is characters 1-3
+                                                                                    ! dew-point 4-5
               else
                 SurfTemp_int = -9999
               endif
@@ -1365,7 +1366,8 @@
                 endif
                 !  Block 2 of the 3-block level data (temperature, dew point (not read))
                 if(GTSstr(istr2)(1:1) /= '/')then
-                  read(GTSstr(istr2)(1:3),*,iostat=iostatus,iomsg=iomessage)T_tmp(il)  ! temperature in C is characters 1-3, dew-point 4-5
+                  read(GTSstr(istr2)(1:3),*,iostat=iostatus,iomsg=iomessage)T_tmp(il)  ! temperature in C is characters 1-3
+                                                                                       ! dew-point 4-5
                 else
                   T_tmp(il) = -9999
                 endif

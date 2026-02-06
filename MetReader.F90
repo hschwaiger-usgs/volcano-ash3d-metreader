@@ -150,16 +150,16 @@
                                        !  0 Custom format based on template
                                        !  1 ASCII profile
                                        !  2 Radiosonde data
-                                       !  3 NARR3D 32 km N.America files (32 km)    :: RN ds608.0 To use surf requires catting .b files
+                                       !  3 NARR3D 32 km N.America files (32 km)    :: RN ds608.0 cat .b files for surf
                                        !  4 NAM Regional N.America 221 (32 km)      :: FC nam.t00z.awip3200.tm00.grib2
                                        !  5 NAM AK 216  (45 km)                     :: FC nam.t00z.awipak00.tm00.grib2
                                        !  6 NAM Regional 104 (90 km)                :: FC nam.t00z.grbgrd00.tm00.grib2
                                        !  7 NAM CONUS 212 (40 km)                   :: FC nam.t00z.awip3d00.tm00.grib2
                                        !  8 NAM CONUS 218 (12 km)                   :: FC nam.t00z.awip1200.tm00.grib2
-                                       !  9 NAM CONUS 227 (5.08 km)                 ::      no longer available; hires is now iwf=14
+                                       !  9 NAM CONUS 227 (5.08 km)                 ::    no longer available; hires is now iwf=14
                                        ! 10 NAM AK 242 (11.25 km)                   :: FC nam.t00z.awak3d00.tm00.grib2
                                        ! 11 NAM HI 196 (2.5 km)                     :: FC nam.t00z.hawaiinest.hiresf00.tm00.grib2
-                                       ! 12 NAM AK 198 (5.953 km)                   ::      no longer available; hires is now iwf=13
+                                       ! 12 NAM AK 198 (5.953 km)                   ::    no longer available; hires is now iwf=13
                                        ! 13 NAM AK 91 (2.976 km)                    :: FC nam.t00z.alaskanest.hiresf00.tm00.grib2
                                        ! 14 NAM CONUS 1227 (3.0 km)                 :: FC nam.t00z.conusnest.hiresf00.tm00.grib2
                                        ! 20 GFS (  4) 0.5                           :: FC gfs.t00z.pgrb2.0p50.f000
@@ -188,7 +188,7 @@
                             !   nam.t00z.awp24200.tm00.grib2           Grid 242 : AK 11.25-km (how different from nam.t00z.awak3d00.tm00.grib2?)
                             !   nam.t00z.awphys00.tm00.grib2           Grid 218 : CONUS 12-km (how different from nam.t00z.awip1200.tm00.grib2?)
                             !   nam.t00z.bgrd3d00.tm00.grib2           Grid 190 : N.Amer/C.Amer/Arctic 0.126-degrees
-                            !                                                     Staggeblack B-grid on rotated latitude/longitude grid
+                            !                                                      B-grid on rotated latitude/longitude grid
                             !   nam.t00z.grbgrd00.tm00.grib2           Grid 104 : AK 91-km PS
                             !   nam.t00z.priconest.hiresf00.tm00.grib2 Grid 194 : PR 2.5-km
 
@@ -400,7 +400,7 @@
       real(kind=sp),dimension(:),   pointer,public :: x_fullmet_sp    => null() ! x-coordinates of full met grid
       real(kind=sp),dimension(:),   pointer,public :: y_fullmet_sp    => null() ! y-coordinates of full met grid
       real(kind=sp),dimension(:),   pointer,public :: p_fullmet_sp    => null() ! z-coordinates of full met grid for H
-      real(kind=sp),dimension(:,:), pointer,public :: levs_fullmet_sp => null() ! This hold each of the numbered level coordinates:
+      real(kind=sp),dimension(:,:), pointer,public :: levs_fullmet_sp => null() ! This hold each of the numbered level coordinates
                                                                          !    i.e. isobaric, isobaric1, isobaric2, but also
                                                                          !    height_above_ground, depth_below_surface_layer, etc.
                                                                          !    p_fullmet_sp,p_fullmet_[Vz,RH]sp are copies of one
@@ -482,25 +482,25 @@
       ! Met copies of projection variables, used for proj call on Met Grid
       character(len=4),public :: Met_gridtype
       integer     ,public :: Met_iprojflag
-      real(kind=8),public :: Met_Re
-      real(kind=8),public :: Met_k0
-      real(kind=8),public :: Met_phi0            ! latitude of projection point
-      real(kind=8),public :: Met_phi1
-      real(kind=8),public :: Met_phi2
-      real(kind=8),public :: Met_lam0            ! longitude of projection point
-      real(kind=8),public :: Met_lam1
-      real(kind=8),public :: Met_lam2
+      real(kind=dp),public :: Met_Re
+      real(kind=dp),public :: Met_k0
+      real(kind=dp),public :: Met_phi0            ! latitude of projection point
+      real(kind=dp),public :: Met_phi1
+      real(kind=dp),public :: Met_phi2
+      real(kind=dp),public :: Met_lam0            ! longitude of projection point
+      real(kind=dp),public :: Met_lam1
+      real(kind=dp),public :: Met_lam2
       character(len=80),public :: Met_proj4
 
       integer     ,public :: Comp_iprojflag
-      real(kind=8),public :: Comp_Re
-      real(kind=8),public :: Comp_k0
-      real(kind=8),public :: Comp_phi0           ! latitude of projection point
-      real(kind=8),public :: Comp_phi1
-      real(kind=8),public :: Comp_phi2
-      real(kind=8),public :: Comp_lam0           ! longitude of projection point
-      real(kind=8),public :: Comp_lam1
-      real(kind=8),public :: Comp_lam2
+      real(kind=dp),public :: Comp_Re
+      real(kind=dp),public :: Comp_k0
+      real(kind=dp),public :: Comp_phi0           ! latitude of projection point
+      real(kind=dp),public :: Comp_phi1
+      real(kind=dp),public :: Comp_phi2
+      real(kind=dp),public :: Comp_lam0           ! longitude of projection point
+      real(kind=dp),public :: Comp_lam1
+      real(kind=dp),public :: Comp_lam2
       character(len=100),public :: Comp_proj4
 
       integer     ,public :: Map_Case
@@ -549,7 +549,7 @@
       integer      ,dimension(:,:,:),pointer,public :: CompPoint_on_subMet_idx => null() ! index on met sub-grid of comp point
       real(kind=sp),dimension(:,:),  pointer,public :: MetPoint_X_on_comp_sp   => null() ! x-coord (on comp grid) of Met point
       real(kind=sp),dimension(:,:),  pointer,public :: MetPoint_Y_on_comp_sp   => null() ! y-coord (on comp grid) of Met point
-      integer      ,dimension(:,:)  ,pointer,public :: NumMetPoints_in_comp_cell  => null() ! Num of met cells mapped to comp cell
+      integer      ,dimension(:,:)  ,pointer,public :: NumMetPoints_in_comp_cell  => null() ! # of met cells mapped to comp cell
       integer      ,dimension(:,:,:),pointer,public :: ListMetPoints_in_comp_cell => null() ! list of met cells mapped to comp cell
       real(kind=sp),dimension(:,:,:),pointer,public :: bilin_map_wgt           => null()
 #else
@@ -561,13 +561,13 @@
       integer      ,dimension(:,:,:),allocatable,public :: CompPoint_on_subMet_idx ! index on met sub-grid of comp point
       real(kind=sp),dimension(:,:),  allocatable,public :: MetPoint_X_on_comp_sp   ! x-coord (on comp grid) of Met point
       real(kind=sp),dimension(:,:),  allocatable,public :: MetPoint_Y_on_comp_sp   ! y-coord (on comp grid) of Met point
-      integer      ,dimension(:,:)  ,allocatable,public :: NumMetPoints_in_comp_cell  ! Num of met cells mapped to comp cell
+      integer      ,dimension(:,:)  ,allocatable,public :: NumMetPoints_in_comp_cell  ! # of met cells mapped to comp cell
       integer      ,dimension(:,:,:),allocatable,public :: ListMetPoints_in_comp_cell ! list of met cells mapped to comp cell
       real(kind=sp),dimension(:,:,:),allocatable,public :: bilin_map_wgt
 #endif
-      logical          ,public :: MR_InterpolateMet = .true. ! This is true if dx_met > 1.5*dx_comp and comp values are interpolated
-                                                             ! from a larger Met grid. If the Met grid is coarser, then this
-                                                             ! gets set to .false. and an averaging is used.
+      logical          ,public :: MR_InterpolateMet = .true. ! This is true if dx_met > 1.5*dx_comp and comp values
+                                                             ! are interpolated from a larger Met grid. If the Met grid is
+                                                             ! coarser, then this gets set to .false. and an averaging is used.
 
       ! Here are a few variables needed for sigma-altitude coordinates
       logical          ,public :: MR_useTopo        = .false.
@@ -640,8 +640,10 @@
       character(len=80),dimension(MR_MAXVARS),public   :: Met_var_NC_names         ! name in the file
       character(len=80),dimension(MR_MAXVARS),public   :: Met_var_GRIB_names       ! name in the file
       character(len=5) ,dimension(MR_MAXVARS),public   :: Met_var_WMO_names        ! WMO version of the name
-      integer          ,dimension(MR_MAXVARS),public   :: Met_var_ndim             ! number of expected dimensions for this variable
-      integer          ,dimension(MR_MAXVARS),public   :: Met_var_zdim_idx         ! The index of this coordinate (used in Met_var_nlevs)
+      integer          ,dimension(MR_MAXVARS),public   :: Met_var_ndim             ! number of expected dimensions
+                                                                                   !   for this variable
+      integer          ,dimension(MR_MAXVARS),public   :: Met_var_zdim_idx         ! The index of this coordinate
+                                                                                   !   used in Met_var_nlevs
       integer          ,dimension(MR_MAXVARS),public   :: Met_var_zdim_ncid        ! The dimID of the dimension in the nc file
       integer                                ,public   :: nlev_coords_detected = 0
       integer          ,dimension(MR_MAXVARS,4),public :: Met_var_GRIB2_DPcPnSt    ! Grib2 files have variables identified by
@@ -675,8 +677,8 @@
       character       ,dimension(:)       ,pointer,public :: temp1d_byte   => null()
       character       ,dimension(:)       ,pointer,public :: temp1d_char   => null()
       integer(kind=2) ,dimension(:)       ,pointer,public :: temp1d_int2   => null()
-      integer(kind=4) ,dimension(:)       ,pointer,public :: temp1d_int4   => null()
-      integer(kind=8) ,dimension(:)       ,pointer,public :: temp1d_int8   => null()
+      integer(kind=sp) ,dimension(:)       ,pointer,public :: temp1d_int4   => null()
+      integer(kind=dp) ,dimension(:)       ,pointer,public :: temp1d_int8   => null()
       real(kind=sp)   ,dimension(:)       ,pointer,public :: temp1d_sp     => null()
       real(kind=dp)   ,dimension(:)       ,pointer,public :: temp1d_dp     => null()
       real(kind=sp)   ,dimension(:,:,:)   ,pointer,public :: temp2d_sp     => null()
@@ -685,14 +687,14 @@
       integer(kind=sp),dimension(:,:,:)   ,pointer        :: temp2d_short  => null()
       integer(kind=sp),dimension(:,:,:,:) ,pointer,public :: temp3d_short  => null()
       real(kind=dp)   ,dimension(:,:,:,:) ,pointer,public :: temp3d_dp     => null()
-      real(kind=4)    ,dimension(:,:)     ,pointer,public :: Met_Proj_lat  => null()
-      real(kind=4)    ,dimension(:,:)     ,pointer,public :: Met_Proj_lon  => null()
+      real(kind=sp)    ,dimension(:,:)     ,pointer,public :: Met_Proj_lat  => null()
+      real(kind=sp)    ,dimension(:,:)     ,pointer,public :: Met_Proj_lon  => null()
 #else
       character       ,dimension(:)       ,allocatable,public :: temp1d_byte
       character       ,dimension(:)       ,allocatable,public :: temp1d_char
       integer(kind=2) ,dimension(:)       ,allocatable,public :: temp1d_int2
-      integer(kind=4) ,dimension(:)       ,allocatable,public :: temp1d_int4
-      integer(kind=8) ,dimension(:)       ,allocatable,public :: temp1d_int8
+      integer(kind=sp) ,dimension(:)       ,allocatable,public :: temp1d_int4
+      integer(kind=dp) ,dimension(:)       ,allocatable,public :: temp1d_int8
       real(kind=sp)   ,dimension(:)       ,allocatable,public :: temp1d_sp
       real(kind=dp)   ,dimension(:)       ,allocatable,public :: temp1d_dp
       real(kind=sp)   ,dimension(:,:,:)   ,allocatable,public :: temp2d_sp
@@ -701,8 +703,8 @@
       integer(kind=sp),dimension(:,:,:)   ,allocatable        :: temp2d_short
       real(kind=dp)   ,dimension(:,:,:,:) ,allocatable,public :: temp3d_dp
       integer(kind=sp),dimension(:,:,:,:) ,allocatable,public :: temp3d_short
-      real(kind=4)    ,dimension(:,:)     ,allocatable,public :: Met_Proj_lat
-      real(kind=4)    ,dimension(:,:)     ,allocatable,public :: Met_Proj_lon
+      real(kind=sp)    ,dimension(:,:)     ,allocatable,public :: Met_Proj_lat
+      real(kind=sp)    ,dimension(:,:)     ,allocatable,public :: Met_Proj_lon
 #endif
 
       ! Status variables for error-checking
@@ -1525,8 +1527,8 @@
         Met_var_IsAvailable(13)=.true.
         Met_var_IsAvailable(16)=.true.
         ! Atmospheric Structure
-        Met_var_IsAvailable(23)=.true.; Met_var_NC_names(23)="Total_cloud_cover_entire_atmosphere_0_Hour_Average"
-        Met_var_IsAvailable(24)=.true.; Met_var_NC_names(24)="Convective_cloud_cover_entire_atmosphere_0_Hour_Average"
+        Met_var_IsAvailable(23)=.true.;Met_var_NC_names(23)="Total_cloud_cover_entire_atmosphere_0_Hour_Average"
+        Met_var_IsAvailable(24)=.true.;Met_var_NC_names(24)="Convective_cloud_cover_entire_atmosphere_0_Hour_Average"
         ! Moisture
         Met_var_IsAvailable(30)=.true.
         Met_var_IsAvailable(31)=.true.
@@ -1536,8 +1538,8 @@
         Met_var_IsAvailable(41)=.true.
         Met_var_IsAvailable(42)=.true.
         Met_var_IsAvailable(43)=.true.
-        Met_var_IsAvailable(44)=.true.; Met_var_NC_names(44)="Large_scale_precipitation_non-convective_surface_0_Hour_Accumulation"
-        Met_var_IsAvailable(45)=.true.; Met_var_NC_names(45)="Convective_precipitation_surface_0_Hour_Accumulation"
+        Met_var_IsAvailable(44)=.true.;Met_var_NC_names(44)="Large_scale_precipitation_non-convective_surface_0_Hour_Accumulation"
+        Met_var_IsAvailable(45)=.true.;Met_var_NC_names(45)="Convective_precipitation_surface_0_Hour_Accumulation"
 
         fill_value_sp = -9999.0_sp
 
@@ -2117,16 +2119,16 @@
           MR_iw5_hours_per_file = 8760.0_dp
 
           ! Momentum / State variables
-          Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="hgt"        ! short m^2/s^2 (32066.f,1.f)
-          Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="uwnd"       ! short m/s (202.66f,0.01f)
-          Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="vwnd"       ! short m/s (202.66f,0.01f)
-          Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="omega"      ! short Pa/s (29.765f,0.001f)
-          Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="air"        ! short K (477.66f,0.01f)
-          Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="omega"      ! short Pa/s (29.765f,0.001f)
+          Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="hgt"       ! short m^2/s^2 (32066.f,1.f)
+          Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="uwnd"      ! short m/s (202.66f,0.01f)
+          Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="vwnd"      ! short m/s (202.66f,0.01f)
+          Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="omega"     ! short Pa/s (29.765f,0.001f)
+          Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="air"       ! short K (477.66f,0.01f)
+          Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="omega"     ! short Pa/s (29.765f,0.001f)
           ! Moisture
-          !Met_var_IsAvailable(30)=.true.; Met_var_NC_names(30)="rhum"      ! short  (302.66f,0.01f)
-          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="shum"      ! short SpecHum ~ mixing ratio kg/kg(0.032666f,1.e-06f)
-          !Met_var_IsAvailable(32)=.true.; Met_var_NC_names(32)="shum"      ! short should really be QL (liquid)
+          !Met_var_IsAvailable(30)=.true.; Met_var_NC_names(30)="rhum"   ! short  (302.66f,0.01f)
+          Met_var_IsAvailable(31)=.true.; Met_var_NC_names(31)="shum"    ! short SpecHum ~ mixing ratio kg/kg(0.032666f,1.e-06f)
+          !Met_var_IsAvailable(32)=.true.; Met_var_NC_names(32)="shum"   ! short should really be QL (liquid)
 
           fill_value_sp = -9999.0_sp
 
@@ -2386,12 +2388,18 @@
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 128
 
         ! Momentum / State variables
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"        ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
-        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_u.ll025uv.1991061500_1991061523.nc
-        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_v.ll025uv.1991061500_1991061523.nc
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
-        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric"         ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_129_w.ll025sc.19910
+            ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
+        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"
+            ! e5.oper.an.pl.128_129_u.ll025uv.1991061500_1991061523.nc
+        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric"
+            ! e5.oper.an.pl.128_129_v.ll025uv.1991061500_1991061523.nc
+        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric"
+            ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
+        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric"
+            ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
+        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric"
+            ! e5.oper.an.pl.128_129_w.ll025sc.19910
+        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric"
 
         fill_value_sp = -9999.0_sp
 
@@ -2526,12 +2534,18 @@
         Met_var_IsAvailable(31)=.true.
 
         ! Momentum / State variables
-!        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"        ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
-!        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_u.ll025uv.1991061500_1991061523.nc
-!        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric" ! e5.oper.an.pl.128_129_v.ll025uv.1991061500_1991061523.nc
-!        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
-!        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric"         ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
-!        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric"   ! e5.oper.an.pl.128_129_w.ll025sc.19910
+        !Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"
+            ! e5.oper.an.pl.128_129_z.ll025sc.1991061500_1991061523.nc
+        !Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric"
+            ! e5.oper.an.pl.128_129_u.ll025uv.1991061500_1991061523.nc
+        !Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric"
+            ! e5.oper.an.pl.128_129_v.ll025uv.1991061500_1991061523.nc
+        !Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric"
+            ! e5.oper.an.pl.128_129_w.ll025sc.1991061500_1991061523.nc
+        !Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric"
+            ! e5.oper.an.pl.128_129_t.ll025sc.1991061500_1991061523.nc
+        !Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric"
+            ! e5.oper.an.pl.128_129_w.ll025sc.19910
 
         fill_value_sp = -9999.0_sp
 
@@ -2614,7 +2628,8 @@
         Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="W"
         Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="T"      ! float K perturbation potential temperature (theta-t0)
         Met_var_IsAvailable(6)=.true.; Met_var_NC_names(6)="PB"
-        Met_var_IsAvailable(7)=.false.                              ! PVV is not available for WRF files, but Vz is provided directely
+        Met_var_IsAvailable(7)=.false.                              ! PVV is not available for WRF files,
+                                                                    ! but Vz is provided directely
 
         ! Surface
         Met_var_IsAvailable(10)=.true.; Met_var_NC_names(10)="PBLH"
@@ -2793,7 +2808,7 @@
       integer            :: iwmax
       character(len=130) :: iw5filename  = ""
       integer            :: ivar
-      real(kind=8)       :: inhour
+      real(kind=dp)       :: inhour
       character(len=8)   :: date
       character(len=10)  :: time2
       character(len=5)   :: zone
@@ -2805,16 +2820,18 @@
         subroutine MR_Set_iwind5_filenames(inhour,ivar,infile)
           implicit none
           !implicit none (type, external)
-          real(kind=8)      ,intent(in)  :: inhour
-          integer           ,intent(in)  :: ivar
-          character(len=130),intent(out) :: infile
+          integer            ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)      ,intent(in)  :: inhour
+          integer            ,intent(in)  :: ivar
+          character (len=130),intent(out) :: infile
         end subroutine MR_Set_iwind5_filenames
         integer function HS_YearOfEvent(HoursSince,byear,useLeaps)
           implicit none
           !implicit none (type, external)
-          real(kind=8),intent(in) :: HoursSince
-          integer     ,intent(in) :: byear
-          logical     ,intent(in) :: useLeaps
+          integer            ,parameter   :: dp        = 8 ! double precision
+          real(kind=dp)      ,intent(in)  :: HoursSince
+          integer            ,intent(in)  :: byear
+          logical            ,intent(in)  :: useLeaps
         end function HS_YearOfEvent
       END INTERFACE
 
@@ -3052,13 +3069,13 @@
 
       logical     ,intent(in) :: LL_flag
       integer     ,intent(in) :: ipf
-      real(kind=8),intent(in) :: lam0,phi0
-      real(kind=8),intent(in) :: phi1
-      real(kind=8),intent(in) :: phi2
-      real(kind=8),intent(in) :: ko
-      real(kind=8),intent(in) :: Re
-!      real(kind=8) :: inx1,outx,inx2
-!      real(kind=8) :: iny1,outy,iny2
+      real(kind=dp),intent(in) :: lam0,phi0
+      real(kind=dp),intent(in) :: phi1
+      real(kind=dp),intent(in) :: phi2
+      real(kind=dp),intent(in) :: ko
+      real(kind=dp),intent(in) :: Re
+!      real(kind=dp) :: inx1,outx,inx2
+!      real(kind=dp) :: iny1,outy,iny2
 
       integer :: io                           ! Index for output streams
 
@@ -3475,19 +3492,19 @@
 
       integer, parameter :: NT_MAXOUT = 10000
 
-      real(kind=8),intent(in) :: eStartHour
-      real(kind=8),intent(in) :: Duration
+      real(kind=dp),intent(in) :: eStartHour
+      real(kind=dp),intent(in) :: Duration
 
       integer :: i
       integer :: iw
       integer            :: iwstep
       integer            :: istep
-      real(kind=8)       :: stephour
+      real(kind=dp)       :: stephour
       logical :: Found_First_Step = .false.
       logical :: Found_Last_Step  = .false.
       integer :: nMetSteps_Comp   = 0
-      real(kind=8) :: StepInterval
-      real(kind=8) :: met_t1,met_t2,met_dt1
+      real(kind=dp) :: StepInterval
+      real(kind=dp) :: met_t1,met_t2,met_dt1
       logical      :: prestep, poststep
       integer :: files_per_tstep
 
@@ -3680,12 +3697,12 @@
           do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: End time is after the last available data and"
             write(errlog(io),*)"       cannot be extrapolated."
-            write(errlog(io),*)"  MR_Comp_StartHour    = ",real(MR_Comp_StartHour,kind=4),&
+            write(errlog(io),*)"  MR_Comp_StartHour    = ",real(MR_Comp_StartHour,kind=sp),&
                                     HS_yyyymmddhhmm_since(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
-            write(errlog(io),*)"  MR_Comp_Time_in_hours= ",real(MR_Comp_Time_in_hours,kind=4)
-            write(errlog(io),*)"  met_t1               = ",real(met_t1,kind=4),&
+            write(errlog(io),*)"  MR_Comp_Time_in_hours= ",real(MR_Comp_Time_in_hours,kind=sp)
+            write(errlog(io),*)"  met_t1               = ",real(met_t1,kind=sp),&
                                     HS_yyyymmddhhmm_since(met_t1,MR_BaseYear,MR_useLeap)
-            write(errlog(io),*)"  met_dt1              = ",real(met_dt1,kind=4)
+            write(errlog(io),*)"  met_dt1              = ",real(met_dt1,kind=sp)
           endif;enddo
           stop 1
         endif
@@ -5296,7 +5313,7 @@
         MR_lonmax = -360.0_sp
         do i=1,nx_submet
           do j=1,ny_submet
-            xin = real(x_submet_sp(i),kind=dp)  ! Projection routines use kind=8
+            xin = real(x_submet_sp(i),kind=dp)  ! Projection routines use kind=dp
             yin = real(y_submet_sp(j),kind=dp)
             call PJ_proj_inv(xin,yin, &
                            Met_iprojflag, Met_lam0,Met_phi0,Met_phi1,Met_phi2, &

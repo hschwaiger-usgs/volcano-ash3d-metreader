@@ -91,7 +91,7 @@
       integer             :: GFS_Archive_Days = 14
       integer             :: GFS_FC_TotHours = 198  ! This is the max anticipated
 
-      integer             :: TrajFlag  ! .ge. 0 for forward, .lt.0 for backward
+      integer             :: TrajFlag  !  >=  0 for forward,  < 0 for backward
 
       integer             :: nxmax,nymax,nzmax
       real(kind=dp)        :: dx,dy
@@ -139,25 +139,29 @@
                                 Simtime_in_hours,TrajFlag,&
                                 iw,iwf,igrid,idf,iwfiles,&
                                 autoflag,FC_freq,GFS_Archive_Days,GFS_FC_TotHours)
-          integer,parameter           :: dp        = 8 ! double precision
-          integer         ,intent(in) :: inyear
-          integer         ,intent(in) :: inmonth
-          integer         ,intent(in) :: inday
-          real(kind=dp)   ,intent(in) :: inhour
-          real(kind=dp)   ,intent(in) :: Simtime_in_hours
-          integer         ,intent(in) :: TrajFlag
-          integer         ,intent(inout) :: iw
-          integer         ,intent(inout) :: iwf
-          integer         ,intent(inout) :: igrid
-          integer         ,intent(inout) :: idf
-          integer         ,intent(inout) :: iwfiles
-          integer         ,intent(in) :: autoflag
-          integer         ,intent(in) :: FC_freq
-          integer         ,intent(in) :: GFS_Archive_Days
-          integer         ,intent(in) :: GFS_FC_TotHours
+          implicit none
+          !implicit none (type, external)
+          integer        ,parameter  :: dp        = 8 ! double precision
+          integer        ,intent(in) :: inyear
+          integer        ,intent(in) :: inmonth
+          integer        ,intent(in) :: inday
+          real(kind=dp)  ,intent(in) :: inhour
+          real(kind=dp)  ,intent(in) :: Simtime_in_hours
+          integer        ,intent(in) :: TrajFlag
+          integer        ,intent(inout) :: iw
+          integer        ,intent(inout) :: iwf
+          integer        ,intent(inout) :: igrid
+          integer        ,intent(inout) :: idf
+          integer        ,intent(inout) :: iwfiles
+          integer        ,intent(in) :: autoflag
+          integer        ,intent(in) :: FC_freq
+          integer        ,intent(in) :: GFS_Archive_Days
+          integer        ,intent(in) :: GFS_FC_TotHours
         end subroutine GetWindFile
         subroutine Integrate_ConstH_Traj(IsGlobal,srcx,srcy,inyear,inmonth,inday,inhour,&
                                 Simtime_in_hours,TrajFlag,ntraj,output_interv,inlon,inlat)
+          implicit none
+          !implicit none (type, external)
           integer,parameter              :: dp        = 8 ! double precision
           logical      , intent(in)      :: IsGlobal
           real(kind=dp), intent(in)      :: srcx
@@ -199,27 +203,27 @@
       TrajFlag = -1
 #endif
 
-      if(TrajFlag.eq.0)then
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+      if(TrajFlag == 0)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
           write(errlog(io),*)"MR ERROR: Forward/Backward not specified."
           write(errlog(io),*)"          Recompile with preprocessor flags"
           write(errlog(io),*)"           FORWARD for forward trajectories"
           write(errlog(io),*)"           BACKWARD for backward trajectories"
         endif;enddo
         stop 1
-      elseif(TrajFlag.lt.0)then
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
+      elseif(TrajFlag < 0)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_production)then
           write(outlog(io),*)"Calculating Backward trajectories"
         endif;enddo
-      elseif(TrajFlag.gt.0)then
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_production)then
+      elseif(TrajFlag > 0)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_production)then
           write(outlog(io),*)"Calculating Forward trajectories"
         endif;enddo
       endif
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"Calling GetWindFile"
       endif;enddo
-      if(StreamFlag.eq.0)then
+      if(StreamFlag == 0)then
         Met_hours_needed = 0.0_dp
       else
         Met_hours_needed = Simtime_in_hours
@@ -233,7 +237,7 @@
       nzmax = ntraj
       IsGlobal = .false.
       ! Define grid padding based on the integration time
-      if(Simtime_in_hours.le.6.0_dp)then
+      if(Simtime_in_hours <= 6.0_dp)then
         if(IsLatLon_CompGrid)then
           ! +-7.5 in lon ; +-5.0 in lat
           xwidth = 15.0_sp
@@ -243,7 +247,7 @@
           xwidth = 800.0_sp
           ywidth = 800.0_sp
         endif
-      elseif(Simtime_in_hours.le.8.0_dp)then
+      elseif(Simtime_in_hours <= 8.0_dp)then
         if(IsLatLon_CompGrid)then
           ! +-15 in lon ; +-10 in lat
           xwidth = 30.0_sp
@@ -253,7 +257,7 @@
           xwidth = 1000.0_sp
           ywidth = 1000.0_sp
         endif
-      elseif(Simtime_in_hours.le.16.0_dp)then
+      elseif(Simtime_in_hours <= 16.0_dp)then
         if(IsLatLon_CompGrid)then
           ! +-25 in lon ; +-15 in lat
           xwidth = 50.0_sp
@@ -263,7 +267,7 @@
           xwidth = 1500.0_sp
           ywidth = 1200.0_sp
         endif
-      elseif(Simtime_in_hours.le.30.0_dp)then
+      elseif(Simtime_in_hours <= 30.0_dp)then
         if(IsLatLon_CompGrid)then
           ! +-35 in lon ; +-20 in lat
           xwidth = 70.0_sp
@@ -286,14 +290,14 @@
         endif
       endif
 
-      if(iw.eq.1)then
+      if(iw == 1)then
         ! For the ASCII case, the met grid is not a 2-d grid, but maybe
         ! scattered points.  We need to set up comp grid independent of
         ! the met grid. Note ASCII cases are lon/lat
         dx = 0.5_sp
         dy = 0.5_sp
       else
-        if(dx_met_const.gt.0.0.and.dy_met_const.gt.0.0)then
+        if(dx_met_const > 0.0.and.dy_met_const > 0.0)then
           dx = dx_met_const
           dy = dy_met_const
         else
@@ -334,13 +338,13 @@
           enddo
           ! For the y grid, we need to check if the requested box bumps up against
           ! the poles. Limit the extrema to +-89
-          if((srcy + (nymax-1)*0.5_dp * dy).gt.89.0_dp)then
+          if((srcy + (nymax-1)*0.5_dp * dy) > 89.0_dp)then
             ! Start from 89.0 N and count down nymax
             starty = 89.0_dp - (nymax-1) * dy
             do i=0,nymax+1
               ygrid(i) = real(starty + (i-1) * dy,kind=sp)
             enddo
-          elseif((srcy - (nymax-1)*0.5_dp * dy).lt.-89.0_dp)then
+          elseif((srcy - (nymax-1)*0.5_dp * dy) < -89.0_dp)then
             ! Start from 89.0 N and count down nymax
             starty = -89.0_dp
             do i=0,nymax+1
@@ -353,7 +357,7 @@
             enddo
           endif
           ! Shift xgrid to preferred range
-          !if(xgrid(1).lt.0.0_sp)then
+          !if(xgrid(1) < 0.0_sp)then
           !  xgrid(:) = xgrid(:) + 360.0_sp
           !  srcx     = srcx + 360.0_dp
           !endif
@@ -372,7 +376,7 @@
         z_cc(i) = real(OutputLevels(i),4)
       enddo
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"Setting up wind grids"
       endif;enddo
       ! Again, since we only need the metH grid, xgrid and ygrid are dummy
@@ -383,11 +387,11 @@
                               z_cc(1:nzmax)    , &
                               IsPeriodic)
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"Now integrating from start point"
       endif;enddo
 
-      if(srcx.lt.x_comp_sp(1).or.srcx.gt.x_comp_sp(nxmax))then
+      if(srcx < x_comp_sp(1).or.srcx > x_comp_sp(nxmax))then
         srcx = srcx - 360.0_dp
       endif
 
@@ -399,7 +403,7 @@
       if(allocated(    xgrid)) deallocate(xgrid)
       if(allocated(    ygrid)) deallocate(ygrid)
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"Program ended normally."
       endif;enddo
 
@@ -500,8 +504,8 @@
       character(len=120)  :: iomessage
       character(len=130)  :: arg
 
-      integer :: BaseYear = 1900
-      logical :: useLeap  = .true.
+      integer :: BaseYear
+      logical :: useLeap
       integer :: i
       real(kind=sp) :: tmp_sp
 
@@ -520,19 +524,23 @@
         end subroutine Print_Usage
       END INTERFACE
 
+      ! Initialization
+      BaseYear = 1900
+      useLeap  = .true.
+
       ! Test read command line arguments
       nargs = command_argument_count()
-      if (nargs.eq.0) then
+      if (nargs == 0) then
         call Print_Usage
-      elseif (nargs.gt.1.and.nargs.lt.6) then
+      elseif (nargs > 1.and.nargs < 6) then
         ! We need either one command-line argument (input file name) or at least
         ! 6 parameter to define the run.
         ! Write usage to stdout and exit
         call Print_Usage
-      elseif(nargs.ge.6)then
+      elseif(nargs >= 6)then
         ! Here, everything is set from the command-line with lots of assumed
         ! values.  Only GFS and NCEP 50-year are used here.
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*)"Reading command-line"
         endif;enddo
         !  And here is what we assume:
@@ -561,8 +569,8 @@
 
         ! Minimum required is lon, lat, YYYY, MM, DD, hours
         call get_command_argument(1, arg, length=inlen, status=iostatus)
-        if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read first command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -570,21 +578,21 @@
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inlon
         linebuffer080 = arg(1:80)
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inlon
-        if(inlon.lt.-360.0_dp.or.&
-           inlon.gt.360.0_dp)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+        if(inlon < -360.0_dp.or.&
+           inlon > 360.0_dp)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)"MR ERROR: longitude not in range -180->360"
             write(errlog(io),*)" inlon = ",inlon
           endif;enddo
           stop 1
         endif
-        if(inlon.lt.0.0_dp.or.inlon.gt.360.0_dp)inlon=mod(inlon+360.0_dp,360.0_dp)
+        if(inlon < 0.0_dp.or.inlon > 360.0_dp)inlon=mod(inlon+360.0_dp,360.0_dp)
 
         call get_command_argument(2, arg, length=inlen, status=iostatus)
-        if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read second command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -592,11 +600,11 @@
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inlat
         linebuffer080 = arg(1:80)
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inlat
-        if(inlat.lt.-90.0_sp.or.&
-           inlat.gt.90.0_sp)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+        if(inlat < -90.0_sp.or.&
+           inlat > 90.0_sp)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)"MR ERROR: latitude not in range -90->90"
             write(errlog(io),*)" inlat = ",inlat
           endif;enddo
@@ -604,8 +612,8 @@
         endif
 
         call get_command_argument(3, arg, length=inlen, status=iostatus)
-        if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read third command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -613,11 +621,11 @@
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inyear
         linebuffer080 = arg(1:80)
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
 
         call get_command_argument(4, arg, length=inlen, status=iostatus)
-        if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read fourth command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -625,11 +633,11 @@
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inmonth
         linebuffer080 = arg(1:80)
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inmonth
-        if(inmonth.lt.1.or.&
-           inmonth.gt.12)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(inmonth < 1.or.&
+           inmonth > 12)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: month must be in range 1-12"
             write(errlog(io),*)" inmonth = ",inmonth
           endif;enddo
@@ -637,8 +645,8 @@
         endif
 
         call get_command_argument(5, arg, length=inlen, status=iostatus)
-        if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read fifth command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -646,11 +654,11 @@
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inday
         linebuffer080 = arg(1:80)
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inday
-        if(inday.lt.1.or.&
-           inday.gt.31)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(inday < 1.or.&
+           inday > 31)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: day must be in range 1-31"
             write(errlog(io),*)" inday = ",inday
           endif;enddo
@@ -658,8 +666,8 @@
         endif
 
         call get_command_argument(6, arg, length=inlen, status=iostatus)
-        if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read sixth command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -667,22 +675,22 @@
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage)inhour
         linebuffer080 = arg(1:80)
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inhour
-        if(inhour.lt.0.0_dp.or.&
-           inhour.gt.48.0_dp)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(inhour < 0.0_dp.or.&
+           inhour > 48.0_dp)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: hour must be in range 0.0-48.0"
             write(errlog(io),*)" inhour = ",inhour
           endif;enddo
           stop 1
         endif
 
-        if(nargs.ge.7)then
+        if(nargs >= 7)then
           ! First optional parameter is the simulation time
           call get_command_argument(7, arg, length=inlen, status=iostatus)
-          if(iostatus.ne.0)then
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          if(iostatus /= 0)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
               write(errlog(io),*)"MR ERROR : Could not read seventh command-line argument"
               write(errlog(io),*)" arg = ",arg
             endif;enddo
@@ -690,27 +698,27 @@
           endif
           read(arg,*,iostat=iostatus,iomsg=iomessage)Simtime_in_hours
           linebuffer080 = arg(1:80)
-          if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+          if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
           ! Error-checkSimtime_in_hours
-          if(Simtime_in_hours.lt.0.0_dp)then
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          if(Simtime_in_hours < 0.0_dp)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
               write(errlog(io),*)"MR ERROR: Sim Time must be positive."
               write(errlog(io),*)" inhour = ",inhour
             endif;enddo
             stop 1
           endif
 
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)"Calculating trajectories for ",&
                        Simtime_in_hours," hours."
             endif;enddo
 
-          if(nargs.ge.8)then
+          if(nargs >= 8)then
             ! Next optional is the number of trajectories followed by the
             ! trajectory levels (in km)
             call get_command_argument(8, arg, length=inlen, status=iostatus)
-            if(iostatus.ne.0)then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            if(iostatus /= 0)then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
                 write(errlog(io),*)"MR ERROR : Could not read eighth command-line argument"
                 write(errlog(io),*)" arg = ",arg
               endif;enddo
@@ -718,28 +726,28 @@
             endif
             read(arg,*,iostat=iostatus,iomsg=iomessage)ntraj
             linebuffer080 = arg(1:80)
-            if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
-            if(ntraj.le.0)then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+            if(ntraj <= 0)then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
                 write(errlog(io),*)"MR ERROR reading ntraj."
                 write(errlog(io),*)"ntraj = ",ntraj
                 write(errlog(io),*)"ntraj must be positive."
               endif;enddo
               stop 1
-            elseif(ntraj.gt.9)then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            elseif(ntraj > 9)then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
                 write(errlog(io),*)"MR ERROR: ntraj is currently limited to 9"
               endif;enddo
               stop 1
             endif
             !allocate(OutputLevels(ntraj))
-            if(nargs-8.lt.ntraj)then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            if(nargs-8 < ntraj)then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
                 write(errlog(io),*)"MR ERROR:  There are not enough arguments for ",&
                           ntraj," levels"
                 endif;enddo
-            elseif(nargs-8.gt.ntraj)then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+            elseif(nargs-8 > ntraj)then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
                 write(outlog(io),*)"WARNING:  There are more trajectory levels given than needed"
                 write(outlog(io),*)"  Expected ntraj = ",ntraj
                 write(outlog(io),*)"  Extra command line arguments = ",nargs-8
@@ -747,8 +755,8 @@
             endif
             do i=1,ntraj
               call get_command_argument(8+i, arg, length=inlen, status=iostatus)
-              if(iostatus.ne.0)then
-                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+              if(iostatus /= 0)then
+                do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
                   write(errlog(io),*)"MR ERROR : Could not read 8+i command-line argument"
                   write(errlog(io),*)" arg = ",arg
                 endif;enddo
@@ -756,9 +764,9 @@
               endif
               read(arg,*,iostat=iostatus,iomsg=iomessage)OutputLevels(i)
               linebuffer080 = arg(1:80)
-              if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
-              if(OutputLevels(i).le.0.0.or.OutputLevels(i).gt.30.0)then
-                do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+              if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+              if(OutputLevels(i) <= 0.0.or.OutputLevels(i) > 30.0)then
+                do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
                   write(errlog(io),*)"MR ERROR: trajectory levels must be in range 0-30 km"
                   write(errlog(io),*)"          Failing on trajectory ",i,OutputLevels(i)
                 endif;enddo
@@ -771,7 +779,7 @@
           ! Default simulation time is 24 hours
           Simtime_in_hours = 24.0_dp
         endif
-        if(ntraj.eq.0)then
+        if(ntraj == 0)then
           ! These are the default trajectory levels if none are specified
           ntraj = 6
           OutputLevels(1) =  1.524_sp !  5000 ft
@@ -792,15 +800,15 @@
         PJ_k0        = 0.933_dp
         PJ_Re        = 6371.229_dp
 
-      elseif(nargs.eq.1)then
+      elseif(nargs == 1)then
         ! we're using a control file.  This is the most general case where non-
         ! GFS and NCEP wind files can be used
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*)"Reading control file"
         endif;enddo
         call get_command_argument(1, arg, length=inlen, status=iostatus)
-        if(iostatus.ne.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR : Could not read first command-line argument"
             write(errlog(io),*)" arg = ",arg
           endif;enddo
@@ -808,10 +816,10 @@
         endif
         read(arg,*,iostat=iostatus,iomsg=iomessage) infile
         linebuffer080 = arg(1:80)
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         inquire( file=infile, exist=IsThere )
         if(.not.IsThere)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: Cannot find input file"
           endif;enddo
           stop 1
@@ -822,18 +830,18 @@
         !  If the windfile is projected, travectories will be calcualted on the projected
         !  grid and reported back as lon,lat or whatever is the projection on line 8
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) inlon, inlat
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
-        if(inlon.lt.-360.0_dp.or.inlon.gt.360.0_dp)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(inlon < -360.0_dp.or.inlon > 360.0_dp)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: Longitude must be in range -360->360"
           endif;enddo
           stop 1
         endif
-        if(inlon.lt.0.0_dp.or.inlon.gt.360.0_dp)inlon=mod(inlon+360.0_dp,360.0_dp)
-        if(inlat.lt.-90.0_dp.or.inlat.gt.90.0_dp)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(inlon < 0.0_dp.or.inlon > 360.0_dp)inlon=mod(inlon+360.0_dp,360.0_dp)
+        if(inlat < -90.0_dp.or.inlat > 90.0_dp)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: Latitude must be in range -90->90"
           endif;enddo
           stop 1
@@ -841,31 +849,31 @@
 
         ! Line 2: YYYY MM DD HH.H
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) inyear,inmonth,inday,inhour
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check inmonth
-        if(inmonth.lt.1.or.&
-           inmonth.gt.12)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(inmonth < 1.or.&
+           inmonth > 12)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: month must be in range 1-12"
             write(errlog(io),*)" inmonth = ",inmonth
           endif;enddo
           stop 1
         endif
         ! Error-check inday
-        if(inday.lt.1.or.&
-           inday.gt.31)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(inday < 1.or.&
+           inday > 31)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: day must be in range 1-31"
             write(errlog(io),*)" inday = ",inday
           endif;enddo
           stop 1
         endif
         ! Error-check inhour
-        if(inhour.lt.0.0_dp.or.&
-           inhour.gt.24.0_dp)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(inhour < 0.0_dp.or.&
+           inhour > 24.0_dp)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: hour must be in range 0.0-24.0"
             write(errlog(io),*)" inhour = ",inhour
           endif;enddo
@@ -874,12 +882,12 @@
 
         ! Line 3: Length of integration in hours
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) Simtime_in_hours
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Error-check Simtime_in_hours
-        if(Simtime_in_hours.lt.0.0_dp)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(Simtime_in_hours < 0.0_dp)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: hour must be positive"
             write(errlog(io),*)" Simtime_in_hours = ",Simtime_in_hours
           endif;enddo
@@ -890,11 +898,11 @@
         !   This is where we could put optional parameters on 2d vs 3d or on
         !     Euler vs something higher-order
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) StreamFlag
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
-        if(StreamFlag.ne.0.and.StreamFlag.ne.1)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(StreamFlag /= 0.and.StreamFlag /= 1)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: StreamFlag must be 0 or 1"
             write(errlog(io),*)" StreamFlag = ",StreamFlag
           endif;enddo
@@ -903,11 +911,11 @@
 
         ! Line 5: Output interval in minutes
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) OutStepInc_Minutes
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
-        if(OutStepInc_Minutes.lt.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(OutStepInc_Minutes < 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: OutStepInc_Minutes must be positive"
             write(errlog(io),*)" OutStepInc_Minutes = ",OutStepInc_Minutes
           endif;enddo
@@ -916,11 +924,11 @@
 
         ! Line 6: number of trajectories (must be < 10)
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) ntraj
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
-        if(ntraj.lt.0)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(ntraj < 0)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: ntraj must be positive"
             write(errlog(io),*)" ntraj = ",ntraj
           endif;enddo
@@ -929,12 +937,12 @@
 
         ! Line 7: Trajectory levels in km
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) OutputLevels(1:ntraj)
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         do i=1,ntraj
-          if(OutputLevels(i).lt.0.0_dp)then
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          if(OutputLevels(i) < 0.0_dp)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
               write(errlog(io),*)"MR ERROR: OutputLevels must be positive"
               write(errlog(io),*)" i OutputLevels(i) = ",i,OutputLevels(i)
             endif;enddo
@@ -944,7 +952,7 @@
 
         ! Line 8: Projection of computational grid
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         Comp_projection_line = linebuffer080
         call PJ_Set_Proj_Params(Comp_projection_line)
         Comp_iprojflag  = PJ_iprojflag
@@ -956,7 +964,7 @@
         Comp_phi0       = PJ_phi0
         Comp_phi1       = PJ_phi1
         Comp_phi2       = PJ_phi2
-        if (PJ_ilatlonflag.eq.0)then
+        if (PJ_ilatlonflag == 0)then
           IsLatLon_CompGrid = .false.
         else
           IsLatLon_CompGrid = .true.
@@ -964,13 +972,13 @@
 
         ! Line 9: iwind iwindformat iformat
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) iw,iwf,igrid,idf
-        if(iostatus.ne.0.or.&
-           iw.lt.1.or.iw.gt.5.or.&
-           iwf.lt.0.or.iwf.gt.50.or.&
-           idf.lt.1.or.idf.gt.5)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0.or.&
+           iw < 1.or.iw > 5.or.&
+           iwf < 0.or.iwf > 50.or.&
+           idf < 1.or.idf > 5)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)  'error reading iw,iwf,igrid,idf.'
             write(errlog(io),*)  'You gave: ', linebuffer080
             write(errlog(io),*)  'wind format must be one of 1,2,3,4, or 5'
@@ -984,12 +992,12 @@
 
         ! Line 10: autoflag (0 for auto, 1 for specified) [FC_freq] [GFS_Archive_Days]
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) autoflag
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
-        if(autoflag.ne.0)then
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(autoflag /= 0)then
           read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) autoflag,FC_freq,GFS_Archive_Days
-          if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+          if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         else
           FC_freq            = 12     ! Number of hours between GFS package downloads
           GFS_Archive_Days   = 14     ! Number of days GFS data are archived
@@ -997,11 +1005,11 @@
 
         ! Line 11: number of windfiles
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         read(linebuffer080,*,iostat=iostatus,iomsg=iomessage) iwfiles
-        if(iostatus.ne.0.or.&
-           iwfiles.lt.1)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+        if(iostatus /= 0.or.&
+           iwfiles < 1)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)  'error reading iwfiles.'
             write(errlog(io),*)  'You gave: ', linebuffer080
             write(errlog(io),*)  'Program stopped.'
@@ -1010,10 +1018,10 @@
           stop 1
         endif
 
-        if(inyear.lt.BaseYear.or.inyear-BaseYear.gt.200)then
+        if(inyear < BaseYear.or.inyear-BaseYear > 200)then
           ! Reset BaseYear to the start of the century containing the starttime
           BaseYear = inyear - mod(inyear,100)
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)"WARNING: Resetting BaseYear to ",BaseYear
           endif;enddo
         endif
@@ -1023,7 +1031,7 @@
         MR_useCompH = .false.
 
         close(fid_ctrlfile)
-      endif ! nargs.eq.1 End of control file block
+      endif ! nargs == 1 End of control file block
 
       call MR_Set_CompProjection(IsLatLon_CompGrid,PJ_iprojflag,PJ_lam0,&
                                  PJ_phi0,PJ_phi1,PJ_phi2,&
@@ -1035,7 +1043,7 @@
       endif
 
       ! write out values of parameters defining the run
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"inlon              = ",real(inlon,kind=sp)
         write(outlog(io),*)"inlat              = ",real(inlat,kind=sp)
         if(.not.IsLatLon_CompGrid)then
@@ -1058,7 +1066,7 @@
         write(outlog(io),*)"IsLatLon           = ",IsLatLon_CompGrid
         write(outlog(io),*)"autoflag           = ",autoflag
 
-        if(autoflag.eq.0)then
+        if(autoflag == 0)then
           write(outlog(io),*)"iw                 = ",iw
           write(outlog(io),*)"iwf                = ",iwf
           write(outlog(io),*)"igrid              = ",igrid
@@ -1082,7 +1090,7 @@
 !******************************************************************************
 !     ERROR TRAPS
 
-1900  do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+1900  do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
         write(errlog(io),*)  'error: cannot find input file: ',infile
         write(errlog(io),*)  'Program stopped'
       endif;enddo
@@ -1109,7 +1117,7 @@
 
       integer :: io                           ! Index for output streams
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
         write(errlog(io),*)"Unexpected number of command-line arguments:"
         write(errlog(io),*)"  Usage: Either provide a control file name as a single"
         write(errlog(io),*)"         command-line argument, or a sequence of arguments in the"
@@ -1213,8 +1221,8 @@
       real(kind=dp) :: FC_Package_StartHour
       real(kind=dp) :: FC_Archive_StartHour
 
-      character(len=100) :: WINDROOT = '/data/WindFiles'
-      character(len=47) :: string1,string2
+      character (len=100) :: WINDROOT
+      character (len= 47) :: string1,string2
 
       integer :: i,ii
       integer :: FC_year,FC_mon,FC_day
@@ -1293,6 +1301,9 @@
         end function HS_hours_since_baseyear
       END INTERFACE
 
+      ! Initialization
+      WINDROOT = '/data/WindFiles'
+
        ! Get the UTC time for program execution
        !   This will be used to determine if gfs or NCEP winds are to be used
       call date_and_time(date,time2,zone,values)
@@ -1310,7 +1321,7 @@
       read(RunStartHour_ch,'(6x,i2)') RunStartDay
       read(RunStartHour_ch,'(8x,i2)') RunStartHr
 
-      if(autoflag.eq.1)then
+      if(autoflag == 1)then
         ! We are using the automatic selection for wind files.  We need to first
         ! determine the current date/time and check if the requested start time is
         ! more recent than the length of the GFS archive.  If so, use GFS;
@@ -1325,7 +1336,7 @@
         ! Calculate the earliest Met data needed
         ! We want this to be as close to the beginning of a forecast package as
         ! possible
-        if(TrajFlag.gt.0)then
+        if(TrajFlag > 0)then
           Probe_EndHour = Probe_StartHour + Simtime_in_hours
         else
           Probe_EndHour = Probe_StartHour - Simtime_in_hours
@@ -1333,9 +1344,9 @@
         Met_needed_StartHour = min(Probe_StartHour,Probe_EndHour)
         Met_needed_EndHour   = max(Probe_StartHour,Probe_EndHour)
 
-        if(RunStartHour-Met_needed_StartHour.gt.24.0_dp*GFS_Archive_Days)then
+        if(RunStartHour-Met_needed_StartHour > 24.0_dp*GFS_Archive_Days)then
           ! NCEP case
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)"Requested start time is too old for GFS archive."
             write(outlog(io),*)"Start time is older than the hardwired threshold of ",&
                       GFS_Archive_Days," days"
@@ -1360,9 +1371,9 @@
           ! now round down the hour to the forecast package increment
           FC_Package_hour    = floor(FC_Package_hour_dp/FC_freq) * FC_freq
 
-        elseif(inyear.lt.1948)then
+        elseif(inyear < 1948)then
           ! Too old for NCEP runs, must use control file
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"Requested start time is too old for NCEP Reanalysis."
             write(errlog(io),*)"Please use a control file and specify an older"
             write(errlog(io),*)"product such as NOAA20CRv3."
@@ -1370,18 +1381,18 @@
           stop 1
         else
           ! GFS case
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)"Requested start time is within the GFS archive."
             write(outlog(io),*)"Using archived global forecast data (GFS 0.5-degree)"
           endif;enddo
-          if(RunStartHour-Met_needed_StartHour.lt.0.0_dp)then
+          if(RunStartHour-Met_needed_StartHour < 0.0_dp)then
             ! GFS case for future run
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
               write(outlog(io),*)"Requested start time is later than current time,"
               write(outlog(io),*)"but it might fit in the current forecast package."
             endif;enddo
-            if (Met_needed_EndHour-RunStartHour.ge.real(GFS_FC_TotHours,kind=dp))then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+            if (Met_needed_EndHour-RunStartHour >= real(GFS_FC_TotHours,kind=dp))then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
                 write(errlog(io),*)" Run cannot complete with the current FC package."
               endif;enddo
               stop 1
@@ -1394,7 +1405,7 @@
           allocate(GFS_candidate(NumFCpackages))
           allocate(GFS_FC_step_avail(NumFCpackages))
           GFS_candidate(:) = .true. ! every package is a candidate until proven otherwise
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)"Approximate Number of FC packages on system:",NumFCpackages
             write(outlog(io),*)"Checking to see which packages might work for the"
             write(outlog(io),*)"requested start-time"
@@ -1417,31 +1428,31 @@
 
           ! Loop through all the packages and check which ones might span the needed
           ! time range
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)'Looping backward through packages'
           endif;enddo
           do i = NumFCpackages,1,-1
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
               write(outlog(io),*)"Package # ",i
             endif;enddo
             ! Get the start hour of this forecast package
             FCStartHour = FC_Archive_StartHour + real((i-1)*FC_freq,kind=dp)
-            if (FCStartHour.gt.Met_needed_StartHour)then
+            if (FCStartHour > Met_needed_StartHour)then
               ! This package starts after the requested time so dismiss it
               GFS_candidate(i)     = .false.
               GFS_FC_step_avail(i) = 0
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
                 write(outlog(io),*)"   Package starts too late"
               endif;enddo
               cycle
             endif
 
             FCEndHour = FCStartHour + real(GFS_FC_TotHours,kind=dp)
-            if (FCEndHour.lt.Met_needed_EndHour)then
+            if (FCEndHour < Met_needed_EndHour)then
               ! This package ends before the needed time so dismiss it
               GFS_candidate(i)     = .false.
               GFS_FC_step_avail(i) = 0
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
                 write(outlog(io),*)"   Package ends too early"
               endif;enddo
               cycle
@@ -1452,7 +1463,7 @@
             FC_day  = HS_DayOfEvent(FCStartHour,MR_BaseYear,MR_useLeap)
             FC_hour = HS_HourOfDay(FCStartHour,MR_BaseYear,MR_useLeap)
             FC_Package_hour = floor(FC_hour/FC_freq) * FC_freq
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
               write(outlog(io),*)'   This one could work. Testing each file. ', &
                          FC_year,FC_mon,FC_day,real(FC_hour,kind=sp)
             endif;enddo
@@ -1466,8 +1477,8 @@
                                                ! needed file is missing
               FC_hour_int = nint((ii-1)*FC_intvl)
               ! skip all the files that are not needed to bracket the simulation
-              if (FCStartHour+FC_hour_int.lt.Met_needed_StartHour-FC_intvl) cycle ! to early
-              if (FCStartHour+FC_hour_int.gt.Met_needed_EndHour+FC_intvl)   cycle ! to late
+              if (FCStartHour+FC_hour_int < Met_needed_StartHour-FC_intvl) cycle ! to early
+              if (FCStartHour+FC_hour_int > Met_needed_EndHour+FC_intvl)   cycle ! to late
 
               ! if we are here, then we are inspecting a file that would be needed for
               ! the requested time span, starting with the most recent forecast package
@@ -1485,7 +1496,7 @@
               if (IsThere)then
                 GFS_FC_step_avail(i) = ii
                 FCEndHour = FCStartHour + real(FC_hour_int,kind=dp)
-                do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+                do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
                   write(outlog(io),*)"     Found: ",trim(adjustl(testfile))
                 endif;enddo
               else
@@ -1505,8 +1516,8 @@
 
           enddo ! 1,NumFCpackages
 
-          if (OptimalPackageNum.eq.0)then
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          if (OptimalPackageNum == 0)then
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
               write(errlog(io),*)"No GFS package available on this system will span the"
               write(errlog(io),*)"requested simulation time.  Exiting"
               write(errlog(io),*)"  Sim start time       = ",Met_needed_StartHour
@@ -1554,7 +1565,7 @@
                                  trim(adjustl(string2))
           enddo
         endif  ! automatic cases: NCEP, then GFS
-      else ! autoflag.eq.1
+      else ! autoflag == 1
 
         Probe_StartHour = HS_hours_since_baseyear(inyear,inmonth,inday,inhour,&
                                                   MR_BaseYear,MR_useLeap)
@@ -1567,7 +1578,7 @@
         FC_hour = HS_HourOfDay(MR_Comp_StartHour,MR_BaseYear,MR_useLeap)
 
         ! Calculate the earliest Met data needed
-        if(TrajFlag.gt.0)then
+        if(TrajFlag > 0)then
           Probe_EndHour = Probe_StartHour + Simtime_in_hours
         else
           Probe_EndHour = Probe_StartHour - Simtime_in_hours
@@ -1579,15 +1590,15 @@
         call MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)
         ! Reread the input file to get the windfile names
 
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*)"Reading control file"
         endif;enddo
         call get_command_argument(1, arg, length=inlen, status=iostatus)
         read(arg,*,iostat=iostatus,iomsg=iomessage) infile
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,arg(1:80),iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,arg(1:80),iomessage)
         inquire( file=infile, exist=IsThere )
         if(.not.IsThere)then
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_error)then
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
             write(errlog(io),*)"MR ERROR: Cannot find input file"
           endif;enddo
           stop 1
@@ -1595,55 +1606,55 @@
         open(unit=fid_ctrlfile,file=infile,status='old')
         ! Line 1: lon, lat
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Line 2: YYYY MM DD HH.H
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Line 3: Length of integration in hours
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Line 4: Streamline v.s. Streakline
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Line 5: Output interval in minutes
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Line 6: number of trajectories (must be < 10)
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Line 7: Trajectory levels in km
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Line 8: Projection of computational grid
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Line 9: iwind iwindformat iformat
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Line 10: autoflag (0 for auto, 1 for specified) [FC_freq] [GFS_Archive_Days]
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
         ! Line 11 -> 11 + #of windfiles
         read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer080
-        if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
-        if(MR_iwind.eq.5)then
+        if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer080,iomessage)
+        if(MR_iwind == 5)then
           ! For NCEP 2.5 degree (25), NOAA product (27), ERA5 (29), or ERA-20C (30)
           ! just read the path to the files
           read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer130
-          if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+          if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
           read(linebuffer130,'(a130)',iostat=iostatus,iomsg=iomessage) MR_windfiles(1)
-          if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
-          do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+          if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
             write(outlog(io),*)"Read windfile name: ",adjustl(trim(MR_windfiles(1)))
           endif;enddo
         else
           ! For all other iwf (MR_iwindformats), read the full list
           do i=1,iwfiles
             read(fid_ctrlfile,'(a80)',iostat=iostatus,iomsg=iomessage)linebuffer130
-            if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+            if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
             read(linebuffer130,'(a130)',iostat=iostatus,iomsg=iomessage) MR_windfiles(i)
-            if(iostatus.ne.0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
-            do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+            if(iostatus /= 0) call MR_FileIO_Error_Handler(iostatus,linebuffer130(1:80),iomessage)
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
               write(outlog(io),*)"Read windfile name: ",adjustl(trim(MR_windfiles(i)))
           endif;enddo
           enddo
@@ -1661,7 +1672,7 @@
 
       call MR_Set_Met_Times(Met_needed_StartHour, Simtime_in_hours)
 
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"Traj time: ",inyear,inmonth,inday,inhour
         write(outlog(io),*)"Now      : ",RunStartYear,RunStartMonth,RunStartDay,RunStartHr
       endif;enddo
@@ -1799,7 +1810,7 @@
 
        ! Load the full sub-grid for all times
         ! First load the Met grids for Geopotential
-      if(TrajFlag.gt.0)then
+      if(TrajFlag > 0)then
         ! Foreward trajectory
         MR_iMetStep_Now = 1
       else
@@ -1818,17 +1829,17 @@
       ! Loop through all the steps in proper chronological order, but store in
       ! Vx_full, and Vy_full in order of integration (forward or backward)
       do istep = 1,MR_MetSteps_Total
-        do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*)"Reading step of ",istep,MR_MetSteps_Total
         endif;enddo
         MR_iMetStep_Now = istep
-        if(TrajFlag.gt.0)then
+        if(TrajFlag > 0)then
           stepindx=istep
         else
           stepindx=MR_MetSteps_Total-istep+1
         endif
         Step_Time_since1900(stepindx) = MR_MetStep_Hour_since_baseyear(istep)
-        if(istep.lt.MR_MetSteps_Total)call MR_Read_HGT_arrays(istep)
+        if(istep < MR_MetSteps_Total)call MR_Read_HGT_arrays(istep)
         ivar = 2 ! Vx
         call MR_Read_3d_Met_Variable_to_CompH(ivar,istep)
         Vx_full(1:nx_comp,1:ny_comp,:,stepindx) = &
@@ -1867,7 +1878,7 @@
       it    = 1
 
       ! Assume an integration step of 1 min and a max v of around 100m/s
-      if(TrajFlag.ge.0)then
+      if(TrajFlag >= 0)then
         dt =  1.0_dp/60.0_dp
       else
         dt = -1.0_dp/60.0_dp
@@ -1877,7 +1888,7 @@
                   360.0_dp/(2.0_dp*PI*RAD_EARTH) / & ! degree  / km arclength
                   KM_2_M                           ! km / m
 
-      if(TrajFlag.ge.0)then
+      if(TrajFlag >= 0)then
         dirchar = 'f'
       else
         dirchar = 'b'
@@ -1895,7 +1906,7 @@
         endif
  101    format(a1,a4,i1,a4)
  102    format(a1,a4,i2,a4)
-        if(kk.lt.10)then
+        if(kk < 10)then
           write(ofilename,101)dirchar,'traj',kk,'.dat'
         else
           write(ofilename,102)dirchar,'traj',kk,'.dat'
@@ -1905,31 +1916,31 @@
         write(ofile,*)real(outlon,kind=sp),real(outlat,kind=sp)
 
         if(.not.IsGlobal)then
-          if(x1(kk).lt.lonmin)lonmin=outlon
-          if(x1(kk).gt.lonmax)lonmax=outlon
-          if(y1(kk).lt.latmin)latmin=outlat
-          if(y1(kk).gt.latmax)latmax=outlat
+          if(x1(kk) < lonmin)lonmin=outlon
+          if(x1(kk) > lonmax)lonmax=outlon
+          if(y1(kk) < latmin)latmin=outlat
+          if(y1(kk) > latmax)latmax=outlat
         endif
       enddo
 
       ! Find location of initial trajectory heights
       ! Get interpolation coefficients
       it = 1
-      if(TrajFlag.gt.0)then
+      if(TrajFlag > 0)then
         tfrac =  (t1-Step_Time_since1900(it))/MR_MetStep_Interval(it)
       else
         tfrac = -(t1-Step_Time_since1900(it))/MR_MetStep_Interval(it)
       endif
 
       ! integrate out Simtime_in_hours hours
-      do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+      do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
         write(outlog(io),*)"Now integrating out ",abs(int(Simtime_in_hours/dt))," steps"
       endif;enddo
       it = 0
       ixold(:)=1
       iyold(:)=1
       do ti = 1,abs(int(Simtime_in_hours/dt))
-        if(TrajFlag.gt.0)then
+        if(TrajFlag > 0)then
           ! Get the interval by assuming all MetStep_Intervals are the same
           iit = floor((t1-Step_Time_since1900(1))/MR_MetStep_Interval(1)) + 1
           tfrac = (t1-Step_Time_since1900(iit))/MR_MetStep_Interval(1)
@@ -1939,7 +1950,7 @@
           tfrac = -(t1-Step_Time_since1900(iit))/MR_MetStep_Interval(1)
         endif
 
-        if(iit.ne.it)then
+        if(iit /= it)then
           it = iit
            ! Get the change in velocity in m/s/hr
           dvxdt(:,:,:) = (Vx_full(:,:,:,it+1)-Vx_full(:,:,:,it))/MR_MetStep_Interval(it)
@@ -1957,13 +1968,13 @@
             ! faster.
             !do ix=max(ixold(kk)-1,1),nx_comp-1
             do ix=1,nx_comp-1
-              if (x1(kk).ge.x_comp_sp(ix).and.x1(kk).lt.x_comp_sp(ix+1))then
+              if (x1(kk) >= x_comp_sp(ix).and.x1(kk) < x_comp_sp(ix+1))then
                 exit
               endif
             enddo
             do iy=1,ny_comp-1
             !do iy=max(iyold(kk)-1,1),ny_comp-1
-              if (y1(kk).ge.y_comp_sp(iy).and.y1(kk).lt.y_comp_sp(iy+1))then
+              if (y1(kk) >= y_comp_sp(iy).and.y1(kk) < y_comp_sp(iy+1))then
                 exit
               endif
             enddo
@@ -1973,9 +1984,9 @@
 
           if(.not.IsGlobal)then
             ! Skip over points that leave the domain
-            if(ix.le.0.or.ix.ge.nx_comp.or.&
-               iy.le.0.or.iy.ge.ny_comp)then
-              do io=1,MR_nio;if(MR_VB(io).le.verbosity_info)then
+            if(ix <= 0.or.ix >= nx_comp.or.&
+               iy <= 0.or.iy >= ny_comp)then
+              do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
                 write(outlog(io),'(a32,7i5)')"point out of bounds (ignoring): ",&
                             ti,abs(int(Simtime_in_hours/dt)),kk,ix,iy,nx_comp,ny_comp
               endif;enddo
@@ -2021,8 +2032,8 @@
           x_fin = x1(kk) + xstep
           y_fin = y1(kk) + ystep
           !if(IsLatLon_CompGrid)then
-          !  if (x_fin.ge.360.0_dp)x_fin=x_fin - 360.0_dp
-          !  if (x_fin.lt.0.0_dp)x_fin=x_fin + 360.0_dp
+          !  if (x_fin >= 360.0_dp)x_fin=x_fin - 360.0_dp
+          !  if (x_fin < 0.0_dp)x_fin=x_fin + 360.0_dp
           !endif
 
           x1(kk) = x_fin
@@ -2030,7 +2041,7 @@
         enddo ! kk
 
         t1 = t1 + dt
-        if(mod(ti,output_interv).eq.0)then
+        if(mod(ti,output_interv) == 0)then
           do kk = 1,ntraj
             if(IsLatLon_CompGrid)then
               outlon = x1(kk)
@@ -2045,18 +2056,18 @@
             write(ofrmt,*)real(outlon,kind=sp),real(outlat,kind=sp)
 
             if(.not.IsGlobal)then
-              if(x1(kk).lt.lonmin)lonmin=outlon
-              if(x1(kk).gt.lonmax)lonmax=outlon
-              if(y1(kk).lt.latmin)latmin=outlat
-              if(y1(kk).gt.latmax)latmax=outlat
+              if(x1(kk) < lonmin) lonmin=outlon
+              if(x1(kk) > lonmax) lonmax=outlon
+              if(y1(kk) < latmin) latmin=outlat
+              if(y1(kk) > latmax) latmax=outlat
             endif
           enddo
         endif
       enddo ! time
       ! We want the lon/lat min/max to reflect a somewhat broader range than the trajectory
       ! data to expand to the nearest 10th degree
-      lonmin = floor(0.1_dp*lonmin)*10.0_dp
-      latmin = floor(0.1_dp*latmin)*10.0_dp
+      lonmin =   floor(0.1_dp*lonmin)*10.0_dp
+      latmin =   floor(0.1_dp*latmin)*10.0_dp
       lonmax = ceiling(0.1_dp*lonmax)*10.0_dp
       latmax = ceiling(0.1_dp*latmax)*10.0_dp
 
