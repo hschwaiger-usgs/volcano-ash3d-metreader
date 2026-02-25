@@ -59,24 +59,26 @@ GDASROOT_remote="${NCEPSERVER}/gfs/prod/gdas.${YYYYMMDD}/${FC}/atmos/"
 NAMROOT_remote="${NCEPSERVER}/nam/prod/nam.${YYYYMMDD}"
 ECMWF_remote="${ECMWFSERVER}/${YYYYMMDD}/${FC}z/ifs/0p25/oper"
 
+WGETOPT="--no-check-certificate --tries=50"
+
 # Downloading all forecast files with 1-hour steps
 FCincr=1
 t=0
 while [ "$t" -le "$FCend" ]; do
-  wget ${GFSROOT_remote}/gfs.t${FC}z.pgrb2.0p25.f00$t                  # ~520 Mb : GFS  0.25   iwf = 22
-  wget ${GFSROOT_remote}/gfs.t${FC}z.pgrb2b.0p25.f00$t                 # ~230 Mb : GFSb 0.25   iwf = 22
-  wget ${GDASROOT_remote}/gdas.t${FC}z.pgrb2.0p25.f00${t}              # ~490 Mb : GDAS 0.25   iwf = 22
+  wget ${WGETOPT} ${GFSROOT_remote}/gfs.t${FC}z.pgrb2.0p25.f00$t                  # ~520 Mb : GFS  0.25   iwf = 22
+  wget ${WGETOPT} ${GFSROOT_remote}/gfs.t${FC}z.pgrb2b.0p25.f00$t                 # ~230 Mb : GFSb 0.25   iwf = 22
+  wget ${WGETOPT} ${GDASROOT_remote}/gdas.t${FC}z.pgrb2.0p25.f00${t}              # ~490 Mb : GDAS 0.25   iwf = 22
 
-  wget ${NAMROOT_remote}/nam.t${FC}z.alaskanest.hiresf0${t}.tm00.grib2 # ~800 Mb : Grid 91 AK 2.976
-  wget ${NAMROOT_remote}/nam.t${FC}z.awip3d0${t}.tm00.grib2            #  ~11 Mb : Grid 212 CONUS (40.6 km)
-  wget ${NAMROOT_remote}/nam.t${FC}z.awip120${t}.tm00.grib2            #  ~30 Mb : Grid ?
-  wget ${NAMROOT_remote}/nam.t${FC}z.awip320${t}.tm00.grib2            #  ~50 Mb : Grid 221 N.Amer 32.5
-  wget ${NAMROOT_remote}/nam.t${FC}z.awphys0${t}.tm00.grib2            #  ~57 Mb : Grid 218 CONUS (12.2 km)
-  wget ${NAMROOT_remote}/nam.t${FC}z.conusnest.hiresf0${t}.tm00.grib2  # ~930 Mb : Grid 227 CONUS (5.1 km)
-  wget ${NAMROOT_remote}/nam.t${FC}z.firewxnest.hiresf0${t}.tm00.grib2 # ~145 Mb :
-  wget ${NAMROOT_remote}/nam.t${FC}z.grbgrd0${t}.tm00.grib2            #   ~9 Mb : Grid 104 N.Amer 90.7
-  wget ${NAMROOT_remote}/nam.t${FC}z.hawaiinest.hiresf0${t}.tm00.grib2 #  ~28 Mb : Grid 196 HI (2.5 km)
-  wget ${NAMROOT_remote}/nam.t${FC}z.priconest.hiresf0${t}.tm00.grib2  #  ~70 Mb : Grid 194 Puerto Rico (2.5 km)
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.alaskanest.hiresf0${t}.tm00.grib2 # ~800 Mb : Grid 91 AK 2.976
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.awip3d0${t}.tm00.grib2            #  ~11 Mb : Grid 212 CONUS (40.6 km)
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.awip120${t}.tm00.grib2            #  ~30 Mb : Grid ?
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.awip320${t}.tm00.grib2            #  ~50 Mb : Grid 221 N.Amer 32.5
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.awphys0${t}.tm00.grib2            #  ~57 Mb : Grid 218 CONUS (12.2 km)
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.conusnest.hiresf0${t}.tm00.grib2  # ~930 Mb : Grid 227 CONUS (5.1 km)
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.firewxnest.hiresf0${t}.tm00.grib2 # ~145 Mb :
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.grbgrd0${t}.tm00.grib2            #   ~9 Mb : Grid 104 N.Amer 90.7
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.hawaiinest.hiresf0${t}.tm00.grib2 #  ~28 Mb : Grid 196 HI (2.5 km)
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.priconest.hiresf0${t}.tm00.grib2  #  ~70 Mb : Grid 194 Puerto Rico (2.5 km)
 
   t=$(($t+${FCincr}))
 done
@@ -84,19 +86,19 @@ done
 FCincr=3
 t=0
 while [ "$t" -le "$FCend" ]; do
-  wget ${ECMWF_remote}/${YYYYMMDD}000000-${t}h-oper-fc.grib2    # ~130 Mb : ECMWF 0.25 iwf = 34
-  wget ${GFSROOT_remote}/gfs.t${FC}z.pgrb2.0p50.f00${t}        # ~155 Mb : GFS 0.50   iwf = 20
-  wget ${GFSROOT_remote}/gfs.t${FC}z.pgrb2.1p00.f00${t}        #  ~43 Mb : GFS 1.00   iwf = 21
-  wget ${GFSROOT_remote}/gfs.t${FC}z.pgrb2full.0p50.f00${t}    # ~220 Mb : GFS 0.50   iwf = 20
+  wget ${WGETOPT} ${ECMWF_remote}/${YYYYMMDD}000000-${t}h-oper-fc.grib2    # ~130 Mb : ECMWF 0.25 iwf = 34
+  wget ${WGETOPT} ${GFSROOT_remote}/gfs.t${FC}z.pgrb2.0p50.f00${t}        # ~155 Mb : GFS 0.50   iwf = 20
+  wget ${WGETOPT} ${GFSROOT_remote}/gfs.t${FC}z.pgrb2.1p00.f00${t}        #  ~43 Mb : GFS 1.00   iwf = 21
+  wget ${WGETOPT} ${GFSROOT_remote}/gfs.t${FC}z.pgrb2full.0p50.f00${t}    # ~220 Mb : GFS 0.50   iwf = 20
 
-  wget ${NAMROOT_remote}/nam.t${FC}z.afwaca0${t}.tm00.grib2    #  ~40 Mb : Grid 181 Caribbean (0.108 deg)
-  wget ${NAMROOT_remote}/nam.t${FC}z.afwahi0${t}.tm00.grib2    #  ~23 mb : Grid 182 HI (0.108 deg)
-  wget ${NAMROOT_remote}/nam.t${FC}z.awak3d0${t}.tm00.grib2    #  ~55 Mb : Grid 242 AK 11.25
-  wget ${NAMROOT_remote}/nam.t${FC}z.awip200${t}.tm00.grib2    #   ~5 Mb : 
-  wget ${NAMROOT_remote}/nam.t${FC}z.awipak0${t}.tm00.grib2    #   ~7 Mb : Grid 216 AK 45.0
-  wget ${NAMROOT_remote}/nam.t${FC}z.awiphi0${t}.tm00.grib2    #   ~6 Mb : Grid 243 E.N.Pac (0.4 deg)
-  wget ${NAMROOT_remote}/nam.t${FC}z.awp2420${t}.tm00.grib2    #  ~22 Mb : 
-  wget ${NAMROOT_remote}/nam.t${FC}z.bgrdsf0${t}.tm00.grib2    #  ~47 Mb : 
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.afwaca0${t}.tm00.grib2    #  ~40 Mb : Grid 181 Caribbean (0.108 deg)
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.afwahi0${t}.tm00.grib2    #  ~23 mb : Grid 182 HI (0.108 deg)
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.awak3d0${t}.tm00.grib2    #  ~55 Mb : Grid 242 AK 11.25
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.awip200${t}.tm00.grib2    #   ~5 Mb : 
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.awipak0${t}.tm00.grib2    #   ~7 Mb : Grid 216 AK 45.0
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.awiphi0${t}.tm00.grib2    #   ~6 Mb : Grid 243 E.N.Pac (0.4 deg)
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.awp2420${t}.tm00.grib2    #  ~22 Mb : 
+  wget ${WGETOPT} ${NAMROOT_remote}/nam.t${FC}z.bgrdsf0${t}.tm00.grib2    #  ~47 Mb : 
   t=$(($t+${FCincr}))
 done
 

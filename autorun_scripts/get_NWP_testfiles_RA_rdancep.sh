@@ -18,7 +18,7 @@
 #      and its documentation for any purpose.  We assume no responsibility to provide
 #      technical support to users of this software.
 
-# Shell script that downloads NASA MERRA-2 Reanalysis data files for the date supplied
+# Shell script that downloads Reanalysis data files (from RDA) for the date supplied
 # on the command line.
 
 YYYY=$1
@@ -28,7 +28,7 @@ DD=$3
 if [ $# -eq 0 ]
   then
   echo "No arguments supplied"
-  echo "Usage: get_NWP_testfiles_RA_nasa.sh YYYY MM DD"
+  echo "Usage: get_NWP_testfiles_RA_rdancep.sh YYYY MM DD"
   exit
 fi
 
@@ -42,6 +42,7 @@ YYYYMMDD=${YYYY}${MM}${DD}
 DATAHOME="/data/NWP_testfiles/Reanalysis/NetCDF"
 mkdir -p ${DATAHOME}/${YYYYMMDD}
 cd ${DATAHOME}/${YYYYMMDD}
+WGETOPT="--no-check-certificate --tries=50"
 
 #---------------------------------------
 #  ERA5
@@ -50,7 +51,7 @@ ERA5_remote="${UCARSERVER}/d633000/e5.oper.an.pl/${YYYY}/${MM}"
 # This product is available after about 10 weeks from present
 # ~ 211 Mb for 1-day of data
 # iwf = 
-wget ${ERA5_remote}/e5.oper.an.pl.128_248_cc.ll025sc.${YYYYMMDD}00_${YYYYMMDD}23.nc
+wget ${WGETOPT} ${ERA5_remote}/e5.oper.an.pl.128_248_cc.ll025sc.${YYYYMMDD}00_${YYYYMMDD}23.nc
 
 #---------------------------------------
 #  JRA-3Q
@@ -59,7 +60,7 @@ JRA_remote="${UCARSERVER}/d640000/anl_p/${YYYY}/${MM}"
 # This product is available after about 2 weeks from present
 # ~ 300 Mb for 5-days of data (need to sort out day indexing)
 # iwf = 
-wget ${JRA_remote}/jra3q.anl_p.0_3_5.hgt-pres-an-gauss.${YYYY}${MM}2600_${YYYY}${MM}3018.nc
+wget ${WGETOPT} ${JRA_remote}/jra3q.anl_p.0_3_5.hgt-pres-an-gauss.${YYYY}${MM}2600_${YYYY}${MM}3018.nc
 
 #---------------------------------------
 #  NARR
@@ -68,7 +69,7 @@ NARR_remote="${UCARSERVER}/d608000/NARRraw/${YYYY}${MM}"
 # This product is available after about 2 weeks from present
 # ~ 445 Mb for 1-day of data
 # iwf = 3
-wget ${NARR_remote}/merged_AWIP32.${YYYYMMDD}.tar
+wget ${WGETOPT} ${NARR_remote}/merged_AWIP32.${YYYYMMDD}.tar
 
 
 

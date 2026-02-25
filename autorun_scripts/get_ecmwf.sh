@@ -55,6 +55,8 @@ FChour=$3
 
 SERVER="https://data.ecmwf.int/forecasts"
 
+WGETOPT="--no-check-certificate --tries=50"
+
 echo "------------------------------------------------------------"
 echo "running get_ecmwf.sh ${RES} ${yearmonthday} ${FChour}"
 echo `date`
@@ -108,9 +110,8 @@ while [ "$t" -le ${HourMax} ]; do
   #fi
   INFILE=${FilePre}${t}${FilePost}
   fileURL=${SERVER}/${yearmonthday}/${FChour}z/ifs/${RES}/oper/${INFILE}
-
-  echo "wget --no-check-certificate ${fileURL}"
-  time wget --no-check-certificate ${fileURL}
+  echo "wget ${WGETOPT} ${fileURL}"
+  time wget ${WGETOPT} ${fileURL}
   ${USGSROOT}/bin/gen_GRIB_index $INFILE
 
   t=$(($t+${HourStep}))

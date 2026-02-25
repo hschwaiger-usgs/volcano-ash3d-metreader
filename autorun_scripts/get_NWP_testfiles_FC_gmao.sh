@@ -49,14 +49,14 @@ FCend=6  # number of forecast hours to download (starting at 0)
 
 NASASERVER="https://portal.nccs.nasa.gov/datashare/gmao/geos-fp/forecast"
 NASAROOT_remote="${NASASERVER}/Y${YYYY}/M${MM}/D${DD}/H00"
-
+WGETOPT="--no-check-certificate --tries=50"
 # Downloading all forecast files with 3-hour steps
 FCincr=3
 t=0
 while [ "$t" -le "$FCend" ]; do
 
-  wget ${NASAROOT_remote}/GEOS.fp.fcst.inst3_3d_asm_Cp.${YYYYMMDD}_00+${YYYYMMDD}_0${t}00.V01.nc4   # ~181 Mb : NASA  0.625 x 0.5   iwf = 40
-  wget ${NASAROOT_remote}/GEOS.fp.fcst.inst3_3d_asm_Np.${YYYYMMDD}_00+${YYYYMMDD}_0${t}00.V01.nc4   # ~710 Mb : NASA  0.3125 x 0.25 iwf = 41
+  wget ${WGETOPT} ${NASAROOT_remote}/GEOS.fp.fcst.inst3_3d_asm_Cp.${YYYYMMDD}_00+${YYYYMMDD}_0${t}00.V01.nc4   # ~181 Mb : NASA  0.625 x 0.5   iwf = 40
+  wget ${WGETOPT} ${NASAROOT_remote}/GEOS.fp.fcst.inst3_3d_asm_Np.${YYYYMMDD}_00+${YYYYMMDD}_0${t}00.V01.nc4   # ~710 Mb : NASA  0.3125 x 0.25 iwf = 41
 
   t=$(($t+${FCincr}))
 done

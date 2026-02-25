@@ -40,8 +40,10 @@ fi
 NAM=$1
 yearmonthday=$2
 FChour=$3
-#SERVER="https://nomads.ncep.noaa.gov/pub/data/nccf/com/nam/prod"
-SERVER="ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/nam/prod"
+SERVER="https://nomads.ncep.noaa.gov/pub/data/nccf/com/nam/prod"
+#SERVER="ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/nam/prod"
+
+WGETOPT="--no-check-certificate --tries=50"
 
 echo "------------------------------------------------------------"
 echo "running get_nam.sh script for ${NAM} $yearmonthday ${FChour}"
@@ -109,7 +111,8 @@ while [ "$t" -le ${HourMax} ]; do
   fi
   INFILE=${FilePre}${hour}${FilePost}
   fileURL=${SERVER}/nam.${yearmonthday}/$INFILE
-  time wget ${fileURL}
+  echo "wget ${WGETOPT} ${fileURL}"
+  time wget ${WGETOPT} ${fileURL}
   ${USGSROOT}/bin/gen_GRIB_index $INFILE
   ${USGSROOT}/bin/autorun_scripts/grib2nc.sh $INFILE
   t=$(($t+${HourStep}))

@@ -31,6 +31,8 @@
 if [ -z ${WINDROOT} ];then
  # default location
  WINDROOT="/data/WindFiles"
+  # Mac
+ #WINDROOT="/opt/data/WindFiles"
 fi
 if [ -z ${USGSROOT} ];then
  # default location
@@ -50,7 +52,6 @@ t0=`date`
 
 HourMax=36
 HourStep=1
-
 NAMDATAHOME="${WINDROOT}/nam/091"
 
 #name of directory containing current files

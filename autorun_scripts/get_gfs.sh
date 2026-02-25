@@ -53,9 +53,10 @@ RES=$1
 yearmonthday=$2
 FChour=$3
 
-#SERVER="https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod"
-SERVER="ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/gfs/prod"
+SERVER="https://nomads.ncep.noaa.gov/pub/data/nccf/com/gfs/prod"
+#SERVER="ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/gfs/prod"
 
+WGETOPT="--no-check-certificate --tries=50"
 
 echo "------------------------------------------------------------"
 echo "running get_gfs.sh ${RES} ${yearmonthday} ${FChour}"
@@ -124,8 +125,8 @@ while [ "$t" -le ${HourMax} ]; do
   fi
   INFILE=${FilePre}${hour}
   fileURL=${SERVER}/gfs.${yearmonthday}/${FChour}/atmos/${INFILE}
-  echo "wget ${fileURL}"
-  time wget ${fileURL}
+  echo "wget ${WGETOPT} ${fileURL}"
+  time wget ${WGETOPT} ${fileURL}
   ${USGSROOT}/bin/gen_GRIB_index $INFILE
 
   t=$(($t+${HourStep}))

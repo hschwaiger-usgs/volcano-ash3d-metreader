@@ -45,9 +45,10 @@ cd ${DATAHOME}/${YYYYMMDD}
 
 NASASERVER="https://goldsmr5.gesdisc.eosdis.nasa.gov/data/MERRA2/M2T3NVMST.5.12.4"
 NASA_remote="${NASASERVER}/${YYYY}/${MM}"
-
+#WGETOPT="--no-check-certificate --tries=50"
+WGETOPT="--load-cookies ~/.urs_cookies --save-cookies ~/.urs_cookies --keep-session-cookies"
 # This product is available after about 5 weeks from present
 # ~ 2.1 Gb for 1-day of data
 # iwf = 40
-wget --load-cookies ~/.urs_cookies --save-cookies ~/.urs_cookies --keep-session-cookies ${NASA_remote}/MERRA2_400.tavg3_3d_mst_Nv.${YYYY}${MM}${DD}.nc4
+wget ${WGETOPT} ${NASA_remote}/MERRA2_400.tavg3_3d_mst_Nv.${YYYY}${MM}${DD}.nc4
 
