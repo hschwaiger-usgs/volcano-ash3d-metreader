@@ -204,12 +204,12 @@ do
   if test -r ${INFILE}
   then
      echo "${INFILE} exists"
-     t=$((t+${HourStep}))
      numfiles=$((numfiles+1))
    else
      echo "error: ${INFILE} does not exist."
      exit 1
    fi
+   t=$((t+${HourStep}))
 done
 
 #set soft links in "latest" directory
