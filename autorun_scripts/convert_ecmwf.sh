@@ -234,9 +234,11 @@ do
   ecmwffile=${FilePre}${t}${FilePost}
   #ecmwffile="${yearmonthday}${FChour}.f${hour}.nc"
   linkfile="latest.f${hour}.grib2"
-  echo "creating soft link for ${ecmwffile}"
-  ln -s ${ECMWFDATAHOME}/${FC_day}/${ecmwffile} ${ECMWFDATAHOME}/latest/${linkfile}
-  echo "latest/${linkfile}" >> ${ECMWFDATAHOME}/ecmwflist.txt
+  if test -r ${ecmwffile}; then
+    echo "creating soft link for ${ecmwffile}"
+    ln -s ${ECMWFDATAHOME}/${FC_day}/${ecmwffile} ${ECMWFDATAHOME}/latest/${linkfile}
+    echo "latest/${linkfile}" >> ${ECMWFDATAHOME}/ecmwflist.txt
+  fi
   t=$((t+3))
 done
 
