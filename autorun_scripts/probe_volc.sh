@@ -130,7 +130,9 @@ do
   volc=`head -n ${iv} ${vfile} | tail -1 | cut -f1 -d':'`
   lon=`head -n ${iv} ${vfile} | tail -1 | cut -f2 -d':'`
   lat=`head -n ${iv} ${vfile} | tail -1 | cut -f3 -d':'`
-  echo "$volc $lon $lat"
+  echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+  echo "Processing line $iv out of $nvolcs : $volc $lon $lat"
+  echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
   mkdir -p ${SONDEDIR}/${volc}/${yearmonthday}
   cd ${SONDEDIR}/${volc}/${yearmonthday}
@@ -184,9 +186,11 @@ do
     rm ${WINDFILE}
     #echo "$t : Mapping ${WINDFILE} to ${volc}_gfs_phuvt_${NewYYYYMMDD}_${Newhour}.dat" >> probe.log
     t=$((t+${HourStep}))
+
   done
   
   cd ${SONDEDIR}/
+
 done
 
 ls -l */* > tree.txt

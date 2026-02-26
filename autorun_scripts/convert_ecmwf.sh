@@ -207,7 +207,7 @@ do
      numfiles=$((numfiles+1))
    else
      echo "error: ${INFILE} does not exist."
-     exit 1
+     #exit 1
    fi
    t=$((t+${HourStep}))
 done
