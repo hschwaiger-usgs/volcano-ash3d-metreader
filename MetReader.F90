@@ -358,9 +358,9 @@
       !    Native grid of Met file using Height as vertical coordinate
       !    (resampled onto z-gridpoints of computational grid)
 #ifdef USEPOINTERS
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d_metH => null()
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_u_ER_metP  => null()! For the cases where Met is proj and comp
-      real(kind=sp),dimension(:,:,:),pointer, public :: MR_v_ER_metP  => null()!  different we need to rotate so these
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_dum3d_metH   => null()
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_u_ER_metP    => null()! For the cases where Met is proj and comp
+      real(kind=sp),dimension(:,:,:),pointer, public :: MR_v_ER_metP    => null()!  different we need to rotate so these
                                                                                !  store Earth-Relative velocities on MetP
 #else
       real(kind=sp),dimension(:,:,:),allocatable, public :: MR_dum3d_metH
@@ -481,7 +481,7 @@
 
       ! Met copies of projection variables, used for proj call on Met Grid
       character(len=4),public :: Met_gridtype
-      integer     ,public :: Met_iprojflag
+      integer      ,public :: Met_iprojflag
       real(kind=dp),public :: Met_Re
       real(kind=dp),public :: Met_k0
       real(kind=dp),public :: Met_phi0            ! latitude of projection point
@@ -492,7 +492,7 @@
       real(kind=dp),public :: Met_lam2
       character(len=80),public :: Met_proj4
 
-      integer     ,public :: Comp_iprojflag
+      integer      ,public :: Comp_iprojflag
       real(kind=dp),public :: Comp_Re
       real(kind=dp),public :: Comp_k0
       real(kind=dp),public :: Comp_phi0           ! latitude of projection point
@@ -3767,7 +3767,7 @@
                 do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
                   write(outlog(io),150)                    &
                     iw,iwstep,stephour,MR_Comp_StartHour,istep,&
-                    "After MR_Comp_StartHour "
+                    "After MR_Comp_StartHour."
                 endif;enddo
               endif
             endif
@@ -3783,7 +3783,7 @@
             do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
               write(outlog(io),150)                    &
                   iw,iwstep,stephour,MR_Comp_StartHour,istep,&
-                  "At or after END OF SIM  "
+                  "At or after END OF SIM."
             endif;enddo
           endif
           if(Found_Last_Step)exit
