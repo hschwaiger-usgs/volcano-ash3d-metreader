@@ -37,8 +37,8 @@ fi
 
 GFS_retain=17
 ECMWF_retain=4
-NAM196_retain=0
-NAM091_retain=0
+NAM196_retain=4
+NAM091_retain=2
 MetProf_retain=30
 Hysplit_retain=7
 

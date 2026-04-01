@@ -62,7 +62,7 @@ case ${NAM} in
   ;;
  196)
   # HI 2.5 km
-  HourMax=36
+  HourMax=60
   HourStep=1
   #        nam.t00z.hawaiinest.hiresf00.tm00.grib2
   FilePre="nam.t${FChour}z.hawaiinest.hiresf"
@@ -70,7 +70,7 @@ case ${NAM} in
   ;;
  091)
   # AK 2.95 km
-  HourMax=36
+  HourMax=48
   HourStep=1
   #        nam.t06z.alaskanest.hiresf00.tm00.grib2
   FilePre="nam.t${FChour}z.alaskanest.hiresf"
