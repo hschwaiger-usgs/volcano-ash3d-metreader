@@ -2938,7 +2938,7 @@
                      start = (/1/),count = (/nt_fullmet/))
               call MR_NC_check_status(nSTAT,MR_FAIL,"nf90_get_var reftime int")
               ! copy to local variable
-              MR_windfile_stephour(iw,1:nt_fullmet) = real(dum1d_int4(1:nt_fullmet),kind=4)* &
+              MR_windfile_stephour(iw,1:nt_fullmet) = real(dum1d_int4(1:nt_fullmet),kind=8)* &
                                                            Met_dim_fac(1)
               deallocate(dum1d_int4)
             elseif(var_xtype == NF90_INT64)then
@@ -2947,7 +2947,7 @@
                      start = (/1/),count = (/nt_fullmet/))
               call MR_NC_check_status(nSTAT,MR_FAIL,"nf90_get_var reftime int64")
               ! copy to local variable
-              MR_windfile_stephour(iw,1:nt_fullmet) = real(dum1d_int8(1:nt_fullmet),kind=4)* &
+              MR_windfile_stephour(iw,1:nt_fullmet) = real(dum1d_int8(1:nt_fullmet),kind=8)* &
                                                            Met_dim_fac(1)
               deallocate(dum1d_int8)
             elseif(var_xtype == NF90_FLOAT)then
@@ -2965,7 +2965,7 @@
                      start = (/1/),count = (/nt_fullmet/))
               call MR_NC_check_status(nSTAT,MR_FAIL,"nf90_get_var reftime dbl")
               ! copy to local variable
-              MR_windfile_stephour(iw,1:nt_fullmet) = real(dum1d_dp(1:nt_fullmet),kind=4)* &
+              MR_windfile_stephour(iw,1:nt_fullmet) = real(dum1d_dp(1:nt_fullmet),kind=8)* &
                                                            Met_dim_fac(1)
               deallocate(dum1d_dp)
             else
