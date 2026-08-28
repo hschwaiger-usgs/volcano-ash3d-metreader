@@ -35,7 +35,7 @@
 !      MetProbe nam.tm06.grib2 1 0 -1363.94 -3758.61 F 4 1 2 3 5 4 13 3
 !    To  probe the NCEP 2.5-degree data (or other iw=5), we need the
 !    full date
-!      MetProbe 2020061000_5.f006.nc 1 1 190.055 52.8222 T 1 1 4 20 2 2018 1 1 0.0
+!      MetProbe Wind_nc/NCEP 1 1 190.055 52.8222 F 3 1 2 3 5 25 2 2018 1 1 0.0
 !    Output is written to the file NWP_prof.dat
 !
 ! Note: to test against the 0.5 GFS data using ncks, use the following commands

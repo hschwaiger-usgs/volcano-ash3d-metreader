@@ -386,7 +386,8 @@
       elseif(igrid == 170)then
         ! Global Gaussian Lat/Lon T170
         ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID170
-        ! This is used by the ERA-Itrm data
+        ! This is used by the ERA-Itrm product (deprecated) and
+        !  the Conventional Observation Reanalysis (CORe) product
 
         Met_proj4 = "LL"
         IsLatLon_MetGrid  = .true.

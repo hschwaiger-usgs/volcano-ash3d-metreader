@@ -136,6 +136,8 @@ AUTOSCRIPTS = \
  autorun_scripts/autorun_ecmwf.sh                 \
  autorun_scripts/get_ecmwf.sh                     \
  autorun_scripts/convert_ecmwf.sh                 \
+ autorun_scripts/autorun_core.sh                  \
+ autorun_scripts/get_core.py                      \
  autorun_scripts/autorun_nam.sh                   \
  autorun_scripts/get_nam.sh                       \
  autorun_scripts/autorun_NCEP_50YearReanalysis.sh \
@@ -260,6 +262,8 @@ uninstall:
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/autorun_nam.sh
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/autorun_ecmwf.sh
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/autorun_NCEP_50YearReanalysis.sh
+	rm -f $(INSTALLDIR)/bin/autorun_scripts/autorun_core.sh
+	rm -f $(INSTALLDIR)/bin/autorun_scripts/get_core.py
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/get_gfs.sh
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/get_nam.sh
 	rm -f $(INSTALLDIR)/bin/autorun_scripts/get_ecmwf.sh

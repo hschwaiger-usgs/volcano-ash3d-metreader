@@ -177,6 +177,7 @@
                                        ! 32 Air Force Weather Agency subcenter = 0
                                        ! 33 CCSM3.0 Community Atmosphere Model (CAM)
                                        ! 34 ECMWF 0.25 degree forecast              :: FC 20250509000000-0h-oper-fc.grib2
+                                       ! 35 NOAA CORe                               :: RN 
                                        ! 40 NASA-GEOS Cp                            :: FC GEOS.fp.fcst.inst3_3d_asm_Cp.YYYYMMDD_00+YYYYMMDD_0000.V01.nc4
                                        ! 41 NASA-GEOS Np                            :: FC GEOS.fp.fcst.inst3_3d_asm_Np.YYYYMMDD_00+YYYYMMDD_0000.V01.nc4
                                        ! 50 WRF - output
@@ -2550,6 +2551,38 @@
         fill_value_sp = -9999.0_sp
 
 !        Met_var_conversion_factor(1) = 1.0_sp/9.81_sp
+
+      elseif (MR_iwindformat == 35)then
+         ! NOAA CORe : Conventional Observation Reanalysis
+         ! https://wpo.noaa.gov/ncep-introduces-operational-reanalysis-for-climate-monitoring-core/
+
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "NOAA Conventional Observation Reanalysis (CORe)"
+        endif;enddo
+
+        MR_iGridCode = 170
+        call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
+        MR_Reannalysis = .true.
+
+        Met_var_GRIB1_Table(1:MR_MAXVARS) = 128
+
+        ! Momentum / State variables
+        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"
+                                       Met_var_GRIB1_Param(1)=129
+        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric"
+                                       Met_var_GRIB1_Param(2)=131
+        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric"
+                                       Met_var_GRIB1_Param(3)=132
+        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric"
+                                       Met_var_GRIB1_Param(4)=135
+        Met_var_IsAvailable(5)=.true.
+                                       Met_var_GRIB1_Param(5)=130
+        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric"
+                                       Met_var_GRIB1_Param(7)=135
+
+        fill_value_sp = -9999.0_sp
+        Met_var_conversion_factor(1) = 1.0_sp/9.81_sp
 
       elseif (MR_iwindformat == 40)then
          ! NASA-GEOS Cp

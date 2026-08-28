@@ -1865,7 +1865,8 @@
       real(kind=sp),dimension(:,:,:),allocatable :: Vy_meso_next_step_MetH_sp
 
       integer       :: nx,ny
-      real(kind=dp) :: tfrac,tc
+      real(kind=dp) :: time_into_interv
+!      real(kind=dp) :: tfrac,tc
       real(kind=dp) :: xfrac,xc,yfrac,yc
       real(kind=sp) :: a1,a2,a3,a4
       real(kind=dp), dimension(ntraj) :: x1,y1
@@ -1947,9 +1948,10 @@
       ! Get the fractional time between forecast steps
       Probe_StartHour = HS_hours_since_baseyear(inyear,inmonth,inday,inhour,&
                                                 MR_BaseYear,MR_useLeap)
-      tfrac = (Probe_StartHour-MR_MetStep_Hour_since_baseyear(MR_iMetStep_Now))/ &
-               MR_MetStep_Interval(MR_iMetStep_Now)
-      tc    = 1.0_dp-tfrac
+      time_into_interv = (Probe_StartHour-MR_MetStep_Hour_since_baseyear(MR_iMetStep_Now))
+!      tfrac = (Probe_StartHour-MR_MetStep_Hour_since_baseyear(MR_iMetStep_Now))/ &
+!               MR_MetStep_Interval(MR_iMetStep_Now)
+!      tc    = 1.0_dp-tfrac
 
       ! Loop through all the steps in proper chronological order, but store in
       ! Vx_full, and Vy_full in order of integration (forward or backward)
@@ -2111,9 +2113,11 @@
       ! Get interpolation coefficients
       it = 1
       if(TrajFlag > 0)then
-        tfrac =  (t1-Step_Time_since1900(it))/MR_MetStep_Interval(it)
+        time_into_interv = (t1-Step_Time_since1900(iit))
+        !tfrac =  (t1-Step_Time_since1900(it))/MR_MetStep_Interval(it)
       else
-        tfrac = -(t1-Step_Time_since1900(it))/MR_MetStep_Interval(it)
+        time_into_interv = -(t1-Step_Time_since1900(iit))
+        !tfrac = -(t1-Step_Time_since1900(it))/MR_MetStep_Interval(it)
       endif
 
       ! integrate out Simtime_in_hours hours
@@ -2127,11 +2131,13 @@
         if(TrajFlag > 0)then
           ! Get the interval by assuming all MetStep_Intervals are the same
           iit = floor((t1-Step_Time_since1900(1))/MR_MetStep_Interval(1)) + 1
-          tfrac = (t1-Step_Time_since1900(iit))/MR_MetStep_Interval(1)
+          time_into_interv = (t1-Step_Time_since1900(iit))
+          !tfrac = (t1-Step_Time_since1900(iit))/MR_MetStep_Interval(1)
         else
           ! Get the interval by assuming all MetStep_Intervals are the same
           iit = floor(-(t1-Step_Time_since1900(1))/MR_MetStep_Interval(1)) + 1
-          tfrac = -(t1-Step_Time_since1900(iit))/MR_MetStep_Interval(1)
+          time_into_interv = -(t1-Step_Time_since1900(iit))
+          !tfrac = -(t1-Step_Time_since1900(iit))/MR_MetStep_Interval(1)
         endif
 
         if(iit /= it)then
@@ -2191,14 +2197,14 @@
           a4 = real(xc   *yfrac,kind=sp)
 
           ! Corner velocities for current time
-          vx1 = Vx_full(ix  ,iy  ,kk,it) + tfrac*dvxdt(ix  ,iy  ,kk)
-          vx2 = Vx_full(ix+1,iy  ,kk,it) + tfrac*dvxdt(ix+1,iy  ,kk)
-          vx3 = Vx_full(ix+1,iy+1,kk,it) + tfrac*dvxdt(ix+1,iy+1,kk)
-          vx4 = Vx_full(ix  ,iy+1,kk,it) + tfrac*dvxdt(ix  ,iy+1,kk)
-          vy1 = Vy_full(ix  ,iy  ,kk,it) + tfrac*dvydt(ix  ,iy  ,kk)
-          vy2 = Vy_full(ix+1,iy  ,kk,it) + tfrac*dvydt(ix+1,iy  ,kk)
-          vy3 = Vy_full(ix+1,iy+1,kk,it) + tfrac*dvydt(ix+1,iy+1,kk)
-          vy4 = Vy_full(ix  ,iy+1,kk,it) + tfrac*dvydt(ix  ,iy+1,kk)
+          vx1 = Vx_full(ix  ,iy  ,kk,it) + time_into_interv*dvxdt(ix  ,iy  ,kk)
+          vx2 = Vx_full(ix+1,iy  ,kk,it) + time_into_interv*dvxdt(ix+1,iy  ,kk)
+          vx3 = Vx_full(ix+1,iy+1,kk,it) + time_into_interv*dvxdt(ix+1,iy+1,kk)
+          vx4 = Vx_full(ix  ,iy+1,kk,it) + time_into_interv*dvxdt(ix  ,iy+1,kk)
+          vy1 = Vy_full(ix  ,iy  ,kk,it) + time_into_interv*dvydt(ix  ,iy  ,kk)
+          vy2 = Vy_full(ix+1,iy  ,kk,it) + time_into_interv*dvydt(ix+1,iy  ,kk)
+          vy3 = Vy_full(ix+1,iy+1,kk,it) + time_into_interv*dvydt(ix+1,iy+1,kk)
+          vy4 = Vy_full(ix  ,iy+1,kk,it) + time_into_interv*dvydt(ix  ,iy+1,kk)
           ! Interpolate velocity onto current position and time (in m/s)
           vel_1(1) = (a1*vx1+a2*vx2+a3*vx3+a4*vx4)
           vel_1(2) = (a1*vy1+a2*vy2+a3*vy3+a4*vy4)

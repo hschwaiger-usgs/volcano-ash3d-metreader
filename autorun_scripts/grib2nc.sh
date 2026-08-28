@@ -59,5 +59,5 @@ NCFile="${FILEROOT}.nc"
 ${JAVA} -Xmx2048m -classpath ${NCJv} ucar.nc2.dataset.NetcdfDataset \
      -in ${GribFile} -out ${NCFile} -IsLargeFile
 
-rm ${FILEROOT}.ncx2 ${FILEROOT}.gbx9
+rm -f ${FILEROOT}.ncx2 ${FILEROOT}.ncx4 ${FILEROOT}.gbx9
 
