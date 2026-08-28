@@ -65,10 +65,10 @@ echo "COREDATAHOME=$COREDATAHOME"
 y=`date +%Y`
 monthnow=`date +%m`
 daynow=`date +%d`
-# Now get date for yesterday since CORe seems to have a 1-day latency
-YYYY=`date --date="${y}/$monthnow/${daynow} - 1 days" +%Y`
-MM=`date --date="${y}/$monthnow/${daynow} - 1 days" +%m`
-DD=`date --date="${y}/$monthnow/${daynow} - 1 days" +%d`
+# Now get date for the-day-before-yesterday since CORe seems to have a 2-day latency
+YYYY=`date --date="${y}/$monthnow/${daynow} - 2 days" +%Y`
+MM=`date --date="${y}/$monthnow/${daynow} - 2 days" +%m`
+DD=`date --date="${y}/$monthnow/${daynow} - 2 days" +%d`
 echo "year=$YYYY"
 
 #if the directory for this year doesn't exist (e.g. it's Jan. 1), create it
