@@ -2568,21 +2568,15 @@
         Met_var_GRIB1_Table(1:MR_MAXVARS) = 128
 
         ! Momentum / State variables
-        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_isobaric"
-                                       Met_var_GRIB1_Param(1)=129
-        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="U_component_of_wind_isobaric"
-                                       Met_var_GRIB1_Param(2)=131
-        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="V_component_of_wind_isobaric"
-                                       Met_var_GRIB1_Param(3)=132
-        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_isobaric"
-                                       Met_var_GRIB1_Param(4)=135
-        Met_var_IsAvailable(5)=.true.
-                                       Met_var_GRIB1_Param(5)=130
-        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_isobaric"
-                                       Met_var_GRIB1_Param(7)=135
+        Met_var_IsAvailable(1)=.true.; Met_var_NC_names(1)="Geopotential_height_isobaric"
+        Met_var_IsAvailable(2)=.true.; Met_var_NC_names(2)="u-component_of_wind_isobaric"
+        Met_var_IsAvailable(3)=.true.; Met_var_NC_names(3)="v-component_of_wind_isobaric"
+        Met_var_IsAvailable(4)=.true.; Met_var_NC_names(4)="Vertical_velocity_pressure_isobaric"
+        Met_var_IsAvailable(5)=.true.; Met_var_NC_names(5)="Temperature_isobaric"
+        Met_var_IsAvailable(7)=.true.; Met_var_NC_names(7)="Vertical_velocity_pressure_isobaric"
 
         fill_value_sp = -9999.0_sp
-        Met_var_conversion_factor(1) = 1.0_sp/9.81_sp
+        !Met_var_conversion_factor(1) = 1.0_sp/9.81_sp
 
       elseif (MR_iwindformat == 40)then
          ! NASA-GEOS Cp
