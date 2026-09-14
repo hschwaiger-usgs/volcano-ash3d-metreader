@@ -110,6 +110,9 @@ rc=$((rc + $?))
 if [[ "$rc" -gt 0 ]] ; then
   echo "Error: MetTraj_F returned error code"
   exit 1
+else
+  ../tools/GMT_plot_traj.sh
+  mv trajectory_0.gif trajectory_${WindLabel}.gif
 fi
 
 ###  Run check on ftraj1.dat and outputSonde2/ftraj1.dat

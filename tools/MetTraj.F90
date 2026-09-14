@@ -1929,10 +1929,10 @@
       allocate(dvxdt(0:nx+1,0:ny+1,ntraj))
       allocate(dvydt(0:nx+1,0:ny+1,ntraj))
 
-      lonmin = 360.0_sp
-      lonmax =   0.0_sp
-      latmin =  90.0_sp
-      latmax = -90.0_sp
+      lonmin =  360.0_sp
+      lonmax = -360.0_sp
+      latmin =   90.0_sp
+      latmax =  -90.0_sp
 
        ! Load the full sub-grid for all times
         ! First load the Met grids for Geopotential
