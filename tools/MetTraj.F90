@@ -668,7 +668,7 @@
         OutStepInc_Minutes = 60     ! Minutes between output points
         ntraj              = 0      ! Number of trajectories (can be changed on command-line)
         ! OutputLevels : this is allocated once ntraj is locked in
-        IsLatLon_outGrid   = .true. ! Assume LonLat output coordinates
+        IsLatLon_OutGrid   = .true. ! Assume LonLat output coordinates
         autoflag           = 1      ! This command-line branch necesarily means auto windfile selection
                                     !  with all the hard-wired paths to GFS and NCEP
         FC_freq            = 12     ! Number of hours between GFS package downloads
@@ -915,15 +915,16 @@
 
         ! Now we need to set the projection for the output grid, which
         ! for the command-line (no control file) runs will always be lon/lat
-        PJ_iprojflag = 1
-        PJ_lam0      = -105.0_dp
-        PJ_lam1      = -105.0_dp
-        PJ_lam1      = -105.0_dp
-        PJ_phi0      = 90.0_dp
-        PJ_phi1      = 90.0_dp
-        PJ_phi2      = 90.0_dp
-        PJ_k0        = 0.933_dp
-        PJ_Re        = 6371.229_dp
+        PJ_ilatlonflag = 1
+        PJ_iprojflag   = 1
+        PJ_lam0        = -105.0_dp
+        PJ_lam1        = -105.0_dp
+        PJ_lam1        = -105.0_dp
+        PJ_phi0        = 90.0_dp
+        PJ_phi1        = 90.0_dp
+        PJ_phi2        = 90.0_dp
+        PJ_k0          = 0.933_dp
+        PJ_Re          = 6371.229_dp
 
       elseif(nargs == 1)then
         ! we're using a control file.  This is the most general case where non-
