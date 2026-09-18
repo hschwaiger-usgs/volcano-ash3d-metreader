@@ -18,10 +18,10 @@
 #      and its documentation for any purpose.  We assume no responsibility to provide
 #      technical support to users of this software.
 
-# Shell script that downloads nam data files (091, 181, 196) for the date supplied
+# Shell script that downloads hrrr data files (CONUS or AK) for the date supplied
 # on the command line.
-# This script is called from autorun_nam.sh and takes three command-line arguments
-#   get_nam.sh NAM YYYYMMDD HR
+# This script is called from autorun_hrrr.sh and takes three command-line arguments
+#   get_hrrr.sh HRRR YYYYMMDD HR
 
 # Check environment variables WINDROOT and USGSROOT
 #  WINDROOT = location where the downloaded windfiles will be placed.
@@ -37,55 +37,48 @@ if [ -z ${USGSROOT} ];then
  USGSROOT="/opt/USGS"
 fi
 
-NAM=$1
+HRRR=$1
 yearmonthday=$2
 FChour=$3
-SERVER="https://nomads.ncep.noaa.gov/pub/data/nccf/com/nam/prod"
-#SERVER="ftp://ftp.ncep.noaa.gov/pub/data/nccf/com/nam/prod"
-
+SERVER="https://nomads.ncep.noaa.gov/pub/data/nccf/com/hrrr/prod"
 WGETOPT="--no-check-certificate --tries=50"
 
+
 echo "------------------------------------------------------------"
-echo "running get_nam.sh script for ${NAM} $yearmonthday ${FChour}"
+echo "running get_hrrr.sh script for $yearmonthday ${FChour}"
 echo `date`
 echo "------------------------------------------------------------"
 t0=`date`
 
-case ${NAM} in
- 181)
-  # Caribbean 0.108 degrees
-  HourMax=36
-  HourStep=3
-  #        nam.t00z.hawaiinest.hiresf00.tm00.grib2
-  FilePre="nam.t${FChour}z.afwaca"
-  FilePost=".tm00.grib2"
-  ;;
- 196)
-  # HI 2.5 km
-  HourMax=60
+case ${HRRR} in
+ 1)
+  # CONUS
+  HourMax=18
   HourStep=1
-  #        nam.t00z.hawaiinest.hiresf00.tm00.grib2
-  FilePre="nam.t${FChour}z.hawaiinest.hiresf"
-  FilePost=".tm00.grib2"
+  #        hrrr.t00z.wrfprsf00.grib2
+  DirPre="conus"
+  FilePre="hrrr.t${FChour}z.wrfprsf"
+  FilePost=".grib2"
   ;;
- 091)
-  # AK 2.95 km
-  HourMax=48
+ 2)
+  # AK
+  HourMax=40
   HourStep=1
-  #        nam.t06z.alaskanest.hiresf00.tm00.grib2
-  FilePre="nam.t${FChour}z.alaskanest.hiresf"
-  FilePost=".tm00.grib2"
+#        hrrr.t00z.wrfprsf00.ak.grib2
+  DirPre="ak"
+  FilePre="hrrr.t${FChour}z.wrfprsf"
+  FilePost=".ak.grib2"
   ;;
  *)
-  echo "NAM product not recognized"
-  echo "Valid values: 091, 196"
+  echo "HRRR product not recognized"
+  echo "Valid values: 1 for CONUS or 2 for AK"
   exit
 esac
 
-NAMDATAHOME="${WINDROOT}/nam/${NAM}"
-install -d ${NAMDATAHOME}
+HRRRDATAHOME="${WINDROOT}/hrrr/${DirPre}"
+install -d ${HRRRDATAHOME}
 if [[ $? -ne 0 ]] ; then
-   echo "Error:  Download directory ${NAMDATAHOME} cannot be"
+   echo "Error:  Download directory ${HRRRDATAHOME} cannot be"
    echo "        created or has insufficient write permissions."
    rc=$((rc + 1))
    exit $rc
@@ -98,7 +91,7 @@ FC_day=${yearmonthday}_${FChour}
 #START EXECUTING
 
 #go to correct directory
-cd $NAMDATAHOME
+cd $HRRRDATAHOME
 mkdir -p $FC_day
 cd $FC_day
 
@@ -110,7 +103,7 @@ while [ "$t" -le ${HourMax} ]; do
       hour="$t"
   fi
   INFILE=${FilePre}${hour}${FilePost}
-  fileURL=${SERVER}/nam.${yearmonthday}/$INFILE
+  fileURL=${SERVER}/hrrr.${yearmonthday}/${DirPre}/$INFILE
   echo "wget ${WGETOPT} ${fileURL}"
   time wget ${WGETOPT} ${fileURL}
   ${USGSROOT}/bin/gen_GRIB_index $INFILE
@@ -118,15 +111,15 @@ while [ "$t" -le ${HourMax} ]; do
   t=$(($t+${HourStep}))
 done
 
-mkdir -p $NAMDATAHOME/latest
-cd $NAMDATAHOME/latest
-rm nam.*
+mkdir -p $HRRRDATAHOME/latest
+cd $HRRRDATAHOME/latest
+rm hrrr.*
 ln -s ../$FC_day/* .
 
 t1=`date`
 echo "download start: $t0"
 echo "download   end: $t1"
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo "finished get_nam.sh ${NAM} ${yearmonthday} ${FChour}"
+echo "finished get_hrrr.sh ${yearmonthday} ${FChour}"
 echo `date`
 echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"

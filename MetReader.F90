@@ -162,6 +162,8 @@
                                        ! 12 NAM AK 198 (5.953 km)                   ::    no longer available; hires is now iwf=13
                                        ! 13 NAM AK 91 (2.976 km)                    :: FC nam.t00z.alaskanest.hiresf00.tm00.grib2
                                        ! 14 NAM CONUS 1227 (3.0 km)                 :: FC nam.t00z.conusnest.hiresf00.tm00.grib2
+                                       ! 15 HRRR CONUS (3.0 km)                     :: FC hrrr.t00z.wrfprsf00.grib2
+                                       ! 16 HRRR AK (3.0 km)                        :: FC hrrr.t00z.wrfprsf00.ak.grib2
                                        ! 20 GFS (  4) 0.5                           :: FC gfs.t00z.pgrb2.0p50.f000
                                        ! 21 GFS (  1) 1.0                           :: FC gfs.t00z.pgrb2.1p00.f000
                                        ! 22 GFS (193) 0.25                          :: FC gfs.t00z.pgrb2.0p25.f000
@@ -1840,6 +1842,7 @@
         Met_var_IsAvailable(5)=.true.
         Met_var_IsAvailable(7)=.true.
         ! Surface
+        Met_var_IsAvailable(10)=.true.; Met_var_NC_names(10)="Planetary_Boundary_Layer_Height"
         Met_var_IsAvailable(10)=.true.
         Met_var_IsAvailable(11)=.true.
         Met_var_IsAvailable(12)=.true.
@@ -1866,10 +1869,13 @@
 
         fill_value_sp = -9999.0_sp
 
-      elseif (MR_iwindformat == 14) then
+      elseif (MR_iwindformat == 14 .or. &
+              MR_iwindformat == 15) then
         ! CONUS 1227 (3.0 km)
-          !
+          !  14
           !  nam.t00z.conusnest.hiresf00.tm00.grib2.nc
+          !  15
+          !  hrrr.t00z.wrfprsf00.grib2
 
         if(MR_iversion == -1)MR_iversion = 0 ! forecasts are all v.0
         do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
@@ -1889,6 +1895,7 @@
         Met_var_IsAvailable(5)=.true.
         Met_var_IsAvailable(7)=.true.
         ! Surface
+        Met_var_IsAvailable(10)=.true.; Met_var_NC_names(10)="Planetary_boundary_layer_height_surface"
         Met_var_IsAvailable(10)=.true.
         Met_var_IsAvailable(11)=.true.
         Met_var_IsAvailable(12)=.true.
@@ -1912,6 +1919,48 @@
         Met_var_IsAvailable(42)=.true.
         Met_var_IsAvailable(43)=.true.
         Met_var_IsAvailable(44)=.true.
+
+        fill_value_sp = -9999.0_sp
+
+      elseif (MR_iwindformat == 16)then
+        ! HRRR 3.0 km AK
+          !  http://motherlode.ucar.edu/native/conduit/data/nccf/com/nam/prod/
+          !    nam.t00z.awipak00.tm00
+
+        if(MR_iversion == -1)MR_iversion = 0 ! forecasts are all v.0
+        do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
+          write(outlog(io),*)"  NWP format to be used = ",MR_iwindformat,&
+                    "HRRR 1016 3.0 km AK"
+        endif;enddo
+
+        MR_iGridCode = 1016
+        call MR_Set_Met_NCEPGeoGrid(MR_iGridCode)
+        MR_Reannalysis = .false.
+
+        ! Mechanical / State variables
+        Met_var_IsAvailable(1)=.true.
+        Met_var_IsAvailable(2)=.true.
+        Met_var_IsAvailable(3)=.true.
+        Met_var_IsAvailable(4)=.true.
+        Met_var_IsAvailable(5)=.true.
+        Met_var_IsAvailable(7)=.true.
+        ! Surface
+        Met_var_IsAvailable(10)=.true.; Met_var_NC_names(10)="Planetary_boundary_layer_height_surface"
+        Met_var_IsAvailable(10)=.true.
+        Met_var_IsAvailable(11)=.true.
+        Met_var_IsAvailable(12)=.true.
+        Met_var_IsAvailable(13)=.true.; Met_var_NC_names(13)="Frictional_velocity_surface"
+        ! Atmospheric Structure
+        Met_var_IsAvailable(23)=.true.
+        ! Moisture
+        Met_var_IsAvailable(30)=.true.
+        ! Precipitation
+        Met_var_IsAvailable(40)=.true.
+        Met_var_IsAvailable(41)=.true.
+        Met_var_IsAvailable(42)=.true.
+        Met_var_IsAvailable(43)=.true.
+        Met_var_IsAvailable(44)=.true.; Met_var_NC_names(44)="Total_precipitation_surface_0_Hour_Accumulation"
+        Met_var_IsAvailable(45)=.true.; Met_var_NC_names(45)="Convective_precipitation_surface_0_Hour_Accumulation"
 
         fill_value_sp = -9999.0_sp
 

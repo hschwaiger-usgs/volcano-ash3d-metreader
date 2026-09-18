@@ -106,7 +106,7 @@ if [[ "$rc" -gt 0 ]] ; then
   echo "Error: MetTraj_F returned error code"
   exit 1
 else
-  ../tools/GMT_plot_traj.sh
+  ../tools/GMT_plot_traj.sh > /dev/null 2>&1
   mv trajectory_0.gif trajectory_${WindLabel}.gif
 fi
 

@@ -628,9 +628,18 @@
         Met_k0            =  0.93301270_dp
         Met_Re            =  6371.229_dp
 
-      elseif(igrid == 216)then
-        ! NAM 45-km Polar Stereographic
-        ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID216
+      elseif(igrid == 216 .or. &
+             igrid == 242 .or. &
+             igrid == 1016 )then
+        ! 216
+        !   NAM 45-km Polar Stereographic
+        !   http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID216
+        ! 242
+        !   NAM 11.25-km Polar Stereographic
+        !   http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID242
+        ! 1016
+        !   HRRR 3.0-km Polar Stereographic
+        !
         !        PolarStereographic_Projection:grid_mapping_name = "stereographic" ;
         !        PolarStereographic_Projection:longitude_of_projection_origin = 225. ;
         !        PolarStereographic_Projection:latitude_of_projection_origin = 90. ;
@@ -782,45 +791,6 @@
         Met_phi0          =  25.0_dp
         Met_phi1          =  25.0_dp
         Met_phi2          =  25.0_dp
-        Met_k0            =  0.93301270_dp
-        Met_Re            =  6371.229_dp
-
-      elseif(igrid == 242)then
-        ! NAM 11.25-km Polar Stereographic
-        ! http://www.nco.ncep.noaa.gov/pmb/docs/on388/tableb.html#GRID242
-        !        PolarStereographic_Projection:grid_mapping_name = "stereographic" ;
-        !        PolarStereographic_Projection:longitude_of_projection_origin = 225. ;
-        !        PolarStereographic_Projection:latitude_of_projection_origin = 90. ;
-        !        PolarStereographic_Projection:scale_factor_at_projection_origin = 0.9330127;
-        !        PolarStereographic_Projection:earth_radius = 6371229. ;
-        ! proj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.9330127 +R=6371.229
-        ! invproj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.9330127 +R=6371.229 -f '%.8f'
-        ! 187.0 30.0
-        !   -4225.928 -5408.941
-        ! 297.15 70.111
-        !    1984.072 -638.9415
-        !
-        !  latlonflag  = 0         : projected grid
-        !  projflag    = 1         : polar stereographic projection
-        !  lam0        = -135.0    : longitude of projection point
-        !  phi0        =  90.0     : latitude of projection point
-        !  k0          =  0.9330127: scale factor at projection point
-        !  radius      =  6371.229 : earth radius for spherical earth
-        ! 0 1 -135.0 90.0 0.9330127 6371.229    #Proj flags and params
-        ! -JS-135/90/12c
-
-        Met_proj4 = "proj +proj=stere  +lon_0=225  +lat_0=90 +k_0=0.9330127 +R=6371.229"
-        IsLatLon_MetGrid  = .false.
-        IsGlobal_MetGrid  = .false.
-        IsRegular_MetGrid = .true.
-        IsGridRelative    = .true.
-
-        Met_gridtype      = "GST0"
-        Met_iprojflag     = 1
-        Met_lam0          = -135.0_dp
-        Met_phi0          =  90.0_dp
-        Met_phi1          =  90.0_dp
-        Met_phi2          =  90.0_dp
         Met_k0            =  0.93301270_dp
         Met_Re            =  6371.229_dp
 

@@ -21,7 +21,7 @@
 # Shell script that downloads nam data files (091, 181, 196) for the date supplied
 # on the command line.
 # This script is called from autorun_nam.sh and takes three command-line arguments
-#   get_ecmwf.sh NAM YYYYMMDD HR
+#   get_nam091.sh YYYYMMDD HR
 
 # Check environment variables WINDROOT and USGSROOT
 #  WINDROOT = location where the downloaded windfiles will be placed.
@@ -77,7 +77,7 @@ cd ${NAMDATAHOME}/${FC_day}
 # Make sure we have the needed perl scripts for processing the index files
 which get_inv.pl > /dev/null 2>&1
 if [[ $? -ne 0 ]]; then
-        echo "Can not fine file get_inv.pl"
+        echo "Can not find file get_inv.pl"
         echo "Downloading a fresh copy"
         wget ftp://ftp.cpc.ncep.noaa.gov/wd51we/fast_downloading_grib/get_inv.pl
         chmod 775 get_inv.pl
@@ -87,7 +87,7 @@ else
 fi
 which get_grib.pl > /dev/null 2>&1
 if [[ $? -ne 0 ]]; then
-        echo "Can not fine file get_grib.pl"
+        echo "Can not find file get_grib.pl"
         echo "Downloading a fresh copy"
         wget ftp://ftp.cpc.ncep.noaa.gov/wd51we/fast_downloading_grib/get_grib.pl
         chmod 775 get_grib.pl
@@ -95,9 +95,6 @@ if [[ $? -ne 0 ]]; then
 else
         my_get_grib=get_grib.pl
 fi
-
-
-
 
 ####################################################################
 #  Set up parameters describing the variables we intend to download.
