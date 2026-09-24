@@ -67,6 +67,7 @@ import urllib.request
 import urllib.error
 import time
 import datetime
+import ssl
 
 version="get_gfs.py v1.0.0 8/2025"
 def get_gfs(action, time_str, nloop, dt, regex, outdir):
@@ -179,6 +180,9 @@ def get_gfs(action, time_str, nloop, dt, regex, outdir):
         urls.append(url)
     print("URLS=", urls)
 
+    # Create an unverified SSL context
+    context = ssl._create_unverified_context()
+
 #   process the URLs
     for url in urls:
         file_name = os.path.basename(url+GRB_SUFFIX)
@@ -189,7 +193,7 @@ def get_gfs(action, time_str, nloop, dt, regex, outdir):
         # Read the inventory
         inventory_lines = []
         try:
-            with urllib.request.urlopen(inventory_url) as response:
+            with urllib.request.urlopen(inventory_url, context=context) as response:
                 # Decode as UTF-8, assuming text content
                 inventory_lines = response.read().decode('utf-8').strip().split('\n')
         except urllib.error.HTTPError as e:
