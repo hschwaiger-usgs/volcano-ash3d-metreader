@@ -83,6 +83,7 @@ fi
 
 yyyymmdd=${YYYY}${MM}${DD}
 
+echo "running ${SCRIPTDIR}/get_core.sh ${YYYY} ${MM} ${DD}"
 ${SCRIPTDIR}/get_core.sh ${YYYY} ${MM} ${DD}
 
 # Log the last date downloaded

@@ -1242,7 +1242,11 @@
         write(outlog(io),*)"-------------"
       endif;enddo
 
+! HFS
       if(IsPeriodic_CompGrid)then
+!      if(IsGlobal_MetGrid)then
+!        ! This adds a periodic buffer for all source NWP files, even when CompGrid is
+!        ! not periodic
         allocate( x_submet_sp(0:nx_submet+1))
         allocate( MR_dx_submet(0:nx_submet+1))
         allocate( MR_sigma_nz_submet(0:nx_submet+1,1:ny_submet))
@@ -1261,6 +1265,7 @@
         MR_dx_submet(          1:ilhalf_nx) = MR_dx_met(ilhalf_fm_l:ilhalf_fm_l+ilhalf_nx-1)
         MR_dx_submet(ilhalf_nx+1:nx_submet) = MR_dx_met(irhalf_fm_l:irhalf_fm_l+irhalf_nx-1) + 360.0_sp
         if(IsPeriodic_CompGrid)then
+!        if(IsGlobal_MetGrid)then
           x_submet_sp(0)           = x_fullmet_sp(nx_submet  ) - 360.0_sp
           x_submet_sp(nx_submet+1) = x_fullmet_sp(nx_submet+1) + 360.0_sp
           MR_dx_submet(0)           = MR_dx_met(nx_submet  )
@@ -1270,6 +1275,7 @@
         x_submet_sp(1:nx_submet) = x_fullmet_sp(istart:iend)
         MR_dx_submet(1:nx_submet) = MR_dx_met(istart:iend)
         if(IsPeriodic_CompGrid)then
+!        if(IsGlobal_MetGrid)then
           x_submet_sp(0)           = x_fullmet_sp(nx_submet) - 360.0_sp
           x_submet_sp(nx_submet+1) = x_fullmet_sp(1     ) + 360.0_sp
           MR_dx_submet(0)           = MR_dx_met(nx_submet)
@@ -1350,6 +1356,7 @@
           ! Get the sub_Met index of LL corner of cell containing px,py
           isubmet = 1
           if(IsPeriodic_CompGrid)then
+!          if(IsGlobal_MetGrid)then
             nx_tmp = nx_submet
           else
             nx_tmp = nx_submet-1
@@ -1533,9 +1540,11 @@
                             Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
                              ptlon,ptlat)
                 ! Get projected coordinate of de at the current point
+!              write(*,*)i,j,xin,yin
               call PJ_proj_for(ptlon+ddeg,ptlat, Comp_iprojflag, &
                          Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
                          xout,yout)
+!              write(*,*)xout,yout
               de_x = xout-xin
               de_y = yout-yin
               ate  = atan2(de_y,de_x)
@@ -1951,6 +1960,8 @@
           write(outlog(io),*)"   Comp_phi2",real(Comp_phi2,kind=sp)
           write(outlog(io),*)"   Comp_Re  ",real(Comp_Re,kind=sp)
           write(outlog(io),*)"   Comp_k0  ",real(Comp_k0,kind=sp)
+          write(outlog(io),*)"     FYI, the proj4 command for this projection is:"
+          write(outlog(io),*)"    ",Comp_proj4
         elseif(Map_Case == 3)then
           write(outlog(io),*)"Map_Case = ",Map_Case
           write(outlog(io),*)"  Met Grid is Lat/Lon and Comp grid is projected"
@@ -1961,6 +1972,8 @@
           write(outlog(io),*)"   Comp_phi2",real(Comp_phi2,kind=sp)
           write(outlog(io),*)"   Comp_Re  ",real(Comp_Re,kind=sp)
           write(outlog(io),*)"   Comp_k0  ",real(Comp_k0,kind=sp)
+          write(outlog(io),*)"     FYI, the proj4 command for this projection is:"
+          write(outlog(io),*)"    ",Comp_proj4
         elseif(Map_Case == 4)then
           write(outlog(io),*)"Map_Case = ",Map_Case
           write(outlog(io),*)"  Met Grid is projected and Comp grid is Lat/Lon"
@@ -1988,6 +2001,8 @@
           write(outlog(io),*)"   Comp_phi2",real(Comp_phi2,kind=sp)
           write(outlog(io),*)"   Comp_Re  ",real(Comp_Re,kind=sp)
           write(outlog(io),*)"   Comp_k0  ",real(Comp_k0,kind=sp)
+          write(outlog(io),*)"     FYI, the proj4 command for this projection is:"
+          write(outlog(io),*)"    ",Comp_proj4
         endif
       endif;enddo
 
