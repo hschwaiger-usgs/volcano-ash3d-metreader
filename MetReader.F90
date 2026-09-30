@@ -4163,7 +4163,7 @@
       if(Max_geoH_metP < z_comp_sp(nz_comp))then
         ! use highest needed point (rounded up to 5-km increment) for the
         ! padding height
-        Suppl_H = real(ceiling(z_comp_sp(nz_comp)/5.0_sp),kind=sp) * 5.0_sp
+        Suppl_H = real(ceiling(z_comp_sp(nz_comp)/5.0_sp)+1,kind=sp) * 5.0_sp
       else
         ! otherwise use the height from the met files to determine padding
         Suppl_H = real(ceiling(Max_geoH_metP/5.0_sp),kind=sp) * 5.0_sp
@@ -4188,7 +4188,6 @@
       endif;enddo
 
       end subroutine MR_Read_HGT_arrays
-
 
 !##############################################################################
 !
@@ -5237,7 +5236,8 @@
             endif
           enddo
             ! Assign top node (Should these indicies be +1?)
-          z_col_metP(np_fullmet+2) = max(z_comp_sp(nz_comp)+1.0_sp,z_col_metP(np_fullmet+1)+1.0_sp)
+            ! Buffer by 10 km since we might be using a shifted topography
+          z_col_metP(np_fullmet+2) = max(z_comp_sp(nz_comp)+10.0_sp,z_col_metP(np_fullmet+1)+10.0_sp)
           var_col_metP(np_fullmet+2) = var_col_metP(np_fullmet+1)
 
           if(MR_ZScaling_ID == 0)then
