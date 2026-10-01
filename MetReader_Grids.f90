@@ -1263,23 +1263,21 @@
         x_submet_sp(ilhalf_nx+1:nx_submet) = x_fullmet_sp(irhalf_fm_l:irhalf_fm_l+irhalf_nx-1) + 360.0_sp
         MR_dx_submet(          1:ilhalf_nx) = MR_dx_met(ilhalf_fm_l:ilhalf_fm_l+ilhalf_nx-1)
         MR_dx_submet(ilhalf_nx+1:nx_submet) = MR_dx_met(irhalf_fm_l:irhalf_fm_l+irhalf_nx-1) + 360.0_sp
-!        if(IsPeriodic_CompGrid)then
-!        if(IsGlobal_MetGrid)then
-!          x_submet_sp(0)           = x_fullmet_sp(nx_submet  ) - 360.0_sp
-!          x_submet_sp(nx_submet+1) = x_fullmet_sp(nx_submet+1) + 360.0_sp
-!          MR_dx_submet(0)           = MR_dx_met(nx_submet  )
-!          MR_dx_submet(nx_submet+1) = MR_dx_met(nx_submet+1)
-!        endif
+        if(IsPeriodic_CompGrid)then
+          x_submet_sp(0)           = x_fullmet_sp(nx_submet  ) - 360.0_sp
+          x_submet_sp(nx_submet+1) = x_fullmet_sp(nx_submet+1) + 360.0_sp
+          MR_dx_submet(0)           = MR_dx_met(nx_submet  )
+          MR_dx_submet(nx_submet+1) = MR_dx_met(nx_submet+1)
+        endif
       else
         x_submet_sp(1:nx_submet) = x_fullmet_sp(istart:iend)
         MR_dx_submet(1:nx_submet) = MR_dx_met(istart:iend)
-!        if(IsPeriodic_CompGrid)then
-!        if(IsGlobal_MetGrid)then
-!          x_submet_sp(0)           = x_fullmet_sp(nx_submet) - 360.0_sp
-!          x_submet_sp(nx_submet+1) = x_fullmet_sp(1     ) + 360.0_sp
-!          MR_dx_submet(0)           = MR_dx_met(nx_submet)
-!          MR_dx_submet(nx_submet+1) = MR_dx_met(1     )
-!        endif
+        if(IsPeriodic_CompGrid)then
+          x_submet_sp(0)           = x_fullmet_sp(nx_submet) - 360.0_sp
+          x_submet_sp(nx_submet+1) = x_fullmet_sp(1     ) + 360.0_sp
+          MR_dx_submet(0)           = MR_dx_met(nx_submet)
+          MR_dx_submet(nx_submet+1) = MR_dx_met(1     )
+        endif
       endif
       do j=jstart,jend
         if(y_inverted)then
@@ -1355,7 +1353,6 @@
           ! Get the sub_Met index of LL corner of cell containing px,py
           isubmet = 1
           if(IsPeriodic_CompGrid)then
-!          if(IsGlobal_MetGrid)then
             nx_tmp = nx_submet
           else
             nx_tmp = nx_submet-1
