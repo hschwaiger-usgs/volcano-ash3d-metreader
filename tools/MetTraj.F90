@@ -1938,7 +1938,7 @@
        ! Load the full sub-grid for all times
         ! First load the Met grids for Geopotential
       if(TrajFlag > 0)then
-        ! Foreward trajectory
+        ! Forward trajectory
         MR_iMetStep_Now = 1
       else
         ! Backward trajectory

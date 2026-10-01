@@ -870,7 +870,8 @@
       integer, parameter :: sp = real32  ! selected_real_kind( 6,   37) ! single precision
       integer, parameter :: dp = real64  ! selected_real_kind(15,  307) ! double precision
 
-      real(kind=sp), parameter :: PI  = 3.141592653589793_sp
+      real(kind=dp), parameter :: PI   = 3.141592653589793_dp
+      real(kind=dp), parameter :: ddeg = 1.666666666666667e-02_dp  ! 1 arc-min
 
       integer :: i, j
       integer :: ii,jj
@@ -880,7 +881,7 @@
       real(kind=sp) :: xUR,yUR
 
       real(kind=dp) :: ptlon,ptlat,xin,yin
-      real(kind=dp) :: de_x,de_y,dn_x,dn_y,dw_x,dw_y,ds_x,ds_y,ddeg
+      real(kind=dp) :: de_x,de_y,dn_x,dn_y,dw_x,dw_y,ds_x,ds_y
       real(kind=dp) :: ate,atw,atn,ats
 
       real(kind=sp) :: xc,xfrac,yc,yfrac,px,py
@@ -1019,7 +1020,7 @@
           iend = 1
           do i = 1,nx_fullmet
             ! For the end index, we assign the upper node of the interval
-            cond1 = x_fullmet_sp(i  ) < xUR
+            cond1 = x_fullmet_sp(i  )  < xUR
             cond2 = x_fullmet_sp(i+1) >= xUR
             if(cond1.and.cond2) iend = i+1
           enddo
@@ -1036,10 +1037,10 @@
         if(iend == 1)then
           if(IsGlobal_MetGrid)then
             ! If iend was not assigned, then the wrap back to the beginning
-            iend = nx_fullmet
+            iend = nx_fullmet+1
             do i = 1,nx_fullmet
               ! For the end index, we assign the upper node of the interval
-              cond1 = x_fullmet_sp(i  ) < xUR-360.0_sp
+              cond1 = x_fullmet_sp(i  )  < xUR-360.0_sp
               cond2 = x_fullmet_sp(i+1) >= xUR-360.0_sp
               if(cond1.and.cond2) iend = nx_fullmet+i+1
             enddo
@@ -1242,11 +1243,9 @@
         write(outlog(io),*)"-------------"
       endif;enddo
 
-! HFS
-      if(IsPeriodic_CompGrid)then
-!      if(IsGlobal_MetGrid)then
-!        ! This adds a periodic buffer for all source NWP files, even when CompGrid is
-!        ! not periodic
+      if(IsGlobal_MetGrid)then
+        ! This adds a periodic buffer for all source NWP files, even when CompGrid is
+        ! not periodic
         allocate( x_submet_sp(0:nx_submet+1))
         allocate( MR_dx_submet(0:nx_submet+1))
         allocate( MR_sigma_nz_submet(0:nx_submet+1,1:ny_submet))
@@ -1264,23 +1263,23 @@
         x_submet_sp(ilhalf_nx+1:nx_submet) = x_fullmet_sp(irhalf_fm_l:irhalf_fm_l+irhalf_nx-1) + 360.0_sp
         MR_dx_submet(          1:ilhalf_nx) = MR_dx_met(ilhalf_fm_l:ilhalf_fm_l+ilhalf_nx-1)
         MR_dx_submet(ilhalf_nx+1:nx_submet) = MR_dx_met(irhalf_fm_l:irhalf_fm_l+irhalf_nx-1) + 360.0_sp
-        if(IsPeriodic_CompGrid)then
+!        if(IsPeriodic_CompGrid)then
 !        if(IsGlobal_MetGrid)then
-          x_submet_sp(0)           = x_fullmet_sp(nx_submet  ) - 360.0_sp
-          x_submet_sp(nx_submet+1) = x_fullmet_sp(nx_submet+1) + 360.0_sp
-          MR_dx_submet(0)           = MR_dx_met(nx_submet  )
-          MR_dx_submet(nx_submet+1) = MR_dx_met(nx_submet+1)
-        endif
+!          x_submet_sp(0)           = x_fullmet_sp(nx_submet  ) - 360.0_sp
+!          x_submet_sp(nx_submet+1) = x_fullmet_sp(nx_submet+1) + 360.0_sp
+!          MR_dx_submet(0)           = MR_dx_met(nx_submet  )
+!          MR_dx_submet(nx_submet+1) = MR_dx_met(nx_submet+1)
+!        endif
       else
         x_submet_sp(1:nx_submet) = x_fullmet_sp(istart:iend)
         MR_dx_submet(1:nx_submet) = MR_dx_met(istart:iend)
-        if(IsPeriodic_CompGrid)then
+!        if(IsPeriodic_CompGrid)then
 !        if(IsGlobal_MetGrid)then
-          x_submet_sp(0)           = x_fullmet_sp(nx_submet) - 360.0_sp
-          x_submet_sp(nx_submet+1) = x_fullmet_sp(1     ) + 360.0_sp
-          MR_dx_submet(0)           = MR_dx_met(nx_submet)
-          MR_dx_submet(nx_submet+1) = MR_dx_met(1     )
-        endif
+!          x_submet_sp(0)           = x_fullmet_sp(nx_submet) - 360.0_sp
+!          x_submet_sp(nx_submet+1) = x_fullmet_sp(1     ) + 360.0_sp
+!          MR_dx_submet(0)           = MR_dx_met(nx_submet)
+!          MR_dx_submet(nx_submet+1) = MR_dx_met(1     )
+!        endif
       endif
       do j=jstart,jend
         if(y_inverted)then
@@ -1468,7 +1467,6 @@
           ! Mercator projections have grid lines aligned with lat, lon
           theta_Met(:,:) = 0.0_dp
         else
-          ddeg = 1.0_dp/60.0_dp
           do i=1,nx_submet
             do j=1,ny_submet
                 ! Get lon/lat of point in question
@@ -1490,21 +1488,21 @@
                          xout,yout)
               dw_x = xout-xin
               dw_y = yout-yin
-              atw  = atan2(dw_y,dw_x) - 3.141592653589793_dp
+              atw  = atan2(dw_y,dw_x) - PI
                 ! Get projected coordinate of dn at the current point
               call PJ_proj_for(ptlon,ptlat+ddeg, Met_iprojflag, &
                          Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
                          xout,yout)
               dn_x = xout-xin
               dn_y = yout-yin
-              atn  = atan2(dn_y,dn_x) - 3.141592653589793_dp/2.0_dp
+              atn  = atan2(dn_y,dn_x) - 0.5_dp*PI
                 ! Get projected coordinate of ds at the current point
               call PJ_proj_for(ptlon,ptlat-ddeg, Met_iprojflag, &
                          Met_lam0,Met_phi0,Met_phi1,Met_phi2,Met_k0,Met_Re, &
                          xout,yout)
               ds_x = xout-xin
               ds_y = yout-yin
-              ats  = atan2(ds_y,ds_x) + 3.141592653589793_dp/2.0_dp
+              ats  = atan2(ds_y,ds_x) + 0.5_dp*PI
                 ! Now recover the angle between angle of rotation as the average angle
                 ! for all of the coordinate directions
               theta_Met(i,j) = (ate + atw + atn + ats)*0.25_dp
@@ -1518,9 +1516,9 @@
       ! ER values to a projected computational grid.  So we set up another rotation
       ! to map ER values that were interpolated onto a computational grid to GR
       if((Map_Case == 2.and..not.IsGridRelative).or. &
-         Map_Case == 3.or. & ! Met is Lat/Lon, but Comp is projected
-         Map_Case == 4.or. & ! Met is projected, but Comp is Lat/Lon
-         Map_Case == 5)then  ! Met Grid and Comp grids have different projections
+          Map_Case == 3.or. & ! Met is Lat/Lon, but Comp is projected
+          Map_Case == 4.or. & ! Met is projected, but Comp is Lat/Lon
+          Map_Case == 5)then  ! Met Grid and Comp grids have different projections
         do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*)"  Setting up arrays for rotating vectors on comp grid."
         endif;enddo
@@ -1540,11 +1538,9 @@
                             Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
                              ptlon,ptlat)
                 ! Get projected coordinate of de at the current point
-!              write(*,*)i,j,xin,yin
               call PJ_proj_for(ptlon+ddeg,ptlat, Comp_iprojflag, &
                          Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
                          xout,yout)
-!              write(*,*)xout,yout
               de_x = xout-xin
               de_y = yout-yin
               ate  = atan2(de_y,de_x)
@@ -1554,21 +1550,21 @@
                          xout,yout)
               dw_x = xout-xin
               dw_y = yout-yin
-              atw  = atan2(dw_y,dw_x) - 3.141592653589793_dp
+              atw  = atan2(dw_y,dw_x) - PI
                 ! Get projected coordinate of dn at the current point
               call PJ_proj_for(ptlon,ptlat+ddeg, Comp_iprojflag, &
                          Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
                          xout,yout)
               dn_x = xout-xin
               dn_y = yout-yin
-              atn  = atan2(dn_y,dn_x) - 3.141592653589793_dp/2.0_dp
+              atn  = atan2(dn_y,dn_x) - 0.5_dp*PI
                 ! Get projected coordinate of ds at the current point
               call PJ_proj_for(ptlon,ptlat-ddeg, Comp_iprojflag, &
                          Comp_lam0,Comp_phi0,Comp_phi1,Comp_phi2,Comp_k0,Comp_Re, &
                          xout,yout)
               ds_x = xout-xin
               ds_y = yout-yin
-              ats  = atan2(ds_y,ds_x) + 3.141592653589793_dp/2.0_dp
+              ats  = atan2(ds_y,ds_x) + 0.5_dp*PI
 
                 ! Again recover the angle between angle of rotation as the average angle
                 ! for all of the coordinate directions (but now, of comp grid)
@@ -1613,8 +1609,8 @@
         do j=1,ny_submet
           phi_1 = MR_DEG2RAD*(y_submet_sp(j)-0.5_sp*dy_met_const) ! phi at lower y of cell
           phi_2 = MR_DEG2RAD*(y_submet_sp(j)+0.5_sp*dy_met_const) ! phi at upper y of cell
-          theta_1 = 0.5_sp*PI-phi_1
-          theta_2 = 0.5_sp*PI-phi_2
+          theta_1 = 0.5_sp*real(PI,kind=sp)-phi_1
+          theta_2 = 0.5_sp*real(PI,kind=sp)-phi_2
           del_theta  = dy_met_const*MR_DEG2RAD
           del_costheta = cos(theta_2)-cos(theta_1)
           ! No need to loop over lambda (longitude) since each slice is identical

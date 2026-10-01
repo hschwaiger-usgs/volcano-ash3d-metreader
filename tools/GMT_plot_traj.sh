@@ -24,7 +24,7 @@ echo "------------------------------------------------------------"
 echo "running GMT_plot_traj.sh with parameter:"
 if [ "$#" -eq 1 ]; then
  if [ $1 -eq 0 ]; then
-   echo " Foreward trajectories requested"
+   echo " Forward trajectories requested"
    FORE=0
    pref='f'
  elif [ $1 -eq 1 ]; then
@@ -33,14 +33,14 @@ if [ "$#" -eq 1 ]; then
    pref='b'
  else
    echo " Argument not recognized."
-   echo " Expected 0 for foreward trajectories"
+   echo " Expected 0 for forward trajectories"
    echo "          1 for backward trajectories"
-   echo " Assuming foreward"
+   echo " Assuming forward"
    FORE=0
    pref='f'
  fi
 else
-  echo "No command-line argument detected; assuming foreward trajectories."
+  echo "No command-line argument detected; assuming forward trajectories."
   FORE=0
   pref='f'
 fi
