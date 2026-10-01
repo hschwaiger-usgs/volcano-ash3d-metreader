@@ -1568,7 +1568,12 @@
 
                 ! Again recover the angle between angle of rotation as the average angle
                 ! for all of the coordinate directions (but now, of comp grid)
-              theta_Comp(i,j) = (ate + atw + atn + ats)*0.25_dp
+              ! Need to sort out the best angle to use
+              !theta_Comp(i,j) = (ate + atw + atn + ats)*0.25_dp
+              !theta_Comp(i,j) = (ate)*1.0_dp
+              !theta_Comp(i,j) = (atw)*1.0_dp
+              theta_Comp(i,j) = (atn)*1.0_dp
+              !theta_Comp(i,j) = (ats)*1.0_dp
             enddo
           enddo
         endif
