@@ -87,6 +87,24 @@ socket.getaddrinfo = getaddrinfo_ipv4_only
 socket.setdefaulttimeout(30)
 # --- END IPV4 OVERRIDE HOOK ---
 
+# --- BEGIN IPV4 OVERRIDE HOOK ---
+#  These lines were added at the suggestion of Gemini
+#  On our main Ash3d server, this script was hanging when attempting
+#  to connect to the NOAA server via an IPv6 connection.  The IPv6
+#  connection was not reliable.  These lines force connection
+#  through IPv4
+
+import socket
+orig_getaddrinfo = socket.getaddrinfo
+def getaddrinfo_ipv4_only(*args, **kwargs):
+    responses = orig_getaddrinfo(*args, **kwargs)
+    return [r for r in responses if r[0] == socket.AF_INET]
+socket.getaddrinfo = getaddrinfo_ipv4_only
+
+# Set a global connection/socket timeout threshold in seconds
+socket.setdefaulttimeout(30)
+# --- END IPV4 OVERRIDE HOOK ---
+
 version="get_gfs.py v1.0.0 8/2025"
 def get_gfs(action, time_str, nloop, dt, regex, outdir):
     """
