@@ -6,9 +6,14 @@
 ! This is a stand-alone program that uses the MetReader interface to calculate
 ! trajectories from a point (at various altitudes) using any of the NWP products
 ! available via MetReader.  This is designed to run with a series of
-! command-line arguments which will default to GFS forecast packages (if the
-! requested time is within 14 days of the execution time) or the NCEP 50-year
-! reanalysis data.  This program assumes that the wind files are stored in
+! command-line arguments which has a default set of NWP data.
+!   If the Eruption Start time is withing 14 days of execution time, then:
+!     GFS forecast packages (the latest package that encompasses the simulation time)
+!   Else if the Eruption Start year is 2026+
+!     CORe Reanalysis data
+!   Else if the Eruption Start year is >= 1948
+!     NCEP 50-year reanalysis data.
+! This program assumes that the wind files are stored in
 ! /data/WindFiles/ as expected by the download scripts in autorun_scripts/.
 ! The minimal set of command-line arguments are:  lon lat YYYY MM DD h.h
 !
@@ -658,21 +663,21 @@
         call Print_Usage
       elseif(nargs >= 6)then
         ! Here, everything is set from the command-line with lots of assumed
-        ! values.  Only GFS and NCEP 50-year are used here.
+        ! values.  Only GFS, CORe or NCEP 50-year are used here.
         do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
           write(outlog(io),*)"Reading command-line"
         endif;enddo
         !  And here is what we assume:
-        StreamFlag = 1  ! This means we are doing streamlines, NOT streaklines
-        Simtime_in_hours = 24.0_dp   ! Length of time to integrate (can be changed on command-line)
-        OutStepInc_Minutes = 60     ! Minutes between output points
-        ntraj              = 0      ! Number of trajectories (can be changed on command-line)
+        StreamFlag         = 1       ! This means we are doing streamlines, NOT streaklines
+        Simtime_in_hours   = 24.0_dp ! Length of time to integrate (can be changed on command-line)
+        OutStepInc_Minutes = 60      ! Minutes between output points
+        ntraj              = 0       ! Number of trajectories (can be changed on command-line)
         ! OutputLevels : this is allocated once ntraj is locked in
-        IsLatLon_OutGrid   = .true. ! Assume LonLat output coordinates
-        autoflag           = 1      ! This command-line branch necesarily means auto windfile selection
-                                    !  with all the hard-wired paths to GFS and NCEP
-        FC_freq            = 12     ! Number of hours between GFS package downloads
-        GFS_Archive_Days   = 14     ! Number of days GFS data are archived on local machine
+        IsLatLon_OutGrid   = .true.  ! Assume LonLat output coordinates
+        autoflag           = 1       ! This command-line branch necesarily means auto windfile selection
+                                     !  with all the hard-wired paths to GFS and NCEP
+        FC_freq            = 12      ! Number of hours between GFS package downloads
+        GFS_Archive_Days   = 14      ! Number of days GFS data are archived on local machine
 
         iw      = 0 ! These are all set for autoruns in GetWindFile
         iwf     = 0
@@ -1255,7 +1260,7 @@
 !
 !  This subroutine sets the list of windfiles to be used in the calculation.
 !  These will either be an explicit list provided by the control file, or
-!  through an assessment of the current GFS and NCEP files on the system.
+!  through an assessment of the current GFS, CORe and NCEP files on the system.
 !
 !##############################################################################
 
@@ -1311,7 +1316,7 @@
 
       real(kind=dp)      :: StartHour
       real(kind=dp)      :: RunStartHour    ! Current UTC time, in hours since MR_BaseYear
-      character(len=17) :: RunStartHour_ch
+      character(len=17)  :: RunStartHour_ch
       real(kind=dp)      :: Probe_StartHour
       real(kind=dp)      :: Probe_EndHour
       real(kind=dp)      :: Met_needed_StartHour
@@ -1331,17 +1336,20 @@
       real(kind=dp) :: FC_Archive_StartHour
 
       character (len=100) :: WINDROOT
+      character (len=80)  :: WindFile
       character (len= 47) :: string1,string2
 
       integer :: i,ii
+      integer :: id,im,iy
       integer :: FC_year,FC_mon,FC_day
       real(kind=dp) :: FC_hour,FC_Package_hour_dp,FC_intvl
       integer :: NumFCpackages
 
-      character (len=130):: testfile
+      character (len=130) :: testfile
       real(kind=dp)       :: FCStartHour
       real(kind=dp)       :: FCEndHour
-      logical            :: IsThere
+      real(kind=dp)       :: CORe_Hours1900
+      logical             :: IsThere
 
       logical,dimension(:),allocatable :: GFS_candidate
       integer,dimension(:),allocatable :: GFS_FC_step_avail
@@ -1434,7 +1442,7 @@
         ! We are using the automatic selection for wind files.  We need to first
         ! determine the current date/time and check if the requested start time is
         ! more recent than the length of the GFS archive.  If so, use GFS;
-        ! otherwise, use the NCEP 50-year Reanalysis.
+        ! otherwise, use either the CORe or the NCEP 50-year Reanalysis.
 
         ! Find the start time given on the command line
         Probe_StartHour = HS_hours_since_baseyear(inyear,inmonth,inday,inhour,&
@@ -1454,40 +1462,83 @@
         Met_needed_EndHour   = max(Probe_StartHour,Probe_EndHour)
 
         if(RunStartHour-Met_needed_StartHour > 24.0_dp*GFS_Archive_Days)then
-          ! NCEP case
-          do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
-            write(outlog(io),*)"Requested start time is too old for GFS archive."
-            write(outlog(io),*)"Start time is older than the hardwired threshold of ",&
-                      GFS_Archive_Days," days"
-            write(outlog(io),*)"Using NCEP 50-year Reanalysis"
-          endif;enddo
-          iw  = 5
-          iwf = 25
-          igrid   = 0
-          idf     = 2
-          iwfiles = 1
+          if(inyear < 1948)then
+            !Too old for NCEP runs, must use control file
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
+              write(errlog(io),*)"Requested start time is too old for NCEP Reanalysis."
+              write(errlog(io),*)"Please use a control file and specify an older"
+              write(errlog(io),*)"product such as NOAA20CRv3."
+            endif;enddo
+            stop 1
+          elseif(inyear >= 2026)then
+            ! CORe case
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
+              write(outlog(io),*)"Requested start time is too old for GFS archive."
+              write(outlog(io),*)"Start time is older than the hardwired threshold of ",&
+                        GFS_Archive_Days," days"
+              write(outlog(io),*)"Using NCEP 50-year Reanalysis"
+            endif;enddo
+            iw      = 4
+            iwf     = 35
+            igrid   = 170
+            idf     = 3
+            ! Set number of windfiles to be 8 times the number of days
+            iwfiles = (ceiling(Simtime_in_hours/24.0) + 1)*8
 
-          call MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)
+            call MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)
 
-          do i=1,MR_iwindfiles
-            write(MR_windfiles(i),*)trim(adjustl(WINDROOT)),'/NCEP'
-          enddo
+            ii = 0
+            ! need to figure out the day,month,year
+            iy = inyear
+            im = inmonth
+            id = inday
+            CORe_Hours1900 = HS_hours_since_baseyear(iy,im,id,0.0_8,MR_BaseYear,MR_useLeap)
 
-          FC_year    = HS_YearOfEvent(RunStartHour,MR_BaseYear,MR_useLeap)
-          FC_mon     = HS_MonthOfEvent(RunStartHour,MR_BaseYear,MR_useLeap)
-          FC_day     = HS_DayOfEvent(RunStartHour,MR_BaseYear,MR_useLeap)
-          FC_Package_hour_dp = HS_HourOfDay(RunStartHour,MR_BaseYear,MR_useLeap)
-          ! now round down the hour to the forecast package increment
-          FC_Package_hour    = floor(FC_Package_hour_dp/FC_freq) * FC_freq
+            do i=1,MR_iwindfiles
+              ! track the forecast interval for this day
+              if (ii == 8) then
+                ! Day increments so reset hour of day
+                ii = 1
+                CORe_Hours1900 = HS_hours_since_baseyear(iy,im,id,24.0_8,MR_BaseYear,MR_useLeap)
+                iy = HS_YearOfEvent(CORe_Hours1900,MR_BaseYear,MR_useLeap)
+                im = HS_MonthOfEvent(CORe_Hours1900,MR_BaseYear,MR_useLeap)
+                id = HS_DayOfEvent(CORe_Hours1900,MR_BaseYear,MR_useLeap)
+              else
+                ii = ii + 1
+              endif
+              ! HFS Note: WindFile still has the 2026 in it. Should be dynamically written
+              write(WindFile,2059) '/CORe/',iy,'/pgb.', iy, im, id, 3*(ii-1)
 
-        elseif(inyear < 1948)then
-          ! Too old for NCEP runs, must use control file
-          do io=1,MR_nio;if(MR_VB(io) <= verbosity_error)then
-            write(errlog(io),*)"Requested start time is too old for NCEP Reanalysis."
-            write(errlog(io),*)"Please use a control file and specify an older"
-            write(errlog(io),*)"product such as NOAA20CRv3."
-          endif;enddo
-          stop 1
+              MR_windfiles(i) = trim(adjustl(WINDROOT)) // trim(adjustl(WindFile))
+            enddo
+2059  format(a6,i4,a5,i4,i2.2,i2.2,i2.2,'.grb')         ! for CORe reanalysis winds Wind_nc/CORe/YYYY/pgb.YYYYMMDDHH.grb
+
+          else
+            ! NCEP case
+            do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
+              write(outlog(io),*)"Requested start time is too old for GFS or CORe archives."
+              write(outlog(io),*)"Start year prior to 2026"
+              write(outlog(io),*)"Using NCEP 50-year Reanalysis"
+            endif;enddo
+            iw      = 5
+            iwf     = 25
+            igrid   = 0
+            idf     = 2
+            iwfiles = 1
+
+            call MR_Allocate_FullMetFileList(iw,iwf,igrid,idf,iwfiles)
+
+            do i=1,MR_iwindfiles
+              write(MR_windfiles(i),*)trim(adjustl(WINDROOT)),'/NCEP'
+            enddo
+
+            FC_year    = HS_YearOfEvent(RunStartHour,MR_BaseYear,MR_useLeap)
+            FC_mon     = HS_MonthOfEvent(RunStartHour,MR_BaseYear,MR_useLeap)
+            FC_day     = HS_DayOfEvent(RunStartHour,MR_BaseYear,MR_useLeap)
+            FC_Package_hour_dp = HS_HourOfDay(RunStartHour,MR_BaseYear,MR_useLeap)
+            ! now round down the hour to the forecast package increment
+            FC_Package_hour    = floor(FC_Package_hour_dp/FC_freq) * FC_freq
+          endif ! CORe and NCEP Reannalysis options
         else
           ! GFS case
           do io=1,MR_nio;if(MR_VB(io) <= verbosity_info)then
@@ -1673,7 +1724,7 @@
                                  trim(adjustl(string1)), &
                                  trim(adjustl(string2))
           enddo
-        endif  ! automatic cases: NCEP, then GFS
+        endif  ! automatic cases: NCEP, then CORe, then GFS
       else ! autoflag == 1
 
         Probe_StartHour = HS_hours_since_baseyear(inyear,inmonth,inday,inhour,&
