@@ -67,8 +67,8 @@ deactivate those options by setting the corresponding flags to \texttt{F} in the
 On a Red Hat systems (Fedora, RHEL, CentOS, Rocky), you can install the data
 format libraries by typing
 \begin{verbatim}
-     sudo yum install netcdf netcdf-devel netcdf-fortran netcdf-fortran-devel
-     sudo yum install eccodes eccodes-devel
+     sudo dnf install netcdf netcdf-devel netcdf-fortran netcdf-fortran-devel
+     sudo dnf install eccodes eccodes-devel
 \end{verbatim}
 or for Ubuntu
 \begin{verbatim}
@@ -142,15 +142,20 @@ directory structure:
 /opt/USGS
 |-- bin
 |   |-- autorun_scripts
+|   |   |-- autorun_core.sh
 |   |   |-- autorun_ecmwf.sh
 |   |   |-- autorun_gfs.sh
+|   |   |-- autorun_hrrr.sh
 |   |   |-- autorun_nam.sh
 |   |   |-- autorun_NCEP_50YearReanalysis.sh
 |   |   |-- convert_ecmwf.sh
 |   |   |-- convert_gfs.sh
+|   |   |-- get_core.py
+|   |   |-- get_core.sh
 |   |   |-- get_ecmwf.sh
 |   |   |-- get_gfs.sh
 |   |   |-- get_gmao.sh
+|   |   |-- get_hrrr.sh
 |   |   |-- get_nam.sh
 |   |   |-- get_NCEP_50YearReanalysis.sh
 |   |   |-- grib2nc.sh
@@ -285,8 +290,8 @@ are implemented:
 
 \subparagraph{NCEP/NCAR Reanalysis 1:}
 \texttt{MR\_iwindformat=25}
-
 \url{http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis/pressure}
+Note: This is a deprecated dataset with production ending in March, 2026.
 \begin{verbatim}
 MR_iwindfiles = 1
 MR_windfiles(1) = `/data/WindFiles/NCEP'
@@ -1113,7 +1118,7 @@ probing a single point and time, this utility calculates trajectories within
 the NWP files.
 This utility must be compiled with either a \texttt{-DFORWARD} or \texttt{-DBACKWARD}
 preprocessor flag to generate separate executables for forward or backward trajectories.
-This utility can be run with a limited set of command-line arguments if GFS or NCEP
+This utility can be run with a limited set of command-line arguments if GFS, CORe or NCEP
 reanalysis data are to be used, or using a control file which can be used to specify
 a more exhaustive set of options.
 
@@ -1130,7 +1135,7 @@ If levels are not provided, then 6 levels are assumed at heights of 1.52,
 3.05, 6.10, 9.14, 12.19, 15.24 km; corresponding to 5000, 10000, 20000, 30000,
 40000, and 50000 ft.
 
-The location of the windfiles is assumed to be the default for GFS and NCEP.
+The location of the windfiles is assumed to be the default for GFS, CORe and NCEP.
 To test for the optimal windfiles to use, \texttt{MetTraj\_[F,B]} uses three
 parameters that describe the GFS windfiles.
 \texttt{FC\_freq} (default = 12 hours) is the frequency that the GFS forecast
@@ -1141,7 +1146,9 @@ forecast packages are stored on the system.
 downloaded for each forecast package.
 For forward trajectories, forecast package beginning most closely prior to the requested
 start time is used unless the start time is earlier than two weeks from present.  If
-so, the NCEP files are used. For the backward trajectories, the forecast package
+so, the CORe files are used for cases with start times after January 1, 2026.
+For cases earier that 2026, the NCEP Reanalysis 1 files are assumed.
+For the backward trajectories, the forecast package
 chosen is that which can accommodate the default 24-hours of backward integration.
 
 For each of the trajectory calculations, files are written to the current working directory
@@ -1220,12 +1227,13 @@ can be provided as a third command-line argument.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Windfile management scripts}
-Scripts used to manage GFS and NCEP Reanalysis files are provided in the
+Scripts used to manage GFS and CORe Reanalysis files are provided in the
 folder \texttt{autorun\_scripts}.
 The script \texttt{autorun\_gfs\_00} (and the dependent scripts
 \texttt{get\_gfs.sh} and\\
 \texttt{convert\_gfs.sh}) is used for downloading and
-converting the $0.25^{\circ}$, $0.5^{\circ}$, or $1.0^{\circ}$ GFS files from NCEP.  This script is intended to be
+converting the $0.25^{\circ}$, $0.5^{\circ}$, or $1.0^{\circ}$ GFS files from NCEP.
+This script is intended to be
 run from a cron job and take as a parameter, the hour of the forecast package.  For example
 \texttt{autorun\_gfs.sh 0p50 0} will download for 00Z for the current date.  These 
 scripts use a default root download directory of \texttt{/data/WindFiles}, but this can
@@ -1236,8 +1244,8 @@ The GFS files will be downloaded to\\
 netcdf-java.  The path this package is set to \texttt{~/ncj/netcdfAll-4.5.jar} but can be
 modified in \texttt{convert\_gfs.sh}.
 
-Similarly, the script \texttt{get\_NCEP\_50YearReanalysis.sh} manages the downloading of 
-the NCEP reanalysis files.  These are placed in \texttt{/data/WindFiles/NCEP/YYYY/}
+Similarly, the script \texttt{get\_core.sh} manages the downloading of 
+the CORe reanalysis files.  These are placed in \texttt{/data/WindFiles/CORe/YYYY/}
 
 These scripts are intended to be run as cron jobs.  The following line can be added to the
 crontab to download the files once they are available.
@@ -1245,7 +1253,7 @@ crontab to download the files once they are available.
 \begin{verbatim}
 01 22 * *  * /opt/USGS/bin/autorun_scripts/autorun_gfs.sh 0p50 0            > gfs00_log       2>&1
 01 11 * *  * /opt/USGS/bin/autorun_scripts/autorun_gfs.sh 0p50 12           > gfs12_log       2>&1
-01 01 * 06 * /opt/USGS/bin/autorun_scripts/autorun_NCEP_50YearReanalysis.sh > NCEP_50yr_log   2>&1
+01 01 * 06 * /opt/USGS/bin/autorun_scripts/autorun_core.sh                  > core_log        2>&1
 30 03 * *  * /opt/USGS/bin/autorun_scripts/prune_windfiles.sh               > prune.log       2>&1
 \end{verbatim}
 \normalsize
@@ -1361,6 +1369,8 @@ MR\_iwind & MR\_iwindformat & Product & NCEP Grid & resolution \\
 4 &  12 & NAM Regional Alaska & 198 & 5.953 km \\
 4 &  13 & NAM Regional Alaska & 91 & 2.976 km \\
 4 &  14 & NAM Regional CONUS & None & 3.0 km \\
+4 &  15 & HRRR Regional CONUS & None & 3.0 km \\
+4 &  16 & HRRR Regional Alaska & None & 3.0 km \\
   \hline
 4 &  20 & GFS & 4   & $ 0.5 \, ^{\circ}$ \\
 4 &  21 & GFS & 3   & $ 1.0 \, ^{\circ}$ \\
@@ -1378,6 +1388,7 @@ MR\_iwind & MR\_iwindformat & Product & NCEP Grid & resolution \\
 4 &  32 & Air Force Weather Agency subcenter = 0 & None & $0.25^{\circ}$ \\
 4 &  33 & CCSM3.0 Community Atmosphere Model &None & $3.75 \, \times \,3.7^{\circ}$\\
 4 &  34 & ECMWF & 193 & $0.25 \, ^{\circ}$ \\
+4 &  35 & CORe  & 170 (gg) & $\sim 0.7^{\circ}$ \\
   \hline
 4 &  40 & NASA GEOS-5 Cp & None & $0.625 \, \times \,0.5^{\circ}$ \\
 4 &  41 & NASA GEOS-5 Np & None & $0.3125 \, \times \,0.25^{\circ}$\\

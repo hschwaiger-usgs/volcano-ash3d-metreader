@@ -11,4 +11,5 @@ tools/MetTraj_F
 tools/probe_Met
 doc/MetReader_manual.aux
 doc/MetReader_manual.log
+doc/MetReader_manual.out
 tests/UpperAirSoundings
